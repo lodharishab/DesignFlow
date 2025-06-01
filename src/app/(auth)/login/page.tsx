@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,7 @@ export default function LoginPage() {
         <Button className="w-full" onClick={handleLogin}>Log In</Button>
         <p className="text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-medium text-primary hover:underline">
+          <Link href="/auth/signup" className="font-medium text-primary hover:underline">
             Sign Up
           </Link>
         </p>

@@ -1,3 +1,4 @@
+
 import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
@@ -33,7 +34,7 @@ export default function HomePage() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/auth/signup?role=designer">
+                <Link href="/auth/signup/designer">
                   <Users className="mr-2 h-5 w-5" /> Join as a Designer
                 </Link>
               </Button>

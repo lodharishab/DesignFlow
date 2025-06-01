@@ -8,12 +8,12 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Mail, KeyRound, User } from "lucide-react";
 
-export default function ClientSignupPage() {
+export default function DesignerSignupPage() {
   return (
     <Card className="shadow-xl">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Create Your Client Account</CardTitle>
-        <CardDescription>Sign up to find and hire talented designers for your projects.</CardDescription>
+        <CardTitle className="font-headline text-2xl">Join as a Designer</CardTitle>
+        <CardDescription>Offer your design services and skills on the DesignFlow platform.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -37,19 +37,20 @@ export default function ClientSignupPage() {
             <Input id="password" type="password" placeholder="••••••••" className="pl-10" />
           </div>
         </div>
+        {/* Add fields specific to designers here, e.g., portfolio link, skills */}
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
-        <Button className="w-full">Sign Up as Client</Button>
+        <Button className="w-full">Sign Up as Designer</Button>
         <p className="text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link href="/auth/login" className="font-medium text-primary hover:underline">
             Log In
           </Link>
         </p>
-        <p className="text-sm text-muted-foreground">
-          Are you a designer?{" "}
-          <Link href="/auth/signup/designer" className="font-medium text-primary hover:underline">
-            Sign Up as a Designer
+         <p className="text-sm text-muted-foreground">
+          Looking to hire?{" "}
+          <Link href="/auth/signup" className="font-medium text-primary hover:underline">
+            Sign Up as a Client
           </Link>
         </p>
       </CardFooter>
