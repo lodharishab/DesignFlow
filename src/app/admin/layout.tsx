@@ -3,6 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   Briefcase, 
@@ -11,7 +12,9 @@ import {
   Settings,
   Brush,
   UsersRound,
-  Tags // Added Tags icon
+  Tags,
+  List, // Added List icon for "All Services"
+  ChevronDown // Added ChevronDown for submenu indicator
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -23,7 +26,10 @@ import {
   SidebarMenuButton, 
   SidebarFooter, 
   SidebarTrigger,
-  SidebarInset
+  SidebarInset,
+  SidebarMenuSub,    // Import for sub-menus
+  SidebarMenuSubItem,  // Import for sub-menus
+  SidebarMenuSubButton // Import for sub-menus
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/shared/mode-toggle';
@@ -36,11 +42,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { cn } from '@/lib/utils';
 
+// Define nav items with potential children for sub-menus
 const navItems = [
   { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/admin/services', icon: Briefcase, label: 'Services' },
-  { href: '/admin/services/categories', icon: Tags, label: 'Service Categories' }, // New Service Categories link
+  { 
+    label: 'Services', 
+    icon: Briefcase, 
+    pathPrefix: '/admin/services', // Used to determine if parent section is active
+    children: [
+      { href: '/admin/services', icon: List, label: 'All Services' },
+      { href: '/admin/services/categories', icon: Tags, label: 'Service Categories' },
+    ] 
+  },
   { href: '/admin/designers', icon: Users, label: 'Designers' },
   { href: '/admin/users', icon: UsersRound, label: 'Users' },
   { href: '/admin/orders', icon: ClipboardList, label: 'Orders' },
@@ -53,6 +68,21 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const initiallyOpen: Record<string, boolean> = {};
+    navItems.forEach(item => {
+      if (item.children && item.pathPrefix && pathname.startsWith(item.pathPrefix)) {
+        initiallyOpen[item.label] = true;
+      }
+    });
+    setOpenSubmenus(initiallyOpen);
+  }, [pathname]);
+
+  const toggleSubmenu = (label: string) => {
+    setOpenSubmenus(prev => ({ ...prev, [label]: !prev[label] }));
+  };
 
   return (
     <SidebarProvider defaultOpen>
@@ -65,20 +95,78 @@ export default function AdminLayout({
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href || (item.href !== '/admin/services' && pathname.startsWith(item.href) && item.href !== '/admin/dashboard') || (item.href === '/admin/services' && pathname === '/admin/services')}
-                  tooltip={{ children: item.label, side: 'right', align: 'center' }}
-                >
-                  <Link href={item.href}>
-                    <item.icon className="mr-2 h-4 w-4" />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            {navItems.map((item) => {
+              if (item.children && item.pathPrefix) {
+                // This is a parent item with a sub-menu
+                const isParentActive = pathname.startsWith(item.pathPrefix);
+                const isOpen = openSubmenus[item.label] || false;
+
+                return (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton
+                      onClick={() => toggleSubmenu(item.label)}
+                      isActive={isParentActive && !isOpen} // Active if path matches but not if only open
+                      tooltip={{ children: item.label, side: 'right', align: 'center' }}
+                      className="justify-between" // Pushes Chevron to the end
+                      aria-expanded={isOpen}
+                    >
+                      <span className="flex items-center gap-2">
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4 transition-transform duration-200",
+                          isOpen && "rotate-180"
+                        )}
+                      />
+                    </SidebarMenuButton>
+                    {isOpen && (
+                      <SidebarMenuSub>
+                        {item.children.map(child => {
+                          let isChildActive;
+                          if (child.href === '/admin/services') { // "All Services" is exact match
+                            isChildActive = pathname === child.href;
+                          } else { // Other children (e.g., "Service Categories") are prefix match
+                            isChildActive = pathname.startsWith(child.href);
+                          }
+                          return (
+                            <SidebarMenuSubItem key={child.label}>
+                              <SidebarMenuSubButton asChild isActive={isChildActive}>
+                                <Link href={child.href}>
+                                  {child.icon && <child.icon />}
+                                  <span>{child.label}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          );
+                        })}
+                      </SidebarMenuSub>
+                    )}
+                  </SidebarMenuItem>
+                );
+              } else {
+                // This is a regular menu item
+                const isActive = 
+                  (item.href === '/admin/dashboard' && pathname === item.href) ||
+                  (item.href !== '/admin/dashboard' && item.href && pathname.startsWith(item.href));
+                
+                return (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={{ children: item.label, side: 'right', align: 'center' }}
+                    >
+                      <Link href={item.href!}>
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              }
+            })}
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="p-4">
