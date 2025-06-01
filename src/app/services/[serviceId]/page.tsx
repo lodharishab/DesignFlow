@@ -8,12 +8,13 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock, Package, Tag } from 'lucide-react';
+import type { Icon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import type { Icon } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ServiceTierDetail {
@@ -28,19 +29,19 @@ interface ServiceTierDetail {
 interface ServiceDetail {
   id: string;
   name: string;
-  generalDescription: string; 
+  generalDescription: string;
   longDescription: string;
   category: string;
   imageUrl: string;
   imageHint: string;
   tiers: ServiceTierDetail[];
-  approvedDesigners: Array<{ 
-    id: string; 
-    name: string; 
-    avatarUrl: string; 
-    rating: number; 
-    projectsCompleted: number; 
-    imageHint: string; 
+  approvedDesigners: Array<{
+    id: string;
+    name: string;
+    avatarUrl: string;
+    rating: number;
+    projectsCompleted: number;
+    imageHint: string;
   }>;
 }
 
@@ -54,26 +55,26 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'modern logo showcase',
     tiers: [
-      { 
-        name: 'Basic', 
-        price: 99, 
-        deliveryTime: '3-5 Business Days', 
+      {
+        name: 'Basic',
+        price: 99,
+        deliveryTime: '3-5 Business Days',
         scope: ['1 Initial concept', '2 Rounds of revisions', 'Basic vector files (SVG, PNG)'],
         tierDescription: 'A great starting point for new brands or simple logo needs. Get a foundational logo quickly and efficiently.',
         icon: Shield,
       },
-      { 
-        name: 'Standard', 
-        price: 199, 
-        deliveryTime: '5-7 Business Days', 
+      {
+        name: 'Standard',
+        price: 199,
+        deliveryTime: '5-7 Business Days',
         scope: ['3 Initial concepts', '3 Rounds of revisions', 'Full vector files (AI, EPS, SVG, PNG, JPG)', 'Basic brand guide (colors, fonts)'],
         tierDescription: 'Our most popular option, offering a comprehensive logo package with more choices and branding elements.',
         icon: Star,
       },
-      { 
-        name: 'Premium', 
-        price: 299, 
-        deliveryTime: '7-10 Business Days', 
+      {
+        name: 'Premium',
+        price: 299,
+        deliveryTime: '7-10 Business Days',
         scope: ['5 Initial concepts', 'Unlimited revisions', 'Full vector & source files', 'Detailed brand guidelines', 'Social media kit'],
         tierDescription: 'For businesses needing an extensive branding solution, maximum flexibility, and additional assets.',
         icon: Zap,
@@ -93,18 +94,18 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'social media campaign',
     tiers: [
-      { 
-        name: 'Basic', 
-        price: 49, 
-        deliveryTime: '2-3 Business Days', 
+      {
+        name: 'Basic',
+        price: 49,
+        deliveryTime: '2-3 Business Days',
         scope: ['5 social media posts', '1 Platform choice', '1 Round of revisions', 'Optimized JPG/PNG'],
         tierDescription: 'Perfect for a quick boost or testing new content on a single platform.',
         icon: Shield,
       },
-      { 
-        name: 'Standard', 
-        price: 99, 
-        deliveryTime: '3-5 Business Days', 
+      {
+        name: 'Standard',
+        price: 99,
+        deliveryTime: '3-5 Business Days',
         scope: ['10 social media posts', 'Up to 2 platforms', '2 Rounds of revisions', 'Source files (PSD or Figma)'],
         tierDescription: 'A balanced pack for consistent social media engagement across multiple platforms.',
         icon: Star,
@@ -123,18 +124,18 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'corporate brochure',
     tiers: [
-        { 
-            name: 'Standard', 
-            price: 249, 
-            deliveryTime: '7-10 Business Days', 
+        {
+            name: 'Standard',
+            price: 249,
+            deliveryTime: '7-10 Business Days',
             scope: ['Custom brochure design (up to 6 panels)', 'Stock imagery included (up to 3 images)', '3 revision rounds', 'Print-ready PDF'],
             tierDescription: 'High-quality brochure design for marketing and events, covering common formats.',
             icon: Star,
         },
-        { 
-            name: 'Premium', 
-            price: 349, 
-            deliveryTime: '10-14 Business Days', 
+        {
+            name: 'Premium',
+            price: 349,
+            deliveryTime: '10-14 Business Days',
             scope: ['Custom brochure design (up to 12 panels)', 'Premium stock imagery (up to 5 images)', '5 revision rounds', 'Print-ready PDF & source files', 'Copywriting suggestions (up to 200 words)'],
             tierDescription: 'Comprehensive brochure package with more content, panels, and added features like copywriting support.',
             icon: Zap,
@@ -151,18 +152,18 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'app interface design',
     tiers: [
-        { 
-            name: 'Standard', 
-            price: 399, 
-            deliveryTime: '10-14 Business Days', 
+        {
+            name: 'Standard',
+            price: 399,
+            deliveryTime: '10-14 Business Days',
             scope: ['1 page UI/UX design (e.g., Homepage or Product Page)', 'Mobile and desktop views', '2 revision rounds', 'Figma/XD source file'],
             tierDescription: 'Essential page design to visualize your web project for one key screen.',
             icon: Star,
         },
-        { 
-            name: 'Premium', 
-            price: 599, 
-            deliveryTime: '14-21 Business Days', 
+        {
+            name: 'Premium',
+            price: 599,
+            deliveryTime: '14-21 Business Days',
             scope: ['Up to 3 key pages UI/UX design', 'Mobile, tablet, and desktop views', 'Interactive prototype (clickable)', '3 revision rounds', 'Component style guide', 'Figma/XD source files'],
             tierDescription: 'A more complete UI/UX package for core application flow, including multiple screens and an interactive prototype.',
             icon: Zap,
@@ -181,26 +182,26 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'fantasy illustration',
     tiers: [
-        { 
-            name: 'Basic', 
-            price: 79, 
-            deliveryTime: '3-5 Business Days', 
+        {
+            name: 'Basic',
+            price: 79,
+            deliveryTime: '3-5 Business Days',
             scope: ['1 simple icon or spot illustration', 'Limited detail', '2 revision rounds', 'PNG/JPG output'],
             tierDescription: 'For small, simple illustration needs like icons or minor graphic elements.',
             icon: Shield,
         },
-        { 
-            name: 'Standard', 
-            price: 149, 
-            deliveryTime: '5-8 Business Days', 
+        {
+            name: 'Standard',
+            price: 149,
+            deliveryTime: '5-8 Business Days',
             scope: ['1 custom illustration (e.g., character, small scene)', 'Medium detail', '3 revision rounds', 'Source file (AI, PSD, or other)', 'Commercial use license'],
             tierDescription: 'Versatile illustration for most common uses, like website heroes or blog post graphics.',
             icon: Star,
         },
-        { 
-            name: 'Premium', 
-            price: 249, 
-            deliveryTime: '7-12 Business Days', 
+        {
+            name: 'Premium',
+            price: 249,
+            deliveryTime: '7-12 Business Days',
             scope: ['1 complex illustration (e.g., detailed scene, multiple characters)', 'High detail and complexity', '5 revision rounds', 'Source file & all formats', 'Enhanced commercial use license'],
             tierDescription: 'For high-impact, detailed illustrative work requiring more complexity and refinement.',
             icon: Zap,
@@ -217,18 +218,18 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'luxury product box',
     tiers: [
-        { 
-            name: 'Standard', 
-            price: 299, 
-            deliveryTime: '8-12 Business Days', 
+        {
+            name: 'Standard',
+            price: 299,
+            deliveryTime: '8-12 Business Days',
             scope: ['1 packaging concept (e.g., box, label)', '2D mockups', 'Basic dieline sketch', 'Color palette and typography suggestions', '2 revision rounds'],
             tierDescription: 'Solid packaging concept to get you started with visualizing your product\'s look.',
             icon: Star,
         },
-        { 
-            name: 'Premium', 
-            price: 499, 
-            deliveryTime: '12-18 Business Days', 
+        {
+            name: 'Premium',
+            price: 499,
+            deliveryTime: '12-18 Business Days',
             scope: ['Up to 2 packaging concepts or 1 complex concept', '3D mockups', 'Detailed dieline sketch', 'Full branding elements integration', 'Print-ready file preparation advice', '3 revision rounds'],
             tierDescription: 'Comprehensive packaging design for market-ready products, including 3D mockups and more concepts.',
             icon: Zap,
@@ -247,10 +248,10 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'pencil sketch logo',
     tiers: [
-        { 
-            name: 'Basic', 
-            price: 49, 
-            deliveryTime: '1-2 Business Days', 
+        {
+            name: 'Basic',
+            price: 49,
+            deliveryTime: '1-2 Business Days',
             scope: ['3-5 rough logo sketches (digital)', 'Delivered as JPG/PNG', '1 round of feedback for minor sketch adjustments'],
             tierDescription: 'Rapidly explore initial logo ideas with a set of quick digital sketches.',
             icon: Shield,
@@ -260,41 +261,44 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
   },
 };
 
-
 export default function ServiceDetailPage({ params }: { params: { serviceId: string } }) {
-  const service = serviceDetailsData[params.serviceId]; 
-  
-  const [selectedTierName, setSelectedTierName] = useState<string>('');
+  const service = serviceDetailsData[params.serviceId];
+  const tabsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const [selectedTierName, setSelectedTierName] = useState<string>(() => {
     if (service) {
       const standardTier = service.tiers.find(t => t.name === 'Standard');
-      if (standardTier) {
-        setSelectedTierName(standardTier.name);
-      } else if (service.tiers.length > 0) {
-        setSelectedTierName(service.tiers[0].name);
-      }
+      if (standardTier) return standardTier.name;
+      if (service.tiers.length > 0) return service.tiers[0].name;
     }
-  }, [service]);
+    return '';
+  });
+
+  const selectedTierDetails = service?.tiers.find(t => t.name === selectedTierName);
+
+  const handleScrollToTabs = () => {
+    tabsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   if (!service) {
     return (
-        <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen">
         <Navbar />
         <CategoriesNavbar />
         <main className="flex-grow container mx-auto py-12 px-5 text-center">
-            <h1 className="text-2xl font-semibold">Service Not Found</h1>
-            <p className="text-muted-foreground mt-2">The service you are looking for does not exist or has been moved.</p>
-            <Button asChild className="mt-6">
-                <Link href="/services">Browse All Services</Link>
-            </Button>
+          <h1 className="text-2xl font-semibold">Service Not Found</h1>
+          <p className="text-muted-foreground mt-2">The service you are looking for does not exist or has been moved.</p>
+          <Button asChild className="mt-6">
+            <Link href="/services">Browse All Services</Link>
+          </Button>
         </main>
         <Footer />
-        </div>
+      </div>
     );
   }
-  
-  const selectedTier = service.tiers.find(t => t.name === selectedTierName);
+
+  const defaultTierForTabs = service.tiers.find(t => t.name === 'Standard')?.name || (service.tiers.length > 0 ? service.tiers[0].name : '');
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -305,48 +309,73 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
           {/* Main Content Column */}
           <div className="lg:col-span-2 space-y-8">
             <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-lg">
-              <Image 
-                src={service.imageUrl} 
-                alt={service.name} 
+              <Image
+                src={service.imageUrl}
+                alt={service.name}
                 fill={true}
-                style={{objectFit: "cover"}}
+                style={{ objectFit: "cover" }}
                 data-ai-hint={service.imageHint}
               />
             </div>
-            
+
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold font-headline mb-1">{service.name}</h1>
-                <Badge variant="outline" className="text-sm py-1 px-2.5"><Tag className="mr-1.5 h-3.5 w-3.5"/>{service.category}</Badge>
+                <Badge variant="outline" className="text-sm py-1 px-2.5"><Tag className="mr-1.5 h-3.5 w-3.5" />{service.category}</Badge>
               </div>
             </div>
             <p className="text-muted-foreground text-lg">{service.generalDescription}</p>
-            
+
             <Separator />
 
-            {selectedTier && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-semibold font-headline flex items-center">
-                  <selectedTier.icon className="mr-3 h-7 w-7 text-primary" />
-                  {selectedTier.name} Package Details
-                </h2>
-                {selectedTier.tierDescription && (
-                  <p className="text-foreground leading-relaxed">{selectedTier.tierDescription}</p>
-                )}
-                <div>
-                  <h3 className="text-xl font-semibold mb-3">What&apos;s Included:</h3>
-                  <ul className="space-y-2.5 pl-1">
-                    {selectedTier.scope.map((item, index) => (
-                      <li key={index} className="flex items-start">
-                        <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-            
+            <div ref={tabsRef}>
+              <Tabs defaultValue={defaultTierForTabs} className="w-full" onValueChange={setSelectedTierName}>
+                <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-6 gap-2">
+                  {service.tiers.map(tier => (
+                    <TabsTrigger key={tier.name} value={tier.name} className="py-3 text-base data-[state=active]:shadow-md data-[state=active]:ring-1 data-[state=active]:ring-primary/50">
+                      <tier.icon className="mr-2 h-5 w-5" />
+                      {tier.name}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                {service.tiers.map(tier => (
+                  <TabsContent key={tier.name} value={tier.name}>
+                    <Card className="shadow-md border">
+                      <CardHeader>
+                        <CardTitle className="font-headline text-2xl flex items-center">
+                          <tier.icon className="mr-3 h-7 w-7 text-primary" />
+                          {tier.name} Package - ${tier.price}
+                        </CardTitle>
+                        <CardDescription className="flex items-center text-sm pt-1">
+                          <Clock className="inline-block mr-1.5 h-4 w-4" />
+                          Estimated Delivery: {tier.deliveryTime}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {tier.tierDescription && (
+                          <p className="text-foreground leading-relaxed">{tier.tierDescription}</p>
+                        )}
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2 text-foreground">What&apos;s Included:</h3>
+                          <ul className="space-y-2 pl-1">
+                            {tier.scope.map((item, index) => (
+                              <li key={index} className="flex items-start">
+                                <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 shrink-0" />
+                                <span className="text-muted-foreground">{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                         <Button size="lg" className="w-full mt-4">
+                           <ShoppingCart className="mr-2 h-5 w-5" /> Order {tier.name} Tier
+                         </Button>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </div>
+
             <Separator />
 
             <div>
@@ -357,28 +386,28 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
             {service.approvedDesigners && service.approvedDesigners.length > 0 && (
               <>
                 <Separator />
-                <Card className="shadow-none border-none">
+                <Card className="shadow-none border-none bg-transparent">
                   <CardHeader className="px-0">
                     <CardTitle className="font-headline text-2xl flex items-center">
-                      <Users className="mr-3 h-7 w-7 text-primary"/>
+                      <Users className="mr-3 h-7 w-7 text-primary" />
                       Approved Designers for this Service
                     </CardTitle>
-                     <CardDescription>
+                    <CardDescription>
                       Our skilled designers ready to work on your "{service.name}" project.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="px-0 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {service.approvedDesigners.map(designer => (
-                      <Card key={designer.id} className="p-4 bg-secondary/30">
+                      <Card key={designer.id} className="p-4 bg-secondary/30 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-center space-x-4">
                           <Avatar className="h-12 w-12">
                             <AvatarImage src={designer.avatarUrl} alt={designer.name} data-ai-hint={designer.imageHint} />
-                            <AvatarFallback>{designer.name.substring(0,1)}</AvatarFallback>
+                            <AvatarFallback>{designer.name.substring(0, 1)}</AvatarFallback>
                           </Avatar>
                           <div>
                             <p className="font-semibold text-lg">{designer.name}</p>
                             <div className="flex items-center text-sm text-muted-foreground">
-                              <Star className="h-4 w-4 mr-1 text-yellow-400 fill-yellow-400" /> {designer.rating} ({designer.projectsCompleted} projects)
+                              <Star className="h-4 w-4 mr-1 text-yellow-400 fill-current" /> {designer.rating} ({designer.projectsCompleted} projects)
                             </div>
                           </div>
                         </div>
@@ -386,7 +415,7 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
                     ))}
                   </CardContent>
                   <CardFooter className="px-0 pt-2">
-                     <p className="text-xs text-muted-foreground">You can often choose a preferred designer during checkout, or let our system assign the best fit.</p>
+                    <p className="text-xs text-muted-foreground">You can often choose a preferred designer during checkout, or let our system assign the best fit.</p>
                   </CardFooter>
                 </Card>
               </>
@@ -396,50 +425,39 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
           {/* Right Sidebar Column */}
           <div className="lg:col-span-1 space-y-6">
             <div className="sticky top-24 space-y-6">
-              {service.tiers.map(tier => {
-                const TierIcon = tier.icon || Package;
-                const isSelected = tier.name === selectedTierName;
-                return (
-                  <Card 
-                    key={tier.name} 
-                    className={cn(
-                      "shadow-lg cursor-pointer transition-all duration-200 hover:shadow-xl",
-                      isSelected ? "border-primary ring-2 ring-primary ring-offset-2" : "border-border"
-                    )}
-                    onClick={() => setSelectedTierName(tier.name)}
-                  >
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="font-headline text-xl flex items-center">
-                          <TierIcon className={cn("mr-2.5 h-6 w-6", isSelected ? "text-primary" : "text-muted-foreground")} />
-                          {tier.name}
-                        </CardTitle>
-                        <p className={cn("text-2xl font-bold", isSelected ? "text-primary" : "text-foreground")}>${tier.price}</p>
-                      </div>
-                      <CardDescription className="text-xs pt-1 flex items-center">
-                        <Clock className="inline-block mr-1.5 h-3.5 w-3.5" />
-                        {tier.deliveryTime}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-1.5 text-sm text-muted-foreground mb-4">
-                        {(tier.tierDescription ? [tier.tierDescription.substring(0, 100) + (tier.tierDescription.length > 100 ? '...' : '')] : tier.scope.slice(0,2)).map((item, idx) => (
-                           <li key={idx} className="flex items-start">
-                             <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 shrink-0" />
-                             <span>{item}</span>
-                           </li>
-                        ))}
-                      </ul>
-                      <Button 
-                        className={cn("w-full", isSelected ? "" : "bg-secondary text-secondary-foreground hover:bg-secondary/80")}
-                        variant={isSelected ? "default" : "secondary"}
-                      >
-                        <ShoppingCart className="mr-2 h-5 w-5" /> Order {tier.name}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              {selectedTierDetails && (
+                 <Card className="shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="font-headline text-xl flex items-center">
+                       <selectedTierDetails.icon className="mr-2.5 h-6 w-6 text-primary" />
+                      {selectedTierDetails.name} Tier Summary
+                    </CardTitle>
+                     <CardDescription className="text-2xl font-bold text-primary pt-1">${selectedTierDetails.price}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                     <p className="flex items-center text-muted-foreground">
+                        <Clock className="inline-block mr-2 h-4 w-4" /> {selectedTierDetails.deliveryTime}
+                     </p>
+                      {selectedTierDetails.scope.slice(0, 2).map((item, idx) => (
+                        <p key={idx} className="flex items-start text-muted-foreground">
+                           <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 shrink-0" />
+                           <span>{item}</span>
+                         </p>
+                      ))}
+                      {selectedTierDetails.scope.length > 2 && (
+                         <p className="flex items-start text-muted-foreground">
+                           <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 shrink-0" />
+                           <span>And more...</span>
+                         </p>
+                      )}
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full" onClick={handleScrollToTabs}>
+                       Compare All Tiers
+                    </Button>
+                  </CardFooter>
+                </Card>
+              )}
 
               <Card className="shadow-lg">
                 <CardHeader>
