@@ -23,13 +23,13 @@ export function Navbar() {
         <div className="flex items-center space-x-2">
           <ModeToggle />
           <Button variant="ghost" asChild>
-            <Link href="/auth/login">
+            <Link href="/login">
               <LogIn className="mr-2 h-4 w-4" />
               Login
             </Link>
           </Button>
           <Button asChild>
-            <Link href="/auth/signup">
+            <Link href="/signup">
               <UserPlus className="mr-2 h-4 w-4" />
               Sign Up
             </Link>

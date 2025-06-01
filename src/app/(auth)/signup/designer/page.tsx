@@ -43,13 +43,13 @@ export default function DesignerSignupPage() {
         <Button className="w-full">Sign Up as Designer</Button>
         <p className="text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/auth/login" className="font-medium text-primary hover:underline">
+          <Link href="/login" className="font-medium text-primary hover:underline">
             Log In
           </Link>
         </p>
          <p className="text-sm text-muted-foreground">
           Looking to hire?{" "}
-          <Link href="/auth/signup" className="font-medium text-primary hover:underline">
+          <Link href="/signup" className="font-medium text-primary hover:underline">
             Sign Up as a Client
           </Link>
         </p>

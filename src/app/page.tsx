@@ -3,7 +3,7 @@ import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { ServiceCard } from '@/components/shared/service-card';
-import { CheckCircle, Users, Briefcase, UserPlus } from 'lucide-react'; // Added UserPlus, removed Search
+import { CheckCircle, Users, Briefcase, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -29,12 +29,12 @@ export default function HomePage() {
             </p>
             <div className="flex justify-center space-x-4">
               <Button size="lg" asChild>
-                <Link href="/auth/signup"> {/* Changed href to client signup */}
-                  <UserPlus className="mr-2 h-5 w-5" /> Sign Up as Client {/* Changed text and icon */}
+                <Link href="/signup">
+                  <UserPlus className="mr-2 h-5 w-5" /> Sign Up as Client
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/auth/signup/designer">
+                <Link href="/signup/designer">
                   <Users className="mr-2 h-5 w-5" /> Join as a Designer
                 </Link>
               </Button>
