@@ -9,7 +9,7 @@ import {
   ClipboardList, 
   Settings,
   Brush,
-  PanelLeft
+  UsersRound // Added UsersRound
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -39,6 +39,7 @@ const navItems = [
   { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/admin/services', icon: Briefcase, label: 'Services' },
   { href: '/admin/designers', icon: Users, label: 'Designers' },
+  { href: '/admin/users', icon: UsersRound, label: 'Users' }, // New User Management link
   { href: '/admin/orders', icon: ClipboardList, label: 'Orders' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];

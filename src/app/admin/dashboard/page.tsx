@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, Users, ClipboardList, BarChart3, ArrowRight } from 'lucide-react';
+import { Briefcase, Users, ClipboardList, BarChart3, ArrowRight, UsersRound } from 'lucide-react'; // Added UsersRound
 import Link from 'next/link';
 
 export default function AdminDashboardPage() {
@@ -14,6 +14,7 @@ export default function AdminDashboardPage() {
   const quickLinks = [
     { href: "/admin/services/new", label: "Add New Service", icon: Briefcase },
     { href: "/admin/designers/applications", label: "Review Designer Applications", icon: Users },
+    { href: "/admin/users", label: "Manage Users", icon: UsersRound }, // New quick link
     { href: "/admin/orders", label: "View All Orders", icon: ClipboardList },
   ];
 
