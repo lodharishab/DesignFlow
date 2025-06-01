@@ -13,8 +13,9 @@ import {
   Brush,
   UsersRound,
   Tags,
-  List, // Added List icon for "All Services"
-  ChevronDown // Added ChevronDown for submenu indicator
+  List, 
+  ChevronDown,
+  Network // Added Network icon for Sub-categories
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -27,9 +28,9 @@ import {
   SidebarFooter, 
   SidebarTrigger,
   SidebarInset,
-  SidebarMenuSub,    // Import for sub-menus
-  SidebarMenuSubItem,  // Import for sub-menus
-  SidebarMenuSubButton // Import for sub-menus
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/shared/mode-toggle';
@@ -44,16 +45,16 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from '@/lib/utils';
 
-// Define nav items with potential children for sub-menus
 const navItems = [
   { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { 
     label: 'Services', 
     icon: Briefcase, 
-    pathPrefix: '/admin/services', // Used to determine if parent section is active
+    pathPrefix: '/admin/services',
     children: [
       { href: '/admin/services', icon: List, label: 'All Services' },
       { href: '/admin/services/categories', icon: Tags, label: 'Service Categories' },
+      { href: '/admin/services/sub-categories', icon: Network, label: 'Service Sub-categories' }, // New sub-category link
     ] 
   },
   { href: '/admin/designers', icon: Users, label: 'Designers' },
@@ -97,7 +98,6 @@ export default function AdminLayout({
           <SidebarMenu>
             {navItems.map((item) => {
               if (item.children && item.pathPrefix) {
-                // This is a parent item with a sub-menu
                 const isParentActive = pathname.startsWith(item.pathPrefix);
                 const isOpen = openSubmenus[item.label] || false;
 
@@ -105,9 +105,9 @@ export default function AdminLayout({
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
                       onClick={() => toggleSubmenu(item.label)}
-                      isActive={isParentActive && !isOpen} // Active if path matches but not if only open
+                      isActive={isParentActive && !isOpen} 
                       tooltip={{ children: item.label, side: 'right', align: 'center' }}
-                      className="justify-between" // Pushes Chevron to the end
+                      className="justify-between"
                       aria-expanded={isOpen}
                     >
                       <span className="flex items-center gap-2">
@@ -125,9 +125,11 @@ export default function AdminLayout({
                       <SidebarMenuSub>
                         {item.children.map(child => {
                           let isChildActive;
-                          if (child.href === '/admin/services') { // "All Services" is exact match
+                          // Exact match for parent index pages like /admin/services
+                          // Prefix match for children like /admin/services/categories or /admin/services/sub-categories
+                          if (child.href === item.pathPrefix) { 
                             isChildActive = pathname === child.href;
-                          } else { // Other children (e.g., "Service Categories") are prefix match
+                          } else { 
                             isChildActive = pathname.startsWith(child.href);
                           }
                           return (
@@ -146,7 +148,6 @@ export default function AdminLayout({
                   </SidebarMenuItem>
                 );
               } else {
-                // This is a regular menu item
                 const isActive = 
                   (item.href === '/admin/dashboard' && pathname === item.href) ||
                   (item.href !== '/admin/dashboard' && item.href && pathname.startsWith(item.href));
@@ -170,7 +171,6 @@ export default function AdminLayout({
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="p-4">
-          {/* Can add elements like user profile here if needed in footer */}
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
@@ -179,7 +179,7 @@ export default function AdminLayout({
             <div className="md:hidden">
               <SidebarTrigger />
             </div>
-            <div className="flex-1" /> {/* Spacer */}
+            <div className="flex-1" /> 
             <div className="flex items-center space-x-4">
               <ModeToggle />
               <DropdownMenu>
