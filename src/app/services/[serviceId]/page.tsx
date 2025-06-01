@@ -51,7 +51,7 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <CategoriesNavbar />
-      <main className="flex-grow container mx-auto py-12 px-4">
+      <main className="flex-grow container mx-auto py-12 px-5">
         <div className="grid lg:grid-cols-3 gap-8 md:gap-12">
           {/* Left Column: Image and Order */}
           <div className="lg:col-span-2">

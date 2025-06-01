@@ -22,7 +22,7 @@ export default function HomePage() {
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="py-20 md:py-32 bg-gradient-to-br from-secondary to-background">
-          <div className="container mx-auto text-center">
+          <div className="container mx-auto px-5 text-center">
             <h1 className="text-4xl md:text-6xl font-bold font-headline mb-6">
               Your Vision, Our Expertise. <span className="text-primary">Simplified.</span>
             </h1>
@@ -46,7 +46,7 @@ export default function HomePage() {
 
         {/* How It Works Section */}
         <section className="py-16 md:py-24">
-          <div className="container mx-auto">
+          <div className="container mx-auto px-5">
             <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">How DesignFlow Works</h2>
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div>
@@ -79,7 +79,7 @@ export default function HomePage() {
 
         {/* Featured Services Section */}
         <section className="py-16 md:py-24 bg-secondary">
-          <div className="container mx-auto">
+          <div className="container mx-auto px-5">
             <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">Featured Services</h2>
             <div className="grid md:grid-cols-3 gap-8">
               {featuredServices.map(service => (

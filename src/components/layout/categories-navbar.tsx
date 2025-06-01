@@ -46,7 +46,7 @@ const popularCategories = [
 export function CategoriesNavbar() {
   return (
     <nav className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/50 shadow-sm">
-      <div className="container flex h-14 items-center">
+      <div className="container mx-auto px-5 flex h-14 items-center">
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="ghost" className="text-md font-medium text-foreground hover:text-primary px-3">

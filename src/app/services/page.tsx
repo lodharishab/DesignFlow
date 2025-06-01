@@ -22,7 +22,7 @@ export default function ServicesPage() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <CategoriesNavbar />
-      <main className="flex-grow container mx-auto py-12 px-4">
+      <main className="flex-grow container mx-auto py-12 px-5">
         <h1 className="text-4xl font-bold font-headline mb-8 text-center">Explore Our Design Services</h1>
         
         <div className="mb-8 p-6 bg-card border rounded-lg shadow-sm flex flex-col md:flex-row gap-4 items-center">
