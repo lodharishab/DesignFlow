@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
@@ -11,11 +12,26 @@ interface ServiceCardProps {
   description: string;
   price: number;
   category: string;
+  tier?: 'Basic' | 'Standard' | 'Premium' | string; // Allow string for flexibility if tiers are dynamic
   imageUrl: string;
   imageHint?: string;
 }
 
-export function ServiceCard({ id, name, description, price, category, imageUrl, imageHint = "design service" }: ServiceCardProps) {
+export function ServiceCard({ id, name, description, price, category, tier, imageUrl, imageHint = "design service" }: ServiceCardProps) {
+  
+  const getTierBadgeVariant = (serviceTier?: string) => {
+    switch (serviceTier) {
+      case 'Premium':
+        return 'default'; // Use primary color for premium
+      case 'Standard':
+        return 'secondary';
+      case 'Basic':
+        return 'outline';
+      default:
+        return 'outline';
+    }
+  };
+
   return (
     <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
       <CardHeader>
@@ -28,8 +44,11 @@ export function ServiceCard({ id, name, description, price, category, imageUrl, 
             data-ai-hint={imageHint}
           />
         </div>
-        <Badge variant="secondary" className="w-fit">{category}</Badge>
-        <CardTitle className="mt-2 font-headline text-xl">{name}</CardTitle>
+        <div className="flex justify-between items-center mb-1">
+          <Badge variant="secondary" className="w-fit">{category}</Badge>
+          {tier && <Badge variant={getTierBadgeVariant(tier)} className="w-fit">{tier}</Badge>}
+        </div>
+        <CardTitle className="mt-1 font-headline text-xl">{name}</CardTitle>
         <CardDescription className="text-sm h-16 overflow-hidden text-ellipsis">
           {description}
         </CardDescription>
