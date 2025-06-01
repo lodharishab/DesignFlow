@@ -63,8 +63,7 @@ export default function AdminServiceCategoriesPage(): ReactElement {
           Manage Service Categories
         </h1>
         <Button asChild>
-          {/* This link would eventually go to a form for adding/editing categories */}
-          <Link href="#"> 
+          <Link href="/admin/services/categories/new"> 
             <PlusCircle className="mr-2 h-4 w-4" /> Add New Category
           </Link>
         </Button>
@@ -73,7 +72,7 @@ export default function AdminServiceCategoriesPage(): ReactElement {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>All Service Categories</CardTitle>
-          <CardDescription>View, add, edit, or remove service categories. Deletions are simulated.</CardDescription>
+          <CardDescription>View, add, edit, or remove service categories. Add/Edit pages are not yet implemented. Deletions are simulated.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -100,8 +99,7 @@ export default function AdminServiceCategoriesPage(): ReactElement {
                   <TableCell className="text-center">{category.serviceCount}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button variant="outline" size="icon" asChild className="hover:text-primary">
-                       {/* This link would eventually go to a form for adding/editing categories */}
-                       <Link href="#" aria-label={`Edit ${category.name}`}>
+                       <Link href={`/admin/services/categories/edit/${category.id}`} aria-label={`Edit ${category.name}`}>
                         <Edit3 className="h-4 w-4" />
                       </Link>
                     </Button>
