@@ -1,12 +1,15 @@
 
+"use client"; // Added "use client" as we might add client-side interactions for filtering
+
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { ServiceCard } from '@/components/shared/service-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Filter, Search } from 'lucide-react';
+import { Filter, Search, Palette, Share2, Printer, Laptop, Brush, Package as PackageIcon } from 'lucide-react'; // Added category icons
+import type { Icon } from 'lucide-react'; // Import Icon type
+import { useState } from 'react'; // Import useState for active category
 
 const services = [
   { id: '1', name: 'Modern Logo Design', description: 'Get a unique and memorable logo for your brand. Includes multiple concepts and revisions.', price: 199, category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'abstract logo' },
@@ -17,7 +20,34 @@ const services = [
   { id: '6', name: 'Packaging Design Concept', description: 'Creative packaging concept for your product.', price: 299, category: 'Packaging', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product packaging' },
 ];
 
+interface CategoryFilter {
+  name: string;
+  icon: Icon;
+  slug: string;
+}
+
+const categoryFilters: CategoryFilter[] = [
+  { name: 'Logo Design', icon: Palette, slug: 'logo-design' },
+  { name: 'Social Media', icon: Share2, slug: 'social-media' },
+  { name: 'Print Design', icon: Printer, slug: 'print-design' },
+  { name: 'UI/UX Design', icon: Laptop, slug: 'ui-ux-design' },
+  { name: 'Illustration', icon: Brush, slug: 'illustration' },
+  { name: 'Packaging', icon: PackageIcon, slug: 'packaging' },
+];
+
 export default function ServicesPage() {
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  // In a real app, you'd filter services based on activeCategory
+  // const filteredServices = activeCategory ? services.filter(s => s.category === activeCategory) : services;
+  const displayedServices = services; // Placeholder until filtering is implemented
+
+  const handleCategoryClick = (categoryName: string) => {
+    setActiveCategory(prev => prev === categoryName ? null : categoryName);
+    // Here you would typically trigger a re-fetch or client-side filter of services
+    console.log("Selected category:", categoryName);
+  };
+
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -30,30 +60,31 @@ export default function ServicesPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input placeholder="Search services..." className="pl-10 text-base py-3" />
           </div>
-          <div className="flex gap-4 w-full md:w-auto">
-            <Select>
-              <SelectTrigger className="w-full md:w-[180px] text-base py-3">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="logo">Logo Design</SelectItem>
-                <SelectItem value="social">Social Media</SelectItem>
-                <SelectItem value="print">Print Design</SelectItem>
-                <SelectItem value="uiux">UI/UX Design</SelectItem>
-                <SelectItem value="illustration">Illustration</SelectItem>
-                <SelectItem value="packaging">Packaging</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" className="text-base py-3">
-              <Filter className="mr-2 h-5 w-5" />
-              Filters
-            </Button>
+          <Button variant="outline" className="text-base py-3">
+            <Filter className="mr-2 h-5 w-5" />
+            Filters
+          </Button>
+        </div>
+
+        <div className="mb-12">
+          <h2 className="text-2xl font-semibold font-headline mb-6 text-center md:text-left">Browse by Category</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {categoryFilters.map(category => (
+              <Button
+                key={category.slug}
+                variant={activeCategory === category.name ? "default" : "outline"}
+                onClick={() => handleCategoryClick(category.name)}
+                className="flex flex-col items-center justify-center h-28 text-center p-3 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <category.icon className="h-8 w-8 mb-2 text-primary group-hover:text-primary-foreground" />
+                <span className="text-xs sm:text-sm">{category.name}</span>
+              </Button>
+            ))}
           </div>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map(service => (
+          {displayedServices.map(service => (
             <ServiceCard key={service.id} {...service} />
           ))}
         </div>
