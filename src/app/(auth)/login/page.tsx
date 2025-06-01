@@ -6,8 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Mail, KeyRound } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
+
+  const handleLogin = () => {
+    // For now, let's assume the user wants to log in as admin.
+    // In a real app, you would have actual authentication logic here.
+    router.push('/admin/dashboard');
+  };
+
   return (
     <Card className="shadow-xl">
       <CardHeader>
@@ -36,10 +45,10 @@ export default function LoginPage() {
         </div>
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
-        <Button className="w-full">Log In</Button>
+        <Button className="w-full" onClick={handleLogin}>Log In</Button>
         <p className="text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href="/auth/signup" className="font-medium text-primary hover:underline">
+          <Link href="/signup" className="font-medium text-primary hover:underline">
             Sign Up
           </Link>
         </p>
