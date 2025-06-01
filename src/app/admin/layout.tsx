@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -9,7 +10,8 @@ import {
   ClipboardList, 
   Settings,
   Brush,
-  UsersRound // Added UsersRound
+  UsersRound,
+  Tags // Added Tags icon
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -38,8 +40,9 @@ import {
 const navItems = [
   { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/admin/services', icon: Briefcase, label: 'Services' },
+  { href: '/admin/services/categories', icon: Tags, label: 'Service Categories' }, // New Service Categories link
   { href: '/admin/designers', icon: Users, label: 'Designers' },
-  { href: '/admin/users', icon: UsersRound, label: 'Users' }, // New User Management link
+  { href: '/admin/users', icon: UsersRound, label: 'Users' },
   { href: '/admin/orders', icon: ClipboardList, label: 'Orders' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
@@ -66,7 +69,7 @@ export default function AdminLayout({
               <SidebarMenuItem key={item.label}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname.startsWith(item.href)}
+                  isActive={pathname === item.href || (item.href !== '/admin/services' && pathname.startsWith(item.href) && item.href !== '/admin/dashboard') || (item.href === '/admin/services' && pathname === '/admin/services')}
                   tooltip={{ children: item.label, side: 'right', align: 'center' }}
                 >
                   <Link href={item.href}>
