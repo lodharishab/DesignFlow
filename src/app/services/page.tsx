@@ -8,29 +8,97 @@ import { ServiceCard } from '@/components/shared/service-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, ListFilter, Search, Star, Shield, Zap } from 'lucide-react'; 
+import { Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, ListFilter, Search } from 'lucide-react'; 
 import type { Icon } from 'lucide-react'; 
 import { useState } from 'react'; 
+
+interface ServiceTier {
+  name: 'Basic' | 'Standard' | 'Premium';
+  price: number;
+}
 
 interface Service {
   id: string;
   name: string;
-  description: string;
-  price: number;
+  description: string; // General service description
   category: string;
-  tier: 'Basic' | 'Standard' | 'Premium';
   imageUrl: string;
   imageHint: string;
+  tiers: ServiceTier[]; // Array of available tiers
 }
 
 const services: Service[] = [
-  { id: '1', name: 'Modern Logo Design', description: 'Get a unique and memorable logo for your brand. Includes multiple concepts and revisions.', price: 199, category: 'Logo Design', tier: 'Standard', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'abstract logo' },
-  { id: '2', name: 'Social Media Post Pack', description: 'Engaging posts designed for your social media channels. Perfect for Instagram, Facebook, and Twitter.', price: 99, category: 'Social Media', tier: 'Basic', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media graphics' },
-  { id: '3', name: 'Professional Brochure Design', description: 'Stunning tri-fold or bi-fold brochures to showcase your business effectively.', price: 249, category: 'Print Design', tier: 'Standard', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'brochure layout' },
-  { id: '4', name: 'UI/UX Web Design Mockup', description: 'High-fidelity mockup for one key page of your website or app.', price: 399, category: 'UI/UX Design', tier: 'Premium', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website mockup' },
-  { id: '5', name: 'Custom Illustration', description: 'Unique vector or raster illustration based on your brief.', price: 149, category: 'Illustration', tier: 'Standard', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'character illustration' },
-  { id: '6', name: 'Packaging Design Concept', description: 'Creative packaging concept for your product.', price: 299, category: 'Packaging', tier: 'Premium', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product packaging' },
-  { id: '7', name: 'Basic Logo Sketch', description: 'Quick logo sketches for initial ideas.', price: 49, category: 'Logo Design', tier: 'Basic', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo sketch' },
+  { 
+    id: '1', name: 'Modern Logo Design', 
+    description: 'Get a unique and memorable logo for your brand. Includes multiple concepts and revisions.', 
+    category: 'Logo Design', 
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'abstract logo',
+    tiers: [
+      { name: 'Basic', price: 99 },
+      { name: 'Standard', price: 199 },
+      { name: 'Premium', price: 299 },
+    ]
+  },
+  { 
+    id: '2', name: 'Social Media Post Pack', 
+    description: 'Engaging posts designed for your social media channels. Perfect for Instagram, Facebook, and Twitter.', 
+    category: 'Social Media', 
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media graphics',
+    tiers: [
+      { name: 'Basic', price: 49 },
+      { name: 'Standard', price: 99 },
+    ]
+  },
+  { 
+    id: '3', name: 'Professional Brochure Design', 
+    description: 'Stunning tri-fold or bi-fold brochures to showcase your business effectively.', 
+    category: 'Print Design', 
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'brochure layout',
+    tiers: [
+      { name: 'Standard', price: 249 },
+      { name: 'Premium', price: 349 },
+    ]
+  },
+  { 
+    id: '4', name: 'UI/UX Web Design Mockup', 
+    description: 'High-fidelity mockup for one key page of your website or app.', 
+    category: 'UI/UX Design', 
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website mockup',
+    tiers: [
+      { name: 'Standard', price: 399 },
+      { name: 'Premium', price: 599 },
+    ]
+  },
+  { 
+    id: '5', name: 'Custom Illustration', 
+    description: 'Unique vector or raster illustration based on your brief.', 
+    category: 'Illustration', 
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'character illustration',
+    tiers: [
+      { name: 'Basic', price: 79 },
+      { name: 'Standard', price: 149 },
+      { name: 'Premium', price: 249 },
+    ]
+  },
+  { 
+    id: '6', name: 'Packaging Design Concept', 
+    description: 'Creative packaging concept for your product.', 
+    category: 'Packaging', 
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product packaging',
+    tiers: [
+      { name: 'Standard', price: 299 },
+      { name: 'Premium', price: 499 },
+    ]
+  },
+  { 
+    id: '7', name: 'Basic Logo Sketch', 
+    description: 'Quick logo sketches for initial ideas.', 
+    category: 'Logo Design', 
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo sketch',
+    tiers: [
+      { name: 'Basic', price: 49 },
+    ]
+  },
 ];
 
 interface CategoryFilterItem {
@@ -48,18 +116,6 @@ const categoryFilters: CategoryFilterItem[] = [
   { name: 'Packaging', icon: PackageIcon, slug: 'packaging' },
 ];
 
-interface TierFilterItem {
-  name: 'Basic' | 'Standard' | 'Premium';
-  icon: Icon;
-  slug: 'basic' | 'standard' | 'premium';
-}
-
-const tierFilters: TierFilterItem[] = [
-  { name: 'Basic', icon: Shield, slug: 'basic' },
-  { name: 'Standard', icon: Star, slug: 'standard' },
-  { name: 'Premium', icon: Zap, slug: 'premium' },
-];
-
 const sortOptions = [
   { value: 'relevance', label: 'Relevance' },
   { value: 'price-asc', label: 'Price: Low to High' },
@@ -69,21 +125,16 @@ const sortOptions = [
 
 export default function ServicesPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [activeTier, setActiveTier] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>('relevance');
   
   const displayedServices = services.filter(service => {
     const categoryMatch = activeCategory ? service.category === activeCategory : true;
-    const tierMatch = activeTier ? service.tier.toLowerCase() === activeTier.toLowerCase() : true;
-    return categoryMatch && tierMatch;
+    // Tier filtering is removed from here
+    return categoryMatch;
   });
 
   const handleCategoryClick = (categoryName: string) => {
     setActiveCategory(prev => prev === categoryName ? null : categoryName);
-  };
-
-  const handleTierClick = (tierName: string) => {
-    setActiveTier(prev => prev === tierName ? null : tierName);
   };
 
   return (
@@ -110,22 +161,7 @@ export default function ServicesPage() {
           </div>
         </div>
 
-        <div className="mb-10">
-          <h2 className="text-xl font-semibold font-headline mb-4 text-center md:text-left">Filter by Tier</h2>
-          <div className="grid grid-cols-3 gap-3 md:gap-4">
-            {tierFilters.map(tier => (
-              <Button
-                key={tier.slug}
-                variant={activeTier === tier.name ? "default" : "outline"}
-                onClick={() => handleTierClick(tier.name)}
-                className="flex flex-col items-center justify-center h-24 md:h-28 text-center p-2 md:p-3 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <tier.icon className="h-7 w-7 md:h-8 md:w-8 mb-1.5 md:mb-2 text-primary group-hover:text-primary-foreground" />
-                <span className="text-sm sm:text-base">{tier.name}</span>
-              </Button>
-            ))}
-          </div>
-        </div>
+        {/* Tier filter section removed */}
 
         <div className="mb-8 p-4 bg-card border rounded-lg shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
           <div>
@@ -163,18 +199,17 @@ export default function ServicesPage() {
                 id={service.id}
                 name={service.name}
                 description={service.description}
-                price={service.price}
                 category={service.category}
                 imageUrl={service.imageUrl}
                 imageHint={service.imageHint}
-                // tier prop is no longer passed
+                tiers={service.tiers}
               />
             ))}
           </div>
         ) : (
           <div className="text-center py-10">
             <p className="text-xl text-muted-foreground">No services match your current filters.</p>
-            <Button variant="link" onClick={() => { setActiveCategory(null); setActiveTier(null); }} className="mt-2">
+            <Button variant="link" onClick={() => { setActiveCategory(null); }} className="mt-2">
               Clear all filters
             </Button>
           </div>

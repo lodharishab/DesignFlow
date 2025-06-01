@@ -6,20 +6,26 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
+interface ServiceTierInfo {
+  name: 'Basic' | 'Standard' | 'Premium';
+  price: number;
+}
+
 interface ServiceCardProps {
   id: string;
   name: string;
   description: string;
-  price: number;
   category: string;
-  // tier?: 'Basic' | 'Standard' | 'Premium' | string; // Tier prop removed
+  tiers: ServiceTierInfo[];
   imageUrl: string;
   imageHint?: string;
 }
 
-export function ServiceCard({ id, name, description, price, category, imageUrl, imageHint = "design service" }: ServiceCardProps) {
+export function ServiceCard({ id, name, description, category, tiers, imageUrl, imageHint = "design service" }: ServiceCardProps) {
   
-  // getTierBadgeVariant function is no longer needed here
+  const startingPrice = tiers && tiers.length > 0 
+    ? Math.min(...tiers.map(tier => tier.price)) 
+    : 0;
 
   return (
     <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -35,7 +41,6 @@ export function ServiceCard({ id, name, description, price, category, imageUrl, 
         </div>
         <div className="flex justify-between items-center mb-1">
           <Badge variant="secondary" className="w-fit">{category}</Badge>
-          {/* Tier badge removed from here */}
         </div>
         <CardTitle className="mt-1 font-headline text-xl">{name}</CardTitle>
         <CardDescription className="text-sm h-16 overflow-hidden text-ellipsis">
@@ -43,8 +48,8 @@ export function ServiceCard({ id, name, description, price, category, imageUrl, 
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p className="text-2xl font-semibold text-primary">${price}</p>
-        <p className="text-xs text-muted-foreground">Starting price</p>
+        <p className="text-2xl font-semibold text-primary">${startingPrice}</p>
+        <p className="text-xs text-muted-foreground">Starting at</p>
       </CardContent>
       <CardFooter>
         <Button asChild className="w-full">
