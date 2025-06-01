@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, LayoutGrid } from 'lucide-react';
+import { ChevronDown, LayoutGrid, Sparkles } from 'lucide-react'; // Added Sparkles
 
 // Mock data for categories and sub-categories
 const mockCategories = [
@@ -34,6 +34,14 @@ const menuStructure = mockCategories.map(category => ({
   ...category,
   subcategories: mockSubCategories.filter(sub => sub.parentCategoryId === category.id)
 }));
+
+// Selecting a few popular categories
+const popularCategories = [
+  mockCategories.find(cat => cat.slug === 'logo-design'),
+  mockCategories.find(cat => cat.slug === 'web-ui-ux'),
+  mockCategories.find(cat => cat.slug === 'social-media-graphics'),
+].filter(Boolean) as { id: string; name: string; slug: string }[];
+
 
 export function CategoriesNavbar() {
   return (
@@ -88,11 +96,28 @@ export function CategoriesNavbar() {
             </div>
           </PopoverContent>
         </Popover>
-        {/* Other links for the secondary navbar could go here, e.g., "Popular Services", "Newest Additions" */}
+        
+        {/* Popular Category Links */}
+        {popularCategories.length > 0 && (
+          <div className="ml-6 flex items-center space-x-4">
+            <span className="text-sm font-medium text-muted-foreground flex items-center">
+              <Sparkles className="mr-2 h-4 w-4 text-primary/80" />
+              Popular:
+            </span>
+            {popularCategories.map(cat => (
+              <Link
+                key={cat.id}
+                href={`/services?category=${cat.slug}`}
+                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+              >
+                {cat.name}
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Other links for the secondary navbar could go here, e.g., "Newest Additions" */}
         {/* Example:
-        <Link href="/services/popular" className="ml-4 text-sm font-medium text-muted-foreground hover:text-primary">
-          Popular
-        </Link>
         <Link href="/how-it-works" className="ml-4 text-sm font-medium text-muted-foreground hover:text-primary">
           How It Works
         </Link>
