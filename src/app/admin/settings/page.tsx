@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Settings, UserCog, CreditCard, Bell, Layers } from "lucide-react"; // Added Layers for Membership
+import { Settings, UserCog, CreditCard, Bell, Layers, IndianRupee } from "lucide-react"; // Added Layers for Membership, IndianRupee
 import React, { useState } from 'react';
 
 // In a real app, these values would be fetched and saved to a backend.
@@ -39,20 +39,20 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>({
     platformName: "DesignFlow",
     contactEmail: "admin@designflow.com",
-    defaultCurrency: "USD",
+    defaultCurrency: "INR", // Changed to INR
     allowClientRegistrations: true,
     allowDesignerRegistrations: true,
     termsUrl: "/terms-of-service",
     privacyUrl: "/privacy-policy",
     enableMemberships: true,
     clientBasicPlanName: "Client Basic",
-    clientBasicPlanPrice: "9.99",
+    clientBasicPlanPrice: "799", // Example INR price
     clientPremiumPlanName: "Client Premium",
-    clientPremiumPlanPrice: "29.99",
+    clientPremiumPlanPrice: "2499", // Example INR price
     designerBasicPlanName: "Designer Starter",
-    designerBasicPlanPrice: "19.99",
+    designerBasicPlanPrice: "1599", // Example INR price
     designerProPlanName: "Designer Pro",
-    designerProPlanPrice: "49.99",
+    designerProPlanPrice: "3999", // Example INR price
     enableFreeTrial: true,
     trialDurationDays: 14,
     adminNotificationEmail: "notifications@designflow.com",
@@ -103,9 +103,11 @@ export default function AdminSettingsPage() {
             </div>
           </div>
           <div>
-            <Label htmlFor="defaultCurrency">Default Currency</Label>
-            <Input id="defaultCurrency" value={settings.defaultCurrency} onChange={handleInputChange} placeholder="USD, EUR, etc." />
-             <p className="text-xs text-muted-foreground mt-1">e.g., USD, EUR, GBP. This affects membership pricing display.</p>
+            <Label htmlFor="defaultCurrency" className="flex items-center">
+              <IndianRupee className="mr-2 h-4 w-4 text-muted-foreground" /> Default Currency
+            </Label>
+            <Input id="defaultCurrency" value={settings.defaultCurrency} onChange={handleInputChange} placeholder="INR, USD, etc." />
+             <p className="text-xs text-muted-foreground mt-1">e.g., INR, USD, EUR. This affects membership pricing display.</p>
           </div>
         </CardContent>
       </Card>
@@ -134,7 +136,7 @@ export default function AdminSettingsPage() {
             <Label htmlFor="allowDesignerRegistrations" className="flex flex-col space-y-1">
               <span>Allow New Designer Registrations</span>
                <span className="font-normal leading-snug text-muted-foreground">
-                Enable or disable new designers from signing up.
+                Enable or disable new designers from signing up. (All new designers are pending approval)
               </span>
             </Label>
             <Switch
@@ -292,5 +294,3 @@ export default function AdminSettingsPage() {
     </div>
   );
 }
-
-    
