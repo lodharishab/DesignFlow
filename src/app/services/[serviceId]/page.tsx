@@ -1,16 +1,20 @@
 
+"use client";
+
 import Image from 'next/image';
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock } from 'lucide-react';
+import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock, Package, ArrowDownCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Icon } from 'lucide-react';
+import Link from 'next/link';
+import { useState, useRef, useEffect } from 'react';
 
 interface ServiceTierDetail {
   name: 'Basic' | 'Standard' | 'Premium';
@@ -259,6 +263,19 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
 
 export default function ServiceDetailPage({ params }: { params: { serviceId: string } }) {
   const service = serviceDetailsData[params.serviceId]; 
+  const defaultTierValue = service?.tiers.find(t => t.name === 'Standard')?.name.toLowerCase() || service?.tiers[0]?.name.toLowerCase() || 'basic';
+  
+  const [selectedTierName, setSelectedTierName] = useState(defaultTierValue);
+  const tierDetailsSectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Update selectedTierName if defaultTierValue changes (e.g., service loads)
+    if (service) {
+        const newDefault = service.tiers.find(t => t.name === 'Standard')?.name.toLowerCase() || service.tiers[0]?.name.toLowerCase() || 'basic';
+        setSelectedTierName(newDefault);
+    }
+  }, [service]);
+
 
   if (!service) {
     return (
@@ -277,8 +294,12 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
     );
   }
   
-  // Determine the default tab, e.g., 'Standard' if available, otherwise the first tier.
-  const defaultTierValue = service.tiers.find(t => t.name === 'Standard')?.name.toLowerCase() || service.tiers[0]?.name.toLowerCase();
+  const handleScrollToCompare = () => {
+    tierDetailsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const currentSelectedTier = service.tiers.find(t => t.name.toLowerCase() === selectedTierName);
+  const CurrentTierIcon = currentSelectedTier?.icon || Package;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -305,58 +326,81 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
             
             <Separator className="my-8" />
 
-            <h2 className="text-2xl font-semibold font-headline mb-4">Service Details</h2>
-            <p className="text-foreground leading-relaxed whitespace-pre-line mb-6">{service.longDescription}</p>
+            <div ref={tierDetailsSectionRef}>
+              <h2 className="text-2xl font-semibold font-headline mb-4">Service Details & Tiers</h2>
+              <p className="text-foreground leading-relaxed whitespace-pre-line mb-6">{service.longDescription}</p>
 
-            <Tabs defaultValue={defaultTierValue} className="w-full">
-              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-6">
+              <Tabs defaultValue={defaultTierValue} onValueChange={setSelectedTierName} className="w-full">
+                <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-6">
+                  {service.tiers.map(tier => (
+                    <TabsTrigger key={tier.name} value={tier.name.toLowerCase()} className="text-base py-3">
+                      <tier.icon className="mr-2 h-5 w-5" />
+                      {tier.name}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
                 {service.tiers.map(tier => (
-                  <TabsTrigger key={tier.name} value={tier.name.toLowerCase()} className="text-base py-3">
-                    <tier.icon className="mr-2 h-5 w-5" />
-                    {tier.name}
-                  </TabsTrigger>
+                  <TabsContent key={tier.name} value={tier.name.toLowerCase()}>
+                    <Card className="border-none shadow-none"> 
+                      <CardHeader className="px-1 py-2">
+                         <div className="flex justify-between items-center">
+                           <CardTitle className="font-headline text-2xl">{tier.name} Package</CardTitle>
+                           <p className="text-3xl font-bold text-primary">${tier.price}</p>
+                         </div>
+                         {tier.tierDescription && <CardDescription className="pt-1">{tier.tierDescription}</CardDescription>}
+                      </CardHeader>
+                      <CardContent className="px-1 py-2">
+                        <div className="mb-6">
+                          <h3 className="text-lg font-semibold mb-2 flex items-center">
+                            <Clock className="mr-2 h-5 w-5 text-muted-foreground" />
+                            Estimated Delivery: {tier.deliveryTime}
+                          </h3>
+                        </div>
+                        <h3 className="text-lg font-semibold mb-3">What&apos;s Included:</h3>
+                        <ul className="space-y-2.5">
+                          {tier.scope.map((item, index) => (
+                            <li key={index} className="flex items-start">
+                              <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 shrink-0" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                         <Button size="lg" className="w-full mt-8">
+                           <ShoppingCart className="mr-2 h-5 w-5" /> Order {tier.name} Tier
+                         </Button>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
                 ))}
-              </TabsList>
-              {service.tiers.map(tier => (
-                <TabsContent key={tier.name} value={tier.name.toLowerCase()}>
-                  <Card className="border-none shadow-none"> {/* Or apply subtle styling */}
-                    <CardHeader className="px-1 py-2">
-                       <div className="flex justify-between items-center">
-                         <CardTitle className="font-headline text-2xl">{tier.name} Package</CardTitle>
-                         <p className="text-3xl font-bold text-primary">${tier.price}</p>
-                       </div>
-                       {tier.tierDescription && <p className="text-muted-foreground pt-1">{tier.tierDescription}</p>}
-                    </CardHeader>
-                    <CardContent className="px-1 py-2">
-                      <div className="mb-6">
-                        <h3 className="text-lg font-semibold mb-2 flex items-center">
-                          <Clock className="mr-2 h-5 w-5 text-muted-foreground" />
-                          Estimated Delivery: {tier.deliveryTime}
-                        </h3>
-                      </div>
-                      <h3 className="text-lg font-semibold mb-3">What&apos;s Included:</h3>
-                      <ul className="space-y-2.5">
-                        {tier.scope.map((item, index) => (
-                          <li key={index} className="flex items-start">
-                            <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 shrink-0" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                       <Button size="lg" className="w-full mt-8">
-                         <ShoppingCart className="mr-2 h-5 w-5" /> Order {tier.name} Tier
-                       </Button>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              ))}
-            </Tabs>
+              </Tabs>
+            </div>
           </div>
 
           <div className="lg:col-span-1">
-            {/* The main price and order button are now part of the Tabs content per tier */}
-            {/* This Card can be used for other summary info or "Why Choose Us" etc. */}
-            <Card className="sticky top-24 shadow-xl">
+            {currentSelectedTier && (
+              <Card className="sticky top-24 shadow-xl mb-8">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="font-headline text-xl flex items-center">
+                      <CurrentTierIcon className="mr-2 h-5 w-5 text-primary" />
+                      {currentSelectedTier.name} Tier
+                    </CardTitle>
+                    <p className="text-2xl font-bold text-primary">${currentSelectedTier.price}</p>
+                  </div>
+                   <CardDescription className="text-xs pt-1">
+                    <Clock className="inline-block mr-1.5 h-3 w-3" />
+                    Delivery: {currentSelectedTier.deliveryTime}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                   <Button variant="outline" className="w-full" onClick={handleScrollToCompare}>
+                    <ArrowDownCircle className="mr-2 h-5 w-5" /> Compare All Tiers
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card className="sticky top-[calc(6rem+theme(spacing.24)+theme(spacing.8))] shadow-xl">
               <CardHeader>
                  <CardTitle className="font-headline text-xl">Why Choose Us?</CardTitle>
               </CardHeader>
@@ -405,3 +449,4 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
     </div>
   );
 }
+
