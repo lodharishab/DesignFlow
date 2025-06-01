@@ -1,5 +1,6 @@
 
 import { Navbar } from '@/components/layout/navbar';
+import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { ServiceCard } from '@/components/shared/service-card';
@@ -17,6 +18,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
+      <CategoriesNavbar />
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="py-20 md:py-32 bg-gradient-to-br from-secondary to-background">

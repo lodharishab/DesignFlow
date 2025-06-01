@@ -1,4 +1,6 @@
+
 import { Navbar } from '@/components/layout/navbar';
+import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { ServiceCard } from '@/components/shared/service-card';
 import { Input } from '@/components/ui/input';
@@ -19,6 +21,7 @@ export default function ServicesPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
+      <CategoriesNavbar />
       <main className="flex-grow container mx-auto py-12 px-4">
         <h1 className="text-4xl font-bold font-headline mb-8 text-center">Explore Our Design Services</h1>
         

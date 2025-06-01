@@ -1,5 +1,7 @@
+
 import Image from 'next/image';
 import { Navbar } from '@/components/layout/navbar';
+import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +50,7 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
+      <CategoriesNavbar />
       <main className="flex-grow container mx-auto py-12 px-4">
         <div className="grid lg:grid-cols-3 gap-8 md:gap-12">
           {/* Left Column: Image and Order */}
@@ -84,7 +87,7 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
 
           {/* Right Column: Price, CTA, Designer Info */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-24 shadow-xl">
+            <Card className="sticky top-24 shadow-xl"> {/* Adjusted top value for sticky positioning */}
               <CardContent className="p-6">
                 <p className="text-4xl font-bold text-primary mb-2">${service.price}</p>
                 <p className="text-sm text-muted-foreground mb-1">Starting price</p>
