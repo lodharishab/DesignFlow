@@ -12,25 +12,14 @@ interface ServiceCardProps {
   description: string;
   price: number;
   category: string;
-  tier?: 'Basic' | 'Standard' | 'Premium' | string; // Allow string for flexibility if tiers are dynamic
+  // tier?: 'Basic' | 'Standard' | 'Premium' | string; // Tier prop removed
   imageUrl: string;
   imageHint?: string;
 }
 
-export function ServiceCard({ id, name, description, price, category, tier, imageUrl, imageHint = "design service" }: ServiceCardProps) {
+export function ServiceCard({ id, name, description, price, category, imageUrl, imageHint = "design service" }: ServiceCardProps) {
   
-  const getTierBadgeVariant = (serviceTier?: string) => {
-    switch (serviceTier) {
-      case 'Premium':
-        return 'default'; // Use primary color for premium
-      case 'Standard':
-        return 'secondary';
-      case 'Basic':
-        return 'outline';
-      default:
-        return 'outline';
-    }
-  };
+  // getTierBadgeVariant function is no longer needed here
 
   return (
     <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -46,7 +35,7 @@ export function ServiceCard({ id, name, description, price, category, tier, imag
         </div>
         <div className="flex justify-between items-center mb-1">
           <Badge variant="secondary" className="w-fit">{category}</Badge>
-          {tier && <Badge variant={getTierBadgeVariant(tier)} className="w-fit">{tier}</Badge>}
+          {/* Tier badge removed from here */}
         </div>
         <CardTitle className="mt-1 font-headline text-xl">{name}</CardTitle>
         <CardDescription className="text-sm h-16 overflow-hidden text-ellipsis">

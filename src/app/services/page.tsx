@@ -72,7 +72,6 @@ export default function ServicesPage() {
   const [activeTier, setActiveTier] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>('relevance');
   
-  // Placeholder until combined filtering logic is implemented
   const displayedServices = services.filter(service => {
     const categoryMatch = activeCategory ? service.category === activeCategory : true;
     const tierMatch = activeTier ? service.tier.toLowerCase() === activeTier.toLowerCase() : true;
@@ -81,12 +80,10 @@ export default function ServicesPage() {
 
   const handleCategoryClick = (categoryName: string) => {
     setActiveCategory(prev => prev === categoryName ? null : categoryName);
-    console.log("Selected category:", categoryName);
   };
 
   const handleTierClick = (tierName: string) => {
     setActiveTier(prev => prev === tierName ? null : tierName);
-    console.log("Selected tier:", tierName);
   };
 
   return (
@@ -161,7 +158,17 @@ export default function ServicesPage() {
         {displayedServices.length > 0 ? (
            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {displayedServices.map(service => (
-              <ServiceCard key={service.id} {...service} />
+              <ServiceCard 
+                key={service.id} 
+                id={service.id}
+                name={service.name}
+                description={service.description}
+                price={service.price}
+                category={service.category}
+                imageUrl={service.imageUrl}
+                imageHint={service.imageHint}
+                // tier prop is no longer passed
+              />
             ))}
           </div>
         ) : (
