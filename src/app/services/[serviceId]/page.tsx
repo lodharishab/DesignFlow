@@ -299,6 +299,13 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
 
   const defaultTierForTabs = service.tiers.find(t => t.name === 'Standard')?.name || (service.tiers.length > 0 ? service.tiers[0].name : '');
 
+  let tabsListGridColsClass = "grid-cols-3"; // Default for 3 or more tiers
+  if (service.tiers.length === 1) {
+    tabsListGridColsClass = "grid-cols-1";
+  } else if (service.tiers.length === 2) {
+    tabsListGridColsClass = "grid-cols-2";
+  }
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -330,12 +337,12 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
 
             <div ref={tabsRef}>
               <Tabs defaultValue={defaultTierForTabs} className="w-full" onValueChange={setSelectedTierName}>
-                <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-6 gap-2">
+                <TabsList className={cn("grid w-full mb-6 gap-2", tabsListGridColsClass)}>
                   {service.tiers.map(tier => (
                     <TabsTrigger 
                       key={tier.name} 
                       value={tier.name} 
-                      className="py-2.5 text-sm data-[state=active]:shadow-md data-[state=active]:ring-1 data-[state=active]:ring-primary/50 whitespace-normal overflow-hidden"
+                      className="py-2.5 text-sm data-[state=active]:shadow-md data-[state=active]:ring-1 data-[state=active]:ring-primary/50 whitespace-normal overflow-hidden min-w-0"
                     >
                       <tier.icon className="mr-2 h-5 w-5" />
                       {tier.name}
@@ -485,6 +492,3 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
     </div>
   );
 }
-
-    
-
