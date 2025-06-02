@@ -299,8 +299,8 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
 
   const defaultTierForTabs = service.tiers.find(t => t.name === 'Standard')?.name || (service.tiers.length > 0 ? service.tiers[0].name : '');
 
-  let tabsListGridColsClass = "grid-cols-3"; // Default for 3 or more tiers
-  if (service.tiers.length === 1) {
+  let tabsListGridColsClass = "grid-cols-3";
+    if (service.tiers.length === 1) {
     tabsListGridColsClass = "grid-cols-1";
   } else if (service.tiers.length === 2) {
     tabsListGridColsClass = "grid-cols-2";
@@ -335,7 +335,7 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
 
             <Separator />
 
-            <div ref={tabsRef}>
+            <div ref={tabsRef} className="overflow-hidden">
               <Tabs defaultValue={defaultTierForTabs} className="w-full" onValueChange={setSelectedTierName}>
                 <TabsList className={cn("grid w-full mb-6 gap-2", tabsListGridColsClass)}>
                   {service.tiers.map(tier => (
@@ -350,7 +350,11 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
                   ))}
                 </TabsList>
                 {service.tiers.map(tier => (
-                  <TabsContent key={tier.name} value={tier.name}>
+                  <TabsContent 
+                    key={tier.name} 
+                    value={tier.name}
+                    className="data-[state=open]:animate-slide-in-from-right-full data-[state=closed]:animate-slide-out-to-left-full"
+                  >
                     <Card className="shadow-md border">
                       <CardHeader>
                         <CardTitle className="font-headline text-2xl flex items-center">
@@ -492,3 +496,4 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
     </div>
   );
 }
+
