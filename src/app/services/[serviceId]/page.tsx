@@ -16,7 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { useParams } from 'next/navigation'; 
+import { useParams, useRouter } from 'next/navigation'; 
+import { useToast } from "@/hooks/use-toast";
 
 interface ServiceTierDetail {
   name: 'Basic' | 'Standard' | 'Premium';
@@ -265,6 +266,8 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
 export default function ServiceDetailPage() {
   const routeParams = useParams<{ serviceId: string }>(); 
   const serviceId = routeParams?.serviceId;
+  const router = useRouter();
+  const { toast } = useToast();
 
   const [service, setService] = useState<ServiceDetail | null | undefined>(undefined); 
   const [selectedTierName, setSelectedTierName] = useState<string>('');
@@ -295,6 +298,18 @@ export default function ServiceDetailPage() {
 
   const handleTierChange = (value: string) => {
     setSelectedTierName(value);
+  };
+
+  const handleOrderTier = (tier: ServiceTierDetail) => {
+    if (!service) return;
+    // In a real app, this would involve adding the item to a cart state (e.g., context, Zustand, Redux)
+    // or making an API call. For now, we'll simulate with a toast and navigation.
+    toast({
+      title: "Added to Cart (Simulated)",
+      description: `${service.name} - ${tier.name} Tier (₹${tier.price}) has been added to your cart.`,
+      duration: 3000,
+    });
+    router.push('/cart');
   };
 
   if (service === undefined) {
@@ -410,7 +425,11 @@ export default function ServiceDetailPage() {
                             ))}
                           </ul>
                         </div>
-                         <Button size="lg" className="w-full mt-4">
+                         <Button 
+                            size="lg" 
+                            className="w-full mt-4"
+                            onClick={() => handleOrderTier(tier)}
+                          >
                            <ShoppingCart className="mr-2 h-5 w-5" /> Order {tier.name} Tier
                          </Button>
                       </CardContent>
