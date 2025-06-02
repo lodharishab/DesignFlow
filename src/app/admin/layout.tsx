@@ -15,7 +15,8 @@ import {
   Tags,
   List, 
   ChevronDown,
-  Network // Added Network icon for Sub-categories
+  Network, // Added Network icon for Sub-categories
+  LayoutGrid // Added for new menu trigger
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -25,12 +26,12 @@ import {
   SidebarMenu, 
   SidebarMenuItem, 
   SidebarMenuButton, 
-  SidebarFooter, 
-  SidebarTrigger,
+  SidebarTrigger, // Kept for other potential uses, but not directly in header anymore
   SidebarInset,
   SidebarMenuSub,
   SidebarMenuSubItem,
-  SidebarMenuSubButton
+  SidebarMenuSubButton,
+  useSidebar // Added to use toggleSidebar directly
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/shared/mode-toggle';
@@ -70,6 +71,7 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
+  const { toggleSidebar } = useSidebar(); // Get toggleSidebar function
 
   useEffect(() => {
     const initiallyOpen: Record<string, boolean> = {};
@@ -177,7 +179,15 @@ export default function AdminLayout({
         <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container mx-auto px-5 flex h-16 items-center">
             <div className="md:hidden">
-              <SidebarTrigger />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleSidebar}
+                className="h-8 w-8" 
+                aria-label="Open menu"
+              >
+                <LayoutGrid className="h-5 w-5" />
+              </Button>
             </div>
             <div className="flex-1" /> 
             <div className="flex items-center space-x-4">
