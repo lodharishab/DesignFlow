@@ -255,10 +255,9 @@ export default function AdminDesignersPage(): ReactElement {
               <TableRow>
                 <TableHead className="w-[50px]">
                   <Checkbox
-                    checked={isAllDisplayedSelected}
+                    checked={isIndeterminate ? 'indeterminate' : isAllDisplayedSelected}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all displayed rows"
-                    indeterminate={isIndeterminate}
                     disabled={displayedDesigners.length === 0}
                   />
                 </TableHead>
