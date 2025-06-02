@@ -102,8 +102,6 @@ export default function CartPage() {
       return;
     }
 
-    // In a real app, you would first create an order on your backend
-    // and get an order_id from Razorpay. For this simulation, we skip that.
     const simulatedOrderId = `order_${Date.now()}`;
 
     const options = {
@@ -112,13 +110,9 @@ export default function CartPage() {
       currency: "INR",
       name: "DesignFlow",
       description: "Test Transaction for Design Services",
-      image: "https://placehold.co/100x100.png?text=DF", // Your logo
-      order_id: "", // For client-side only, order_id is optional for Razorpay standard checkout
-                     // but highly recommended to create on backend for robust integration
+      image: "https://placehold.co/100x100.png?text=DF", 
+      order_id: "", 
       handler: function (response: any) {
-        // This function is called on successful payment
-        // IMPORTANT: In a real app, you MUST verify the payment signature on your backend
-        // router.push(`/order-success?orderId=${simulatedOrderId}&paymentId=${response.razorpay_payment_id}`);
         toast({
           title: "Payment Successful (Simulated)",
           description: `Payment ID: ${response.razorpay_payment_id}. Order ID: ${simulatedOrderId}`,
@@ -127,7 +121,7 @@ export default function CartPage() {
         setIsProcessing(false);
       },
       prefill: {
-        name: "Test User", // Prefill user details if available
+        name: "Test User", 
         email: "test.user@example.com",
         contact: "9999999999"
       },
@@ -135,7 +129,7 @@ export default function CartPage() {
         address: "DesignFlow Corporate Office"
       },
       theme: {
-        color: "#2081F9" // Your primary color
+        color: "#2081F9" 
       },
       modal: {
         ondismiss: function() {
@@ -144,8 +138,7 @@ export default function CartPage() {
             description: "You closed the payment window.",
             variant: "destructive",
           });
-          // Optional: redirect to a payment failed page or allow retry
-          // router.push('/order-failed'); 
+          router.push(`/order-failed?orderId=${simulatedOrderId}&reason=cancelled_by_user`); 
           setIsProcessing(false);
         }
       }
