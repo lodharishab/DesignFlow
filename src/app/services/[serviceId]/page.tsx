@@ -335,13 +335,13 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
 
             <Separator />
 
-            <div ref={tabsRef} className="overflow-hidden">
+            <div ref={tabsRef}>
               <Tabs defaultValue={defaultTierForTabs} className="w-full" onValueChange={setSelectedTierName}>
                 <TabsList className={cn("grid w-full mb-6 gap-2", tabsListGridColsClass)}>
                   {service.tiers.map(tier => (
-                    <TabsTrigger 
-                      key={tier.name} 
-                      value={tier.name} 
+                    <TabsTrigger
+                      key={tier.name}
+                      value={tier.name}
                       className="py-2.5 text-sm data-[state=active]:shadow-md data-[state=active]:ring-1 data-[state=active]:ring-primary/50 whitespace-normal overflow-hidden min-w-0"
                     >
                       <tier.icon className="mr-2 h-5 w-5" />
@@ -350,10 +350,9 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
                   ))}
                 </TabsList>
                 {service.tiers.map(tier => (
-                  <TabsContent 
-                    key={tier.name} 
+                  <TabsContent
+                    key={tier.name}
                     value={tier.name}
-                    className="data-[state=open]:animate-slide-in-from-right-full data-[state=closed]:animate-slide-out-to-left-full"
                   >
                     <Card className="shadow-md border">
                       <CardHeader>
@@ -496,4 +495,3 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
     </div>
   );
 }
-
