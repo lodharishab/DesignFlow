@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { LogIn, UserPlus, Brush, LayoutGrid, PanelLeftClose } from 'lucide-react'; // Added LayoutGrid, PanelLeftClose
+import { LogIn, UserPlus, Brush, LayoutGrid, PanelLeftClose } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/shared/mode-toggle';
 import { 
@@ -13,11 +13,11 @@ import {
   SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet";
-import *
-as React from 'react';
+import * as React from 'react';
+import { useUI } from '@/contexts/ui-context';
 
 export function Navbar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const { isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu } = useUI();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -51,7 +51,7 @@ export function Navbar() {
         <div className="md:hidden">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={toggleMobileMenu}>
                 <LayoutGrid className="h-6 w-6" />
                 <span className="sr-only">Open menu</span>
               </Button>
@@ -62,10 +62,12 @@ export function Navbar() {
                   <Brush className="h-5 w-5 text-primary mr-2" />
                   <span className="font-bold font-headline text-lg">DesignFlow</span>
                 </SheetTitle>
-                 <SheetClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-                  <PanelLeftClose className="h-5 w-5" />
-                  <span className="sr-only">Close</span>
-                </SheetClose>
+                 <SheetClose asChild>
+                   <Button variant="ghost" size="icon" className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground" onClick={() => setIsMobileMenuOpen(false)}>
+                    <PanelLeftClose className="h-5 w-5" />
+                    <span className="sr-only">Close</span>
+                   </Button>
+                 </SheetClose>
               </SheetHeader>
               <div className="flex flex-col space-y-3">
                 <Button variant="default" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>

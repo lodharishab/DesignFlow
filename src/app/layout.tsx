@@ -4,6 +4,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { Poppins, Playfair_Display } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { UIProvider } from '@/contexts/ui-context';
+import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -30,8 +32,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={cn(poppins.variable, playfairDisplay.variable)}>
       <head />
-      <body className="font-body antialiased min-h-screen flex flex-col">
-        {children}
+      <body className="font-body antialiased min-h-screen flex flex-col pb-16 md:pb-0">
+        <UIProvider>
+          {children}
+          <MobileBottomNav />
+        </UIProvider>
         <Toaster />
       </body>
     </html>
