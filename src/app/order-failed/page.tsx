@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useEffect, useState, Suspense }_from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
