@@ -8,10 +8,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
-import { Mail, KeyRound, User, ChevronLeft, ChevronRight, Building, Briefcase } from "lucide-react";
+import { Mail, KeyRound, User, ChevronLeft, ChevronRight, Building, Briefcase, Factory } from "lucide-react"; // Added Factory for Industry
 import { Progress } from "@/components/ui/progress";
 
 const totalSteps = 3;
+
+// Sample industries - in a real app, this might come from a config or API
+const industryOptions = [
+  "Technology",
+  "Healthcare",
+  "Finance",
+  "Education",
+  "Retail",
+  "Manufacturing",
+  "Real Estate",
+  "Hospitality",
+  "Non-Profit",
+  "Other",
+];
 
 export default function ClientSignupPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -20,6 +34,7 @@ export default function ClientSignupPage() {
     email: "",
     companyName: "",
     projectType: "",
+    industry: "", // Added industry field
     password: "",
     confirmPassword: "",
   });
@@ -29,8 +44,8 @@ export default function ClientSignupPage() {
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, projectType: value }));
+  const handleSelectChange = (fieldName: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [fieldName]: value }));
   };
 
   const nextStep = () => {
@@ -95,10 +110,28 @@ export default function ClientSignupPage() {
               </div>
             </div>
             <div className="space-y-2">
+              <Label htmlFor="industry">What is your industry?</Label>
+              <div className="relative">
+                 <Factory className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                <Select value={formData.industry} onValueChange={(value) => handleSelectChange("industry", value)}>
+                  <SelectTrigger id="industry" className="pl-10">
+                    <SelectValue placeholder="Select your industry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {industryOptions.map((industry) => (
+                      <SelectItem key={industry} value={industry.toLowerCase().replace(/\s+/g, '-')}>
+                        {industry}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="projectType">What type of project are you looking for?</Label>
               <div className="relative">
                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <Select value={formData.projectType} onValueChange={handleSelectChange}>
+                <Select value={formData.projectType} onValueChange={(value) => handleSelectChange("projectType", value)}>
                   <SelectTrigger id="projectType" className="pl-10">
                     <SelectValue placeholder="Select project type" />
                   </SelectTrigger>
@@ -170,3 +203,4 @@ export default function ClientSignupPage() {
     </Card>
   );
 }
+
