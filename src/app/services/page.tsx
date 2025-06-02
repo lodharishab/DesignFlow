@@ -114,6 +114,8 @@ const categoryFilters: CategoryFilterItem[] = [
   { name: 'UI/UX Design', icon: Laptop, slug: 'ui-ux-design' },
   { name: 'Illustration', icon: BrushIcon, slug: 'illustration' },
   { name: 'Packaging', icon: PackageIcon, slug: 'packaging' },
+  { name: 'Motion Graphics', icon: Share2, slug: 'motion-graphics' }, // Example for more items
+  { name: 'Presentations', icon: Printer, slug: 'presentations' }, // Example for more items
 ];
 
 const sortOptions = [
@@ -129,7 +131,6 @@ export default function ServicesPage() {
   
   const displayedServices = services.filter(service => {
     const categoryMatch = activeCategory ? service.category === activeCategory : true;
-    // Tier filtering is removed from here
     return categoryMatch;
   });
 
@@ -146,22 +147,20 @@ export default function ServicesPage() {
         
         <div className="mb-6">
           <h2 className="text-xl font-semibold font-headline mb-4 text-center md:text-left">Browse by Category</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
+          <div className="flex space-x-3 md:space-x-4 overflow-x-auto pb-4">
             {categoryFilters.map(category => (
               <Button
                 key={category.slug}
                 variant={activeCategory === category.name ? "default" : "outline"}
                 onClick={() => handleCategoryClick(category.name)}
-                className="flex flex-col items-center justify-center h-24 md:h-28 text-center p-2 md:p-3 shadow-sm hover:shadow-md transition-shadow"
+                className="flex flex-col items-center justify-center h-24 md:h-28 text-center p-2 md:p-3 shadow-sm hover:shadow-md transition-shadow shrink-0 w-32 md:w-36"
               >
                 <category.icon className="h-7 w-7 md:h-8 md:w-8 mb-1.5 md:mb-2 text-primary group-hover:text-primary-foreground" />
-                <span className="text-xs sm:text-sm">{category.name}</span>
+                <span className="text-xs sm:text-sm whitespace-nowrap">{category.name}</span>
               </Button>
             ))}
           </div>
         </div>
-
-        {/* Tier filter section removed */}
 
         <div className="mb-8 p-4 bg-card border rounded-lg shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
           <div>
