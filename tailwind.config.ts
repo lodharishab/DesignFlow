@@ -11,8 +11,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['var(--font-poppins)', 'sans-serif'],
-        headline: ['var(--font-playfair-display)', 'serif'],
+        body: ['var(--font-rubik)', 'sans-serif'], // Changed to Rubik
+        headline: ['var(--font-rubik)', 'serif'], // Changed to Rubik
         code: ['monospace', 'monospace'],
       },
       colors: {
