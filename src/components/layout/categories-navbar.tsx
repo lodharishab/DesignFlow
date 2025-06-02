@@ -100,9 +100,9 @@ export function CategoriesNavbar() {
           </PopoverContent>
         </Popover>
         
-        {/* Popular Category Links */}
+        {/* Popular Category Links - Hidden on small screens, flex on medium and up */}
         {popularCategories.length > 0 && (
-          <div className="ml-6 flex items-center space-x-4">
+          <div className="ml-6 hidden md:flex items-center space-x-4">
             <span className="text-sm font-medium text-muted-foreground flex items-center">
               <Sparkles className="mr-2 h-4 w-4 text-primary/80" />
               Popular:
@@ -129,3 +129,4 @@ export function CategoriesNavbar() {
     </nav>
   );
 }
+
