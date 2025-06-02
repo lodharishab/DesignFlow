@@ -267,7 +267,7 @@ export default function ServiceDetailPage() {
   const routeParams = useParams<{ serviceId: string }>(); 
   const serviceId = routeParams?.serviceId;
   const router = useRouter();
-  const { toast } = useToast();
+  const { toast } = useToast(); // Keep toast for potential other uses on the page
 
   const [service, setService] = useState<ServiceDetail | null | undefined>(undefined); 
   const [selectedTierName, setSelectedTierName] = useState<string>('');
@@ -303,12 +303,7 @@ export default function ServiceDetailPage() {
   const handleOrderTier = (tier: ServiceTierDetail) => {
     if (!service) return;
     // In a real app, this would involve adding the item to a cart state (e.g., context, Zustand, Redux)
-    // or making an API call. For now, we'll simulate with a toast and navigation.
-    toast({
-      title: "Added to Cart (Simulated)",
-      description: `${service.name} - ${tier.name} Tier (₹${tier.price}) has been added to your cart.`,
-      duration: 3000,
-    });
+    // or making an API call. For now, we'll navigate directly to the cart.
     router.push('/cart');
   };
 
@@ -544,3 +539,4 @@ export default function ServiceDetailPage() {
     </div>
   );
 }
+
