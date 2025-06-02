@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { useUI } from '@/contexts/ui-context';
 
 const navItems = [
-  { href: '/', label: 'Home', icon: Home },
+  { href: '/client/dashboard', label: 'Home', icon: Home }, // Updated href
   { href: '/services', label: 'Services', icon: LayoutGrid },
 ];
 
@@ -20,10 +20,12 @@ export function MobileBottomNav() {
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-background border-t border-border shadow-md z-50">
       <div className="flex justify-around items-center h-full">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href) && item.href.length > 1);
-          // Special handling for exact match for "/"
-          const isHomeActive = item.href === '/' && pathname === '/';
-          const effectiveIsActive = item.href === '/' ? isHomeActive : isActive;
+          // Updated active state logic to be more general
+          let effectiveIsActive = pathname === item.href;
+          if (item.href !== '/' && item.href.length > 1) { // For paths other than pure root
+            effectiveIsActive = effectiveIsActive || pathname.startsWith(item.href);
+          }
+
 
           return (
             <Link
