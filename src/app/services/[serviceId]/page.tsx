@@ -332,7 +332,11 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
               <Tabs defaultValue={defaultTierForTabs} className="w-full" onValueChange={setSelectedTierName}>
                 <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-6 gap-2">
                   {service.tiers.map(tier => (
-                    <TabsTrigger key={tier.name} value={tier.name} className="py-3 text-base data-[state=active]:shadow-md data-[state=active]:ring-1 data-[state=active]:ring-primary/50">
+                    <TabsTrigger 
+                      key={tier.name} 
+                      value={tier.name} 
+                      className="py-2.5 text-sm data-[state=active]:shadow-md data-[state=active]:ring-1 data-[state=active]:ring-primary/50 whitespace-normal overflow-hidden"
+                    >
                       <tier.icon className="mr-2 h-5 w-5" />
                       {tier.name}
                     </TabsTrigger>
@@ -483,3 +487,4 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
 }
 
     
+
