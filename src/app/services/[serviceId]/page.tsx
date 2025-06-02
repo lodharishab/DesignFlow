@@ -388,7 +388,7 @@ export default function ServiceDetailPage() {
                       <CardHeader>
                         <CardTitle className="font-headline text-2xl flex items-center">
                           <tier.icon className="mr-3 h-7 w-7 text-primary" />
-                          {tier.name} Package - ${tier.price}
+                          {tier.name} Package - ₹{tier.price}
                         </CardTitle>
                         <CardDescription className="flex items-center text-sm pt-1">
                           <Clock className="inline-block mr-1.5 h-4 w-4" />
@@ -476,7 +476,7 @@ export default function ServiceDetailPage() {
                        <selectedTierDetails.icon className="mr-2.5 h-6 w-6 text-primary" />
                       {selectedTierDetails.name} Tier Summary
                     </CardTitle>
-                     <CardDescription className="text-2xl font-bold text-primary pt-1">${selectedTierDetails.price}</CardDescription>
+                     <CardDescription className="text-2xl font-bold text-primary pt-1">₹{selectedTierDetails.price}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm">
                      <p className="flex items-center text-muted-foreground">

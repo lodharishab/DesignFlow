@@ -1,6 +1,7 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, Users, ClipboardList, BarChart3, ArrowRight, UsersRound } from 'lucide-react'; // Added UsersRound
+import { Briefcase, Users, ClipboardList, BarChart3, ArrowRight, UsersRound, IndianRupee } from 'lucide-react'; // Added UsersRound, IndianRupee
 import Link from 'next/link';
 
 export default function AdminDashboardPage() {
@@ -8,7 +9,7 @@ export default function AdminDashboardPage() {
     { title: "Total Services", value: "25", icon: Briefcase, color: "text-blue-500", bgColor: "bg-blue-100 dark:bg-blue-900" },
     { title: "Active Designers", value: "150", icon: Users, color: "text-green-500", bgColor: "bg-green-100 dark:bg-green-900" },
     { title: "Pending Orders", value: "12", icon: ClipboardList, color: "text-yellow-500", bgColor: "bg-yellow-100 dark:bg-yellow-900" },
-    { title: "Revenue (Month)", value: "$12,500", icon: BarChart3, color: "text-purple-500", bgColor: "bg-purple-100 dark:bg-purple-900" },
+    { title: "Revenue (Month)", value: "₹12,500", icon: BarChart3, color: "text-purple-500", bgColor: "bg-purple-100 dark:bg-purple-900" },
   ];
 
   const quickLinks = [

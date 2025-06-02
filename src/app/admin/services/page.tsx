@@ -20,7 +20,7 @@ import {
   PlusCircle, 
   Edit3, 
   Trash2, 
-  DollarSign, 
+  IndianRupee, // Replaced DollarSign
   Tag, 
   Activity, 
   ChevronDown,
@@ -219,7 +219,7 @@ export default function AdminServicesPage(): ReactElement {
                 </TableHead>
                 <TableHead className="w-[250px]">Service Name</TableHead>
                 <TableHead><Tag className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Category</TableHead>
-                <TableHead><DollarSign className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Price</TableHead>
+                <TableHead><IndianRupee className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Price</TableHead>
                 <TableHead><Activity className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Status</TableHead>
                 <TableHead className="text-right w-[150px]">Actions</TableHead>
               </TableRow>
@@ -248,7 +248,7 @@ export default function AdminServicesPage(): ReactElement {
                   <TableCell>
                     <Badge variant="outline">{service.category}</Badge>
                   </TableCell>
-                  <TableCell>${service.price.toFixed(2)}</TableCell>
+                  <TableCell>₹{service.price.toFixed(2)}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(service.status)}>{service.status}</Badge>
                   </TableCell>
@@ -290,4 +290,3 @@ export default function AdminServicesPage(): ReactElement {
     </div>
   );
 }
-

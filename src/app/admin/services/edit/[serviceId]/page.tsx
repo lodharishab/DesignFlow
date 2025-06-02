@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save, XCircle, Briefcase, DollarSign, Tag, FileText, ClockIcon, ImageIcon, Lightbulb, Loader2 } from 'lucide-react';
+import { Save, XCircle, Briefcase, IndianRupee, Tag, FileText, ClockIcon, ImageIcon, Lightbulb, Loader2 } from 'lucide-react'; // Replaced DollarSign
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
@@ -205,7 +205,7 @@ export default function AdminEditServicePage(): ReactElement {
 
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="price"><DollarSign className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Price (INR)*</Label>
+              <Label htmlFor="price"><IndianRupee className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Price (INR)*</Label>
               <Input 
                 id="price" 
                 type="number"
@@ -303,4 +303,3 @@ export default function AdminEditServicePage(): ReactElement {
     </div>
   );
 }
-
