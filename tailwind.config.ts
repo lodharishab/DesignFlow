@@ -88,10 +88,20 @@ export default {
             height: '0',
           },
         },
+        'tab-enter-from-right': {
+          '0%': { transform: 'translateX(30px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        'tab-enter-from-left': {
+          '0%': { transform: 'translateX(-30px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'tab-enter-from-right': 'tab-enter-from-right 0.3s ease-out',
+        'tab-enter-from-left': 'tab-enter-from-left 0.3s ease-out',
       },
     },
   },

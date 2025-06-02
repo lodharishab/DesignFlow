@@ -265,20 +265,48 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
   const service = serviceDetailsData[params.serviceId];
   const tabsRef = useRef<HTMLDivElement>(null);
 
-  const [selectedTierName, setSelectedTierName] = useState<string>(() => {
-    if (service) {
-      const standardTier = service.tiers.find(t => t.name === 'Standard');
-      if (standardTier) return standardTier.name;
-      if (service.tiers.length > 0) return service.tiers[0].name;
-    }
-    return '';
+  const defaultTierForTabs = service?.tiers.find(t => t.name === 'Standard')?.name || (service?.tiers.length > 0 ? service.tiers[0].name : '');
+
+  const [selectedTierName, setSelectedTierName] = useState<string>(defaultTierForTabs);
+  
+  const [currentTabIndex, setCurrentTabIndex] = useState(() => {
+    if (!service) return 0;
+    const initialIndex = service.tiers.findIndex(t => t.name === defaultTierForTabs);
+    return initialIndex >= 0 ? initialIndex : 0;
   });
+  const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
+
+
+  useEffect(() => {
+    // If service changes (e.g. direct navigation to a new service ID), reset states
+    const newDefaultTier = service?.tiers.find(t => t.name === 'Standard')?.name || (service?.tiers.length > 0 ? service.tiers[0].name : '');
+    setSelectedTierName(newDefaultTier);
+    const newInitialIndex = service?.tiers.findIndex(t => t.name === newDefaultTier) ?? 0;
+    setCurrentTabIndex(newInitialIndex >=0 ? newInitialIndex : 0);
+    setAnimationDirection(null); // Reset animation direction on service change
+  }, [service]);
+
 
   const selectedTierDetails = service?.tiers.find(t => t.name === selectedTierName);
 
   const handleScrollToTabs = () => {
     tabsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const handleTierChange = (value: string) => {
+    if (!service) return;
+    const newIndex = service.tiers.findIndex(t => t.name === value);
+    if (newIndex > currentTabIndex) {
+      setAnimationDirection('right');
+    } else if (newIndex < currentTabIndex) {
+      setAnimationDirection('left');
+    } else {
+      setAnimationDirection(null); 
+    }
+    setSelectedTierName(value);
+    setCurrentTabIndex(newIndex);
+  };
+
 
   if (!service) {
     return (
@@ -297,7 +325,6 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
     );
   }
 
-  const defaultTierForTabs = service.tiers.find(t => t.name === 'Standard')?.name || (service.tiers.length > 0 ? service.tiers[0].name : '');
 
   let tabsListGridColsClass = "grid-cols-3";
     if (service.tiers.length === 1) {
@@ -335,8 +362,8 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
 
             <Separator />
 
-            <div ref={tabsRef}>
-              <Tabs defaultValue={defaultTierForTabs} className="w-full" onValueChange={setSelectedTierName}>
+            <div ref={tabsRef} className="overflow-hidden">
+              <Tabs defaultValue={defaultTierForTabs} className="w-full" onValueChange={handleTierChange}>
                 <TabsList className={cn("grid w-full mb-6 gap-2", tabsListGridColsClass)}>
                   {service.tiers.map(tier => (
                     <TabsTrigger
@@ -351,10 +378,17 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
                 </TabsList>
                 {service.tiers.map(tier => (
                   <TabsContent
-                    key={tier.name}
+                    key={tier.name} // Keyed by tier name
                     value={tier.name}
+                    className={cn(
+                      // Apply animation only when this tab content becomes active
+                      (tier.name === selectedTierName && animationDirection === 'right') && 'animate-tab-enter-from-right',
+                      (tier.name === selectedTierName && animationDirection === 'left') && 'animate-tab-enter-from-left',
+                      // Fallback for initial load or no direction change (e.g., clicking the same tab)
+                      (tier.name === selectedTierName && animationDirection === null) && 'animate-in fade-in-0 duration-200'
+                    )}
                   >
-                    <Card className="shadow-md border">
+                    <Card className="shadow-md border" key={selectedTierName}> {/* Keyed by selectedTierName to force Card re-render/re-animation */}
                       <CardHeader>
                         <CardTitle className="font-headline text-2xl flex items-center">
                           <tier.icon className="mr-3 h-7 w-7 text-primary" />
