@@ -49,7 +49,10 @@ export function CategoriesNavbar() {
       <div className="container mx-auto px-5 flex h-14 items-center">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" className="text-md font-medium text-foreground hover:text-primary px-3">
+            <Button 
+              variant="ghost" 
+              className="text-md font-medium text-foreground hover:bg-primary hover:text-primary-foreground px-3"
+            >
               <LayoutGrid className="mr-2 h-5 w-5" />
               All Categories
               <ChevronDown className="ml-2 h-4 w-4" />
