@@ -10,8 +10,9 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, ShoppingCart, IndianRupee, PackageSearch } from 'lucide-react';
+import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Smartphone } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from 'next/navigation';
 
 interface CartItem {
   id: string;
@@ -20,7 +21,7 @@ interface CartItem {
   price: number;
   imageUrl: string;
   imageHint: string;
-  quantity: number; // Added for future use, currently 1
+  quantity: number; 
 }
 
 const initialMockCartItems: CartItem[] = [
@@ -45,7 +46,7 @@ const initialMockCartItems: CartItem[] = [
   {
     id: '4',
     name: 'UI/UX Web Design Mockup',
-    price: 399, // Assuming no specific tier selected, or it's a single-tier service for this example
+    price: 399, 
     imageUrl: 'https://placehold.co/600x400.png',
     imageHint: 'website mockup service',
     quantity: 1,
@@ -53,13 +54,21 @@ const initialMockCartItems: CartItem[] = [
 ];
 
 const TAX_RATE = 0.18; // 18% GST
+const RAZORPAY_TEST_KEY_ID = "rzp_test_YOUR_KEY_ID"; // IMPORTANT: Replace with your actual Razorpay Test Key ID
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const { toast } = useToast();
+  const router = useRouter();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    // Simulate fetching cart items or loading from local storage
     setCartItems(initialMockCartItems);
   }, []);
 
@@ -76,19 +85,103 @@ export default function CartPage() {
     }
   };
   
-  // For now, quantity is 1. Could be expanded.
-  // const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
-  //   if (newQuantity < 1) return; // Or remove item if quantity is 0
-  //   setCartItems(prevItems => 
-  //     prevItems.map(item => 
-  //       item.id === itemId ? { ...item, quantity: newQuantity } : item
-  //     )
-  //   );
-  // };
-
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const taxes = subtotal * TAX_RATE;
   const totalAmount = subtotal + taxes;
+  const totalAmountInPaise = Math.round(totalAmount * 100); // Razorpay expects amount in paise
+
+  const handleRazorpayPayment = async () => {
+    setIsProcessing(true);
+    if (typeof window.Razorpay === "undefined") {
+      toast({
+        title: "Error",
+        description: "Razorpay SDK not loaded. Please try again in a moment.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
+      return;
+    }
+
+    // In a real app, you would first create an order on your backend
+    // and get an order_id from Razorpay. For this simulation, we skip that.
+    const simulatedOrderId = `order_${Date.now()}`;
+
+    const options = {
+      key: RAZORPAY_TEST_KEY_ID, 
+      amount: totalAmountInPaise, 
+      currency: "INR",
+      name: "DesignFlow",
+      description: "Test Transaction for Design Services",
+      image: "https://placehold.co/100x100.png?text=DF", // Your logo
+      order_id: "", // For client-side only, order_id is optional for Razorpay standard checkout
+                     // but highly recommended to create on backend for robust integration
+      handler: function (response: any) {
+        // This function is called on successful payment
+        // IMPORTANT: In a real app, you MUST verify the payment signature on your backend
+        // router.push(`/order-success?orderId=${simulatedOrderId}&paymentId=${response.razorpay_payment_id}`);
+        toast({
+          title: "Payment Successful (Simulated)",
+          description: `Payment ID: ${response.razorpay_payment_id}. Order ID: ${simulatedOrderId}`,
+        });
+        router.push(`/order-success?orderId=${simulatedOrderId}&paymentId=${response.razorpay_payment_id}`);
+        setIsProcessing(false);
+      },
+      prefill: {
+        name: "Test User", // Prefill user details if available
+        email: "test.user@example.com",
+        contact: "9999999999"
+      },
+      notes: {
+        address: "DesignFlow Corporate Office"
+      },
+      theme: {
+        color: "#2081F9" // Your primary color
+      },
+      modal: {
+        ondismiss: function() {
+          toast({
+            title: "Payment Cancelled",
+            description: "You closed the payment window.",
+            variant: "destructive",
+          });
+          // Optional: redirect to a payment failed page or allow retry
+          // router.push('/order-failed'); 
+          setIsProcessing(false);
+        }
+      }
+    };
+
+    try {
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response: any){
+        toast({
+          title: "Payment Failed (Simulated)",
+          description: `Error: ${response.error.description}`,
+          variant: "destructive",
+        });
+        router.push(`/order-failed?orderId=${simulatedOrderId}&errorCode=${response.error.code}&errorDesc=${response.error.description}`);
+        setIsProcessing(false);
+      });
+      rzp.open();
+    } catch (error) {
+      console.error("Razorpay error: ", error);
+      toast({
+        title: "Payment Error",
+        description: "Could not initiate Razorpay payment. Please check console for errors.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePhonePePayment = () => {
+    toast({
+      title: "PhonePe (Coming Soon)",
+      description: "PhonePe integration is currently under development.",
+      duration: 3000,
+    });
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -113,7 +206,6 @@ export default function CartPage() {
           </Card>
         ) : (
           <div className="grid lg:grid-cols-3 gap-8 md:gap-12 items-start">
-            {/* Cart Items List */}
             <div className="lg:col-span-2 space-y-6">
               {cartItems.map(item => (
                 <Card key={item.id} className="shadow-md overflow-hidden">
@@ -147,6 +239,7 @@ export default function CartPage() {
                           onClick={() => handleRemoveItem(item.id)}
                           className="text-destructive hover:bg-destructive/10 hover:text-destructive -mr-2"
                           aria-label={`Remove ${item.name} from cart`}
+                          disabled={isProcessing}
                         >
                           <Trash2 className="mr-1.5 h-4 w-4" /> Remove
                         </Button>
@@ -157,7 +250,6 @@ export default function CartPage() {
               ))}
             </div>
 
-            {/* Order Summary Column */}
             <div className="lg:col-span-1">
               <Card className="shadow-lg sticky top-24">
                 <CardHeader>
@@ -172,11 +264,6 @@ export default function CartPage() {
                     <span>Taxes (GST {TAX_RATE * 100}%)</span>
                     <span><IndianRupee className="inline-block h-4 w-4 relative -top-px" />{taxes.toFixed(2)}</span>
                   </div>
-                  {/* Example Discount Section - can be uncommented and implemented if needed */}
-                  {/* <div className="flex justify-between text-green-600">
-                    <span>Discount</span>
-                    <span>-<IndianRupee className="inline-block h-4 w-4 relative -top-px" />{0.toFixed(2)}</span>
-                  </div> */}
                   <Separator className="my-3" />
                   <div className="flex justify-between font-bold text-xl">
                     <span>Total Amount</span>
@@ -184,10 +271,28 @@ export default function CartPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-3 pt-4">
-                  <Button size="lg" className="w-full">
-                    Proceed to Checkout
+                  <Button 
+                    size="lg" 
+                    className="w-full" 
+                    onClick={handleRazorpayPayment}
+                    disabled={isProcessing || totalAmountInPaise <= 0}
+                  >
+                    {isProcessing ? 'Processing...' : (
+                      <>
+                        <CreditCard className="mr-2 h-5 w-5" /> Pay with Razorpay
+                      </>
+                    )}
                   </Button>
-                  <Button variant="outline" className="w-full" asChild>
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="w-full" 
+                    onClick={handlePhonePePayment}
+                    disabled={isProcessing || totalAmountInPaise <= 0}
+                  >
+                    <Smartphone className="mr-2 h-5 w-5" /> Pay with PhonePe (Coming Soon)
+                  </Button>
+                  <Button variant="outline" className="w-full mt-2" asChild disabled={isProcessing}>
                     <Link href="/services">Continue Shopping</Link>
                   </Button>
                 </CardFooter>
@@ -200,4 +305,3 @@ export default function CartPage() {
     </div>
   );
 }
-

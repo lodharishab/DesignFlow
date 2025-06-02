@@ -6,6 +6,7 @@ import { Poppins, Playfair_Display } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { UIProvider } from '@/contexts/ui-context';
 import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
+import Script from 'next/script';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -31,7 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={cn(poppins.variable, playfairDisplay.variable)}>
-      <head />
+      <head>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      </head>
       <body className="font-body antialiased min-h-screen flex flex-col pb-16 md:pb-0">
         <UIProvider>
           {children}
