@@ -8,9 +8,10 @@ import { ServiceCard } from '@/components/shared/service-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, ListFilter, Search } from 'lucide-react'; 
+import { Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, ListFilter, Search, ChevronLeft, ChevronRight, Film, Presentation } from 'lucide-react'; 
 import type { Icon } from 'lucide-react'; 
-import { useState } from 'react'; 
+import { useState, useRef, useEffect, useCallback } from 'react'; 
+import { cn } from '@/lib/utils';
 
 interface ServiceTier {
   name: 'Basic' | 'Standard' | 'Premium';
@@ -20,11 +21,11 @@ interface ServiceTier {
 interface Service {
   id: string;
   name: string;
-  description: string; // General service description
+  description: string; 
   category: string;
   imageUrl: string;
   imageHint: string;
-  tiers: ServiceTier[]; // Array of available tiers
+  tiers: ServiceTier[];
 }
 
 const services: Service[] = [
@@ -114,8 +115,8 @@ const categoryFilters: CategoryFilterItem[] = [
   { name: 'UI/UX Design', icon: Laptop, slug: 'ui-ux-design' },
   { name: 'Illustration', icon: BrushIcon, slug: 'illustration' },
   { name: 'Packaging', icon: PackageIcon, slug: 'packaging' },
-  { name: 'Motion Graphics', icon: Share2, slug: 'motion-graphics' }, // Example for more items
-  { name: 'Presentations', icon: Printer, slug: 'presentations' }, // Example for more items
+  { name: 'Motion Graphics', icon: Film, slug: 'motion-graphics' }, 
+  { name: 'Presentations', icon: Presentation, slug: 'presentations' },
 ];
 
 const sortOptions = [
@@ -128,7 +129,10 @@ const sortOptions = [
 export default function ServicesPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>('relevance');
-  
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
   const displayedServices = services.filter(service => {
     const categoryMatch = activeCategory ? service.category === activeCategory : true;
     return categoryMatch;
@@ -137,6 +141,53 @@ export default function ServicesPage() {
   const handleCategoryClick = (categoryName: string) => {
     setActiveCategory(prev => prev === categoryName ? null : categoryName);
   };
+
+  const checkScrollability = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      setCanScrollLeft(container.scrollLeft > 0);
+      setCanScrollRight(container.scrollLeft < container.scrollWidth - container.clientWidth -1); // -1 for precision
+    }
+  }, []);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      checkScrollability(); // Initial check
+      container.addEventListener('scroll', checkScrollability);
+      window.addEventListener('resize', checkScrollability); // Re-check on resize
+
+      // Ensure right arrow is visible if content overflows initially
+      if (container.scrollWidth > container.clientWidth) {
+        setCanScrollRight(true);
+      }
+
+      return () => {
+        container.removeEventListener('scroll', checkScrollability);
+        window.removeEventListener('resize', checkScrollability);
+      };
+    }
+  }, [checkScrollability]);
+
+
+  const handleScroll = (direction: 'left' | 'right') => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      const scrollAmount = 200; // Adjust as needed
+      container.scrollBy({ 
+        left: direction === 'left' ? -scrollAmount : scrollAmount, 
+        behavior: 'smooth' 
+      });
+    }
+  };
+  
+  // CSS class to hide scrollbar (requires Tailwind JIT or a plugin for full cross-browser)
+  const scrollbarHideClass = "scrollbar-hide"; // This is a common utility class name
+                                             // For Webkit: [&::-webkit-scrollbar]:hidden
+                                             // For Firefox: scrollbar-width-none
+                                             // For IE/Edge: -ms-overflow-style-none
+                                             // We'll use a placeholder class and rely on global CSS if needed for full hiding.
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -147,18 +198,54 @@ export default function ServicesPage() {
         
         <div className="mb-6">
           <h2 className="text-xl font-semibold font-headline mb-4 text-center md:text-left">Browse by Category</h2>
-          <div className="flex space-x-3 md:space-x-4 overflow-x-auto pb-4">
-            {categoryFilters.map(category => (
+          <div className="relative">
+            {canScrollLeft && (
               <Button
-                key={category.slug}
-                variant={activeCategory === category.name ? "default" : "outline"}
-                onClick={() => handleCategoryClick(category.name)}
-                className="flex flex-col items-center justify-center h-24 md:h-28 text-center p-2 md:p-3 shadow-sm hover:shadow-md transition-shadow shrink-0 w-32 md:w-36"
+                variant="outline"
+                size="icon"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-12 w-8 rounded-full shadow-md bg-background/80 hover:bg-background"
+                onClick={() => handleScroll('left')}
+                aria-label="Scroll left"
               >
-                <category.icon className="h-7 w-7 md:h-8 md:w-8 mb-1.5 md:mb-2 text-primary group-hover:text-primary-foreground" />
-                <span className="text-xs sm:text-sm whitespace-nowrap">{category.name}</span>
+                <ChevronLeft className="h-5 w-5" />
               </Button>
-            ))}
+            )}
+            <div 
+              ref={scrollContainerRef}
+              className={cn(
+                "flex space-x-3 md:space-x-4 overflow-x-auto pb-4",
+                "scrollbar-hide" // Attempt to hide scrollbar; best effort without global CSS/plugin
+              )}
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
+            >
+               <style jsx global>{`
+                .scrollbar-hide::-webkit-scrollbar {
+                  display: none;
+                }
+              `}</style>
+              {categoryFilters.map(category => (
+                <Button
+                  key={category.slug}
+                  variant={activeCategory === category.name ? "default" : "outline"}
+                  onClick={() => handleCategoryClick(category.name)}
+                  className="flex flex-col items-center justify-center h-24 md:h-28 text-center p-2 md:p-3 shadow-sm hover:shadow-md transition-shadow shrink-0 w-32 md:w-36 whitespace-nowrap"
+                >
+                  <category.icon className="h-7 w-7 md:h-8 md:w-8 mb-1.5 md:mb-2 text-primary group-hover:text-primary-foreground" />
+                  <span className="text-xs sm:text-sm">{category.name}</span>
+                </Button>
+              ))}
+            </div>
+            {canScrollRight && (
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-12 w-8 rounded-full shadow-md bg-background/80 hover:bg-background"
+                onClick={() => handleScroll('right')}
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            )}
           </div>
         </div>
 
