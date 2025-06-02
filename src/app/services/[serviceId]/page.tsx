@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { useParams } from 'next/navigation'; // Import useParams
 
 interface ServiceTierDetail {
   name: 'Basic' | 'Standard' | 'Premium';
@@ -261,19 +262,29 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
   },
 };
 
-export default function ServiceDetailPage({ params }: { params: { serviceId: string } }) {
-  const service = serviceDetailsData[params.serviceId];
+export default function ServiceDetailPage() { // Removed params from props
+  const routeParams = useParams<{ serviceId: string }>(); // Use the hook
+  const serviceId = routeParams?.serviceId;
+
+  const [service, setService] = useState<ServiceDetail | null | undefined>(undefined); // undefined for loading, null for not found
+  const [selectedTierName, setSelectedTierName] = useState<string>('');
   const tabsRef = useRef<HTMLDivElement>(null);
 
-  const defaultTierForTabs = service?.tiers.find(t => t.name === 'Standard')?.name || (service?.tiers.length > 0 ? service.tiers[0].name : '');
-
-  const [selectedTierName, setSelectedTierName] = useState<string>(defaultTierForTabs);
-  
   useEffect(() => {
-    // If service changes (e.g. direct navigation to a new service ID), reset states
-    const newDefaultTier = service?.tiers.find(t => t.name === 'Standard')?.name || (service?.tiers.length > 0 ? service.tiers[0].name : '');
-    setSelectedTierName(newDefaultTier);
-  }, [service]);
+    if (serviceId) {
+      const serviceData = serviceDetailsData[serviceId];
+      setService(serviceData || null);
+      if (serviceData) {
+        const defaultTier = serviceData.tiers.find(t => t.name === 'Standard')?.name || (serviceData.tiers.length > 0 ? serviceData.tiers[0].name : '');
+        setSelectedTierName(defaultTier);
+      } else {
+        setSelectedTierName('');
+      }
+    } else {
+      setService(undefined); // Reset if serviceId becomes unavailable
+      setSelectedTierName('');
+    }
+  }, [serviceId]);
 
 
   const selectedTierDetails = service?.tiers.find(t => t.name === selectedTierName);
@@ -286,6 +297,18 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
     setSelectedTierName(value);
   };
 
+  if (service === undefined) {
+     return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <CategoriesNavbar />
+        <main className="flex-grow container mx-auto py-12 px-5 text-center">
+          <h1 className="text-2xl font-semibold">Loading service details...</h1>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!service) {
     return (
@@ -303,10 +326,9 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
       </div>
     );
   }
-
-
-  let tabsListGridColsClass = "grid-cols-3";
-    if (service.tiers.length === 1) {
+  
+  let tabsListGridColsClass = "grid-cols-3"; // Default for 3 or more tiers
+  if (service.tiers.length === 1) {
     tabsListGridColsClass = "grid-cols-1";
   } else if (service.tiers.length === 2) {
     tabsListGridColsClass = "grid-cols-2";
@@ -342,7 +364,7 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
             <Separator />
 
             <div ref={tabsRef}>
-              <Tabs defaultValue={defaultTierForTabs} className="w-full" onValueChange={handleTierChange}>
+              <Tabs value={selectedTierName} className="w-full" onValueChange={handleTierChange}>
                 <TabsList className={cn("grid w-full mb-6 gap-2", tabsListGridColsClass)}>
                   {service.tiers.map(tier => (
                     <TabsTrigger

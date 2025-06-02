@@ -34,8 +34,8 @@ export function ServiceCard({ id, name, description, category, tiers, imageUrl, 
           <Image 
             src={imageUrl} 
             alt={name} 
-            layout="fill" 
-            objectFit="cover"
+            fill
+            style={{ objectFit: "cover" }}
             data-ai-hint={imageHint}
           />
         </div>
