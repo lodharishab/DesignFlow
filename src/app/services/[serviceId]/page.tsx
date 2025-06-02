@@ -269,21 +269,10 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
 
   const [selectedTierName, setSelectedTierName] = useState<string>(defaultTierForTabs);
   
-  const [currentTabIndex, setCurrentTabIndex] = useState(() => {
-    if (!service) return 0;
-    const initialIndex = service.tiers.findIndex(t => t.name === defaultTierForTabs);
-    return initialIndex >= 0 ? initialIndex : 0;
-  });
-  const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
-
-
   useEffect(() => {
     // If service changes (e.g. direct navigation to a new service ID), reset states
     const newDefaultTier = service?.tiers.find(t => t.name === 'Standard')?.name || (service?.tiers.length > 0 ? service.tiers[0].name : '');
     setSelectedTierName(newDefaultTier);
-    const newInitialIndex = service?.tiers.findIndex(t => t.name === newDefaultTier) ?? 0;
-    setCurrentTabIndex(newInitialIndex >=0 ? newInitialIndex : 0);
-    setAnimationDirection(null); // Reset animation direction on service change
   }, [service]);
 
 
@@ -294,17 +283,7 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
   };
 
   const handleTierChange = (value: string) => {
-    if (!service) return;
-    const newIndex = service.tiers.findIndex(t => t.name === value);
-    if (newIndex > currentTabIndex) {
-      setAnimationDirection('right');
-    } else if (newIndex < currentTabIndex) {
-      setAnimationDirection('left');
-    } else {
-      setAnimationDirection(null); 
-    }
     setSelectedTierName(value);
-    setCurrentTabIndex(newIndex);
   };
 
 
@@ -362,7 +341,7 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
 
             <Separator />
 
-            <div ref={tabsRef} className="overflow-hidden">
+            <div ref={tabsRef}>
               <Tabs defaultValue={defaultTierForTabs} className="w-full" onValueChange={handleTierChange}>
                 <TabsList className={cn("grid w-full mb-6 gap-2", tabsListGridColsClass)}>
                   {service.tiers.map(tier => (
@@ -378,17 +357,10 @@ export default function ServiceDetailPage({ params }: { params: { serviceId: str
                 </TabsList>
                 {service.tiers.map(tier => (
                   <TabsContent
-                    key={tier.name} // Keyed by tier name
+                    key={tier.name} 
                     value={tier.name}
-                    className={cn(
-                      // Apply animation only when this tab content becomes active
-                      (tier.name === selectedTierName && animationDirection === 'right') && 'animate-tab-enter-from-right',
-                      (tier.name === selectedTierName && animationDirection === 'left') && 'animate-tab-enter-from-left',
-                      // Fallback for initial load or no direction change (e.g., clicking the same tab)
-                      (tier.name === selectedTierName && animationDirection === null) && 'animate-in fade-in-0 duration-200'
-                    )}
                   >
-                    <Card className="shadow-md border" key={selectedTierName}> {/* Keyed by selectedTierName to force Card re-render/re-animation */}
+                    <Card className="shadow-md border">
                       <CardHeader>
                         <CardTitle className="font-headline text-2xl flex items-center">
                           <tier.icon className="mr-3 h-7 w-7 text-primary" />
