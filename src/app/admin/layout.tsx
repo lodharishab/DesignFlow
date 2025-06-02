@@ -15,8 +15,8 @@ import {
   Tags,
   List, 
   ChevronDown,
-  Network, // Added Network icon for Sub-categories
-  LayoutGrid // Added for new menu trigger
+  Network, 
+  LayoutGrid 
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -26,12 +26,11 @@ import {
   SidebarMenu, 
   SidebarMenuItem, 
   SidebarMenuButton, 
-  SidebarTrigger, // Kept for other potential uses, but not directly in header anymore
   SidebarInset,
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
-  useSidebar // Added to use toggleSidebar directly
+  useSidebar 
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/shared/mode-toggle';
@@ -55,7 +54,7 @@ const navItems = [
     children: [
       { href: '/admin/services', icon: List, label: 'All Services' },
       { href: '/admin/services/categories', icon: Tags, label: 'Service Categories' },
-      { href: '/admin/services/sub-categories', icon: Network, label: 'Service Sub-categories' }, // New sub-category link
+      { href: '/admin/services/sub-categories', icon: Network, label: 'Service Sub-categories' },
     ] 
   },
   { href: '/admin/designers', icon: Users, label: 'Designers' },
@@ -64,14 +63,11 @@ const navItems = [
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+// Inner component to consume SidebarContext
+function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
   const pathname = usePathname();
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
-  const { toggleSidebar } = useSidebar(); // Get toggleSidebar function
+  const { toggleSidebar } = useSidebar(); // Consuming context correctly
 
   useEffect(() => {
     const initiallyOpen: Record<string, boolean> = {};
@@ -88,7 +84,7 @@ export default function AdminLayout({
   };
 
   return (
-    <SidebarProvider defaultOpen>
+    <>
       <Sidebar>
         <SidebarHeader className="p-4">
           <Link href="/" className="flex items-center gap-2">
@@ -127,8 +123,6 @@ export default function AdminLayout({
                       <SidebarMenuSub>
                         {item.children.map(child => {
                           let isChildActive;
-                          // Exact match for parent index pages like /admin/services
-                          // Prefix match for children like /admin/services/categories or /admin/services/sub-categories
                           if (child.href === item.pathPrefix) { 
                             isChildActive = pathname === child.href;
                           } else { 
@@ -182,7 +176,7 @@ export default function AdminLayout({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={toggleSidebar}
+                onClick={toggleSidebar} // toggleSidebar is now from context
                 className="h-8 w-8" 
                 aria-label="Open menu"
               >
@@ -224,6 +218,18 @@ export default function AdminLayout({
           {children}
         </main>
       </SidebarInset>
+    </>
+  );
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <SidebarProvider defaultOpen>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
     </SidebarProvider>
   );
 }
