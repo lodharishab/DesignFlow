@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { useParams } from 'next/navigation'; // Import useParams
+import { useParams } from 'next/navigation'; 
 
 interface ServiceTierDetail {
   name: 'Basic' | 'Standard' | 'Premium';
@@ -262,11 +262,11 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
   },
 };
 
-export default function ServiceDetailPage() { // Removed params from props
-  const routeParams = useParams<{ serviceId: string }>(); // Use the hook
+export default function ServiceDetailPage() {
+  const routeParams = useParams<{ serviceId: string }>(); 
   const serviceId = routeParams?.serviceId;
 
-  const [service, setService] = useState<ServiceDetail | null | undefined>(undefined); // undefined for loading, null for not found
+  const [service, setService] = useState<ServiceDetail | null | undefined>(undefined); 
   const [selectedTierName, setSelectedTierName] = useState<string>('');
   const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -281,7 +281,7 @@ export default function ServiceDetailPage() { // Removed params from props
         setSelectedTierName('');
       }
     } else {
-      setService(undefined); // Reset if serviceId becomes unavailable
+      setService(undefined); 
       setSelectedTierName('');
     }
   }, [serviceId]);
@@ -327,7 +327,7 @@ export default function ServiceDetailPage() { // Removed params from props
     );
   }
   
-  let tabsListGridColsClass = "grid-cols-3"; // Default for 3 or more tiers
+  let tabsListGridColsClass = "grid-cols-3"; 
   if (service.tiers.length === 1) {
     tabsListGridColsClass = "grid-cols-1";
   } else if (service.tiers.length === 2) {
@@ -355,8 +355,10 @@ export default function ServiceDetailPage() { // Removed params from props
 
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
               <div>
+                <Badge variant="outline" className="text-xs py-0.5 px-2 mb-2">
+                  <Tag className="mr-1.5 h-3 w-3" />{service.category}
+                </Badge>
                 <h1 className="text-3xl md:text-4xl font-bold font-headline mb-1">{service.name}</h1>
-                <Badge variant="outline" className="text-sm py-1 px-2.5"><Tag className="mr-1.5 h-3.5 w-3.5" />{service.category}</Badge>
               </div>
             </div>
             <p className="text-muted-foreground text-lg">{service.generalDescription}</p>
