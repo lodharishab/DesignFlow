@@ -30,6 +30,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarFooter, // Added SidebarFooter here
   useSidebar 
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
