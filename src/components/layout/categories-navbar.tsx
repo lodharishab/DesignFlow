@@ -45,7 +45,7 @@ const popularCategories = [
 
 export function CategoriesNavbar() {
   return (
-    <nav className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/50 shadow-sm">
+    <nav className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/50 shadow-sm hidden md:block">
       <div className="container mx-auto px-5 flex h-14 items-center">
         <Popover>
           <PopoverTrigger asChild>
@@ -102,7 +102,7 @@ export function CategoriesNavbar() {
         
         {/* Popular Category Links - Hidden on small screens, flex on medium and up */}
         {popularCategories.length > 0 && (
-          <div className="ml-6 hidden md:flex items-center space-x-4">
+          <div className="ml-6 flex items-center space-x-4"> {/* md:flex was here, removed as parent nav is now hidden on mobile */}
             <span className="text-sm font-medium text-muted-foreground flex items-center">
               <Sparkles className="mr-2 h-4 w-4 text-primary/80" />
               Popular:
