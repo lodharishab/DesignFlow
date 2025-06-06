@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useEffect, useMemo } from 'react';
+import { useState, type ReactElement, useEffect, useMemo, Fragment } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -24,10 +24,12 @@ import {
   Tag, 
   Activity, 
   ChevronDown,
+  ChevronUp, 
   CheckCircle2,
   ArchiveIcon,
   Eye,
-  Tags // Added for Tags column
+  Tags as TagsIcon, 
+  ListChecks
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
@@ -42,13 +44,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { cn } from '@/lib/utils';
 
-interface ServiceTierAdmin {
+interface TierForList {
   id: string;
   name: string;
   price: number;
   description: string;
-  deliveryTime: string; // Keeping simple for list view, detail has structured time
+  deliveryTimeMin: number;
+  deliveryTimeMax: number;
+  deliveryTimeUnit: 'days' | 'business_days' | 'weeks';
 }
 
 interface AdminServiceModified {
@@ -60,7 +65,7 @@ interface AdminServiceModified {
   imageUrl?: string;
   imageAiHint?: string;
   tags?: string[];
-  tiers: ServiceTierAdmin[];
+  tiers: TierForList[];
 }
 
 const initialServicesData: AdminServiceModified[] = [
@@ -74,9 +79,9 @@ const initialServicesData: AdminServiceModified[] = [
     imageAiHint: 'logo design',
     tags: ['branding', 'minimalist', 'corporate', 'startup'],
     tiers: [
-      { id: 'tier1_1', name: 'Basic', price: 99, description: '1 Concept...', deliveryTime: '3-5 days' },
-      { id: 'tier1_2', name: 'Standard', price: 199, description: '3 Concepts...', deliveryTime: '5-7 days' },
-      { id: 'tier1_3', name: 'Premium', price: 299, description: '5 Concepts...', deliveryTime: '7-10 days' },
+      { id: 'tier1_1', name: 'Basic', price: 99, description: '1 Initial concept, 2 Rounds of revisions, Basic vector files (SVG, PNG).', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' },
+      { id: 'tier1_2', name: 'Standard', price: 199, description: '3 Initial concepts, 3 Rounds of revisions, Full vector files (AI, EPS, SVG, PNG, JPG), Basic brand guide (colors, fonts).', deliveryTimeMin: 5, deliveryTimeMax: 7, deliveryTimeUnit: 'days' },
+      { id: 'tier1_3', name: 'Premium', price: 299, description: '5 Initial concepts, Unlimited revisions, Full vector & source files, Detailed brand guidelines, Social media kit.', deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'days' },
     ]
   },
   { 
@@ -89,8 +94,8 @@ const initialServicesData: AdminServiceModified[] = [
     imageAiHint: 'social media',
     tags: ['instagram', 'facebook', 'content creation'],
     tiers: [
-      { id: 'tier2_1', name: 'Starter Pack', price: 49, description: '5 posts...', deliveryTime: '2-3 days' },
-      { id: 'tier2_2', name: 'Growth Pack', price: 99, description: '10 posts...', deliveryTime: '3-5 days' },
+      { id: 'tier2_1', name: 'Starter Pack', price: 49, description: '5 social media posts, 1 Platform choice, 1 Round of revisions.', deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'days' },
+      { id: 'tier2_2', name: 'Growth Pack', price: 99, description: '10 social media posts, Up to 2 platforms, 2 Rounds of revisions, Source files.', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' },
     ]
   },
   { 
@@ -101,7 +106,7 @@ const initialServicesData: AdminServiceModified[] = [
     status: 'Draft',
     tags: ['marketing collateral', 'print', 'corporate'],
     tiers: [
-      { id: 'tier3_1', name: 'Standard', price: 249, description: 'Tri-fold...', deliveryTime: '7-10 days' },
+      { id: 'tier3_1', name: 'Standard', price: 249, description: 'Tri-fold or bi-fold options, print-ready files.', deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'business_days' },
     ]
   },
   { 
@@ -112,8 +117,8 @@ const initialServicesData: AdminServiceModified[] = [
     status: 'Active',
     tags: ['website', 'app design', 'user experience'],
     tiers: [
-      { id: 'tier4_1', name: 'Standard', price: 399, description: '1 Page...', deliveryTime: '10-14 days' },
-      { id: 'tier4_2', name: 'Premium', price: 599, description: 'Up to 3 pages...', deliveryTime: '14-21 days' },
+      { id: 'tier4_1', name: 'Standard', price: 399, description: '1 Page, desktop and mobile views.', deliveryTimeMin: 10, deliveryTimeMax: 14, deliveryTimeUnit: 'days' },
+      { id: 'tier4_2', name: 'Premium', price: 599, description: 'Up to 3 pages, interactive prototype.', deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'weeks' },
     ]
   },
   { 
@@ -124,8 +129,8 @@ const initialServicesData: AdminServiceModified[] = [
     status: 'Archived',
     tags: ['art', 'vector', 'character design'],
     tiers: [
-      { id: 'tier5_1', name: 'Basic', price: 79, description: 'Simple icon...', deliveryTime: '3-5 days' },
-      { id: 'tier5_2', name: 'Standard', price: 149, description: 'Detailed char...', deliveryTime: '5-8 days' },
+      { id: 'tier5_1', name: 'Basic', price: 79, description: 'Simple icon or spot illustration.', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' },
+      { id: 'tier5_2', name: 'Standard', price: 149, description: 'Detailed character or small scene.', deliveryTimeMin: 5, deliveryTimeMax: 8, deliveryTimeUnit: 'days' },
     ]
   },
   { 
@@ -136,14 +141,23 @@ const initialServicesData: AdminServiceModified[] = [
     status: 'Active',
     tags: ['2d animation', 'explainer', 'marketing video'],
     tiers: [
-      { id: 'tier6_1', name: '30 Seconds', price: 599, description: 'Animated video...', deliveryTime: '14-21 days' },
+      { id: 'tier6_1', name: '30 Seconds', price: 599, description: 'Includes scriptwriting and voiceover.', deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'weeks' },
     ]
   },
 ];
 
+function formatStructuredDeliveryTime(min: number, max: number, unit: TierForList['deliveryTimeUnit']): string {
+  const unitLabel = unit.replace('_', ' ');
+  if (min === max) {
+    return `${min} ${unitLabel}${min > 1 && unit !== 'weeks' ? 's' : (unit === 'weeks' && min === 1 ? '' : 's')}`;
+  }
+  return `${min}-${max} ${unitLabel}${max > 1 && unit !== 'weeks' ? 's' : (unit === 'weeks' && max === 1 ? '' : 's')}`;
+}
+
 export default function AdminServicesPage(): ReactElement {
   const [services, setServices] = useState<AdminServiceModified[]>(initialServicesData);
   const [selectedServiceIds, setSelectedServiceIds] = useState<Set<string>>(new Set());
+  const [expandedServiceIds, setExpandedServiceIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -179,12 +193,20 @@ export default function AdminServicesPage(): ReactElement {
       newSelected.delete(serviceId);
       return newSelected;
     });
+    setExpandedServiceIds(prevExpanded => {
+      const newExpanded = new Set(prevExpanded);
+      newExpanded.delete(serviceId);
+      return newExpanded;
+    });
     toast({ title: "Service Deleted (Simulated)", description: `Service "${serviceName}" removed.`, variant: "destructive" });
   };
 
   const handleBulkDelete = () => {
     const count = selectedServiceIds.size;
     setServices(prevServices => prevServices.filter(service => !selectedServiceIds.has(service.id)));
+    const newExpanded = new Set(expandedServiceIds);
+    selectedServiceIds.forEach(id => newExpanded.delete(id));
+    setExpandedServiceIds(newExpanded);
     setSelectedServiceIds(new Set());
     toast({ title: "Bulk Delete (Simulated)", description: `${count} service(s) removed.`, variant: "destructive" });
   };
@@ -200,6 +222,15 @@ export default function AdminServicesPage(): ReactElement {
     toast({ title: `Bulk Status Change (Simulated)`, description: `${count} service(s) set to "${status}".` });
   };
 
+  const toggleExpandService = (serviceId: string) => {
+    setExpandedServiceIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(serviceId)) newSet.delete(serviceId);
+      else newSet.add(serviceId);
+      return newSet;
+    });
+  };
+
   const getStatusBadgeVariant = (status: AdminServiceModified['status']) => {
     switch (status) {
       case 'Active': return 'default';
@@ -209,7 +240,7 @@ export default function AdminServicesPage(): ReactElement {
     }
   };
 
-  const getPriceRange = (tiers: ServiceTierAdmin[]): string => {
+  const getPriceRange = (tiers: TierForList[]): string => {
     if (!tiers || tiers.length === 0) return 'N/A';
     const prices = tiers.map(t => t.price);
     const minPrice = Math.min(...prices);
@@ -262,9 +293,9 @@ export default function AdminServicesPage(): ReactElement {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"><Checkbox checked={isIndeterminate ? "indeterminate" : isAllSelected} onCheckedChange={handleSelectAll} aria-label="Select all" disabled={services.length === 0}/></TableHead>
-                <TableHead className="w-[250px]">Service Name</TableHead>
+                <TableHead className="w-[280px]">Service Name</TableHead>
                 <TableHead><Tag className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Category</TableHead>
-                <TableHead><Tags className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Tags</TableHead>
+                <TableHead><TagsIcon className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Tags</TableHead>
                 <TableHead><IndianRupee className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Price Range</TableHead>
                 <TableHead><Activity className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Status</TableHead>
                 <TableHead className="text-right w-[150px]">Actions</TableHead>
@@ -273,17 +304,34 @@ export default function AdminServicesPage(): ReactElement {
             <TableBody>
               {services.length === 0 && <TableRow><TableCell colSpan={7} className="text-center h-24">No services found.</TableCell></TableRow>}
               {services.map(service => (
-                <TableRow key={service.id} data-state={selectedServiceIds.has(service.id) ? "selected" : ""}>
+                <Fragment key={service.id}>
+                <TableRow data-state={selectedServiceIds.has(service.id) ? "selected" : ""}>
                   <TableCell><Checkbox checked={selectedServiceIds.has(service.id)} onCheckedChange={(checked) => handleSelectOne(service.id, checked)} aria-label={`Select ${service.name}`} /></TableCell>
-                  <TableCell className="font-medium">{service.name}</TableCell>
+                  <TableCell className="font-medium">
+                     <div className="flex items-center">
+                        <span>{service.name}</span>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleExpandService(service.id)}
+                            aria-label={expandedServiceIds.has(service.id) ? "Collapse tiers" : "Expand tiers"}
+                            className="ml-2 p-1 h-auto"
+                        >
+                            {expandedServiceIds.has(service.id) ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                    </div>
+                  </TableCell>
                   <TableCell><Badge variant="outline">{service.category}</Badge></TableCell>
                   <TableCell>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 max-w-[200px]">
                       {(service.tags || []).slice(0, 2).map(tag => (
                         <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
                       ))}
                       {(service.tags || []).length > 2 && (
                         <Badge variant="secondary" className="text-xs">+{ (service.tags || []).length - 2} more</Badge>
+                      )}
+                       {(service.tags || []).length === 0 && (
+                        <span className="text-xs text-muted-foreground italic">No tags</span>
                       )}
                     </div>
                   </TableCell>
@@ -309,6 +357,43 @@ export default function AdminServicesPage(): ReactElement {
                     </AlertDialog>
                   </TableCell>
                 </TableRow>
+                {expandedServiceIds.has(service.id) && (
+                    <TableRow className="bg-secondary/30 hover:bg-secondary/40">
+                        <TableCell colSpan={7} className="p-0">
+                            <div className="p-4 space-y-3">
+                                <h4 className="font-semibold text-sm flex items-center">
+                                    <ListChecks className="h-4 w-4 mr-2 text-primary" />
+                                    Tiers for: <span className="italic mx-1">{service.name}</span>
+                                </h4>
+                                {service.tiers.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {service.tiers.map(tier => (
+                                        <Card key={tier.id} className="bg-card/70 shadow-sm">
+                                            <CardHeader className="pb-2 pt-3 px-3">
+                                                <CardTitle className="text-sm font-medium flex justify-between items-center">
+                                                    <span>{tier.name}</span>
+                                                    <Badge variant="default" className="text-xs">₹{tier.price.toFixed(2)}</Badge>
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="px-3 pb-3 text-xs space-y-1">
+                                                <p className="text-muted-foreground truncate" title={tier.description}>
+                                                    {tier.description.substring(0, 60)}{tier.description.length > 60 ? '...' : ''}
+                                                </p>
+                                                <p className="text-muted-foreground">
+                                                   Delivery: {formatStructuredDeliveryTime(tier.deliveryTimeMin, tier.deliveryTimeMax, tier.deliveryTimeUnit)}
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-muted-foreground italic">No tiers defined for this service.</p>
+                                )}
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                )}
+                </Fragment>
               ))}
             </TableBody>
           </Table>
@@ -317,3 +402,4 @@ export default function AdminServicesPage(): ReactElement {
     </div>
   );
 }
+
