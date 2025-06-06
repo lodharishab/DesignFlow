@@ -4,36 +4,36 @@
 import type { ReactElement } from 'react';
 import { Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ClipboardList } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { OrdersTableView } from '@/components/admin/orders/orders-table-view';
 
-function AdminAllOrdersPageContent(): ReactElement {
+function AdminAwaitingReviewOrdersPageContent(): ReactElement {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold font-headline flex items-center">
-          <ClipboardList className="mr-3 h-8 w-8 text-primary" />
-          All Customer Orders
+          <Eye className="mr-3 h-8 w-8 text-primary" />
+          Orders Awaiting Client Review
         </h1>
       </div>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>All Orders</CardTitle>
-          <CardDescription>View, track, and manage all orders placed on the platform. Status updates are simulated.</CardDescription>
+          <CardTitle>Orders Awaiting Client Review</CardTitle>
+          <CardDescription>Deliverables have been submitted by the designer and are pending client approval or revision requests.</CardDescription>
         </CardHeader>
         <CardContent>
-          <OrdersTableView fixedStatusFilter="All" />
+          <OrdersTableView fixedStatusFilter="Awaiting Client Review" />
         </CardContent>
       </Card>
     </div>
   );
 }
 
-export default function AdminAllOrdersPage(): ReactElement {
+export default function AdminAwaitingReviewOrdersPage(): ReactElement {
   return (
     <Suspense fallback={<div className="flex-grow container mx-auto py-12 px-5 text-center">Loading orders...</div>}>
-      <AdminAllOrdersPageContent />
+      <AdminAwaitingReviewOrdersPageContent />
     </Suspense>
   )
 }

@@ -4,18 +4,18 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { 
-  LayoutDashboard, 
-  Briefcase, 
-  Users, 
-  ClipboardList, 
+import {
+  LayoutDashboard,
+  Briefcase,
+  Users,
+  ClipboardList,
   Settings,
   Brush,
   UsersRound,
   Tags,
-  List, 
+  List,
   ChevronDown,
-  Network, 
+  Network,
   LayoutGrid,
   Loader2,
   Clock,
@@ -23,20 +23,20 @@ import {
   CheckCircle2,
   XCircle
 } from 'lucide-react';
-import { 
-  SidebarProvider, 
-  Sidebar, 
-  SidebarHeader, 
-  SidebarContent, 
-  SidebarMenu, 
-  SidebarMenuItem, 
-  SidebarMenuButton, 
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
   SidebarInset,
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
   SidebarFooter,
-  useSidebar 
+  useSidebar
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/shared/mode-toggle';
@@ -53,28 +53,28 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { 
-    label: 'Orders', 
-    icon: ClipboardList, 
+  {
+    label: 'Orders',
+    icon: ClipboardList,
     pathPrefix: '/admin/orders',
     children: [
       { href: '/admin/orders', icon: List, label: 'All Orders' },
-      { href: '/admin/orders?status=pending-assignment', icon: Loader2, label: 'Pending Assignment' },
-      { href: '/admin/orders?status=in-progress', icon: Clock, label: 'In Progress' },
-      { href: '/admin/orders?status=awaiting-client-review', icon: Eye, label: 'Awaiting Review' },
-      { href: '/admin/orders?status=completed', icon: CheckCircle2, label: 'Completed Orders' },
-      { href: '/admin/orders?status=cancelled', icon: XCircle, label: 'Cancelled Orders' },
-    ] 
+      { href: '/admin/orders/pending-assignment', icon: Loader2, label: 'Pending Assignment' },
+      { href: '/admin/orders/in-progress', icon: Clock, label: 'In Progress' },
+      { href: '/admin/orders/awaiting-review', icon: Eye, label: 'Awaiting Review' },
+      { href: '/admin/orders/completed', icon: CheckCircle2, label: 'Completed Orders' },
+      { href: '/admin/orders/cancelled', icon: XCircle, label: 'Cancelled Orders' },
+    ]
   },
-  { 
-    label: 'Services', 
-    icon: Briefcase, 
+  {
+    label: 'Services',
+    icon: Briefcase,
     pathPrefix: '/admin/services',
     children: [
       { href: '/admin/services', icon: List, label: 'All Services' },
       { href: '/admin/services/categories', icon: Tags, label: 'Service Categories' },
       { href: '/admin/services/sub-categories', icon: Network, label: 'Service Sub-categories' },
-    ] 
+    ]
   },
   { href: '/admin/designers', icon: Users, label: 'Designers' },
   { href: '/admin/users', icon: UsersRound, label: 'Users' },
@@ -85,7 +85,7 @@ const navItems = [
 function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
   const pathname = usePathname();
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
-  const { toggleSidebar } = useSidebar(); 
+  const { toggleSidebar } = useSidebar();
 
   useEffect(() => {
     const initiallyOpen: Record<string, boolean> = {};
@@ -121,7 +121,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
                       onClick={() => toggleSubmenu(item.label)}
-                      isActive={isParentActive && !isOpen} 
+                      isActive={isParentActive && !isOpen}
                       tooltip={{ children: item.label, side: 'right', align: 'center' }}
                       className="justify-between"
                       aria-expanded={isOpen}
@@ -140,17 +140,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                     {isOpen && (
                       <SidebarMenuSub>
                         {item.children.map(child => {
-                          let isChildActive;
-                          // For child links, check if current pathname + searchParams matches href.
-                          // This is a simplified check; more robust might involve parsing query params.
-                          const currentFullHref = pathname + (typeof window !== 'undefined' ? window.location.search : '');
-                          if (child.href === item.pathPrefix || child.href === '/admin/orders' || child.href === '/admin/services') { 
-                             // For "All Orders" or "All Services", match only the base path.
-                             isChildActive = pathname === child.href && (typeof window !== 'undefined' ? window.location.search === '' : true);
-                          } else {
-                            // For filtered links, a simple startsWith might be okay or check full href.
-                            isChildActive = currentFullHref === child.href;
-                          }
+                          // For exact matches (e.g., /admin/orders for "All Orders")
+                          // or for specific sub-routes (e.g., /admin/orders/pending-assignment)
+                          const isChildActive = pathname === child.href;
                           return (
                             <SidebarMenuSubItem key={child.label}>
                               <SidebarMenuSubButton asChild isActive={isChildActive}>
@@ -167,10 +159,10 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                   </SidebarMenuItem>
                 );
               } else {
-                const isActive = 
+                const isActive =
                   (item.href === '/admin/dashboard' && pathname === item.href) ||
                   (item.href !== '/admin/dashboard' && item.href && pathname.startsWith(item.href));
-                
+
                 return (
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
@@ -200,13 +192,13 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                 variant="ghost"
                 size="icon"
                 onClick={toggleSidebar}
-                className="h-8 w-8" 
+                className="h-8 w-8"
                 aria-label="Open menu"
               >
                 <LayoutGrid className="h-5 w-5" />
               </Button>
             </div>
-            <div className="flex-1" /> 
+            <div className="flex-1" />
             <div className="flex items-center space-x-4">
               <ModeToggle />
               <DropdownMenu>
