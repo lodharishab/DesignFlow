@@ -55,7 +55,7 @@ interface Order {
   designerId?: string;
   serviceName: string;
   serviceId: string;
-  serviceTier?: string; // Added service tier
+  serviceTier?: string;
   orderDate: Date;
   dueDate?: Date;
   status: OrderStatus;
@@ -238,10 +238,10 @@ export default function AdminOrdersPage(): ReactElement {
               <TableRow>
                 <TableHead className="w-[100px]">Order ID</TableHead>
                 <TableHead><User className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Client</TableHead>
-                <TableHead><Brush className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Designer</TableHead>
                 <TableHead><FileText className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Service</TableHead>
                 <TableHead><CalendarDays className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Order Date</TableHead>
                 <TableHead><Clock className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Status</TableHead>
+                <TableHead><Brush className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Designer</TableHead>
                 <TableHead className="text-right"><IndianRupee className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Total</TableHead>
                 <TableHead className="text-right w-[100px]">Actions</TableHead>
               </TableRow>
@@ -262,6 +262,13 @@ export default function AdminOrdersPage(): ReactElement {
                     </Link>
                   </TableCell>
                   <TableCell>{order.clientName}</TableCell>
+                  <TableCell className="max-w-[200px] truncate" title={`${order.serviceName} ${order.serviceTier ? `(Tier: ${order.serviceTier})` : ''}`}>
+                    {order.serviceName} {order.serviceTier ? <span className="text-xs text-muted-foreground">(Tier: {order.serviceTier})</span> : ''}
+                  </TableCell>
+                  <TableCell>{format(order.orderDate, 'MMM d, yyyy, p')}</TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusBadgeVariant(order.status)}>{order.status}</Badge>
+                  </TableCell>
                   <TableCell>
                     {order.designerId && order.designerName ? (
                       <Link href={`/admin/designers/edit/${order.designerId}`} className="text-primary hover:underline">
@@ -270,13 +277,6 @@ export default function AdminOrdersPage(): ReactElement {
                     ) : (
                       <span className="text-muted-foreground italic">N/A</span>
                     )}
-                  </TableCell>
-                  <TableCell className="max-w-[200px] truncate" title={`${order.serviceName} ${order.serviceTier ? `(Tier: ${order.serviceTier})` : ''}`}>
-                    {order.serviceName} {order.serviceTier ? <span className="text-xs text-muted-foreground">(Tier: {order.serviceTier})</span> : ''}
-                  </TableCell>
-                  <TableCell>{format(order.orderDate, 'MMM d, yyyy, p')}</TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadgeVariant(order.status)}>{order.status}</Badge>
                   </TableCell>
                   <TableCell className="text-right">₹{order.totalAmount.toFixed(2)}</TableCell>
                   <TableCell className="text-right">
