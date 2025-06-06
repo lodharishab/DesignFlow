@@ -16,7 +16,12 @@ import {
   List, 
   ChevronDown,
   Network, 
-  LayoutGrid 
+  LayoutGrid,
+  Loader2,
+  Clock,
+  Eye,
+  CheckCircle2,
+  XCircle
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -30,7 +35,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
-  SidebarFooter, // Added SidebarFooter import
+  SidebarFooter,
   useSidebar 
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -48,7 +53,19 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/admin/orders', icon: ClipboardList, label: 'Orders' },
+  { 
+    label: 'Orders', 
+    icon: ClipboardList, 
+    pathPrefix: '/admin/orders',
+    children: [
+      { href: '/admin/orders', icon: List, label: 'All Orders' },
+      { href: '/admin/orders?status=pending-assignment', icon: Loader2, label: 'Pending Assignment' },
+      { href: '/admin/orders?status=in-progress', icon: Clock, label: 'In Progress' },
+      { href: '/admin/orders?status=awaiting-client-review', icon: Eye, label: 'Awaiting Review' },
+      { href: '/admin/orders?status=completed', icon: CheckCircle2, label: 'Completed Orders' },
+      { href: '/admin/orders?status=cancelled', icon: XCircle, label: 'Cancelled Orders' },
+    ] 
+  },
   { 
     label: 'Services', 
     icon: Briefcase, 
@@ -124,10 +141,15 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                       <SidebarMenuSub>
                         {item.children.map(child => {
                           let isChildActive;
-                          if (child.href === item.pathPrefix) { 
-                            isChildActive = pathname === child.href;
-                          } else { 
-                            isChildActive = pathname.startsWith(child.href);
+                          // For child links, check if current pathname + searchParams matches href.
+                          // This is a simplified check; more robust might involve parsing query params.
+                          const currentFullHref = pathname + (typeof window !== 'undefined' ? window.location.search : '');
+                          if (child.href === item.pathPrefix || child.href === '/admin/orders' || child.href === '/admin/services') { 
+                             // For "All Orders" or "All Services", match only the base path.
+                             isChildActive = pathname === child.href && (typeof window !== 'undefined' ? window.location.search === '' : true);
+                          } else {
+                            // For filtered links, a simple startsWith might be okay or check full href.
+                            isChildActive = currentFullHref === child.href;
                           }
                           return (
                             <SidebarMenuSubItem key={child.label}>

@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState, type ReactElement, useEffect, useMemo, Fragment } from 'react'; // Added Fragment
+import { useState, type ReactElement, useEffect, useMemo, Fragment, Suspense } from 'react'; 
+import { useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -32,7 +33,7 @@ import {
   ChevronDown, 
   ChevronUp, 
   ListChecks
-} from 'lucide-react'; // Added ChevronDown, ChevronUp, ListChecks
+} from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, isPast } from 'date-fns';
@@ -56,7 +57,7 @@ interface Order {
   serviceName: string;
   serviceId: string;
   serviceTier?: string;
-  serviceScope?: string[]; // Added for expandable details
+  serviceScope?: string[]; 
   orderDate: Date;
   dueDate?: Date;
   status: OrderStatus;
@@ -97,7 +98,7 @@ const initialOrdersData: Order[] = [
     serviceScope: ['5 social media posts', '1 Platform choice', '1 Round of revisions', 'Optimized JPG/PNG'],
     orderDate: new Date(2024, 5, 5, 14, 0), 
     dueDate: new Date(new Date().setDate(new Date().getDate() - 2)), 
-    status: 'In Progress', 
+    status: 'Pending Assignment', 
     totalAmount: 99, currency: 'INR',
     paymentMethod: 'PhonePe',
     transactionId: 'txn_GhtrDEWAq789',
@@ -105,8 +106,6 @@ const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 5, 5, 14, 0), event: 'Order Placed', actor: 'Charlie Brown' },
       { timestamp: new Date(2024, 5, 5, 14, 5), event: 'Payment Successful (PhonePe)', actor: 'System' },
       { timestamp: new Date(2024, 5, 5, 14, 10), event: 'Status changed to Pending Assignment', actor: 'System' },
-      { timestamp: new Date(2024, 5, 6, 10,0), event: 'Designer Assigned: David C.', actor: 'Admin'}, // Mock designer assignment
-      { timestamp: new Date(2024, 5, 6, 10,5), event: 'Status changed to In Progress', actor: 'System'},
     ],
     clientBrief: "Need 5 engaging posts for a summer sale campaign on Instagram and Facebook. Theme: Bright and sunny. Target audience: Young adults (18-25)."
   },
@@ -166,21 +165,40 @@ const initialOrdersData: Order[] = [
 ];
 
 
-const statusFilters: { label: string; value: OrderStatus | 'All'; icon: React.ElementType }[] = [
-  { label: 'All Orders', value: 'All', icon: ClipboardList },
-  { label: 'Pending Assignment', value: 'Pending Assignment', icon: Loader2 },
-  { label: 'In Progress', value: 'In Progress', icon: Clock },
-  { label: 'Awaiting Review', value: 'Awaiting Client Review', icon: Eye },
-  { label: 'Completed', value: 'Completed', icon: CheckCircle2 },
-  { label: 'Cancelled', value: 'Cancelled', icon: XCircleIcon },
+const statusFilters: { label: string; value: OrderStatus | 'All'; icon: React.ElementType, queryParam: string }[] = [
+  { label: 'All Orders', value: 'All', icon: ClipboardList, queryParam: 'all' },
+  { label: 'Pending Assignment', value: 'Pending Assignment', icon: Loader2, queryParam: 'pending-assignment' },
+  { label: 'In Progress', value: 'In Progress', icon: Clock, queryParam: 'in-progress' },
+  { label: 'Awaiting Review', value: 'Awaiting Client Review', icon: Eye, queryParam: 'awaiting-client-review' },
+  { label: 'Completed', value: 'Completed', icon: CheckCircle2, queryParam: 'completed' },
+  { label: 'Cancelled', value: 'Cancelled', icon: XCircleIcon, queryParam: 'cancelled' },
 ];
 
+const queryParamToStatus: Record<string, OrderStatus | 'All'> = {
+  'all': 'All',
+  'pending-assignment': 'Pending Assignment',
+  'in-progress': 'In Progress',
+  'awaiting-client-review': 'Awaiting Client Review',
+  'completed': 'Completed',
+  'cancelled': 'Cancelled',
+};
 
-export default function AdminOrdersPage(): ReactElement {
+
+function AdminOrdersPageContent(): ReactElement {
   const [allOrders, setAllOrders] = useState<Order[]>(initialOrdersData);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
   const { toast } = useToast();
   const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const statusQuery = searchParams.get('status');
+    if (statusQuery && queryParamToStatus[statusQuery]) {
+      setStatusFilter(queryParamToStatus[statusQuery]);
+    } else {
+      setStatusFilter('All'); // Default to 'All' if no valid query param
+    }
+  }, [searchParams]);
 
   const displayedOrders = useMemo(() => {
     return allOrders.filter(order => 
@@ -276,7 +294,7 @@ export default function AdminOrdersPage(): ReactElement {
             <TableBody>
               {displayedOrders.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center h-24"> {/* Adjusted colSpan */}
+                  <TableCell colSpan={8} className="text-center h-24">
                     No orders match the current filter.
                   </TableCell>
                 </TableRow>
@@ -293,7 +311,7 @@ export default function AdminOrdersPage(): ReactElement {
                     <TableCell>
                       <div className="flex items-start justify-between">
                         <div>
-                            <div>{order.serviceName}</div>
+                            <span className="font-medium">{order.serviceName}</span>
                             {order.serviceTier && (
                                 <div className="text-xs text-muted-foreground flex items-center">
                                 <Tag className="mr-1 h-3 w-3" /> Tier: {order.serviceTier}
@@ -378,7 +396,7 @@ export default function AdminOrdersPage(): ReactElement {
                   </TableRow>
                   {expandedOrderIds.has(order.id) && (
                     <TableRow className="bg-secondary/30 hover:bg-secondary/40">
-                      <TableCell colSpan={8} className="p-0"> {/* Adjusted colSpan */}
+                      <TableCell colSpan={8} className="p-0"> 
                         <div className="p-4 ">
                           <h4 className="font-semibold text-sm mb-2 flex items-center">
                             <ListChecks className="h-4 w-4 mr-2 text-primary" />
@@ -405,5 +423,13 @@ export default function AdminOrdersPage(): ReactElement {
       </Card>
     </div>
   );
+}
+
+export default function AdminOrdersPage(): ReactElement {
+  return (
+    <Suspense fallback={<div>Loading orders...</div>}>
+      <AdminOrdersPageContent />
+    </Suspense>
+  )
 }
     
