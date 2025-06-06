@@ -22,12 +22,12 @@ import {
   Edit,
   ListChecks,
   Loader2,
-  Tag // Added Tag icon for tier
+  Tag 
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 type OrderStatus = 'Pending Assignment' | 'In Progress' | 'Awaiting Client Review' | 'Revision Requested' | 'Completed' | 'Cancelled' | 'Refunded';
@@ -47,7 +47,7 @@ interface Order {
   designerId?: string;
   serviceName: string;
   serviceId: string;
-  serviceTier?: string; // Added service tier
+  serviceTier?: string; 
   orderDate: Date;
   dueDate?: Date;
   status: OrderStatus;
@@ -67,7 +67,7 @@ const initialOrdersData: Order[] = [
     designerName: 'Bob The Builder', designerId: 'des002',
     serviceName: 'Modern Logo Design', serviceId: 'svc001', serviceTier: 'Standard',
     orderDate: new Date(2024, 5, 1, 10, 30), 
-    dueDate: new Date(2024, 5, 15),
+    dueDate: new Date(new Date().setDate(new Date().getDate() + 3)), // Due in 3 days
     status: 'In Progress', 
     totalAmount: 199, currency: 'INR',
     paymentMethod: 'Razorpay',
@@ -94,7 +94,8 @@ const initialOrdersData: Order[] = [
     clientName: 'Charlie Brown', clientId: 'cli003', 
     serviceName: 'Social Media Post Pack', serviceId: 'svc002', serviceTier: 'Basic',
     orderDate: new Date(2024, 5, 5, 14, 0), 
-    status: 'Pending Assignment', 
+    dueDate: new Date(new Date().setDate(new Date().getDate() - 2)), // Overdue by 2 days from today
+    status: 'In Progress', 
     totalAmount: 99, currency: 'INR',
     paymentMethod: 'PhonePe',
     transactionId: 'txn_GhtrDEWAq789',
@@ -102,6 +103,8 @@ const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 5, 5, 14, 0), event: 'Order Placed', actor: 'Charlie Brown' },
       { timestamp: new Date(2024, 5, 5, 14, 5), event: 'Payment Successful (PhonePe)', actor: 'System' },
       { timestamp: new Date(2024, 5, 5, 14, 10), event: 'Status changed to Pending Assignment', actor: 'System' },
+      { timestamp: new Date(2024, 5, 6, 10,0), event: 'Designer Assigned: David C.', actor: 'Admin'},
+      { timestamp: new Date(2024, 5, 6, 10,5), event: 'Status changed to In Progress', actor: 'System'},
     ],
     clientBrief: "Need 5 engaging posts for a summer sale campaign on Instagram and Facebook. Theme: Bright and sunny. Target audience: Young adults (18-25)."
   },
@@ -137,7 +140,7 @@ const initialOrdersData: Order[] = [
     designerName: 'Carol Danvers', designerId: 'des003',
     serviceName: 'Professional Brochure Design', serviceId: 'svc003', serviceTier: 'Standard',
     orderDate: new Date(2024, 5, 10, 11, 20), 
-    dueDate: new Date(2024, 5, 25),
+    dueDate: new Date(new Date().setDate(new Date().getDate() + 7)), // Due in 7 days
     status: 'Awaiting Client Review', 
     totalAmount: 249, currency: 'INR',
     paymentMethod: 'PhonePe',
@@ -159,6 +162,8 @@ const getStatusBadgeVariant = (status: OrderStatus) => {
     default: return 'secondary';
   }
 };
+
+const activeOrderStatusesForDeadline: OrderStatus[] = ['In Progress', 'Awaiting Client Review', 'Revision Requested'];
 
 export default function AdminOrderDetailPage(): ReactElement {
   const router = useRouter();
@@ -258,7 +263,18 @@ export default function AdminOrderDetailPage(): ReactElement {
               {order.serviceTier && (
                 <p className="flex items-center"><Tag className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />Tier: {order.serviceTier}</p>
               )}
-              {order.dueDate && <p>Due Date: {format(order.dueDate, 'PPP')}</p>}
+              {order.dueDate && 
+                <div>
+                  <p>Due Date: {format(order.dueDate, 'PPP')}</p>
+                  {activeOrderStatusesForDeadline.includes(order.status) && (
+                     <p className={`text-xs font-medium mt-0.5 ${isPast(order.dueDate) ? 'text-destructive' : 'text-green-600 dark:text-green-500'}`}>
+                      {isPast(order.dueDate)
+                        ? `Overdue by ${formatDistanceToNow(order.dueDate, { addSuffix: false })}`
+                        : `Due in ${formatDistanceToNow(order.dueDate, { addSuffix: false })}`}
+                    </p>
+                  )}
+                </div>
+              }
             </div>
             <div className="space-y-1">
               <h4 className="font-semibold text-foreground flex items-center"><CreditCard className="mr-2 h-4 w-4 text-muted-foreground"/>Payment Information</h4>

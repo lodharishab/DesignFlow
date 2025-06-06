@@ -30,12 +30,12 @@ import {
   CheckCircle2,
   Loader2,
   AlertTriangle,
-  XCircle as XCircleIcon, // Renamed to avoid conflict if any
+  XCircle as XCircleIcon, 
   Archive
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
-import { format } from 'date-fns';
+import { format, formatDistanceToNow, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 type OrderStatus = 'Pending Assignment' | 'In Progress' | 'Awaiting Client Review' | 'Revision Requested' | 'Completed' | 'Cancelled' | 'Refunded';
@@ -75,7 +75,7 @@ const initialOrdersData: Order[] = [
     designerName: 'Bob The Builder', designerId: 'des002',
     serviceName: 'Modern Logo Design', serviceId: 'svc001', serviceTier: 'Standard',
     orderDate: new Date(2024, 5, 1, 10, 30), 
-    dueDate: new Date(2024, 5, 15),
+    dueDate: new Date(new Date().setDate(new Date().getDate() + 3)), // Due in 3 days
     status: 'In Progress', 
     totalAmount: 199, currency: 'INR',
     paymentMethod: 'Razorpay',
@@ -85,24 +85,16 @@ const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 5, 1, 11, 0), event: 'Payment Successful (Razorpay)', actor: 'System' },
       { timestamp: new Date(2024, 5, 2, 9, 0), event: 'Designer Assigned: Bob The Builder', actor: 'Admin' },
       { timestamp: new Date(2024, 5, 2, 9, 5), event: 'Status changed to In Progress', actor: 'System' },
-      { timestamp: new Date(2024, 5, 10, 17, 0), event: 'First draft submitted by designer.', actor: 'Bob The Builder', notes: 'Attached logo_concept_v1.zip' },
-      { timestamp: new Date(2024, 5, 11, 10, 0), event: 'Client requested revisions.', actor: 'Alice Johnson', notes: 'Needs more color options.' },
-      { timestamp: new Date(2024, 5, 11, 10, 5), event: 'Status changed to Revision Requested', actor: 'System' },
-      { timestamp: new Date(2024, 5, 12, 14,0), event: 'Revised draft submitted by designer.', actor: 'Bob The Builder', notes: 'logo_concept_v2.zip attached with new color palettes.' },
-      { timestamp: new Date(2024, 5, 12, 14,5), event: 'Status changed to Awaiting Client Review', actor: 'System' },
     ],
     clientBrief: "Looking for a minimalist logo for a new tech startup 'InnovateX'. Colors: prefer blues and silvers. Icon should represent innovation and connection. Modern and sleek feel.",
-    deliverables: [
-      { name: 'logo_concept_v1.zip', url: '#', submittedAt: new Date(2024, 5, 10, 17, 0)},
-      { name: 'logo_concept_v2.zip', url: '#', submittedAt: new Date(2024, 5, 12, 14, 0)},
-    ]
   },
   { 
     id: 'order002', 
     clientName: 'Charlie Brown', clientId: 'cli003', 
     serviceName: 'Social Media Post Pack', serviceId: 'svc002', serviceTier: 'Basic',
     orderDate: new Date(2024, 5, 5, 14, 0), 
-    status: 'Pending Assignment', 
+    dueDate: new Date(new Date().setDate(new Date().getDate() - 2)), // Overdue by 2 days
+    status: 'In Progress', 
     totalAmount: 99, currency: 'INR',
     paymentMethod: 'PhonePe',
     transactionId: 'txn_GhtrDEWAq789',
@@ -110,6 +102,8 @@ const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 5, 5, 14, 0), event: 'Order Placed', actor: 'Charlie Brown' },
       { timestamp: new Date(2024, 5, 5, 14, 5), event: 'Payment Successful (PhonePe)', actor: 'System' },
       { timestamp: new Date(2024, 5, 5, 14, 10), event: 'Status changed to Pending Assignment', actor: 'System' },
+      { timestamp: new Date(2024, 5, 6, 10,0), event: 'Designer Assigned: David C.', actor: 'Admin'},
+      { timestamp: new Date(2024, 5, 6, 10,5), event: 'Status changed to In Progress', actor: 'System'},
     ],
     clientBrief: "Need 5 engaging posts for a summer sale campaign on Instagram and Facebook. Theme: Bright and sunny. Target audience: Young adults (18-25)."
   },
@@ -145,7 +139,7 @@ const initialOrdersData: Order[] = [
     designerName: 'Carol Danvers', designerId: 'des003',
     serviceName: 'Professional Brochure Design', serviceId: 'svc003', serviceTier: 'Standard',
     orderDate: new Date(2024, 5, 10, 11, 20), 
-    dueDate: new Date(2024, 5, 25),
+    dueDate: new Date(new Date().setDate(new Date().getDate() + 7)), // Due in 7 days
     status: 'Awaiting Client Review', 
     totalAmount: 249, currency: 'INR',
     paymentMethod: 'PhonePe',
@@ -174,7 +168,7 @@ export default function AdminOrdersPage(): ReactElement {
   const displayedOrders = useMemo(() => {
     return allOrders.filter(order => 
       statusFilter === 'All' || order.status === statusFilter
-    );
+    ).sort((a,b) => b.orderDate.getTime() - a.orderDate.getTime()); // Sort by most recent orderDate
   }, [allOrders, statusFilter]);
 
   const getStatusBadgeVariant = (status: OrderStatus) => {
@@ -193,7 +187,10 @@ export default function AdminOrdersPage(): ReactElement {
   const handleUpdateStatus = (orderId: string, newStatus: OrderStatus) => {
     setAllOrders(prevOrders => 
       prevOrders.map(order => 
-        order.id === orderId ? { ...order, status: newStatus } : order
+        order.id === orderId ? { ...order, status: newStatus, 
+          // Add a new event for status change
+          orderEvents: [...order.orderEvents, { timestamp: new Date(), event: `Status changed to ${newStatus}`, actor: 'Admin' }]
+        } : order
       )
     );
     toast({
@@ -202,6 +199,8 @@ export default function AdminOrdersPage(): ReactElement {
       duration: 3000,
     });
   };
+
+  const activeOrderStatusesForDeadline: OrderStatus[] = ['In Progress', 'Awaiting Client Review', 'Revision Requested'];
 
 
   return (
@@ -239,7 +238,7 @@ export default function AdminOrdersPage(): ReactElement {
                 <TableHead className="w-[100px]">Order ID</TableHead>
                 <TableHead><User className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Client</TableHead>
                 <TableHead><FileText className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Service</TableHead>
-                <TableHead><CalendarDays className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Order Date</TableHead>
+                <TableHead><CalendarDays className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Date / Deadline</TableHead>
                 <TableHead><Clock className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Status</TableHead>
                 <TableHead><Brush className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Designer</TableHead>
                 <TableHead className="text-right"><IndianRupee className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Total</TableHead>
@@ -265,7 +264,20 @@ export default function AdminOrdersPage(): ReactElement {
                   <TableCell className="max-w-[200px] truncate" title={`${order.serviceName} ${order.serviceTier ? `(Tier: ${order.serviceTier})` : ''}`}>
                     {order.serviceName} {order.serviceTier ? <span className="text-xs text-muted-foreground">(Tier: {order.serviceTier})</span> : ''}
                   </TableCell>
-                  <TableCell>{format(order.orderDate, 'MMM d, yyyy, p')}</TableCell>
+                  <TableCell>
+                     {activeOrderStatusesForDeadline.includes(order.status) && order.dueDate ? (
+                        <div>
+                            <div>{format(order.dueDate, 'MMM d, yyyy')} <span className="text-xs">(Due)</span></div>
+                            <div className={`text-xs font-medium ${isPast(order.dueDate) ? 'text-destructive' : 'text-green-600 dark:text-green-500'}`}>
+                                {isPast(order.dueDate)
+                                ? `Overdue by ${formatDistanceToNow(order.dueDate, { addSuffix: false })}`
+                                : `Due in ${formatDistanceToNow(order.dueDate, { addSuffix: false })}`}
+                            </div>
+                        </div>
+                    ) : (
+                        format(order.orderDate, 'MMM d, yyyy, p')
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(order.status)}>{order.status}</Badge>
                   </TableCell>
@@ -293,11 +305,26 @@ export default function AdminOrdersPage(): ReactElement {
                             <Eye className="mr-2 h-4 w-4" /> View Details
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem disabled> <Edit3 className="mr-2 h-4 w-4" /> Assign Designer</DropdownMenuItem>
+                        <DropdownMenuItem 
+                            disabled={order.status === 'Pending Assignment' ? false : true}
+                            onClick={() => order.status === 'Pending Assignment' ? handleUpdateStatus(order.id, 'In Progress') : null}
+                        > 
+                            <Edit3 className="mr-2 h-4 w-4" /> Assign Designer & Start
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, 'In Progress')}>Set to In Progress</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, 'Completed')}>Set to Completed</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, 'Cancelled')} className="text-destructive">Cancel Order</DropdownMenuItem>
+                        <DropdownMenuItem 
+                            onClick={() => handleUpdateStatus(order.id, 'Completed')}
+                            disabled={order.status === 'Completed' || order.status === 'Cancelled' || order.status === 'Refunded'}
+                        >
+                            <CheckCircle2 className="mr-2 h-4 w-4" /> Mark as Completed
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                            onClick={() => handleUpdateStatus(order.id, 'Cancelled')} 
+                            className="text-destructive"
+                            disabled={order.status === 'Completed' || order.status === 'Cancelled' || order.status === 'Refunded'}
+                        >
+                            <XCircleIcon className="mr-2 h-4 w-4" /> Cancel Order
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -310,4 +337,6 @@ export default function AdminOrdersPage(): ReactElement {
     </div>
   );
 }
+    
+
     
