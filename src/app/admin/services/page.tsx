@@ -29,7 +29,12 @@ import {
   ArchiveIcon,
   Eye,
   Tags as TagsIcon, 
-  ListChecks
+  ListChecks,
+  ArrowUpDown,
+  ListFilter,
+  BookOpenCheck,
+  Archive,
+  FileSignature
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
@@ -146,6 +151,16 @@ const initialServicesData: AdminServiceModified[] = [
   },
 ];
 
+type ServiceStatusFilter = 'All' | AdminServiceModified['status'];
+const statusFilters: { label: string; value: ServiceStatusFilter; icon: React.ElementType }[] = [
+  { label: 'All Services', value: 'All', icon: ListFilter },
+  { label: 'Active', value: 'Active', icon: BookOpenCheck },
+  { label: 'Draft', value: 'Draft', icon: FileSignature },
+  { label: 'Archived', value: 'Archived', icon: Archive },
+];
+
+type SortableServiceKeys = 'name' | 'category' | 'status' | 'priceRange'; // 'priceRange' needs special handling
+
 function formatStructuredDeliveryTime(min: number, max: number, unit: TierForList['deliveryTimeUnit']): string {
   const unitLabel = unit.replace('_', ' ');
   if (min === max) {
@@ -158,6 +173,11 @@ export default function AdminServicesPage(): ReactElement {
   const [services, setServices] = useState<AdminServiceModified[]>(initialServicesData);
   const [selectedServiceIds, setSelectedServiceIds] = useState<Set<string>>(new Set());
   const [expandedServiceIds, setExpandedServiceIds] = useState<Set<string>>(new Set());
+  const [statusFilter, setStatusFilter] = useState<ServiceStatusFilter>('All');
+  const [sortConfig, setSortConfig] = useState<{ key: SortableServiceKeys | null; direction: 'ascending' | 'descending' }>({
+    key: 'name',
+    direction: 'ascending',
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -166,9 +186,61 @@ export default function AdminServicesPage(): ReactElement {
     }
   }, [services]);
 
+  const getPriceRangeValue = (tiers: TierForList[]): number => {
+    if (!tiers || tiers.length === 0) return 0;
+    return Math.min(...tiers.map(t => t.price)); // Sort by min price for range
+  };
+
+  const displayedServices = useMemo(() => {
+    let filteredServices = [...services];
+
+    if (statusFilter !== 'All') {
+      filteredServices = filteredServices.filter(service => service.status === statusFilter);
+    }
+
+    if (sortConfig.key) {
+      filteredServices.sort((a, b) => {
+        let valA, valB;
+        if (sortConfig.key === 'priceRange') {
+          valA = getPriceRangeValue(a.tiers);
+          valB = getPriceRangeValue(b.tiers);
+        } else {
+          valA = a[sortConfig.key!];
+          valB = b[sortConfig.key!];
+        }
+
+        let comparison = 0;
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          comparison = valA - valB;
+        } else {
+          comparison = String(valA).toLowerCase().localeCompare(String(valB).toLowerCase());
+        }
+        return sortConfig.direction === 'ascending' ? comparison : comparison * -1;
+      });
+    }
+    return filteredServices;
+  }, [services, statusFilter, sortConfig]);
+
+  const requestSort = (key: SortableServiceKeys) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIndicator = (key: SortableServiceKeys) => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown className="ml-2 h-3 w-3 text-muted-foreground/50" />;
+    }
+    return sortConfig.direction === 'ascending' ?
+      <ChevronUp className="ml-1 h-4 w-4" /> :
+      <ChevronDown className="ml-1 h-4 w-4" />;
+  };
+
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked === true) {
-      setSelectedServiceIds(new Set(services.map(service => service.id)));
+      setSelectedServiceIds(new Set(displayedServices.map(service => service.id)));
     } else {
       setSelectedServiceIds(new Set());
     }
@@ -183,8 +255,14 @@ export default function AdminServicesPage(): ReactElement {
     });
   };
   
-  const isAllSelected = useMemo(() => services.length > 0 && selectedServiceIds.size === services.length, [services, selectedServiceIds]);
-  const isIndeterminate = useMemo(() => selectedServiceIds.size > 0 && selectedServiceIds.size < services.length, [services, selectedServiceIds]);
+  const isAllDisplayedSelected = useMemo(() => {
+    return displayedServices.length > 0 && selectedServiceIds.size === displayedServices.length && displayedServices.every(d => selectedServiceIds.has(d.id));
+  }, [displayedServices, selectedServiceIds]);
+
+  const isIndeterminate = useMemo(() => {
+    const displayedSelectedCount = displayedServices.filter(d => selectedServiceIds.has(d.id)).length;
+    return displayedSelectedCount > 0 && displayedSelectedCount < displayedServices.length;
+  }, [displayedServices, selectedServiceIds]);
 
   const handleDeleteService = (serviceId: string, serviceName: string) => {
     setServices(prevServices => prevServices.filter(service => service.id !== serviceId));
@@ -251,7 +329,7 @@ export default function AdminServicesPage(): ReactElement {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold font-headline flex items-center"><Briefcase className="mr-3 h-8 w-8 text-primary" />Manage Services</h1>
         <Button asChild><Link href="/admin/services/new"><PlusCircle className="mr-2 h-4 w-4" /> Add New Service</Link></Button>
       </div>
@@ -260,6 +338,19 @@ export default function AdminServicesPage(): ReactElement {
         <CardHeader>
           <CardTitle>All Services</CardTitle>
           <CardDescription>View, add, edit, or remove design services. Services can have multiple tiers/variations.</CardDescription>
+           <div className="pt-4 flex flex-wrap gap-2">
+            {statusFilters.map(filter => (
+              <Button
+                key={filter.value}
+                variant={statusFilter === filter.value ? 'default' : 'outline'}
+                onClick={() => setStatusFilter(filter.value)}
+                size="sm"
+              >
+                <filter.icon className="mr-2 h-4 w-4" />
+                {filter.label}
+              </Button>
+            ))}
+          </div>
         </CardHeader>
         <CardContent>
           {selectedServiceIds.size > 0 && (
@@ -271,7 +362,7 @@ export default function AdminServicesPage(): ReactElement {
                   <DropdownMenuLabel>Apply to selected</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => handleBulkStatusChange('Active')} className="text-green-600 dark:text-green-500"><CheckCircle2 className="mr-2 h-4 w-4" /> Activate</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleBulkStatusChange('Draft')} className="text-blue-600 dark:text-blue-500"><Activity className="mr-2 h-4 w-4" /> Set to Draft</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleBulkStatusChange('Draft')} className="text-blue-600 dark:text-blue-500"><FileSignature className="mr-2 h-4 w-4" /> Set to Draft</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleBulkStatusChange('Archived')} className="text-yellow-600 dark:text-yellow-500"><ArchiveIcon className="mr-2 h-4 w-4" /> Archive</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <AlertDialog>
@@ -292,18 +383,34 @@ export default function AdminServicesPage(): ReactElement {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]"><Checkbox checked={isIndeterminate ? "indeterminate" : isAllSelected} onCheckedChange={handleSelectAll} aria-label="Select all" disabled={services.length === 0}/></TableHead>
-                <TableHead className="w-[280px]">Service Name</TableHead>
-                <TableHead><Tag className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Category</TableHead>
+                <TableHead className="w-[50px]"><Checkbox checked={isIndeterminate ? "indeterminate" : isAllDisplayedSelected} onCheckedChange={handleSelectAll} aria-label="Select all" disabled={displayedServices.length === 0}/></TableHead>
+                <TableHead className="w-[280px]">
+                  <Button variant="ghost" onClick={() => requestSort('name')} className="px-1 text-xs sm:text-sm -ml-2">
+                    Service Name {getSortIndicator('name')}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                   <Button variant="ghost" onClick={() => requestSort('category')} className="px-1 text-xs sm:text-sm -ml-2">
+                    <Tag className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />Category {getSortIndicator('category')}
+                  </Button>
+                </TableHead>
                 <TableHead><TagsIcon className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Tags</TableHead>
-                <TableHead><IndianRupee className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Price Range</TableHead>
-                <TableHead><Activity className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Status</TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => requestSort('priceRange')} className="px-1 text-xs sm:text-sm -ml-2">
+                    <IndianRupee className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />Price Range {getSortIndicator('priceRange')}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => requestSort('status')} className="px-1 text-xs sm:text-sm -ml-2">
+                    <Activity className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />Status {getSortIndicator('status')}
+                  </Button>
+                </TableHead>
                 <TableHead className="text-right w-[150px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {services.length === 0 && <TableRow><TableCell colSpan={7} className="text-center h-24">No services found.</TableCell></TableRow>}
-              {services.map(service => (
+              {displayedServices.length === 0 && <TableRow><TableCell colSpan={7} className="text-center h-24">No services match filters.</TableCell></TableRow>}
+              {displayedServices.map(service => (
                 <Fragment key={service.id}>
                 <TableRow data-state={selectedServiceIds.has(service.id) ? "selected" : ""}>
                   <TableCell><Checkbox checked={selectedServiceIds.has(service.id)} onCheckedChange={(checked) => handleSelectOne(service.id, checked)} aria-label={`Select ${service.name}`} /></TableCell>
@@ -402,4 +509,3 @@ export default function AdminServicesPage(): ReactElement {
     </div>
   );
 }
-
