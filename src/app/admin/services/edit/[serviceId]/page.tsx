@@ -13,6 +13,17 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ServiceTierAdmin {
   id: string;
@@ -99,6 +110,7 @@ export default function AdminEditServicePage(): ReactElement {
   const [service, setService] = useState<AdminServiceModified | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form state for general service details
   const [serviceName, setServiceName] = useState('');
@@ -126,7 +138,7 @@ export default function AdminEditServicePage(): ReactElement {
         setStatus(foundService.status);
         setImageUrl(foundService.imageUrl || '');
         setImageAiHint(foundService.imageAiHint || '');
-        setTagsArray(foundService.tags || []); // Use array directly
+        setTagsArray(foundService.tags || []);
         setTiers(foundService.tiers.map(t => ({
           ...t, 
           price: Number(t.price), 
@@ -216,7 +228,7 @@ export default function AdminEditServicePage(): ReactElement {
       status,
       imageUrl,
       imageAiHint,
-      tags: tagsArray, // Use array directly
+      tags: tagsArray,
       tiers
     };
     console.log("Saving updated service:", updatedService);
@@ -227,6 +239,22 @@ export default function AdminEditServicePage(): ReactElement {
       router.push('/admin/services');
     }, 1000);
   };
+
+  const handleDeleteService = () => {
+    setIsDeleting(true);
+    // Simulate API call for deletion
+    console.log("Deleting service:", serviceId, serviceName);
+    setTimeout(() => {
+      toast({
+        title: "Service Deleted (Simulated)",
+        description: `Service "${serviceName}" has been deleted.`,
+        variant: "destructive",
+      });
+      setIsDeleting(false);
+      router.push('/admin/services');
+    }, 1000);
+  };
+
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2 text-muted-foreground">Loading...</p></div>;
@@ -248,11 +276,11 @@ export default function AdminEditServicePage(): ReactElement {
            <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="serviceName"><FileText className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Service Name*</Label>
-              <Input id="serviceName" value={serviceName} onChange={(e) => setServiceName(e.target.value)} disabled={isSaving} />
+              <Input id="serviceName" value={serviceName} onChange={(e) => setServiceName(e.target.value)} disabled={isSaving || isDeleting} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="category"><Tag className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Category*</Label>
-              <Select value={category} onValueChange={(value) => setCategory(value)} disabled={isSaving}>
+              <Select value={category} onValueChange={(value) => setCategory(value)} disabled={isSaving || isDeleting}>
                 <SelectTrigger id="category"><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>{serviceCategories.map(cat => <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>)}</SelectContent>
               </Select>
@@ -260,22 +288,22 @@ export default function AdminEditServicePage(): ReactElement {
           </div>
           <div className="space-y-2">
             <Label htmlFor="generalDescription">General Description (for service page)*</Label>
-            <Textarea id="generalDescription" value={generalDescription} onChange={(e) => setGeneralDescription(e.target.value)} rows={4} disabled={isSaving} />
+            <Textarea id="generalDescription" value={generalDescription} onChange={(e) => setGeneralDescription(e.target.value)} rows={4} disabled={isSaving || isDeleting} />
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="imageUrl"><ImageIcon className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Image URL</Label>
-              <Input id="imageUrl" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} disabled={isSaving} />
+              <Input id="imageUrl" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} disabled={isSaving || isDeleting} />
             </div>
              <div className="space-y-2">
               <Label htmlFor="imageAiHint"><Lightbulb className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Image AI Hint</Label>
-              <Input id="imageAiHint" value={imageAiHint} onChange={(e) => setImageAiHint(e.target.value)} disabled={isSaving} />
+              <Input id="imageAiHint" value={imageAiHint} onChange={(e) => setImageAiHint(e.target.value)} disabled={isSaving || isDeleting} />
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="status">Status*</Label>
-              <Select value={status} onValueChange={(value) => setStatus(value as AdminServiceModified['status'])} disabled={isSaving}>
+              <Select value={status} onValueChange={(value) => setStatus(value as AdminServiceModified['status'])} disabled={isSaving || isDeleting}>
                 <SelectTrigger id="status"><SelectValue placeholder="Select status" /></SelectTrigger>
                 <SelectContent>{serviceStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
@@ -289,7 +317,7 @@ export default function AdminEditServicePage(): ReactElement {
                   value={currentTagInput}
                   onChange={handleTagInputChange}
                   onKeyDown={handleTagInputKeyDown}
-                  disabled={isSaving}
+                  disabled={isSaving || isDeleting}
                   className="flex-grow"
                 />
               </div>
@@ -302,7 +330,7 @@ export default function AdminEditServicePage(): ReactElement {
                       onClick={() => handleRemoveTag(tag)}
                       className="rounded-full hover:bg-muted-foreground/20 p-0.5 focus:outline-none focus:ring-1 focus:ring-ring"
                       aria-label={`Remove tag ${tag}`}
-                      disabled={isSaving}
+                      disabled={isSaving || isDeleting}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -330,7 +358,7 @@ export default function AdminEditServicePage(): ReactElement {
                 size="icon" 
                 className="absolute top-2 right-2 text-destructive hover:bg-destructive/10"
                 onClick={() => removeTier(index)}
-                disabled={isSaving || tiers.length <= 1}
+                disabled={isSaving || isDeleting || tiers.length <= 1}
                 aria-label="Remove tier"
               >
                 <Trash2 className="h-4 w-4" />
@@ -339,31 +367,31 @@ export default function AdminEditServicePage(): ReactElement {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor={`tierName-${index}`}>Tier Name* (e.g., Basic, Standard)</Label>
-                  <Input id={`tierName-${index}`} value={tier.name} onChange={(e) => handleTierChange(index, 'name', e.target.value)} disabled={isSaving} />
+                  <Input id={`tierName-${index}`} value={tier.name} onChange={(e) => handleTierChange(index, 'name', e.target.value)} disabled={isSaving || isDeleting} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor={`tierPrice-${index}`}><IndianRupee className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Price (INR)*</Label>
-                  <Input id={`tierPrice-${index}`} type="number" value={tier.price.toString()} onChange={(e) => handleTierChange(index, 'price', e.target.value)} disabled={isSaving} />
+                  <Input id={`tierPrice-${index}`} type="number" value={tier.price.toString()} onChange={(e) => handleTierChange(index, 'price', e.target.value)} disabled={isSaving || isDeleting} />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor={`tierDescription-${index}`}>Tier Description/Scope*</Label>
-                <Textarea id={`tierDescription-${index}`} value={tier.description} onChange={(e) => handleTierChange(index, 'description', e.target.value)} rows={3} disabled={isSaving} />
+                <Textarea id={`tierDescription-${index}`} value={tier.description} onChange={(e) => handleTierChange(index, 'description', e.target.value)} rows={3} disabled={isSaving || isDeleting} />
               </div>
               <div className="space-y-2">
                 <Label><ClockIcon className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Delivery Time*</Label>
                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 items-end">
                     <div className="space-y-1">
                         <Label htmlFor={`tierDeliveryTimeMin-${index}`} className="text-xs">Min Value</Label>
-                        <Input id={`tierDeliveryTimeMin-${index}`} type="number" value={tier.deliveryTimeMin.toString()} onChange={(e) => handleTierChange(index, 'deliveryTimeMin', e.target.value)} disabled={isSaving} placeholder="e.g., 3"/>
+                        <Input id={`tierDeliveryTimeMin-${index}`} type="number" value={tier.deliveryTimeMin.toString()} onChange={(e) => handleTierChange(index, 'deliveryTimeMin', e.target.value)} disabled={isSaving || isDeleting} placeholder="e.g., 3"/>
                     </div>
                     <div className="space-y-1">
                         <Label htmlFor={`tierDeliveryTimeMax-${index}`} className="text-xs">Max Value</Label>
-                        <Input id={`tierDeliveryTimeMax-${index}`} type="number" value={tier.deliveryTimeMax.toString()} onChange={(e) => handleTierChange(index, 'deliveryTimeMax', e.target.value)} disabled={isSaving} placeholder="e.g., 5"/>
+                        <Input id={`tierDeliveryTimeMax-${index}`} type="number" value={tier.deliveryTimeMax.toString()} onChange={(e) => handleTierChange(index, 'deliveryTimeMax', e.target.value)} disabled={isSaving || isDeleting} placeholder="e.g., 5"/>
                     </div>
                     <div className="space-y-1 md:col-span-1">
                          <Label htmlFor={`tierDeliveryTimeUnit-${index}`} className="text-xs">Unit</Label>
-                        <Select value={tier.deliveryTimeUnit} onValueChange={(value) => handleTierChange(index, 'deliveryTimeUnit', value)} disabled={isSaving}>
+                        <Select value={tier.deliveryTimeUnit} onValueChange={(value) => handleTierChange(index, 'deliveryTimeUnit', value)} disabled={isSaving || isDeleting}>
                             <SelectTrigger id={`tierDeliveryTimeUnit-${index}`}><SelectValue placeholder="Unit" /></SelectTrigger>
                             <SelectContent>{deliveryTimeUnits.map(unit => <SelectItem key={unit.value} value={unit.value}>{unit.label}</SelectItem>)}</SelectContent>
                         </Select>
@@ -372,20 +400,47 @@ export default function AdminEditServicePage(): ReactElement {
               </div>
             </div>
           ))}
-          <Button variant="outline" onClick={addTier} disabled={isSaving}>
+          <Button variant="outline" onClick={addTier} disabled={isSaving || isDeleting}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add Another Tier
           </Button>
         </CardContent>
       </Card>
 
-      <CardFooter className="flex justify-end space-x-3 pt-6">
-        <Button variant="outline" asChild disabled={isSaving}>
-          <Link href="/admin/services"><XCircle className="mr-2 h-4 w-4" />Cancel</Link>
-        </Button>
-        <Button onClick={handleSaveChanges} disabled={isSaving}>
-          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-          Save Changes
-        </Button>
+      <CardFooter className="flex justify-between items-center pt-6">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" disabled={isSaving || isDeleting}>
+              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+              Delete Service
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the service "{serviceName}"
+                and all of its tiers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteService} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Yes, delete service
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        
+        <div className="flex space-x-3">
+          <Button variant="outline" asChild disabled={isSaving || isDeleting}>
+            <Link href="/admin/services"><XCircle className="mr-2 h-4 w-4" />Cancel</Link>
+          </Button>
+          <Button onClick={handleSaveChanges} disabled={isSaving || isDeleting}>
+            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            Save Changes
+          </Button>
+        </div>
       </CardFooter>
     </div>
   );

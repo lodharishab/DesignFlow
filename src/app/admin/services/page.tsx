@@ -20,7 +20,7 @@ import {
   Briefcase, 
   PlusCircle, 
   Edit3, 
-  Trash2, 
+  // Trash2, // Removed Trash2
   IndianRupee,
   Tag, 
   Activity, 
@@ -39,17 +39,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+// AlertDialog components are no longer needed here for deletion
 import { cn } from '@/lib/utils';
 
 interface TierForList {
@@ -275,31 +265,6 @@ export default function AdminServicesPage(): ReactElement {
     return displayedSelectedCount > 0 && displayedSelectedCount < displayedServices.length;
   }, [displayedServices, selectedServiceIds]);
 
-  const handleDeleteService = (serviceId: string, serviceName: string) => {
-    setServices(prevServices => prevServices.filter(service => service.id !== serviceId));
-    setSelectedServiceIds(prevSelected => {
-      const newSelected = new Set(prevSelected);
-      newSelected.delete(serviceId);
-      return newSelected;
-    });
-    setExpandedServiceIds(prevExpanded => {
-      const newExpanded = new Set(prevExpanded);
-      newExpanded.delete(serviceId);
-      return newExpanded;
-    });
-    toast({ title: "Service Deleted (Simulated)", description: `Service "${serviceName}" removed.`, variant: "destructive" });
-  };
-
-  const handleBulkDelete = () => {
-    const count = selectedServiceIds.size;
-    setServices(prevServices => prevServices.filter(service => !selectedServiceIds.has(service.id)));
-    const newExpanded = new Set(expandedServiceIds);
-    selectedServiceIds.forEach(id => newExpanded.delete(id));
-    setExpandedServiceIds(newExpanded);
-    setSelectedServiceIds(new Set());
-    toast({ title: "Bulk Delete (Simulated)", description: `${count} service(s) removed.`, variant: "destructive" });
-  };
-
   const handleBulkStatusChange = (status: 'Active' | 'Archived' | 'Draft') => {
     const count = selectedServiceIds.size;
     setServices(prevServices => 
@@ -389,18 +354,7 @@ export default function AdminServicesPage(): ReactElement {
                   <DropdownMenuItem onClick={() => handleBulkStatusChange('Active')} className="text-green-600 dark:text-green-500"><CheckCircle2 className="mr-2 h-4 w-4" /> Activate</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleBulkStatusChange('Draft')} className="text-blue-600 dark:text-blue-500"><FileSignature className="mr-2 h-4 w-4" /> Set to Draft</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleBulkStatusChange('Archived')} className="text-yellow-600 dark:text-yellow-500"><ArchiveIcon className="mr-2 h-4 w-4" /> Archive</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete Selected
-                      </DropdownMenuItem>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader><AlertDialogTitle>Confirm Bulk Deletion</AlertDialogTitle><AlertDialogDescription>Delete {selectedServiceIds.size} service(s)? (Simulated)</AlertDialogDescription></AlertDialogHeader>
-                      <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleBulkDelete} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction></AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  {/* Delete selected option removed */}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -430,7 +384,7 @@ export default function AdminServicesPage(): ReactElement {
                     <Activity className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />Status {getSortIndicator('status')}
                   </Button>
                 </TableHead>
-                <TableHead className="text-right w-[150px]">Actions</TableHead>
+                <TableHead className="text-right w-[100px]">Actions</TableHead> {/* Reduced width as delete is removed */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -480,13 +434,7 @@ export default function AdminServicesPage(): ReactElement {
                         <Edit3 className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild><Button variant="outline" size="icon" className="hover:text-destructive" aria-label={`Delete ${service.name}`}><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader><AlertDialogTitle>Confirm Deletion</AlertDialogTitle><AlertDialogDescription>Delete "{service.name}"? (Simulated)</AlertDialogDescription></AlertDialogHeader>
-                        <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteService(service.id, service.name)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete</AlertDialogAction></AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    {/* Individual Delete Button Removed */}
                   </TableCell>
                 </TableRow>
                 {expandedServiceIds.has(service.id) && (
