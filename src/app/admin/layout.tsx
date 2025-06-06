@@ -12,7 +12,7 @@ import {
   Settings,
   Brush,
   UsersRound,
-  Tags,
+  Tags as TagsIcon, // Aliased for clarity, as 'Tags' icon from lucide
   List,
   ChevronDown,
   Network,
@@ -72,8 +72,9 @@ const navItems = [
     pathPrefix: '/admin/services',
     children: [
       { href: '/admin/services', icon: List, label: 'All Services' },
-      { href: '/admin/services/categories', icon: Tags, label: 'Service Categories' },
+      { href: '/admin/services/categories', icon: TagsIcon, label: 'Service Categories' },
       { href: '/admin/services/sub-categories', icon: Network, label: 'Service Sub-categories' },
+      { href: '/admin/services/tags', icon: TagsIcon, label: 'Service Tags' },
     ]
   },
   { href: '/admin/designers', icon: Users, label: 'Designers' },
@@ -140,9 +141,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                     {isOpen && (
                       <SidebarMenuSub>
                         {item.children.map(child => {
-                          // For exact matches (e.g., /admin/orders for "All Orders")
-                          // or for specific sub-routes (e.g., /admin/orders/pending-assignment)
-                          const isChildActive = pathname === child.href;
+                          const isChildActive = pathname === child.href || (child.href !== '/admin/services' && pathname.startsWith(child.href) && child.href.split('/').length === pathname.split('/').length);
+
                           return (
                             <SidebarMenuSubItem key={child.label}>
                               <SidebarMenuSubButton asChild isActive={isChildActive}>
