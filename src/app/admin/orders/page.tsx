@@ -82,9 +82,13 @@ const initialOrdersData: Order[] = [
     totalAmount: 199, currency: 'INR',
     paymentMethod: 'Razorpay',
     transactionId: 'pay_Nlcftg87sHjkl',
-    orderEvents: [ /* ... */ ],
-    clientBrief: "Looking for a minimalist logo for a new tech startup 'InnovateX'.",
-    deliverables: [ /* ... */ ]
+    orderEvents: [
+      { timestamp: new Date(2024, 5, 1, 10, 30), event: 'Order Placed', actor: 'Alice Johnson' },
+      { timestamp: new Date(2024, 5, 1, 11, 0), event: 'Payment Successful (Razorpay)', actor: 'System' },
+      { timestamp: new Date(2024, 5, 2, 9, 0), event: 'Designer Assigned: Bob The Builder', actor: 'Admin' },
+      { timestamp: new Date(2024, 5, 2, 9, 5), event: 'Status changed to In Progress', actor: 'System' },
+    ],
+    clientBrief: "Looking for a minimalist logo for a new tech startup 'InnovateX'. Colors: prefer blues and silvers. Icon should represent innovation and connection. Modern and sleek feel."
   },
   { 
     id: 'order002', 
@@ -97,8 +101,14 @@ const initialOrdersData: Order[] = [
     totalAmount: 99, currency: 'INR',
     paymentMethod: 'PhonePe',
     transactionId: 'txn_GhtrDEWAq789',
-    orderEvents: [ /* ... */ ],
-    clientBrief: "Need 5 engaging posts for a summer sale."
+     orderEvents: [
+      { timestamp: new Date(2024, 5, 5, 14, 0), event: 'Order Placed', actor: 'Charlie Brown' },
+      { timestamp: new Date(2024, 5, 5, 14, 5), event: 'Payment Successful (PhonePe)', actor: 'System' },
+      { timestamp: new Date(2024, 5, 5, 14, 10), event: 'Status changed to Pending Assignment', actor: 'System' },
+      { timestamp: new Date(2024, 5, 6, 10,0), event: 'Designer Assigned: David C.', actor: 'Admin'}, // Mock designer assignment
+      { timestamp: new Date(2024, 5, 6, 10,5), event: 'Status changed to In Progress', actor: 'System'},
+    ],
+    clientBrief: "Need 5 engaging posts for a summer sale campaign on Instagram and Facebook. Theme: Bright and sunny. Target audience: Young adults (18-25)."
   },
   { 
     id: 'order003', 
@@ -112,7 +122,12 @@ const initialOrdersData: Order[] = [
     totalAmount: 399, currency: 'INR',
     paymentMethod: 'Razorpay',
     transactionId: 'pay_Mnbvcxz87Uyt',
-    orderEvents: [ /* ... */ ],
+    orderEvents: [
+        { timestamp: new Date(2024, 4, 20, 16, 45), event: 'Order Placed' },
+        { timestamp: new Date(2024, 5, 8, 12, 0), event: 'Final delivery approved by client.' },
+        { timestamp: new Date(2024, 5, 8, 12, 5), event: 'Status changed to Completed' },
+    ],
+    deliverables: [{ name: 'Homepage_mockup_final.fig', url: '#', submittedAt: new Date(2024, 5, 8, 12, 0)}]
   },
   { 
     id: 'order004', 
@@ -124,7 +139,10 @@ const initialOrdersData: Order[] = [
     totalAmount: 149, currency: 'INR',
     paymentMethod: 'Razorpay',
     transactionId: 'pay_Lkjhgf56Qwe',
-    orderEvents: [ /* ... */ ]
+    orderEvents: [
+        { timestamp: new Date(2024, 5, 8, 9, 15), event: 'Order Placed' },
+        { timestamp: new Date(2024, 5, 9, 10, 0), event: 'Order Cancelled by Client' },
+    ]
   },
    { 
     id: 'order005', 
@@ -138,7 +156,12 @@ const initialOrdersData: Order[] = [
     totalAmount: 249, currency: 'INR',
     paymentMethod: 'PhonePe',
     transactionId: 'txn_Poiuyt09Mnb',
-    orderEvents: [ /* ... */ ],
+    orderEvents: [
+        { timestamp: new Date(2024, 5, 10, 11, 20), event: 'Order Placed' },
+        { timestamp: new Date(2024, 5, 18, 17, 0), event: 'Draft submitted by designer.' },
+        { timestamp: new Date(2024, 5, 18, 17, 5), event: 'Status changed to Awaiting Client Review' },
+    ],
+    deliverables: [ { name: 'brochure_draft_v1.pdf', url: '#', submittedAt: new Date(2024, 5, 18, 17, 0)} ]
   },
 ];
 
@@ -240,10 +263,9 @@ export default function AdminOrdersPage(): ReactElement {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]"></TableHead> 
                 <TableHead className="w-[100px]">Order ID</TableHead>
                 <TableHead><User className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Client</TableHead>
-                <TableHead><FileText className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Service</TableHead>
+                <TableHead><FileText className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Service & Details</TableHead>
                 <TableHead><CalendarDays className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Date / Deadline</TableHead>
                 <TableHead><Clock className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Status</TableHead>
                 <TableHead><Brush className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Designer</TableHead>
@@ -254,7 +276,7 @@ export default function AdminOrdersPage(): ReactElement {
             <TableBody>
               {displayedOrders.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center h-24"> {/* Adjusted colSpan */}
+                  <TableCell colSpan={8} className="text-center h-24"> {/* Adjusted colSpan */}
                     No orders match the current filter.
                   </TableCell>
                 </TableRow>
@@ -262,11 +284,6 @@ export default function AdminOrdersPage(): ReactElement {
               {displayedOrders.map(order => (
                 <Fragment key={order.id}>
                   <TableRow>
-                    <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => toggleExpandOrder(order.id)} aria-label={expandedOrderIds.has(order.id) ? "Collapse details" : "Expand details"}>
-                        {expandedOrderIds.has(order.id) ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                      </Button>
-                    </TableCell>
                     <TableCell className="font-medium">
                       <Link href={`/admin/orders/details/${order.id}`} className="text-primary hover:underline">
                         {order.id}
@@ -274,12 +291,25 @@ export default function AdminOrdersPage(): ReactElement {
                     </TableCell>
                     <TableCell>{order.clientName}</TableCell>
                     <TableCell>
-                      <div>{order.serviceName}</div>
-                      {order.serviceTier && (
-                        <div className="text-xs text-muted-foreground flex items-center">
-                          <Tag className="mr-1 h-3 w-3" /> Tier: {order.serviceTier}
+                      <div className="flex items-start justify-between">
+                        <div>
+                            <div>{order.serviceName}</div>
+                            {order.serviceTier && (
+                                <div className="text-xs text-muted-foreground flex items-center">
+                                <Tag className="mr-1 h-3 w-3" /> Tier: {order.serviceTier}
+                                </div>
+                            )}
                         </div>
-                      )}
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => toggleExpandOrder(order.id)} 
+                            aria-label={expandedOrderIds.has(order.id) ? "Collapse details" : "Expand details"}
+                            className="ml-2 p-1 h-auto"
+                        >
+                            {expandedOrderIds.has(order.id) ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                      </div>
                     </TableCell>
                     <TableCell>
                       {activeOrderStatusesForDeadline.includes(order.status) && order.dueDate ? (
@@ -348,7 +378,7 @@ export default function AdminOrdersPage(): ReactElement {
                   </TableRow>
                   {expandedOrderIds.has(order.id) && (
                     <TableRow className="bg-secondary/30 hover:bg-secondary/40">
-                      <TableCell colSpan={9} className="p-0"> {/* Adjusted colSpan */}
+                      <TableCell colSpan={8} className="p-0"> {/* Adjusted colSpan */}
                         <div className="p-4 ">
                           <h4 className="font-semibold text-sm mb-2 flex items-center">
                             <ListChecks className="h-4 w-4 mr-2 text-primary" />
