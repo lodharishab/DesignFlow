@@ -1,19 +1,22 @@
+
 import * as React from "react"
 
 const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+  const [isMobile, setIsMobile] = React.useState(false) // Default to false (desktop-first)
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
+    // This effect runs only on the client, after initial hydration
+    const checkDevice = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
 
-  return !!isMobile
+    checkDevice() // Check on mount
+
+    window.addEventListener("resize", checkDevice)
+    return () => window.removeEventListener("resize", checkDevice)
+  }, []) // Empty dependency array ensures this runs once on mount after hydration
+
+  return isMobile
 }
