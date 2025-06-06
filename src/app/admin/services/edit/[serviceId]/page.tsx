@@ -36,7 +36,7 @@ interface ServiceTierAdmin {
 }
 
 interface AdminServiceModified {
-  id: string;
+  id: string; // Changed from svc00X to numeric strings '1', '2', etc.
   name: string;
   category: string;
   generalDescription: string;
@@ -49,7 +49,7 @@ interface AdminServiceModified {
 
 const initialServicesData: AdminServiceModified[] = [
   { 
-    id: 'svc001', 
+    id: '1', 
     name: 'Modern Logo Design', 
     category: 'Logo Design', 
     generalDescription: 'High-quality, modern logo designs tailored to your brand. We offer various packages to suit your needs.',
@@ -64,7 +64,7 @@ const initialServicesData: AdminServiceModified[] = [
     ]
   },
   { 
-    id: 'svc002', 
+    id: '2', 
     name: 'Social Media Post Pack', 
     category: 'Social Media', 
     generalDescription: 'Engaging posts designed for your social media channels. Choose the pack size that fits your campaign.',
@@ -75,6 +75,52 @@ const initialServicesData: AdminServiceModified[] = [
     tiers: [
       { id: 'tier2_1', name: 'Starter Pack', price: 49, description: '5 social media posts, 1 Platform choice, 1 Round of revisions.', deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'days' },
       { id: 'tier2_2', name: 'Growth Pack', price: 99, description: '10 social media posts, Up to 2 platforms, 2 Rounds of revisions, Source files.', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' },
+    ]
+  },
+  { 
+    id: '3', 
+    name: 'Professional Brochure Design', 
+    category: 'Print Design', 
+    generalDescription: 'Stunning brochures to showcase your business.',
+    status: 'Draft',
+    tags: ['marketing collateral', 'print', 'corporate'],
+    tiers: [
+      { id: 'tier3_1', name: 'Standard', price: 249, description: 'Tri-fold or bi-fold options, print-ready files.', deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'business_days' },
+    ]
+  },
+  { 
+    id: '4', 
+    name: 'UI/UX Web Design Mockup', 
+    category: 'UI/UX Design', 
+    generalDescription: 'High-fidelity mockup for one key page.',
+    status: 'Active',
+    tags: ['website', 'app design', 'user experience'],
+    tiers: [
+      { id: 'tier4_1', name: 'Standard', price: 399, description: '1 Page, desktop and mobile views.', deliveryTimeMin: 10, deliveryTimeMax: 14, deliveryTimeUnit: 'days' },
+      { id: 'tier4_2', name: 'Premium', price: 599, description: 'Up to 3 pages, interactive prototype.', deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'weeks' },
+    ]
+  },
+  { 
+    id: '5', 
+    name: 'Custom Illustration', 
+    category: 'Illustration', 
+    generalDescription: 'Unique vector or raster illustration.',
+    status: 'Archived',
+    tags: ['art', 'vector', 'character design'],
+    tiers: [
+      { id: 'tier5_1', name: 'Basic', price: 79, description: 'Simple icon or spot illustration.', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' },
+      { id: 'tier5_2', name: 'Standard', price: 149, description: 'Detailed character or small scene.', deliveryTimeMin: 5, deliveryTimeMax: 8, deliveryTimeUnit: 'days' },
+    ]
+  },
+  { 
+    id: '6', 
+    name: 'Animated Explainer Video', 
+    category: 'Video & Animation', 
+    generalDescription: 'Short animated video to explain your product.',
+    status: 'Active',
+    tags: ['2d animation', 'explainer', 'marketing video'],
+    tiers: [
+      { id: 'tier6_1', name: '30 Seconds', price: 599, description: 'Includes scriptwriting and voiceover.', deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'weeks' },
     ]
   },
 ];

@@ -16,11 +16,11 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from '@/components/ui/input';
 import { 
   Briefcase, 
   PlusCircle, 
   Edit3, 
-  // Trash2, // Removed Trash2
   IndianRupee,
   Tag, 
   Activity, 
@@ -29,17 +29,17 @@ import {
   CheckCircle2,
   ArchiveIcon,
   Eye,
-  Tags as TagsIcon, 
+  Tags as TagsIconLucide, 
   ListChecks,
   ArrowUpDown,
   ListFilter,
   BookOpenCheck,
   Archive,
-  FileSignature
+  FileSignature,
+  Search
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
-// AlertDialog components are no longer needed here for deletion
 import { cn } from '@/lib/utils';
 
 interface TierForList {
@@ -53,7 +53,7 @@ interface TierForList {
 }
 
 interface AdminServiceModified {
-  id: string;
+  id: string; // Changed from svc00X to numeric strings '1', '2', etc.
   name: string;
   category: string;
   generalDescription: string; 
@@ -66,7 +66,7 @@ interface AdminServiceModified {
 
 const initialServicesData: AdminServiceModified[] = [
   { 
-    id: 'svc001', 
+    id: '1', 
     name: 'Modern Logo Design', 
     category: 'Logo Design', 
     generalDescription: 'High-quality, modern logo designs tailored to your brand.',
@@ -81,7 +81,7 @@ const initialServicesData: AdminServiceModified[] = [
     ]
   },
   { 
-    id: 'svc002', 
+    id: '2', 
     name: 'Social Media Post Pack', 
     category: 'Social Media', 
     generalDescription: 'Engaging posts for your social media channels.',
@@ -95,7 +95,7 @@ const initialServicesData: AdminServiceModified[] = [
     ]
   },
   { 
-    id: 'svc003', 
+    id: '3', 
     name: 'Professional Brochure Design', 
     category: 'Print Design', 
     generalDescription: 'Stunning brochures to showcase your business.',
@@ -106,7 +106,7 @@ const initialServicesData: AdminServiceModified[] = [
     ]
   },
   { 
-    id: 'svc004', 
+    id: '4', 
     name: 'UI/UX Web Design Mockup', 
     category: 'UI/UX Design', 
     generalDescription: 'High-fidelity mockup for one key page.',
@@ -118,7 +118,7 @@ const initialServicesData: AdminServiceModified[] = [
     ]
   },
   { 
-    id: 'svc005', 
+    id: '5', 
     name: 'Custom Illustration', 
     category: 'Illustration', 
     generalDescription: 'Unique vector or raster illustration.',
@@ -130,7 +130,7 @@ const initialServicesData: AdminServiceModified[] = [
     ]
   },
   { 
-    id: 'svc006', 
+    id: '6', 
     name: 'Animated Explainer Video', 
     category: 'Video & Animation', 
     generalDescription: 'Short animated video to explain your product.',
@@ -154,10 +154,17 @@ type SortableServiceKeys = 'name' | 'category' | 'status' | 'priceRange';
 
 function formatStructuredDeliveryTime(min: number, max: number, unit: TierForList['deliveryTimeUnit']): string {
   const unitLabel = unit.replace('_', ' ');
-  if (min === max) {
-    return `${min} ${unitLabel}${min > 1 && unit !== 'weeks' ? 's' : (unit === 'weeks' && min === 1 ? '' : 's')}`;
+  let pluralSuffix = 's';
+  if (unit === 'weeks') {
+    if (max === 1) pluralSuffix = '';
+  } else {
+    if (max === 1) pluralSuffix = '';
   }
-  return `${min}-${max} ${unitLabel}${max > 1 && unit !== 'weeks' ? 's' : (unit === 'weeks' && max === 1 ? '' : 's')}`;
+
+  if (min === max) {
+    return `${min} ${unitLabel}${pluralSuffix}`;
+  }
+  return `${min}-${max} ${unitLabel}${pluralSuffix}`;
 }
 
 export default function AdminServicesPage(): ReactElement {
@@ -179,9 +186,9 @@ export default function AdminServicesPage(): ReactElement {
   }, [services]);
 
   const uniqueCategories = useMemo(() => {
-    const categories = new Set(services.map(service => service.category));
+    const categories = new Set(initialServicesData.map(service => service.category));
     return ['All', ...Array.from(categories).sort()];
-  }, [services]);
+  }, []);
 
   const getPriceRangeValue = (tiers: TierForList[]): number => {
     if (!tiers || tiers.length === 0) return 0;
@@ -265,15 +272,15 @@ export default function AdminServicesPage(): ReactElement {
     return displayedSelectedCount > 0 && displayedSelectedCount < displayedServices.length;
   }, [displayedServices, selectedServiceIds]);
 
-  const handleBulkStatusChange = (status: 'Active' | 'Archived' | 'Draft') => {
+  const handleBulkStatusChange = (newStatus: 'Active' | 'Archived' | 'Draft') => {
     const count = selectedServiceIds.size;
     setServices(prevServices => 
       prevServices.map(service => 
-        selectedServiceIds.has(service.id) ? { ...service, status: status } : service
+        selectedServiceIds.has(service.id) ? { ...service, status: newStatus } : service
       )
     );
     setSelectedServiceIds(new Set());
-    toast({ title: `Bulk Status Change (Simulated)`, description: `${count} service(s) set to "${status}".` });
+    toast({ title: `Bulk Status Change (Simulated)`, description: `${count} service(s) set to "${newStatus}".` });
   };
 
   const toggleExpandService = (serviceId: string) => {
@@ -354,7 +361,6 @@ export default function AdminServicesPage(): ReactElement {
                   <DropdownMenuItem onClick={() => handleBulkStatusChange('Active')} className="text-green-600 dark:text-green-500"><CheckCircle2 className="mr-2 h-4 w-4" /> Activate</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleBulkStatusChange('Draft')} className="text-blue-600 dark:text-blue-500"><FileSignature className="mr-2 h-4 w-4" /> Set to Draft</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleBulkStatusChange('Archived')} className="text-yellow-600 dark:text-yellow-500"><ArchiveIcon className="mr-2 h-4 w-4" /> Archive</DropdownMenuItem>
-                  {/* Delete selected option removed */}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -373,7 +379,7 @@ export default function AdminServicesPage(): ReactElement {
                     <Tag className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />Category {getSortIndicator('category')}
                   </Button>
                 </TableHead>
-                <TableHead><TagsIcon className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Tags</TableHead>
+                <TableHead><TagsIconLucide className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Tags</TableHead>
                 <TableHead>
                   <Button variant="ghost" onClick={() => requestSort('priceRange')} className="px-1 text-xs sm:text-sm -ml-2">
                     <IndianRupee className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />Price Range {getSortIndicator('priceRange')}
@@ -384,7 +390,7 @@ export default function AdminServicesPage(): ReactElement {
                     <Activity className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />Status {getSortIndicator('status')}
                   </Button>
                 </TableHead>
-                <TableHead className="text-right w-[100px]">Actions</TableHead> {/* Reduced width as delete is removed */}
+                <TableHead className="text-right w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -434,7 +440,6 @@ export default function AdminServicesPage(): ReactElement {
                         <Edit3 className="h-4 w-4" />
                       </Link>
                     </Button>
-                    {/* Individual Delete Button Removed */}
                   </TableCell>
                 </TableRow>
                 {expandedServiceIds.has(service.id) && (
@@ -482,4 +487,3 @@ export default function AdminServicesPage(): ReactElement {
     </div>
   );
 }
-
