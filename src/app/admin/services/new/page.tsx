@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Save, XCircle, Briefcase, IndianRupee, Tag, FileText, ClockIcon, ImageIcon, Lightbulb, Loader2, Trash2, Tags } from 'lucide-react';
+import { PlusCircle, Save, XCircle, Briefcase, IndianRupee, Tag, FileText, ClockIcon, ImageIcon, Lightbulb, Loader2, Trash2, Tags, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from '@/components/ui/badge';
 
 interface ServiceTierAdmin {
   id: string; 
@@ -52,12 +53,39 @@ export default function AdminAddServicePage(): ReactElement {
   const [status, setStatus] = useState<'Active' | 'Draft' | 'Archived'>('Draft');
   const [imageUrl, setImageUrl] = useState('https://placehold.co/600x400.png');
   const [imageAiHint, setImageAiHint] = useState('service image');
-  const [tagsString, setTagsString] = useState('');
+  
+  // Tags management
+  const [currentTagInput, setCurrentTagInput] = useState('');
+  const [tagsArray, setTagsArray] = useState<string[]>([]);
+
 
   // Tiers
   const [tiers, setTiers] = useState<ServiceTierAdmin[]>([
     { id: `new_${Date.now()}`, name: 'Standard', price: 0, description: '', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' }
   ]);
+
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCurrentTagInput(e.target.value);
+  };
+
+  const addTagFromInput = () => {
+    const newTag = currentTagInput.trim();
+    if (newTag && !tagsArray.includes(newTag)) {
+      setTagsArray([...tagsArray, newTag]);
+    }
+    setCurrentTagInput(''); 
+  };
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); 
+      addTagFromInput();
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTagsArray(tagsArray.filter(tag => tag !== tagToRemove));
+  };
 
   const handleTierChange = (index: number, field: keyof ServiceTierAdmin, value: string | number) => {
     const newTiers = [...tiers];
@@ -102,7 +130,6 @@ export default function AdminAddServicePage(): ReactElement {
     }
 
     setIsSaving(true);
-    const parsedTags = tagsString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
     const newService = { 
       id: `svc_${Date.now()}`, 
       name: serviceName, 
@@ -111,7 +138,7 @@ export default function AdminAddServicePage(): ReactElement {
       status,
       imageUrl,
       imageAiHint,
-      tags: parsedTags,
+      tags: tagsArray, // Use the tagsArray directly
       tiers
     };
     console.log("Saving new service:", newService);
@@ -171,8 +198,37 @@ export default function AdminAddServicePage(): ReactElement {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tagsString"><Tags className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Tags (comma-separated)</Label>
-              <Input id="tagsString" placeholder="e.g., minimalist, branding, modern" value={tagsString} onChange={(e) => setTagsString(e.target.value)} disabled={isSaving} />
+              <Label htmlFor="tagInput"><Tags className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Tags</Label>
+              <div className="flex items-center gap-2">
+                <Input 
+                  id="tagInput" 
+                  placeholder="Add a tag and press Enter" 
+                  value={currentTagInput}
+                  onChange={handleTagInputChange}
+                  onKeyDown={handleTagInputKeyDown}
+                  disabled={isSaving}
+                  className="flex-grow"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2 min-h-[2.5rem]">
+                {tagsArray.map((tag, index) => (
+                  <Badge key={index} variant="secondary" className="flex items-center gap-1 pr-1 py-0.5">
+                    {tag}
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemoveTag(tag)}
+                      className="rounded-full hover:bg-muted-foreground/20 p-0.5 focus:outline-none focus:ring-1 focus:ring-ring"
+                      aria-label={`Remove tag ${tag}`}
+                      disabled={isSaving}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+                {tagsArray.length === 0 && !currentTagInput && (
+                  <p className="text-xs text-muted-foreground py-1">No tags added yet.</p>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
