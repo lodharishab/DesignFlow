@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label"; // Added this import
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -215,12 +215,10 @@ export function OrdersTableView({ fixedStatusFilter }: OrdersTableViewProps): Re
   const displayedOrders = useMemo(() => {
     let sortableItems = [...allOrders];
 
-    // 1. Apply fixed status filter (if not 'All')
     if (fixedStatusFilter !== 'All') {
       sortableItems = sortableItems.filter(order => order.status === fixedStatusFilter);
     }
 
-    // 2. Apply search filters
     if (searchFilters.orderId) {
       sortableItems = sortableItems.filter(order => order.id.toLowerCase().includes(searchFilters.orderId.toLowerCase()));
     }
@@ -234,7 +232,6 @@ export function OrdersTableView({ fixedStatusFilter }: OrdersTableViewProps): Re
       sortableItems = sortableItems.filter(order => order.designerName?.toLowerCase().includes(searchFilters.designerName.toLowerCase()) ?? false);
     }
 
-    // 3. Apply sorting
     if (sortConfig.key !== null) {
       sortableItems.sort((a, b) => {
         const valA = a[sortConfig.key!];
@@ -415,25 +412,25 @@ export function OrdersTableView({ fixedStatusFilter }: OrdersTableViewProps): Re
                 </TableCell>
                 <TableCell className="text-xs sm:text-sm">{order.clientName}</TableCell>
                 <TableCell className="text-xs sm:text-sm">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="font-medium">{order.serviceName}</span>
-                      {order.serviceTier && (
-                        <div className="text-xs text-muted-foreground flex items-center mt-0.5">
-                          <Tag className="mr-1 h-3 w-3" /> Tier: {order.serviceTier}
+                    <div className="flex items-start">
+                        <div className="flex-grow">
+                            <span className="font-medium">{order.serviceName}</span>
+                            {order.serviceTier && (
+                                <div className="text-xs text-muted-foreground flex items-center mt-0.5">
+                                <Tag className="mr-1 h-3 w-3" /> Tier: {order.serviceTier}
+                                </div>
+                            )}
                         </div>
-                      )}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleExpandOrder(order.id)}
+                            aria-label={expandedOrderIds.has(order.id) ? "Collapse details" : "Expand details"}
+                            className="ml-2 p-1 h-auto self-center"
+                        >
+                            {expandedOrderIds.has(order.id) ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toggleExpandOrder(order.id)}
-                      aria-label={expandedOrderIds.has(order.id) ? "Collapse details" : "Expand details"}
-                      className="ml-2 p-1 h-auto self-center"
-                    >
-                      {expandedOrderIds.has(order.id) ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    </Button>
-                  </div>
                 </TableCell>
                 <TableCell className="text-xs sm:text-sm">
                   {activeOrderStatusesForDeadline.includes(order.status) && order.dueDate ? (
@@ -454,7 +451,7 @@ export function OrdersTableView({ fixedStatusFilter }: OrdersTableViewProps): Re
                 </TableCell>
                 <TableCell className="text-xs sm:text-sm">
                   {order.designerId && order.designerName ? (
-                    <Link href={`/admin/designers/edit/${order.designerId}`} className="text-primary hover:underline">
+                    <Link href={`/admin/designers/view/${order.designerId}`} className="text-primary hover:underline">
                       {order.designerName}
                     </Link>
                   ) : (

@@ -67,7 +67,7 @@ const initialOrdersData: Order[] = [
     designerName: 'Bob The Builder', designerId: 'des002',
     serviceName: 'Modern Logo Design', serviceId: 'svc001', serviceTier: 'Standard',
     orderDate: new Date(2024, 5, 1, 10, 30), 
-    dueDate: new Date(new Date().setDate(new Date().getDate() + 3)), // Due in 3 days
+    dueDate: new Date(new Date().setDate(new Date().getDate() + 3)), 
     status: 'In Progress', 
     totalAmount: 199, currency: 'INR',
     paymentMethod: 'Razorpay',
@@ -94,7 +94,7 @@ const initialOrdersData: Order[] = [
     clientName: 'Charlie Brown', clientId: 'cli003', 
     serviceName: 'Social Media Post Pack', serviceId: 'svc002', serviceTier: 'Basic',
     orderDate: new Date(2024, 5, 5, 14, 0), 
-    dueDate: new Date(new Date().setDate(new Date().getDate() - 2)), // Overdue by 2 days from today
+    dueDate: new Date(new Date().setDate(new Date().getDate() - 2)), 
     status: 'In Progress', 
     totalAmount: 99, currency: 'INR',
     paymentMethod: 'PhonePe',
@@ -119,7 +119,7 @@ const initialOrdersData: Order[] = [
     totalAmount: 399, currency: 'INR',
     paymentMethod: 'Razorpay',
     transactionId: 'pay_Mnbvcxz87Uyt',
-    orderEvents: [ /* ... events ... */ ],
+    orderEvents: [ ],
     clientBrief: "Design a modern and clean homepage mockup for an e-commerce store selling eco-friendly products.",
     deliverables: [{ name: 'Homepage_mockup_final.fig', url: '#', submittedAt: new Date(2024, 5, 8, 12, 0)}],
   },
@@ -132,7 +132,7 @@ const initialOrdersData: Order[] = [
     totalAmount: 149, currency: 'INR',
     paymentMethod: 'Razorpay',
     transactionId: 'pay_Lkjhgf56Qwe',
-    orderEvents: [ /* ... events ... */ ]
+    orderEvents: [ ]
   },
    { 
     id: 'order005', 
@@ -140,12 +140,12 @@ const initialOrdersData: Order[] = [
     designerName: 'Carol Danvers', designerId: 'des003',
     serviceName: 'Professional Brochure Design', serviceId: 'svc003', serviceTier: 'Standard',
     orderDate: new Date(2024, 5, 10, 11, 20), 
-    dueDate: new Date(new Date().setDate(new Date().getDate() + 7)), // Due in 7 days
+    dueDate: new Date(new Date().setDate(new Date().getDate() + 7)), 
     status: 'Awaiting Client Review', 
     totalAmount: 249, currency: 'INR',
     paymentMethod: 'PhonePe',
     transactionId: 'txn_Poiuyt09Mnb',
-    orderEvents: [ /* ... events ... */ ],
+    orderEvents: [ ],
     deliverables: [ { name: 'brochure_draft_v1.pdf', url: '#', submittedAt: new Date(2024, 5, 18, 17, 0)} ]
   },
 ];
@@ -178,7 +178,6 @@ export default function AdminOrderDetailPage(): ReactElement {
   useEffect(() => {
     if (orderId) {
       setIsLoading(true);
-      // Simulate fetching order data
       const foundOrder = initialOrdersData.find(o => o.id === orderId);
       if (foundOrder) {
         setOrder(foundOrder);
@@ -246,7 +245,7 @@ export default function AdminOrderDetailPage(): ReactElement {
               <p>
                 Name: {order.designerName ? (
                   order.designerId ? (
-                    <Link href={`/admin/designers/edit/${order.designerId}`} className="text-primary hover:underline">
+                    <Link href={`/admin/designers/view/${order.designerId}`} className="text-primary hover:underline">
                       {order.designerName} ({order.designerId})
                     </Link>
                   ) : (
@@ -358,5 +357,3 @@ export default function AdminOrderDetailPage(): ReactElement {
     </div>
   );
 }
-
-    
