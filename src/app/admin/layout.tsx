@@ -30,7 +30,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
-  SidebarFooter,
+  SidebarFooter, // Added SidebarFooter import
   useSidebar 
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,7 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/admin/orders', icon: ClipboardList, label: 'Orders' },
   { 
     label: 'Services', 
     icon: Briefcase, 
@@ -60,7 +61,6 @@ const navItems = [
   },
   { href: '/admin/designers', icon: Users, label: 'Designers' },
   { href: '/admin/users', icon: UsersRound, label: 'Users' },
-  { href: '/admin/orders', icon: ClipboardList, label: 'Orders' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
