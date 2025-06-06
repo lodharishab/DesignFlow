@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useEffect, useMemo } from 'react';
+import { useState, type ReactElement, useEffect, useMemo, Fragment } from 'react'; // Added Fragment
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -24,16 +24,15 @@ import {
   Edit3,
   FileText,
   Clock,
-  CreditCard,
   Eye,
-  Filter,
   CheckCircle2,
   Loader2,
-  AlertTriangle,
   XCircle as XCircleIcon, 
-  Archive,
-  Tag
-} from 'lucide-react';
+  Tag,
+  ChevronDown, 
+  ChevronUp, 
+  ListChecks
+} from 'lucide-react'; // Added ChevronDown, ChevronUp, ListChecks
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, isPast } from 'date-fns';
@@ -57,6 +56,7 @@ interface Order {
   serviceName: string;
   serviceId: string;
   serviceTier?: string;
+  serviceScope?: string[]; // Added for expandable details
   orderDate: Date;
   dueDate?: Date;
   status: OrderStatus;
@@ -75,87 +75,70 @@ const initialOrdersData: Order[] = [
     clientName: 'Alice Johnson', clientId: 'cli001', 
     designerName: 'Bob The Builder', designerId: 'des002',
     serviceName: 'Modern Logo Design', serviceId: 'svc001', serviceTier: 'Standard',
+    serviceScope: ['3 Initial concepts', '3 Rounds of revisions', 'Full vector files (AI, EPS, SVG, PNG, JPG)', 'Basic brand guide (colors, fonts)'],
     orderDate: new Date(2024, 5, 1, 10, 30), 
     dueDate: new Date(new Date().setDate(new Date().getDate() + 3)), 
     status: 'In Progress', 
     totalAmount: 199, currency: 'INR',
     paymentMethod: 'Razorpay',
     transactionId: 'pay_Nlcftg87sHjkl',
-    orderEvents: [
-      { timestamp: new Date(2024, 5, 1, 10, 30), event: 'Order Placed', actor: 'Alice Johnson' },
-      { timestamp: new Date(2024, 5, 1, 11, 0), event: 'Payment Successful (Razorpay)', actor: 'System' },
-      { timestamp: new Date(2024, 5, 2, 9, 0), event: 'Designer Assigned: Bob The Builder', actor: 'Admin' },
-      { timestamp: new Date(2024, 5, 2, 9, 5), event: 'Status changed to In Progress', actor: 'System' },
-      { timestamp: new Date(2024, 5, 10, 17, 0), event: 'First draft submitted by designer.', actor: 'Bob The Builder', notes: 'Attached logo_concept_v1.zip' },
-      { timestamp: new Date(2024, 5, 11, 10, 0), event: 'Client requested revisions.', actor: 'Alice Johnson', notes: 'Needs more color options.' },
-      { timestamp: new Date(2024, 5, 11, 10, 5), event: 'Status changed to Revision Requested', actor: 'System' },
-      { timestamp: new Date(2024, 5, 12, 14,0), event: 'Revised draft submitted by designer.', actor: 'Bob The Builder', notes: 'logo_concept_v2.zip attached with new color palettes.' },
-      { timestamp: new Date(2024, 5, 12, 14,5), event: 'Status changed to Awaiting Client Review', actor: 'System' },
-    ],
-    clientBrief: "Looking for a minimalist logo for a new tech startup 'InnovateX'. Colors: prefer blues and silvers. Icon should represent innovation and connection. Modern and sleek feel.",
-    deliverables: [
-      { name: 'logo_concept_v1.zip', url: '#', submittedAt: new Date(2024, 5, 10, 17, 0)},
-      { name: 'logo_concept_v2.zip', url: '#', submittedAt: new Date(2024, 5, 12, 14, 0)},
-    ]
+    orderEvents: [ /* ... */ ],
+    clientBrief: "Looking for a minimalist logo for a new tech startup 'InnovateX'.",
+    deliverables: [ /* ... */ ]
   },
   { 
     id: 'order002', 
     clientName: 'Charlie Brown', clientId: 'cli003', 
     serviceName: 'Social Media Post Pack', serviceId: 'svc002', serviceTier: 'Basic',
+    serviceScope: ['5 social media posts', '1 Platform choice', '1 Round of revisions', 'Optimized JPG/PNG'],
     orderDate: new Date(2024, 5, 5, 14, 0), 
     dueDate: new Date(new Date().setDate(new Date().getDate() - 2)), 
     status: 'In Progress', 
     totalAmount: 99, currency: 'INR',
     paymentMethod: 'PhonePe',
     transactionId: 'txn_GhtrDEWAq789',
-     orderEvents: [
-      { timestamp: new Date(2024, 5, 5, 14, 0), event: 'Order Placed', actor: 'Charlie Brown' },
-      { timestamp: new Date(2024, 5, 5, 14, 5), event: 'Payment Successful (PhonePe)', actor: 'System' },
-      { timestamp: new Date(2024, 5, 5, 14, 10), event: 'Status changed to Pending Assignment', actor: 'System' },
-      { timestamp: new Date(2024, 5, 6, 10,0), event: 'Designer Assigned: David C.', actor: 'Admin'},
-      { timestamp: new Date(2024, 5, 6, 10,5), event: 'Status changed to In Progress', actor: 'System'},
-    ],
-    clientBrief: "Need 5 engaging posts for a summer sale campaign on Instagram and Facebook. Theme: Bright and sunny. Target audience: Young adults (18-25)."
+    orderEvents: [ /* ... */ ],
+    clientBrief: "Need 5 engaging posts for a summer sale."
   },
   { 
     id: 'order003', 
     clientName: 'Diana Prince', clientId: 'cli004',
     designerName: 'Alice Wonderland', designerId: 'des001',
     serviceName: 'UI/UX Web Design Mockup', serviceId: 'svc004', serviceTier: 'Premium',
+    serviceScope: ['Up to 3 key pages UI/UX design', 'Mobile, tablet, and desktop views', 'Interactive prototype (clickable)', '3 revision rounds', 'Component style guide', 'Figma/XD source files'],
     orderDate: new Date(2024, 4, 20, 16, 45), 
     dueDate: new Date(2024, 5, 10),
     status: 'Completed', 
     totalAmount: 399, currency: 'INR',
     paymentMethod: 'Razorpay',
     transactionId: 'pay_Mnbvcxz87Uyt',
-    orderEvents: [ /* ... events ... */ ],
-    clientBrief: "Design a modern and clean homepage mockup for an e-commerce store selling eco-friendly products.",
-    deliverables: [{ name: 'Homepage_mockup_final.fig', url: '#', submittedAt: new Date(2024, 5, 8, 12, 0)}],
+    orderEvents: [ /* ... */ ],
   },
   { 
     id: 'order004', 
     clientName: 'Edward Scissorhands', clientId: 'cli005',
     serviceName: 'Custom Illustration', serviceId: 'svc005', serviceTier: 'Standard',
+    serviceScope: ['1 custom illustration (e.g., character, small scene)', 'Medium detail', '3 revision rounds', 'Source file (AI, PSD, or other)', 'Commercial use license'],
     orderDate: new Date(2024, 5, 8, 9, 15), 
     status: 'Cancelled', 
     totalAmount: 149, currency: 'INR',
     paymentMethod: 'Razorpay',
     transactionId: 'pay_Lkjhgf56Qwe',
-    orderEvents: [ /* ... events ... */ ]
+    orderEvents: [ /* ... */ ]
   },
    { 
     id: 'order005', 
     clientName: 'Fiona Gallagher', clientId: 'cli006',
     designerName: 'Carol Danvers', designerId: 'des003',
     serviceName: 'Professional Brochure Design', serviceId: 'svc003', serviceTier: 'Standard',
+    serviceScope: ['Custom brochure design (up to 6 panels)', 'Stock imagery included (up to 3 images)', '3 revision rounds', 'Print-ready PDF'],
     orderDate: new Date(2024, 5, 10, 11, 20), 
     dueDate: new Date(new Date().setDate(new Date().getDate() + 7)), 
     status: 'Awaiting Client Review', 
     totalAmount: 249, currency: 'INR',
     paymentMethod: 'PhonePe',
     transactionId: 'txn_Poiuyt09Mnb',
-    orderEvents: [ /* ... events ... */ ],
-    deliverables: [ { name: 'brochure_draft_v1.pdf', url: '#', submittedAt: new Date(2024, 5, 18, 17, 0)} ]
+    orderEvents: [ /* ... */ ],
   },
 ];
 
@@ -174,12 +157,25 @@ export default function AdminOrdersPage(): ReactElement {
   const [allOrders, setAllOrders] = useState<Order[]>(initialOrdersData);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
   const { toast } = useToast();
+  const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
 
   const displayedOrders = useMemo(() => {
     return allOrders.filter(order => 
       statusFilter === 'All' || order.status === statusFilter
     ).sort((a,b) => b.orderDate.getTime() - a.orderDate.getTime()); 
   }, [allOrders, statusFilter]);
+
+  const toggleExpandOrder = (orderId: string) => {
+    setExpandedOrderIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(orderId)) {
+        newSet.delete(orderId);
+      } else {
+        newSet.add(orderId);
+      }
+      return newSet;
+    });
+  };
 
   const getStatusBadgeVariant = (status: OrderStatus) => {
     switch (status) {
@@ -244,6 +240,7 @@ export default function AdminOrdersPage(): ReactElement {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[50px]"></TableHead> 
                 <TableHead className="w-[100px]">Order ID</TableHead>
                 <TableHead><User className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Client</TableHead>
                 <TableHead><FileText className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Service</TableHead>
@@ -257,92 +254,120 @@ export default function AdminOrdersPage(): ReactElement {
             <TableBody>
               {displayedOrders.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center h-24">
+                  <TableCell colSpan={9} className="text-center h-24"> {/* Adjusted colSpan */}
                     No orders match the current filter.
                   </TableCell>
                 </TableRow>
               )}
               {displayedOrders.map(order => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">
-                    <Link href={`/admin/orders/details/${order.id}`} className="text-primary hover:underline">
-                      {order.id}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{order.clientName}</TableCell>
-                  <TableCell>
-                    <div>{order.serviceName}</div>
-                    {order.serviceTier && (
-                      <div className="text-xs text-muted-foreground flex items-center">
-                        <Tag className="mr-1 h-3 w-3" /> Tier: {order.serviceTier}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                     {activeOrderStatusesForDeadline.includes(order.status) && order.dueDate ? (
-                        <div>
-                            <div>{format(order.dueDate, 'MMM d, yyyy')} <span className="text-xs">(Due)</span></div>
-                            <div className={`text-xs font-medium ${isPast(order.dueDate) ? 'text-destructive' : 'text-green-600 dark:text-green-500'}`}>
-                                {isPast(order.dueDate)
-                                ? `Overdue by ${formatDistanceToNow(order.dueDate, { addSuffix: false })}`
-                                : `Due in ${formatDistanceToNow(order.dueDate, { addSuffix: false })}`}
-                            </div>
-                        </div>
-                    ) : (
-                        format(order.orderDate, 'MMM d, yyyy, p')
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadgeVariant(order.status)}>{order.status}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {order.designerId && order.designerName ? (
-                      <Link href={`/admin/designers/edit/${order.designerId}`} className="text-primary hover:underline">
-                        {order.designerName}
+                <Fragment key={order.id}>
+                  <TableRow>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" onClick={() => toggleExpandOrder(order.id)} aria-label={expandedOrderIds.has(order.id) ? "Collapse details" : "Expand details"}>
+                        {expandedOrderIds.has(order.id) ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </Button>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <Link href={`/admin/orders/details/${order.id}`} className="text-primary hover:underline">
+                        {order.id}
                       </Link>
-                    ) : (
-                      <span className="text-muted-foreground italic">N/A</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">₹{order.totalAmount.toFixed(2)}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/admin/orders/details/${order.id}`} className="flex items-center">
-                            <Eye className="mr-2 h-4 w-4" /> View Details
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                            disabled={order.status === 'Pending Assignment' ? false : true}
-                            onClick={() => order.status === 'Pending Assignment' ? handleUpdateStatus(order.id, 'In Progress') : null}
-                        > 
-                            <Edit3 className="mr-2 h-4 w-4" /> Assign Designer & Start
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                            onClick={() => handleUpdateStatus(order.id, 'Completed')}
-                            disabled={order.status === 'Completed' || order.status === 'Cancelled' || order.status === 'Refunded'}
-                        >
-                            <CheckCircle2 className="mr-2 h-4 w-4" /> Mark as Completed
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                            onClick={() => handleUpdateStatus(order.id, 'Cancelled')} 
-                            className="text-destructive"
-                            disabled={order.status === 'Completed' || order.status === 'Cancelled' || order.status === 'Refunded'}
-                        >
-                            <XCircleIcon className="mr-2 h-4 w-4" /> Cancel Order
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
+                    </TableCell>
+                    <TableCell>{order.clientName}</TableCell>
+                    <TableCell>
+                      <div>{order.serviceName}</div>
+                      {order.serviceTier && (
+                        <div className="text-xs text-muted-foreground flex items-center">
+                          <Tag className="mr-1 h-3 w-3" /> Tier: {order.serviceTier}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {activeOrderStatusesForDeadline.includes(order.status) && order.dueDate ? (
+                          <div>
+                              <div>{format(order.dueDate, 'MMM d, yyyy')} <span className="text-xs">(Due)</span></div>
+                              <div className={`text-xs font-medium ${isPast(order.dueDate) ? 'text-destructive' : 'text-green-600 dark:text-green-500'}`}>
+                                  {isPast(order.dueDate)
+                                  ? `Overdue by ${formatDistanceToNow(order.dueDate, { addSuffix: false })}`
+                                  : `Due in ${formatDistanceToNow(order.dueDate, { addSuffix: false })}`}
+                              </div>
+                          </div>
+                      ) : (
+                          format(order.orderDate, 'MMM d, yyyy, p')
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadgeVariant(order.status)}>{order.status}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {order.designerId && order.designerName ? (
+                        <Link href={`/admin/designers/edit/${order.designerId}`} className="text-primary hover:underline">
+                          {order.designerName}
+                        </Link>
+                      ) : (
+                        <span className="text-muted-foreground italic">N/A</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">₹{order.totalAmount.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/admin/orders/details/${order.id}`} className="flex items-center">
+                              <Eye className="mr-2 h-4 w-4" /> View Details
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                              disabled={order.status === 'Pending Assignment' ? false : true}
+                              onClick={() => order.status === 'Pending Assignment' ? handleUpdateStatus(order.id, 'In Progress') : null}
+                          > 
+                              <Edit3 className="mr-2 h-4 w-4" /> Assign Designer & Start
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                              onClick={() => handleUpdateStatus(order.id, 'Completed')}
+                              disabled={order.status === 'Completed' || order.status === 'Cancelled' || order.status === 'Refunded'}
+                          >
+                              <CheckCircle2 className="mr-2 h-4 w-4" /> Mark as Completed
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                              onClick={() => handleUpdateStatus(order.id, 'Cancelled')} 
+                              className="text-destructive"
+                              disabled={order.status === 'Completed' || order.status === 'Cancelled' || order.status === 'Refunded'}
+                          >
+                              <XCircleIcon className="mr-2 h-4 w-4" /> Cancel Order
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                  {expandedOrderIds.has(order.id) && (
+                    <TableRow className="bg-secondary/30 hover:bg-secondary/40">
+                      <TableCell colSpan={9} className="p-0"> {/* Adjusted colSpan */}
+                        <div className="p-4 ">
+                          <h4 className="font-semibold text-sm mb-2 flex items-center">
+                            <ListChecks className="h-4 w-4 mr-2 text-primary" />
+                            Committed Service Scope for <span className="italic mx-1">{order.serviceName} ({order.serviceTier})</span>:
+                          </h4>
+                          {order.serviceScope && order.serviceScope.length > 0 ? (
+                            <ul className="list-disc list-inside pl-2 space-y-1 text-xs text-muted-foreground">
+                              {order.serviceScope.map((item, idx) => (
+                                <li key={idx}>{item}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-xs text-muted-foreground italic">No specific scope details available for this tier/order.</p>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </Fragment>
               ))}
             </TableBody>
           </Table>
