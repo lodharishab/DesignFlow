@@ -30,11 +30,7 @@ export default function RootLayout({
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col pb-16 md:pb-0">
-        <UIProvider>
-          {children}
-          <MobileBottomNav />
-        </UIProvider>
-        <Toaster />
+        <UIProvider>{children}<MobileBottomNav /></UIProvider><Toaster />
       </body>
     </html>
   );
