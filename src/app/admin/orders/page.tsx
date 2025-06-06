@@ -21,18 +21,24 @@ import {
   Brush, 
   CalendarDays, 
   IndianRupee, 
-  Truck, 
-  CheckCircle, 
-  XCircle,
-  Clock,
   Edit3,
-  FileText
+  FileText,
+  Clock,
+  CreditCard,
+  Eye
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { format } from 'date-fns';
 
 type OrderStatus = 'Pending Assignment' | 'In Progress' | 'Awaiting Client Review' | 'Revision Requested' | 'Completed' | 'Cancelled' | 'Refunded';
+
+interface OrderEvent {
+  timestamp: Date;
+  event: string;
+  actor?: string;
+  notes?: string;
+}
 
 interface Order {
   id: string;
@@ -47,6 +53,9 @@ interface Order {
   status: OrderStatus;
   totalAmount: number;
   currency: string;
+  paymentMethod?: string;
+  transactionId?: string;
+  orderEvents: OrderEvent[];
 }
 
 const initialOrdersData: Order[] = [
@@ -55,46 +64,90 @@ const initialOrdersData: Order[] = [
     clientName: 'Alice Johnson', clientId: 'cli001', 
     designerName: 'Bob The Builder', designerId: 'des002',
     serviceName: 'Modern Logo Design', serviceId: 'svc001',
-    orderDate: new Date(2024, 5, 1), 
+    orderDate: new Date(2024, 5, 1, 10, 30), 
     dueDate: new Date(2024, 5, 15),
     status: 'In Progress', 
-    totalAmount: 199, currency: 'INR' 
+    totalAmount: 199, currency: 'INR',
+    paymentMethod: 'Razorpay',
+    transactionId: 'pay_Nlcftg87sHjkl',
+    orderEvents: [
+      { timestamp: new Date(2024, 5, 1, 10, 30), event: 'Order Placed', actor: 'Alice Johnson' },
+      { timestamp: new Date(2024, 5, 1, 11, 0), event: 'Payment Successful (Razorpay)', actor: 'System' },
+      { timestamp: new Date(2024, 5, 2, 9, 0), event: 'Designer Assigned: Bob The Builder', actor: 'Admin' },
+      { timestamp: new Date(2024, 5, 2, 9, 5), event: 'Status changed to In Progress', actor: 'System' },
+    ]
   },
   { 
     id: 'order002', 
     clientName: 'Charlie Brown', clientId: 'cli003', 
     serviceName: 'Social Media Post Pack', serviceId: 'svc002',
-    orderDate: new Date(2024, 5, 5), 
+    orderDate: new Date(2024, 5, 5, 14, 0), 
     status: 'Pending Assignment', 
-    totalAmount: 99, currency: 'INR' 
+    totalAmount: 99, currency: 'INR',
+    paymentMethod: 'PhonePe',
+    transactionId: 'txn_GhtrDEWAq789',
+     orderEvents: [
+      { timestamp: new Date(2024, 5, 5, 14, 0), event: 'Order Placed', actor: 'Charlie Brown' },
+      { timestamp: new Date(2024, 5, 5, 14, 5), event: 'Payment Successful (PhonePe)', actor: 'System' },
+      { timestamp: new Date(2024, 5, 5, 14, 10), event: 'Status changed to Pending Assignment', actor: 'System' },
+    ]
   },
   { 
     id: 'order003', 
     clientName: 'Diana Prince', clientId: 'cli004',
     designerName: 'Alice Wonderland', designerId: 'des001',
     serviceName: 'UI/UX Web Design Mockup', serviceId: 'svc004',
-    orderDate: new Date(2024, 4, 20), 
+    orderDate: new Date(2024, 4, 20, 16, 45), 
     dueDate: new Date(2024, 5, 10),
     status: 'Completed', 
-    totalAmount: 399, currency: 'INR' 
+    totalAmount: 399, currency: 'INR',
+    paymentMethod: 'Razorpay',
+    transactionId: 'pay_Mnbvcxz87Uyt',
+    orderEvents: [
+      { timestamp: new Date(2024, 4, 20, 16, 45), event: 'Order Placed', actor: 'Diana Prince' },
+      { timestamp: new Date(2024, 4, 20, 16, 50), event: 'Payment Successful (Razorpay)', actor: 'System' },
+      { timestamp: new Date(2024, 4, 21, 10, 0), event: 'Designer Assigned: Alice Wonderland', actor: 'Admin' },
+      { timestamp: new Date(2024, 4, 21, 10, 5), event: 'Status changed to In Progress', actor: 'System' },
+      { timestamp: new Date(2024, 5, 8, 12, 0), event: 'Deliverables Submitted', actor: 'Alice Wonderland' },
+      { timestamp: new Date(2024, 5, 9, 15, 30), event: 'Client Approved Order', actor: 'Diana Prince' },
+      { timestamp: new Date(2024, 5, 9, 15, 35), event: 'Status changed to Completed', actor: 'System' },
+    ]
   },
   { 
     id: 'order004', 
     clientName: 'Edward Scissorhands', clientId: 'cli005',
     serviceName: 'Custom Illustration', serviceId: 'svc005',
-    orderDate: new Date(2024, 5, 8), 
+    orderDate: new Date(2024, 5, 8, 9, 15), 
     status: 'Cancelled', 
-    totalAmount: 149, currency: 'INR' 
+    totalAmount: 149, currency: 'INR',
+    paymentMethod: 'Razorpay',
+    transactionId: 'pay_Lkjhgf56Qwe',
+    orderEvents: [
+      { timestamp: new Date(2024, 5, 8, 9, 15), event: 'Order Placed', actor: 'Edward Scissorhands' },
+      { timestamp: new Date(2024, 5, 8, 9, 30), event: 'Payment Failed', actor: 'System', notes: 'Insufficient funds' },
+      { timestamp: new Date(2024, 5, 8, 10, 0), event: 'Order Cancelled by Client', actor: 'Edward Scissorhands' },
+      { timestamp: new Date(2024, 5, 8, 10, 5), event: 'Status changed to Cancelled', actor: 'System' },
+    ]
   },
    { 
     id: 'order005', 
     clientName: 'Fiona Gallagher', clientId: 'cli006',
     designerName: 'Carol Danvers', designerId: 'des003',
     serviceName: 'Professional Brochure Design', serviceId: 'svc003',
-    orderDate: new Date(2024, 5, 10), 
+    orderDate: new Date(2024, 5, 10, 11, 20), 
     dueDate: new Date(2024, 5, 25),
     status: 'Awaiting Client Review', 
-    totalAmount: 249, currency: 'INR' 
+    totalAmount: 249, currency: 'INR',
+    paymentMethod: 'PhonePe',
+    transactionId: 'txn_Poiuyt09Mnb',
+    orderEvents: [
+      { timestamp: new Date(2024, 5, 10, 11, 20), event: 'Order Placed', actor: 'Fiona Gallagher' },
+      { timestamp: new Date(2024, 5, 10, 11, 25), event: 'Payment Successful (PhonePe)', actor: 'System' },
+      { timestamp: new Date(2024, 5, 11, 9, 0), event: 'Designer Assigned: Carol Danvers', actor: 'Admin' },
+      { timestamp: new Date(2024, 5, 11, 9, 5), event: 'Status changed to In Progress', actor: 'System' },
+      { timestamp: new Date(2024, 5, 18, 17, 0), event: 'Initial Draft Submitted', actor: 'Carol Danvers' },
+      { timestamp: new Date(2024, 5, 18, 17, 5), event: 'Status changed to Awaiting Client Review', actor: 'System' },
+    ]
   },
 ];
 
@@ -104,13 +157,13 @@ export default function AdminOrdersPage(): ReactElement {
 
   const getStatusBadgeVariant = (status: OrderStatus) => {
     switch (status) {
-      case 'Completed': return 'default'; // Green in default theme
-      case 'In Progress': return 'secondary'; // Blue-ish
-      case 'Pending Assignment': return 'outline'; // Yellow-ish / Orange-ish
-      case 'Awaiting Client Review': return 'outline'; // Similar to pending
+      case 'Completed': return 'default'; 
+      case 'In Progress': return 'secondary'; 
+      case 'Pending Assignment': return 'outline'; 
+      case 'Awaiting Client Review': return 'outline'; 
       case 'Cancelled': return 'destructive';
       case 'Refunded': return 'destructive';
-      case 'Revision Requested': return 'secondary'; // Can make this different if needed
+      case 'Revision Requested': return 'secondary'; 
       default: return 'secondary';
     }
   };
@@ -172,7 +225,7 @@ export default function AdminOrdersPage(): ReactElement {
                   <TableCell>{order.clientName}</TableCell>
                   <TableCell>{order.designerName || <span className="text-muted-foreground italic">N/A</span>}</TableCell>
                   <TableCell className="max-w-[200px] truncate" title={order.serviceName}>{order.serviceName}</TableCell>
-                  <TableCell>{format(order.orderDate, 'MMM d, yyyy')}</TableCell>
+                  <TableCell>{format(order.orderDate, 'MMM d, yyyy, p')}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(order.status)}>{order.status}</Badge>
                   </TableCell>
@@ -187,9 +240,11 @@ export default function AdminOrdersPage(): ReactElement {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem asChild>
-                          <Link href={`/admin/orders/details/${order.id}`}>View Details</Link>
+                          <Link href={`/admin/orders/details/${order.id}`} className="flex items-center">
+                            <Eye className="mr-2 h-4 w-4" /> View Details
+                          </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem disabled>Assign Designer</DropdownMenuItem>
+                        <DropdownMenuItem disabled> <Edit3 className="mr-2 h-4 w-4" /> Assign Designer</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, 'In Progress')}>Set to In Progress</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, 'Completed')}>Set to Completed</DropdownMenuItem>
@@ -206,3 +261,4 @@ export default function AdminOrdersPage(): ReactElement {
     </div>
   );
 }
+
