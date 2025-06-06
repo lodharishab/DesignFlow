@@ -26,7 +26,8 @@ import {
   ChevronDown,
   CheckCircle2,
   ArchiveIcon,
-  Eye // Added for view details
+  Eye,
+  Tags // Added for Tags column
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
@@ -47,17 +48,18 @@ interface ServiceTierAdmin {
   name: string;
   price: number;
   description: string;
-  deliveryTime: string;
+  deliveryTime: string; // Keeping simple for list view, detail has structured time
 }
 
 interface AdminServiceModified {
   id: string;
   name: string;
   category: string;
-  generalDescription: string; // For brief display on list
+  generalDescription: string; 
   status: 'Active' | 'Draft' | 'Archived';
   imageUrl?: string;
   imageAiHint?: string;
+  tags?: string[];
   tiers: ServiceTierAdmin[];
 }
 
@@ -70,6 +72,7 @@ const initialServicesData: AdminServiceModified[] = [
     status: 'Active', 
     imageUrl: 'https://placehold.co/600x400.png', 
     imageAiHint: 'logo design',
+    tags: ['branding', 'minimalist', 'corporate', 'startup'],
     tiers: [
       { id: 'tier1_1', name: 'Basic', price: 99, description: '1 Concept...', deliveryTime: '3-5 days' },
       { id: 'tier1_2', name: 'Standard', price: 199, description: '3 Concepts...', deliveryTime: '5-7 days' },
@@ -84,6 +87,7 @@ const initialServicesData: AdminServiceModified[] = [
     status: 'Active', 
     imageUrl: 'https://placehold.co/600x400.png', 
     imageAiHint: 'social media',
+    tags: ['instagram', 'facebook', 'content creation'],
     tiers: [
       { id: 'tier2_1', name: 'Starter Pack', price: 49, description: '5 posts...', deliveryTime: '2-3 days' },
       { id: 'tier2_2', name: 'Growth Pack', price: 99, description: '10 posts...', deliveryTime: '3-5 days' },
@@ -95,6 +99,7 @@ const initialServicesData: AdminServiceModified[] = [
     category: 'Print Design', 
     generalDescription: 'Stunning brochures to showcase your business.',
     status: 'Draft',
+    tags: ['marketing collateral', 'print', 'corporate'],
     tiers: [
       { id: 'tier3_1', name: 'Standard', price: 249, description: 'Tri-fold...', deliveryTime: '7-10 days' },
     ]
@@ -105,6 +110,7 @@ const initialServicesData: AdminServiceModified[] = [
     category: 'UI/UX Design', 
     generalDescription: 'High-fidelity mockup for one key page.',
     status: 'Active',
+    tags: ['website', 'app design', 'user experience'],
     tiers: [
       { id: 'tier4_1', name: 'Standard', price: 399, description: '1 Page...', deliveryTime: '10-14 days' },
       { id: 'tier4_2', name: 'Premium', price: 599, description: 'Up to 3 pages...', deliveryTime: '14-21 days' },
@@ -116,6 +122,7 @@ const initialServicesData: AdminServiceModified[] = [
     category: 'Illustration', 
     generalDescription: 'Unique vector or raster illustration.',
     status: 'Archived',
+    tags: ['art', 'vector', 'character design'],
     tiers: [
       { id: 'tier5_1', name: 'Basic', price: 79, description: 'Simple icon...', deliveryTime: '3-5 days' },
       { id: 'tier5_2', name: 'Standard', price: 149, description: 'Detailed char...', deliveryTime: '5-8 days' },
@@ -127,6 +134,7 @@ const initialServicesData: AdminServiceModified[] = [
     category: 'Video & Animation', 
     generalDescription: 'Short animated video to explain your product.',
     status: 'Active',
+    tags: ['2d animation', 'explainer', 'marketing video'],
     tiers: [
       { id: 'tier6_1', name: '30 Seconds', price: 599, description: 'Animated video...', deliveryTime: '14-21 days' },
     ]
@@ -139,7 +147,6 @@ export default function AdminServicesPage(): ReactElement {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Simulate fetching or re-validating data if needed
     if(services.length === 0 && initialServicesData.length > 0) {
       setServices(initialServicesData);
     }
@@ -257,18 +264,29 @@ export default function AdminServicesPage(): ReactElement {
                 <TableHead className="w-[50px]"><Checkbox checked={isIndeterminate ? "indeterminate" : isAllSelected} onCheckedChange={handleSelectAll} aria-label="Select all" disabled={services.length === 0}/></TableHead>
                 <TableHead className="w-[250px]">Service Name</TableHead>
                 <TableHead><Tag className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Category</TableHead>
+                <TableHead><Tags className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Tags</TableHead>
                 <TableHead><IndianRupee className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Price Range</TableHead>
                 <TableHead><Activity className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Status</TableHead>
                 <TableHead className="text-right w-[150px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {services.length === 0 && <TableRow><TableCell colSpan={6} className="text-center h-24">No services found.</TableCell></TableRow>}
+              {services.length === 0 && <TableRow><TableCell colSpan={7} className="text-center h-24">No services found.</TableCell></TableRow>}
               {services.map(service => (
                 <TableRow key={service.id} data-state={selectedServiceIds.has(service.id) ? "selected" : ""}>
                   <TableCell><Checkbox checked={selectedServiceIds.has(service.id)} onCheckedChange={(checked) => handleSelectOne(service.id, checked)} aria-label={`Select ${service.name}`} /></TableCell>
                   <TableCell className="font-medium">{service.name}</TableCell>
                   <TableCell><Badge variant="outline">{service.category}</Badge></TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {(service.tags || []).slice(0, 2).map(tag => (
+                        <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+                      ))}
+                      {(service.tags || []).length > 2 && (
+                        <Badge variant="secondary" className="text-xs">+{ (service.tags || []).length - 2} more</Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>{getPriceRange(service.tiers)}</TableCell>
                   <TableCell><Badge variant={getStatusBadgeVariant(service.status)}>{service.status}</Badge></TableCell>
                   <TableCell className="text-right space-x-2">
@@ -299,5 +317,3 @@ export default function AdminServicesPage(): ReactElement {
     </div>
   );
 }
-
-    

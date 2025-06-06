@@ -7,7 +7,7 @@ import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock, Package, Tag, Icon as LucideIcon } from 'lucide-react'; // Renamed Icon to LucideIcon
+import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock, Package, Tag, Icon as LucideIcon, Tags } from 'lucide-react'; 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -19,14 +19,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 
 interface ServiceTierDetail {
-  name: 'Basic' | 'Standard' | 'Premium'; // This could be more flexible if needed
+  name: 'Basic' | 'Standard' | 'Premium'; 
   price: number;
   deliveryTimeMin: number;
   deliveryTimeMax: number;
   deliveryTimeUnit: 'days' | 'business_days' | 'weeks';
   scope: string[];
   tierDescription?: string;
-  icon: LucideIcon; // Changed from Icon to LucideIcon
+  icon: LucideIcon; 
 }
 
 interface ServiceDetail {
@@ -35,6 +35,7 @@ interface ServiceDetail {
   generalDescription: string;
   longDescription: string;
   category: string;
+  tags?: string[];
   imageUrl: string;
   imageHint: string;
   tiers: ServiceTierDetail[];
@@ -55,6 +56,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     generalDescription: 'Get a unique and memorable logo for your brand that resonates with your target audience.',
     longDescription: 'Our process ensures a collaborative experience resulting in a logo you’ll love. We focus on versatility, scalability, and timelessness. Each tier offers a different level of complexity and deliverables to match your needs, from essential concepts to comprehensive brand assets. We work closely with you to understand your vision and translate it into a powerful visual identity.',
     category: 'Logo Design',
+    tags: ['branding', 'minimalist', 'vector', 'identity'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'modern logo showcase',
     tiers: [
@@ -88,6 +90,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     generalDescription: 'Engaging posts designed for your social media channels.',
     longDescription: 'Boost your online presence with professionally designed social media posts tailored to your brand and campaign goals. We provide source files and high-resolution images ready for publishing across various platforms. Content is optimized for engagement and visual appeal.',
     category: 'Social Media',
+    tags: ['instagram', 'facebook', 'twitter', 'content'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'social media campaign',
     tiers: [
@@ -114,6 +117,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     generalDescription: 'Stunning tri-fold or bi-fold brochures to showcase your business effectively.',
     longDescription: 'Comprehensive brochure design including concept, layout, and print-ready files. We work with you to create a compelling narrative and visual style that captures attention and effectively communicates your message. Ideal for marketing materials, event handouts, and informational packets.',
     category: 'Print Design',
+    tags: ['brochure', 'flyer', 'marketing material'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'corporate brochure',
     tiers: [
@@ -124,7 +128,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
             icon: Star,
         },
         {
-            name: 'Premium', price: 349, deliveryTimeMin: 2, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks', // Example: 2 weeks
+            name: 'Premium', price: 349, deliveryTimeMin: 2, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks', 
             scope: ['Custom brochure design (up to 12 panels)', 'Premium stock imagery (up to 5 images)', '5 revision rounds', 'Print-ready PDF & source files', 'Copywriting suggestions (up to 200 words)'],
             tierDescription: 'Comprehensive brochure package with more content, panels, and added features like copywriting support.',
             icon: Zap,
@@ -138,6 +142,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     generalDescription: 'High-fidelity mockup for one key page of your website or app.',
     longDescription: 'Detailed UI/UX design for a single, critical page, including wireframes, mockups, and a style guide for key elements. Ideal for presentations or developer handoff. We focus on user-centric design principles to ensure an intuitive and visually appealing experience. Suitable for landing pages, product pages, or core app screens.',
     category: 'UI/UX Design',
+    tags: ['website', 'app design', 'mockup', 'figma'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'app interface design',
     tiers: [
@@ -164,6 +169,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     generalDescription: 'Unique vector or raster illustration based on your brief.',
     longDescription: 'From simple icons to complex scenes, get custom illustrations in your desired style. Perfect for websites, marketing materials, or personal projects. We bring your ideas to life visually, ensuring the illustration aligns with your brand and message. Discuss your style preferences (e.g., flat, detailed, cartoonish, realistic) with our designers.',
     category: 'Illustration',
+    tags: ['vector art', 'digital painting', 'character'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'fantasy illustration',
     tiers: [
@@ -180,7 +186,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
             icon: Star,
         },
         {
-            name: 'Premium', price: 249, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks', // Example: 1-2 weeks
+            name: 'Premium', price: 249, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks', 
             scope: ['1 complex illustration (e.g., detailed scene, multiple characters)', 'High detail and complexity', '5 revision rounds', 'Source file & all formats', 'Enhanced commercial use license'],
             tierDescription: 'For high-impact, detailed illustrative work requiring more complexity and refinement.',
             icon: Zap,
@@ -194,6 +200,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     generalDescription: 'Creative packaging concept for your product.',
     longDescription: 'Develop a unique and attractive packaging design concept that makes your product stand out. Includes mockups and initial dieline considerations to help visualize the final product. We consider your brand, target audience, and product characteristics to create a compelling packaging solution.',
     category: 'Packaging',
+    tags: ['product packaging', 'box design', 'label design'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'luxury product box',
     tiers: [
@@ -220,6 +227,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     generalDescription: 'Quick logo sketches for initial ideas.',
     longDescription: 'Get 3-5 rough logo sketches to explore initial concepts and directions for your brand identity. This is a great starting point for brainstorming and refining your vision before committing to a full design. These are conceptual sketches, not finalized logos.',
     category: 'Logo Design',
+    tags: ['logo sketch', 'concept', 'ideation'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'pencil sketch logo',
     tiers: [
@@ -235,11 +243,11 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
 };
 
 function formatStructuredDeliveryTime(min: number, max: number, unit: ServiceTierDetail['deliveryTimeUnit']): string {
-  const unitLabel = unit.replace('_', ' '); // 'business_days' -> 'business days'
+  const unitLabel = unit.replace('_', ' '); 
   if (min === max) {
-    return `${min} ${unitLabel}${min > 1 && unit !== 'weeks' ? 's' : ''}`; // basic pluralization
+    return `${min} ${unitLabel}${min > 1 && unit !== 'weeks' ? 's' : ''}`; 
   }
-  return `${min}-${max} ${unitLabel}${max > 1 && unit !== 'weeks' ? 's' : ''}`; // basic pluralization
+  return `${min}-${max} ${unitLabel}${max > 1 && unit !== 'weeks' ? 's' : ''}`; 
 }
 
 
@@ -282,6 +290,12 @@ export default function ServiceDetailPage() {
 
   const handleOrderTier = (tier: ServiceTierDetail) => {
     if (!service) return;
+    // Here you would typically add to cart logic
+    console.log("Ordering tier:", tier.name, "for service:", service.name);
+    toast({
+      title: "Added to Cart (Simulated)",
+      description: `${service.name} - ${tier.name} tier added to your cart.`,
+    });
     router.push('/cart');
   };
 
@@ -350,6 +364,16 @@ export default function ServiceDetailPage() {
               </div>
             </div>
             <p className="text-muted-foreground text-lg">{service.generalDescription}</p>
+
+            {service.tags && service.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 items-center">
+                <Tags className="h-4 w-4 text-muted-foreground" />
+                {service.tags.map(tag => (
+                  <Badge key={tag} variant="secondary">{tag}</Badge>
+                ))}
+              </div>
+            )}
+
 
             <Separator />
 

@@ -8,13 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Save, XCircle, Briefcase, IndianRupee, Tag, FileText, ClockIcon, ImageIcon, Lightbulb, Loader2, Trash2 } from 'lucide-react';
+import { PlusCircle, Save, XCircle, Briefcase, IndianRupee, Tag, FileText, ClockIcon, ImageIcon, Lightbulb, Loader2, Trash2, Tags } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 
 interface ServiceTierAdmin {
-  id: string; // Temporary ID for client-side management
+  id: string; 
   name: string;
   price: number;
   description: string;
@@ -52,6 +52,7 @@ export default function AdminAddServicePage(): ReactElement {
   const [status, setStatus] = useState<'Active' | 'Draft' | 'Archived'>('Draft');
   const [imageUrl, setImageUrl] = useState('https://placehold.co/600x400.png');
   const [imageAiHint, setImageAiHint] = useState('service image');
+  const [tagsString, setTagsString] = useState('');
 
   // Tiers
   const [tiers, setTiers] = useState<ServiceTierAdmin[]>([
@@ -101,14 +102,16 @@ export default function AdminAddServicePage(): ReactElement {
     }
 
     setIsSaving(true);
+    const parsedTags = tagsString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
     const newService = { 
-      id: `svc_${Date.now()}`, // Simulated ID
+      id: `svc_${Date.now()}`, 
       name: serviceName, 
       category, 
       generalDescription,
       status,
       imageUrl,
       imageAiHint,
+      tags: parsedTags,
       tiers
     };
     console.log("Saving new service:", newService);
@@ -159,12 +162,18 @@ export default function AdminAddServicePage(): ReactElement {
               <Input id="imageAiHint" placeholder="e.g., modern logo" value={imageAiHint} onChange={(e) => setImageAiHint(e.target.value)} disabled={isSaving} />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="status">Status*</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as 'Active' | 'Draft' | 'Archived')} disabled={isSaving}>
-              <SelectTrigger id="status"><SelectValue placeholder="Select status" /></SelectTrigger>
-              <SelectContent>{serviceStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-            </Select>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="status">Status*</Label>
+              <Select value={status} onValueChange={(value) => setStatus(value as 'Active' | 'Draft' | 'Archived')} disabled={isSaving}>
+                <SelectTrigger id="status"><SelectValue placeholder="Select status" /></SelectTrigger>
+                <SelectContent>{serviceStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tagsString"><Tags className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Tags (comma-separated)</Label>
+              <Input id="tagsString" placeholder="e.g., minimalist, branding, modern" value={tagsString} onChange={(e) => setTagsString(e.target.value)} disabled={isSaving} />
+            </div>
           </div>
         </CardContent>
       </Card>

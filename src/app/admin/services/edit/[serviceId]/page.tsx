@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save, XCircle, Briefcase, IndianRupee, Tag, FileText, ClockIcon, ImageIcon, Lightbulb, Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import { Save, XCircle, Briefcase, IndianRupee, Tag, FileText, ClockIcon, ImageIcon, Lightbulb, Loader2, PlusCircle, Trash2, Tags } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +31,7 @@ interface AdminServiceModified {
   status: 'Active' | 'Draft' | 'Archived';
   imageUrl?: string;
   imageAiHint?: string;
+  tags?: string[];
   tiers: ServiceTierAdmin[];
 }
 
@@ -43,6 +44,7 @@ const initialServicesData: AdminServiceModified[] = [
     status: 'Active', 
     imageUrl: 'https://placehold.co/600x400.png', 
     imageAiHint: 'logo design',
+    tags: ['branding', 'minimalist', 'corporate'],
     tiers: [
       { id: 'tier1_1', name: 'Basic', price: 99, description: '1 Initial concept, 2 Rounds of revisions, Basic vector files (SVG, PNG).', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' },
       { id: 'tier1_2', name: 'Standard', price: 199, description: '3 Initial concepts, 3 Rounds of revisions, Full vector files (AI, EPS, SVG, PNG, JPG), Basic brand guide (colors, fonts).', deliveryTimeMin: 5, deliveryTimeMax: 7, deliveryTimeUnit: 'days' },
@@ -57,6 +59,7 @@ const initialServicesData: AdminServiceModified[] = [
     status: 'Active', 
     imageUrl: 'https://placehold.co/600x400.png', 
     imageAiHint: 'social media',
+    tags: ['instagram', 'facebook', 'marketing'],
     tiers: [
       { id: 'tier2_1', name: 'Starter Pack', price: 49, description: '5 social media posts, 1 Platform choice, 1 Round of revisions.', deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'days' },
       { id: 'tier2_2', name: 'Growth Pack', price: 99, description: '10 social media posts, Up to 2 platforms, 2 Rounds of revisions, Source files.', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' },
@@ -103,6 +106,7 @@ export default function AdminEditServicePage(): ReactElement {
   const [status, setStatus] = useState<AdminServiceModified['status']>('Draft');
   const [imageUrl, setImageUrl] = useState('');
   const [imageAiHint, setImageAiHint] = useState('');
+  const [tagsString, setTagsString] = useState('');
   const [tiers, setTiers] = useState<ServiceTierAdmin[]>([]);
 
   useEffect(() => {
@@ -117,6 +121,7 @@ export default function AdminEditServicePage(): ReactElement {
         setStatus(foundService.status);
         setImageUrl(foundService.imageUrl || '');
         setImageAiHint(foundService.imageAiHint || '');
+        setTagsString((foundService.tags || []).join(', '));
         setTiers(foundService.tiers.map(t => ({
           ...t, 
           price: Number(t.price), 
@@ -175,6 +180,7 @@ export default function AdminEditServicePage(): ReactElement {
     }
 
     setIsSaving(true);
+    const parsedTags = tagsString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
     const updatedService: AdminServiceModified = { 
       id: serviceId,
       name: serviceName, 
@@ -183,6 +189,7 @@ export default function AdminEditServicePage(): ReactElement {
       status,
       imageUrl,
       imageAiHint,
+      tags: parsedTags,
       tiers
     };
     console.log("Saving updated service:", updatedService);
@@ -190,7 +197,6 @@ export default function AdminEditServicePage(): ReactElement {
     setTimeout(() => {
       toast({ title: "Service Updated (Simulated)", description: `Service "${serviceName}" has been successfully updated.` });
       setIsSaving(false);
-      // In a real app, you might want to update initialServicesData here or refetch
       router.push('/admin/services');
     }, 1000);
   };
@@ -239,12 +245,18 @@ export default function AdminEditServicePage(): ReactElement {
               <Input id="imageAiHint" value={imageAiHint} onChange={(e) => setImageAiHint(e.target.value)} disabled={isSaving} />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="status">Status*</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as AdminServiceModified['status'])} disabled={isSaving}>
-              <SelectTrigger id="status"><SelectValue placeholder="Select status" /></SelectTrigger>
-              <SelectContent>{serviceStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-            </Select>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="status">Status*</Label>
+              <Select value={status} onValueChange={(value) => setStatus(value as AdminServiceModified['status'])} disabled={isSaving}>
+                <SelectTrigger id="status"><SelectValue placeholder="Select status" /></SelectTrigger>
+                <SelectContent>{serviceStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tagsString"><Tags className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Tags (comma-separated)</Label>
+              <Input id="tagsString" placeholder="e.g., minimalist, branding, modern" value={tagsString} onChange={(e) => setTagsString(e.target.value)} disabled={isSaving} />
+            </div>
           </div>
         </CardContent>
       </Card>
