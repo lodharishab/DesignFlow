@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Briefcase, 
   PlusCircle, 
@@ -159,7 +160,7 @@ const statusFilters: { label: string; value: ServiceStatusFilter; icon: React.El
   { label: 'Archived', value: 'Archived', icon: Archive },
 ];
 
-type SortableServiceKeys = 'name' | 'category' | 'status' | 'priceRange'; // 'priceRange' needs special handling
+type SortableServiceKeys = 'name' | 'category' | 'status' | 'priceRange';
 
 function formatStructuredDeliveryTime(min: number, max: number, unit: TierForList['deliveryTimeUnit']): string {
   const unitLabel = unit.replace('_', ' ');
@@ -174,6 +175,7 @@ export default function AdminServicesPage(): ReactElement {
   const [selectedServiceIds, setSelectedServiceIds] = useState<Set<string>>(new Set());
   const [expandedServiceIds, setExpandedServiceIds] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState<ServiceStatusFilter>('All');
+  const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortableServiceKeys | null; direction: 'ascending' | 'descending' }>({
     key: 'name',
     direction: 'ascending',
@@ -186,9 +188,14 @@ export default function AdminServicesPage(): ReactElement {
     }
   }, [services]);
 
+  const uniqueCategories = useMemo(() => {
+    const categories = new Set(services.map(service => service.category));
+    return ['All', ...Array.from(categories).sort()];
+  }, [services]);
+
   const getPriceRangeValue = (tiers: TierForList[]): number => {
     if (!tiers || tiers.length === 0) return 0;
-    return Math.min(...tiers.map(t => t.price)); // Sort by min price for range
+    return Math.min(...tiers.map(t => t.price)); 
   };
 
   const displayedServices = useMemo(() => {
@@ -196,6 +203,10 @@ export default function AdminServicesPage(): ReactElement {
 
     if (statusFilter !== 'All') {
       filteredServices = filteredServices.filter(service => service.status === statusFilter);
+    }
+
+    if (categoryFilter !== 'All') {
+      filteredServices = filteredServices.filter(service => service.category === categoryFilter);
     }
 
     if (sortConfig.key) {
@@ -219,7 +230,7 @@ export default function AdminServicesPage(): ReactElement {
       });
     }
     return filteredServices;
-  }, [services, statusFilter, sortConfig]);
+  }, [services, statusFilter, categoryFilter, sortConfig]);
 
   const requestSort = (key: SortableServiceKeys) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -338,7 +349,7 @@ export default function AdminServicesPage(): ReactElement {
         <CardHeader>
           <CardTitle>All Services</CardTitle>
           <CardDescription>View, add, edit, or remove design services. Services can have multiple tiers/variations.</CardDescription>
-           <div className="pt-4 flex flex-wrap gap-2">
+           <div className="pt-4 flex flex-wrap gap-2 items-center">
             {statusFilters.map(filter => (
               <Button
                 key={filter.value}
@@ -350,6 +361,20 @@ export default function AdminServicesPage(): ReactElement {
                 {filter.label}
               </Button>
             ))}
+            <div className="min-w-[180px]">
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Filter by category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {uniqueCategories.map(category => (
+                    <SelectItem key={category} value={category}>
+                      {category === 'All' ? 'All Categories' : category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -509,3 +534,4 @@ export default function AdminServicesPage(): ReactElement {
     </div>
   );
 }
+
