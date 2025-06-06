@@ -12,14 +12,15 @@ import { Save, XCircle, Briefcase, IndianRupee, Tag, FileText, ClockIcon, ImageI
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from '@/components/ui/separator';
 
 interface ServiceTierAdmin {
-  id: string; // Can be a temporary ID for new tiers before saving
+  id: string;
   name: string;
   price: number;
   description: string;
-  deliveryTime: string;
+  deliveryTimeMin: number;
+  deliveryTimeMax: number;
+  deliveryTimeUnit: 'days' | 'business_days' | 'weeks';
 }
 
 interface AdminServiceModified {
@@ -43,9 +44,9 @@ const initialServicesData: AdminServiceModified[] = [
     imageUrl: 'https://placehold.co/600x400.png', 
     imageAiHint: 'logo design',
     tiers: [
-      { id: 'tier1_1', name: 'Basic', price: 99, description: '1 Initial concept, 2 Rounds of revisions, Basic vector files (SVG, PNG).', deliveryTime: '3-5 days' },
-      { id: 'tier1_2', name: 'Standard', price: 199, description: '3 Initial concepts, 3 Rounds of revisions, Full vector files (AI, EPS, SVG, PNG, JPG), Basic brand guide (colors, fonts).', deliveryTime: '5-7 days' },
-      { id: 'tier1_3', name: 'Premium', price: 299, description: '5 Initial concepts, Unlimited revisions, Full vector & source files, Detailed brand guidelines, Social media kit.', deliveryTime: '7-10 days' },
+      { id: 'tier1_1', name: 'Basic', price: 99, description: '1 Initial concept, 2 Rounds of revisions, Basic vector files (SVG, PNG).', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' },
+      { id: 'tier1_2', name: 'Standard', price: 199, description: '3 Initial concepts, 3 Rounds of revisions, Full vector files (AI, EPS, SVG, PNG, JPG), Basic brand guide (colors, fonts).', deliveryTimeMin: 5, deliveryTimeMax: 7, deliveryTimeUnit: 'days' },
+      { id: 'tier1_3', name: 'Premium', price: 299, description: '5 Initial concepts, Unlimited revisions, Full vector & source files, Detailed brand guidelines, Social media kit.', deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'days' },
     ]
   },
   { 
@@ -57,11 +58,10 @@ const initialServicesData: AdminServiceModified[] = [
     imageUrl: 'https://placehold.co/600x400.png', 
     imageAiHint: 'social media',
     tiers: [
-      { id: 'tier2_1', name: 'Starter Pack', price: 49, description: '5 social media posts, 1 Platform choice, 1 Round of revisions.', deliveryTime: '2-3 days' },
-      { id: 'tier2_2', name: 'Growth Pack', price: 99, description: '10 social media posts, Up to 2 platforms, 2 Rounds of revisions, Source files.', deliveryTime: '3-5 days' },
+      { id: 'tier2_1', name: 'Starter Pack', price: 49, description: '5 social media posts, 1 Platform choice, 1 Round of revisions.', deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'days' },
+      { id: 'tier2_2', name: 'Growth Pack', price: 99, description: '10 social media posts, Up to 2 platforms, 2 Rounds of revisions, Source files.', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' },
     ]
   },
-  // Add more services with tiers as needed
 ];
 
 const serviceCategories = [
@@ -71,14 +71,19 @@ const serviceCategories = [
   { id: 'cat004', name: 'Custom Illustrations' },
   { id: 'cat005', name: 'Social Media Graphics' },
   { id: 'cat006', name: 'Video & Animation' },
-  { id: 'cat007', name: 'Print Design' }, // Ensure this matches categories in initialServicesData
-  { id: 'cat008', name: 'Social Media' }, // Ensure this matches categories in initialServicesData
-  { id: 'cat009', name: 'UI/UX Design' }, // Ensure this matches categories in initialServicesData
-  { id: 'cat010', name: 'Illustration' }, // Ensure this matches categories in initialServicesData
-  { id: 'cat011', name: 'Packaging' }, // Ensure this matches categories in initialServicesData
+  { id: 'cat007', name: 'Print Design' },
+  { id: 'cat008', name: 'Social Media' },
+  { id: 'cat009', name: 'UI/UX Design' },
+  { id: 'cat010', name: 'Illustration' },
+  { id: 'cat011', name: 'Packaging' },
 ];
 
-const serviceStatuses = ['Active', 'Draft', 'Archived'];
+const serviceStatuses: AdminServiceModified['status'][] = ['Active', 'Draft', 'Archived'];
+const deliveryTimeUnits: { value: ServiceTierAdmin['deliveryTimeUnit']; label: string }[] = [
+  { value: 'days', label: 'Days' },
+  { value: 'business_days', label: 'Business Days' },
+  { value: 'weeks', label: 'Weeks' },
+];
 
 export default function AdminEditServicePage(): ReactElement {
   const router = useRouter();
@@ -95,7 +100,7 @@ export default function AdminEditServicePage(): ReactElement {
   const [serviceName, setServiceName] = useState('');
   const [category, setCategory] = useState('');
   const [generalDescription, setGeneralDescription] = useState('');
-  const [status, setStatus] = useState<'Active' | 'Draft' | 'Archived'>('Draft');
+  const [status, setStatus] = useState<AdminServiceModified['status']>('Draft');
   const [imageUrl, setImageUrl] = useState('');
   const [imageAiHint, setImageAiHint] = useState('');
   const [tiers, setTiers] = useState<ServiceTierAdmin[]>([]);
@@ -112,7 +117,13 @@ export default function AdminEditServicePage(): ReactElement {
         setStatus(foundService.status);
         setImageUrl(foundService.imageUrl || '');
         setImageAiHint(foundService.imageAiHint || '');
-        setTiers(foundService.tiers.map(t => ({...t, price: Number(t.price)}))); // Ensure price is number
+        setTiers(foundService.tiers.map(t => ({
+          ...t, 
+          price: Number(t.price), 
+          deliveryTimeMin: Number(t.deliveryTimeMin) || 1, 
+          deliveryTimeMax: Number(t.deliveryTimeMax) || 1,
+          deliveryTimeUnit: t.deliveryTimeUnit || 'days'
+        })));
       } else {
         toast({
           title: "Error",
@@ -127,16 +138,21 @@ export default function AdminEditServicePage(): ReactElement {
 
   const handleTierChange = (index: number, field: keyof ServiceTierAdmin, value: string | number) => {
     const newTiers = [...tiers];
-    if (field === 'price' && typeof value === 'string') {
-        newTiers[index] = { ...newTiers[index], [field]: parseFloat(value) || 0 };
-    } else {
-        newTiers[index] = { ...newTiers[index], [field]: value };
+    const currentTier = newTiers[index];
+
+    if (field === 'price' || field === 'deliveryTimeMin' || field === 'deliveryTimeMax') {
+      currentTier[field as 'price' | 'deliveryTimeMin' | 'deliveryTimeMax'] = parseFloat(value as string) || 0;
+    } else if (field === 'deliveryTimeUnit') {
+      currentTier[field] = value as ServiceTierAdmin['deliveryTimeUnit'];
+    }
+     else {
+      currentTier[field as 'name' | 'description' | 'id'] = value as string;
     }
     setTiers(newTiers);
   };
 
   const addTier = () => {
-    setTiers([...tiers, { id: `new_${Date.now()}`, name: '', price: 0, description: '', deliveryTime: '' }]);
+    setTiers([...tiers, { id: `new_${Date.now()}`, name: '', price: 0, description: '', deliveryTimeMin: 1, deliveryTimeMax: 1, deliveryTimeUnit: 'days' }]);
   };
 
   const removeTier = (index: number) => {
@@ -153,8 +169,8 @@ export default function AdminEditServicePage(): ReactElement {
       toast({ title: "Error", description: "Please fill in all general service details.", variant: "destructive" });
       return;
     }
-    if (tiers.some(t => !t.name.trim() || t.price <= 0 || !t.description.trim() || !t.deliveryTime.trim())) {
-      toast({ title: "Error", description: "Please complete all fields for each tier, ensuring price is positive.", variant: "destructive" });
+    if (tiers.some(t => !t.name.trim() || t.price <= 0 || !t.description.trim() || t.deliveryTimeMin <= 0 || t.deliveryTimeMax <= 0 || t.deliveryTimeMin > t.deliveryTimeMax || !t.deliveryTimeUnit )) {
+      toast({ title: "Error", description: "Please complete all fields for each tier. Ensure price and delivery times are positive, and min delivery time is not greater than max.", variant: "destructive" });
       return;
     }
 
@@ -174,6 +190,7 @@ export default function AdminEditServicePage(): ReactElement {
     setTimeout(() => {
       toast({ title: "Service Updated (Simulated)", description: `Service "${serviceName}" has been successfully updated.` });
       setIsSaving(false);
+      // In a real app, you might want to update initialServicesData here or refetch
       router.push('/admin/services');
     }, 1000);
   };
@@ -224,7 +241,7 @@ export default function AdminEditServicePage(): ReactElement {
           </div>
           <div className="space-y-2">
             <Label htmlFor="status">Status*</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as 'Active' | 'Draft' | 'Archived')} disabled={isSaving}>
+            <Select value={status} onValueChange={(value) => setStatus(value as AdminServiceModified['status'])} disabled={isSaving}>
               <SelectTrigger id="status"><SelectValue placeholder="Select status" /></SelectTrigger>
               <SelectContent>{serviceStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
             </Select>
@@ -266,8 +283,24 @@ export default function AdminEditServicePage(): ReactElement {
                 <Textarea id={`tierDescription-${index}`} value={tier.description} onChange={(e) => handleTierChange(index, 'description', e.target.value)} rows={3} disabled={isSaving} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor={`tierDeliveryTime-${index}`}><ClockIcon className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Delivery Time*</Label>
-                <Input id={`tierDeliveryTime-${index}`} value={tier.deliveryTime} onChange={(e) => handleTierChange(index, 'deliveryTime', e.target.value)} disabled={isSaving} />
+                <Label><ClockIcon className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Delivery Time*</Label>
+                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 items-end">
+                    <div className="space-y-1">
+                        <Label htmlFor={`tierDeliveryTimeMin-${index}`} className="text-xs">Min Value</Label>
+                        <Input id={`tierDeliveryTimeMin-${index}`} type="number" value={tier.deliveryTimeMin.toString()} onChange={(e) => handleTierChange(index, 'deliveryTimeMin', e.target.value)} disabled={isSaving} placeholder="e.g., 3"/>
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor={`tierDeliveryTimeMax-${index}`} className="text-xs">Max Value</Label>
+                        <Input id={`tierDeliveryTimeMax-${index}`} type="number" value={tier.deliveryTimeMax.toString()} onChange={(e) => handleTierChange(index, 'deliveryTimeMax', e.target.value)} disabled={isSaving} placeholder="e.g., 5"/>
+                    </div>
+                    <div className="space-y-1 md:col-span-1">
+                         <Label htmlFor={`tierDeliveryTimeUnit-${index}`} className="text-xs">Unit</Label>
+                        <Select value={tier.deliveryTimeUnit} onValueChange={(value) => handleTierChange(index, 'deliveryTimeUnit', value)} disabled={isSaving}>
+                            <SelectTrigger id={`tierDeliveryTimeUnit-${index}`}><SelectValue placeholder="Unit" /></SelectTrigger>
+                            <SelectContent>{deliveryTimeUnits.map(unit => <SelectItem key={unit.value} value={unit.value}>{unit.label}</SelectItem>)}</SelectContent>
+                        </Select>
+                    </div>
+                </div>
               </div>
             </div>
           ))}
@@ -289,5 +322,3 @@ export default function AdminEditServicePage(): ReactElement {
     </div>
   );
 }
-
-    

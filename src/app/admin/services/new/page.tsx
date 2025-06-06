@@ -12,14 +12,15 @@ import { PlusCircle, Save, XCircle, Briefcase, IndianRupee, Tag, FileText, Clock
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from '@/components/ui/separator';
 
 interface ServiceTierAdmin {
   id: string; // Temporary ID for client-side management
   name: string;
   price: number;
   description: string;
-  deliveryTime: string;
+  deliveryTimeMin: number;
+  deliveryTimeMax: number;
+  deliveryTimeUnit: 'days' | 'business_days' | 'weeks';
 }
 
 const serviceCategories = [
@@ -33,6 +34,11 @@ const serviceCategories = [
 ];
 
 const serviceStatuses = ['Active', 'Draft', 'Archived'];
+const deliveryTimeUnits: { value: ServiceTierAdmin['deliveryTimeUnit']; label: string }[] = [
+  { value: 'days', label: 'Days' },
+  { value: 'business_days', label: 'Business Days' },
+  { value: 'weeks', label: 'Weeks' },
+];
 
 export default function AdminAddServicePage(): ReactElement {
   const router = useRouter();
@@ -49,21 +55,26 @@ export default function AdminAddServicePage(): ReactElement {
 
   // Tiers
   const [tiers, setTiers] = useState<ServiceTierAdmin[]>([
-    { id: `new_${Date.now()}`, name: 'Standard', price: 0, description: '', deliveryTime: '' }
+    { id: `new_${Date.now()}`, name: 'Standard', price: 0, description: '', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' }
   ]);
 
   const handleTierChange = (index: number, field: keyof ServiceTierAdmin, value: string | number) => {
     const newTiers = [...tiers];
-    if (field === 'price' && typeof value === 'string') {
-        newTiers[index] = { ...newTiers[index], [field]: parseFloat(value) || 0 };
-    } else {
-        newTiers[index] = { ...newTiers[index], [field]: value };
+    const currentTier = newTiers[index];
+
+    if (field === 'price' || field === 'deliveryTimeMin' || field === 'deliveryTimeMax') {
+      currentTier[field as 'price' | 'deliveryTimeMin' | 'deliveryTimeMax'] = parseFloat(value as string) || 0;
+    } else if (field === 'deliveryTimeUnit') {
+      currentTier[field] = value as ServiceTierAdmin['deliveryTimeUnit'];
+    } 
+     else {
+      currentTier[field as 'name' | 'description' | 'id'] = value as string;
     }
     setTiers(newTiers);
   };
 
   const addTier = () => {
-    setTiers([...tiers, { id: `new_${Date.now()}`, name: '', price: 0, description: '', deliveryTime: '' }]);
+    setTiers([...tiers, { id: `new_${Date.now()}`, name: '', price: 0, description: '', deliveryTimeMin: 1, deliveryTimeMax: 1, deliveryTimeUnit: 'days' }]);
   };
 
   const removeTier = (index: number) => {
@@ -84,8 +95,8 @@ export default function AdminAddServicePage(): ReactElement {
         toast({ title: "Error", description: "A service must have at least one tier.", variant: "destructive" });
         return;
     }
-    if (tiers.some(t => !t.name.trim() || t.price <= 0 || !t.description.trim() || !t.deliveryTime.trim())) {
-      toast({ title: "Error", description: "Please complete all fields for each tier, ensuring price is positive.", variant: "destructive" });
+    if (tiers.some(t => !t.name.trim() || t.price <= 0 || !t.description.trim() || t.deliveryTimeMin <= 0 || t.deliveryTimeMax <= 0 || t.deliveryTimeMin > t.deliveryTimeMax || !t.deliveryTimeUnit)) {
+      toast({ title: "Error", description: "Please complete all fields for each tier. Ensure price and delivery times are positive, and min delivery time is not greater than max.", variant: "destructive" });
       return;
     }
 
@@ -192,8 +203,24 @@ export default function AdminAddServicePage(): ReactElement {
                 <Textarea id={`tierDescription-${index}`} value={tier.description} onChange={(e) => handleTierChange(index, 'description', e.target.value)} rows={3} disabled={isSaving} placeholder="What's included in this tier?"/>
               </div>
               <div className="space-y-2">
-                <Label htmlFor={`tierDeliveryTime-${index}`}><ClockIcon className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Delivery Time*</Label>
-                <Input id={`tierDeliveryTime-${index}`} value={tier.deliveryTime} onChange={(e) => handleTierChange(index, 'deliveryTime', e.target.value)} disabled={isSaving} placeholder="e.g., 3-5 Business Days" />
+                <Label><ClockIcon className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Delivery Time*</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 items-end">
+                    <div className="space-y-1">
+                        <Label htmlFor={`tierDeliveryTimeMin-${index}`} className="text-xs">Min Value</Label>
+                        <Input id={`tierDeliveryTimeMin-${index}`} type="number" value={tier.deliveryTimeMin.toString()} onChange={(e) => handleTierChange(index, 'deliveryTimeMin', e.target.value)} disabled={isSaving} placeholder="e.g., 3"/>
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor={`tierDeliveryTimeMax-${index}`} className="text-xs">Max Value</Label>
+                        <Input id={`tierDeliveryTimeMax-${index}`} type="number" value={tier.deliveryTimeMax.toString()} onChange={(e) => handleTierChange(index, 'deliveryTimeMax', e.target.value)} disabled={isSaving} placeholder="e.g., 5"/>
+                    </div>
+                    <div className="space-y-1 md:col-span-1">
+                         <Label htmlFor={`tierDeliveryTimeUnit-${index}`} className="text-xs">Unit</Label>
+                        <Select value={tier.deliveryTimeUnit} onValueChange={(value) => handleTierChange(index, 'deliveryTimeUnit', value)} disabled={isSaving}>
+                            <SelectTrigger id={`tierDeliveryTimeUnit-${index}`}><SelectValue placeholder="Unit" /></SelectTrigger>
+                            <SelectContent>{deliveryTimeUnits.map(unit => <SelectItem key={unit.value} value={unit.value}>{unit.label}</SelectItem>)}</SelectContent>
+                        </Select>
+                    </div>
+                </div>
               </div>
             </div>
           ))}
@@ -215,5 +242,3 @@ export default function AdminAddServicePage(): ReactElement {
     </div>
   );
 }
-
-    

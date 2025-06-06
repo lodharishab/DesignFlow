@@ -7,8 +7,7 @@ import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock, Package, Tag } from 'lucide-react';
-import type { Icon } from 'lucide-react';
+import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock, Package, Tag, Icon as LucideIcon } from 'lucide-react'; // Renamed Icon to LucideIcon
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -20,12 +19,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 
 interface ServiceTierDetail {
-  name: 'Basic' | 'Standard' | 'Premium';
+  name: 'Basic' | 'Standard' | 'Premium'; // This could be more flexible if needed
   price: number;
-  deliveryTime: string;
+  deliveryTimeMin: number;
+  deliveryTimeMax: number;
+  deliveryTimeUnit: 'days' | 'business_days' | 'weeks';
   scope: string[];
   tierDescription?: string;
-  icon: Icon;
+  icon: LucideIcon; // Changed from Icon to LucideIcon
 }
 
 interface ServiceDetail {
@@ -58,25 +59,19 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageHint: 'modern logo showcase',
     tiers: [
       {
-        name: 'Basic',
-        price: 99,
-        deliveryTime: '3-5 Business Days',
+        name: 'Basic', price: 99, deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days',
         scope: ['1 Initial concept', '2 Rounds of revisions', 'Basic vector files (SVG, PNG)'],
         tierDescription: 'A great starting point for new brands or simple logo needs. Get a foundational logo quickly and efficiently.',
         icon: Shield,
       },
       {
-        name: 'Standard',
-        price: 199,
-        deliveryTime: '5-7 Business Days',
+        name: 'Standard', price: 199, deliveryTimeMin: 5, deliveryTimeMax: 7, deliveryTimeUnit: 'days',
         scope: ['3 Initial concepts', '3 Rounds of revisions', 'Full vector files (AI, EPS, SVG, PNG, JPG)', 'Basic brand guide (colors, fonts)'],
         tierDescription: 'Our most popular option, offering a comprehensive logo package with more choices and branding elements.',
         icon: Star,
       },
       {
-        name: 'Premium',
-        price: 299,
-        deliveryTime: '7-10 Business Days',
+        name: 'Premium', price: 299, deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'days',
         scope: ['5 Initial concepts', 'Unlimited revisions', 'Full vector & source files', 'Detailed brand guidelines', 'Social media kit'],
         tierDescription: 'For businesses needing an extensive branding solution, maximum flexibility, and additional assets.',
         icon: Zap,
@@ -97,17 +92,13 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageHint: 'social media campaign',
     tiers: [
       {
-        name: 'Basic',
-        price: 49,
-        deliveryTime: '2-3 Business Days',
+        name: 'Basic', price: 49, deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'days',
         scope: ['5 social media posts', '1 Platform choice', '1 Round of revisions', 'Optimized JPG/PNG'],
         tierDescription: 'Perfect for a quick boost or testing new content on a single platform.',
         icon: Shield,
       },
       {
-        name: 'Standard',
-        price: 99,
-        deliveryTime: '3-5 Business Days',
+        name: 'Standard', price: 99, deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days',
         scope: ['10 social media posts', 'Up to 2 platforms', '2 Rounds of revisions', 'Source files (PSD or Figma)'],
         tierDescription: 'A balanced pack for consistent social media engagement across multiple platforms.',
         icon: Star,
@@ -127,17 +118,13 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageHint: 'corporate brochure',
     tiers: [
         {
-            name: 'Standard',
-            price: 249,
-            deliveryTime: '7-10 Business Days',
+            name: 'Standard', price: 249, deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'business_days',
             scope: ['Custom brochure design (up to 6 panels)', 'Stock imagery included (up to 3 images)', '3 revision rounds', 'Print-ready PDF'],
             tierDescription: 'High-quality brochure design for marketing and events, covering common formats.',
             icon: Star,
         },
         {
-            name: 'Premium',
-            price: 349,
-            deliveryTime: '10-14 Business Days',
+            name: 'Premium', price: 349, deliveryTimeMin: 2, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks', // Example: 2 weeks
             scope: ['Custom brochure design (up to 12 panels)', 'Premium stock imagery (up to 5 images)', '5 revision rounds', 'Print-ready PDF & source files', 'Copywriting suggestions (up to 200 words)'],
             tierDescription: 'Comprehensive brochure package with more content, panels, and added features like copywriting support.',
             icon: Zap,
@@ -155,17 +142,13 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageHint: 'app interface design',
     tiers: [
         {
-            name: 'Standard',
-            price: 399,
-            deliveryTime: '10-14 Business Days',
+            name: 'Standard', price: 399, deliveryTimeMin: 10, deliveryTimeMax: 14, deliveryTimeUnit: 'days',
             scope: ['1 page UI/UX design (e.g., Homepage or Product Page)', 'Mobile and desktop views', '2 revision rounds', 'Figma/XD source file'],
             tierDescription: 'Essential page design to visualize your web project for one key screen.',
             icon: Star,
         },
         {
-            name: 'Premium',
-            price: 599,
-            deliveryTime: '14-21 Business Days',
+            name: 'Premium', price: 599, deliveryTimeMin: 14, deliveryTimeMax: 21, deliveryTimeUnit: 'days',
             scope: ['Up to 3 key pages UI/UX design', 'Mobile, tablet, and desktop views', 'Interactive prototype (clickable)', '3 revision rounds', 'Component style guide', 'Figma/XD source files'],
             tierDescription: 'A more complete UI/UX package for core application flow, including multiple screens and an interactive prototype.',
             icon: Zap,
@@ -185,25 +168,19 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageHint: 'fantasy illustration',
     tiers: [
         {
-            name: 'Basic',
-            price: 79,
-            deliveryTime: '3-5 Business Days',
+            name: 'Basic', price: 79, deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days',
             scope: ['1 simple icon or spot illustration', 'Limited detail', '2 revision rounds', 'PNG/JPG output'],
             tierDescription: 'For small, simple illustration needs like icons or minor graphic elements.',
             icon: Shield,
         },
         {
-            name: 'Standard',
-            price: 149,
-            deliveryTime: '5-8 Business Days',
+            name: 'Standard', price: 149, deliveryTimeMin: 5, deliveryTimeMax: 8, deliveryTimeUnit: 'days',
             scope: ['1 custom illustration (e.g., character, small scene)', 'Medium detail', '3 revision rounds', 'Source file (AI, PSD, or other)', 'Commercial use license'],
             tierDescription: 'Versatile illustration for most common uses, like website heroes or blog post graphics.',
             icon: Star,
         },
         {
-            name: 'Premium',
-            price: 249,
-            deliveryTime: '7-12 Business Days',
+            name: 'Premium', price: 249, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks', // Example: 1-2 weeks
             scope: ['1 complex illustration (e.g., detailed scene, multiple characters)', 'High detail and complexity', '5 revision rounds', 'Source file & all formats', 'Enhanced commercial use license'],
             tierDescription: 'For high-impact, detailed illustrative work requiring more complexity and refinement.',
             icon: Zap,
@@ -221,17 +198,13 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageHint: 'luxury product box',
     tiers: [
         {
-            name: 'Standard',
-            price: 299,
-            deliveryTime: '8-12 Business Days',
+            name: 'Standard', price: 299, deliveryTimeMin: 8, deliveryTimeMax: 12, deliveryTimeUnit: 'business_days',
             scope: ['1 packaging concept (e.g., box, label)', '2D mockups', 'Basic dieline sketch', 'Color palette and typography suggestions', '2 revision rounds'],
             tierDescription: 'Solid packaging concept to get you started with visualizing your product\'s look.',
             icon: Star,
         },
         {
-            name: 'Premium',
-            price: 499,
-            deliveryTime: '12-18 Business Days',
+            name: 'Premium', price: 499, deliveryTimeMin: 12, deliveryTimeMax: 18, deliveryTimeUnit: 'business_days',
             scope: ['Up to 2 packaging concepts or 1 complex concept', '3D mockups', 'Detailed dieline sketch', 'Full branding elements integration', 'Print-ready file preparation advice', '3 revision rounds'],
             tierDescription: 'Comprehensive packaging design for market-ready products, including 3D mockups and more concepts.',
             icon: Zap,
@@ -251,9 +224,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageHint: 'pencil sketch logo',
     tiers: [
         {
-            name: 'Basic',
-            price: 49,
-            deliveryTime: '1-2 Business Days',
+            name: 'Basic', price: 49, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'days',
             scope: ['3-5 rough logo sketches (digital)', 'Delivered as JPG/PNG', '1 round of feedback for minor sketch adjustments'],
             tierDescription: 'Rapidly explore initial logo ideas with a set of quick digital sketches.',
             icon: Shield,
@@ -263,11 +234,20 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
   },
 };
 
+function formatStructuredDeliveryTime(min: number, max: number, unit: ServiceTierDetail['deliveryTimeUnit']): string {
+  const unitLabel = unit.replace('_', ' '); // 'business_days' -> 'business days'
+  if (min === max) {
+    return `${min} ${unitLabel}${min > 1 && unit !== 'weeks' ? 's' : ''}`; // basic pluralization
+  }
+  return `${min}-${max} ${unitLabel}${max > 1 && unit !== 'weeks' ? 's' : ''}`; // basic pluralization
+}
+
+
 export default function ServiceDetailPage() {
   const routeParams = useParams<{ serviceId: string }>(); 
   const serviceId = routeParams?.serviceId;
   const router = useRouter();
-  const { toast } = useToast(); // Keep toast for potential other uses on the page
+  const { toast } = useToast(); 
 
   const [service, setService] = useState<ServiceDetail | null | undefined>(undefined); 
   const [selectedTierName, setSelectedTierName] = useState<string>('');
@@ -302,8 +282,6 @@ export default function ServiceDetailPage() {
 
   const handleOrderTier = (tier: ServiceTierDetail) => {
     if (!service) return;
-    // In a real app, this would involve adding the item to a cart state (e.g., context, Zustand, Redux)
-    // or making an API call. For now, we'll navigate directly to the cart.
     router.push('/cart');
   };
 
@@ -402,7 +380,7 @@ export default function ServiceDetailPage() {
                         </CardTitle>
                         <CardDescription className="flex items-center text-sm pt-1">
                           <Clock className="inline-block mr-1.5 h-4 w-4" />
-                          Estimated Delivery: {tier.deliveryTime}
+                          Estimated Delivery: {formatStructuredDeliveryTime(tier.deliveryTimeMin, tier.deliveryTimeMax, tier.deliveryTimeUnit)}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -494,7 +472,7 @@ export default function ServiceDetailPage() {
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm">
                      <p className="flex items-center text-muted-foreground">
-                        <Clock className="inline-block mr-2 h-4 w-4" /> {selectedTierDetails.deliveryTime}
+                        <Clock className="inline-block mr-2 h-4 w-4" /> {formatStructuredDeliveryTime(selectedTierDetails.deliveryTimeMin, selectedTierDetails.deliveryTimeMax, selectedTierDetails.deliveryTimeUnit)}
                      </p>
                       {selectedTierDetails.scope.slice(0, 2).map((item, idx) => (
                         <p key={idx} className="flex items-start text-muted-foreground">
@@ -539,4 +517,3 @@ export default function ServiceDetailPage() {
     </div>
   );
 }
-
