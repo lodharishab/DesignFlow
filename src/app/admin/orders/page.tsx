@@ -56,6 +56,8 @@ interface Order {
   paymentMethod?: string;
   transactionId?: string;
   orderEvents: OrderEvent[];
+  clientBrief?: string;
+  deliverables?: { name: string, url: string, submittedAt: Date }[];
 }
 
 const initialOrdersData: Order[] = [
@@ -75,6 +77,16 @@ const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 5, 1, 11, 0), event: 'Payment Successful (Razorpay)', actor: 'System' },
       { timestamp: new Date(2024, 5, 2, 9, 0), event: 'Designer Assigned: Bob The Builder', actor: 'Admin' },
       { timestamp: new Date(2024, 5, 2, 9, 5), event: 'Status changed to In Progress', actor: 'System' },
+      { timestamp: new Date(2024, 5, 10, 17, 0), event: 'First draft submitted by designer.', actor: 'Bob The Builder', notes: 'Attached logo_concept_v1.zip' },
+      { timestamp: new Date(2024, 5, 11, 10, 0), event: 'Client requested revisions.', actor: 'Alice Johnson', notes: 'Needs more color options.' },
+      { timestamp: new Date(2024, 5, 11, 10, 5), event: 'Status changed to Revision Requested', actor: 'System' },
+      { timestamp: new Date(2024, 5, 12, 14,0), event: 'Revised draft submitted by designer.', actor: 'Bob The Builder', notes: 'logo_concept_v2.zip attached with new color palettes.' },
+      { timestamp: new Date(2024, 5, 12, 14,5), event: 'Status changed to Awaiting Client Review', actor: 'System' },
+    ],
+    clientBrief: "Looking for a minimalist logo for a new tech startup 'InnovateX'. Colors: prefer blues and silvers. Icon should represent innovation and connection. Modern and sleek feel.",
+    deliverables: [
+      { name: 'logo_concept_v1.zip', url: '#', submittedAt: new Date(2024, 5, 10, 17, 0)},
+      { name: 'logo_concept_v2.zip', url: '#', submittedAt: new Date(2024, 5, 12, 14, 0)},
     ]
   },
   { 
@@ -90,7 +102,8 @@ const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 5, 5, 14, 0), event: 'Order Placed', actor: 'Charlie Brown' },
       { timestamp: new Date(2024, 5, 5, 14, 5), event: 'Payment Successful (PhonePe)', actor: 'System' },
       { timestamp: new Date(2024, 5, 5, 14, 10), event: 'Status changed to Pending Assignment', actor: 'System' },
-    ]
+    ],
+    clientBrief: "Need 5 engaging posts for a summer sale campaign on Instagram and Facebook. Theme: Bright and sunny. Target audience: Young adults (18-25)."
   },
   { 
     id: 'order003', 
@@ -108,10 +121,14 @@ const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 4, 20, 16, 50), event: 'Payment Successful (Razorpay)', actor: 'System' },
       { timestamp: new Date(2024, 4, 21, 10, 0), event: 'Designer Assigned: Alice Wonderland', actor: 'Admin' },
       { timestamp: new Date(2024, 4, 21, 10, 5), event: 'Status changed to In Progress', actor: 'System' },
-      { timestamp: new Date(2024, 5, 8, 12, 0), event: 'Deliverables Submitted', actor: 'Alice Wonderland' },
+      { timestamp: new Date(2024, 5, 8, 12, 0), event: 'Deliverables Submitted', actor: 'Alice Wonderland', notes: 'Homepage_mockup_final.fig uploaded.' },
+      { timestamp: new Date(2024, 5, 8, 12, 5), event: 'Status changed to Awaiting Client Review', actor: 'System' },
       { timestamp: new Date(2024, 5, 9, 15, 30), event: 'Client Approved Order', actor: 'Diana Prince' },
       { timestamp: new Date(2024, 5, 9, 15, 35), event: 'Status changed to Completed', actor: 'System' },
-    ]
+      { timestamp: new Date(2024, 5, 9, 16, 0), event: 'Review request sent to client', actor: 'System' },
+    ],
+    clientBrief: "Design a modern and clean homepage mockup for an e-commerce store selling eco-friendly products. Key sections: Hero banner, featured products, testimonials, blog highlights.",
+    deliverables: [{ name: 'Homepage_mockup_final.fig', url: '#', submittedAt: new Date(2024, 5, 8, 12, 0)}],
   },
   { 
     id: 'order004', 
@@ -145,9 +162,11 @@ const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 5, 10, 11, 25), event: 'Payment Successful (PhonePe)', actor: 'System' },
       { timestamp: new Date(2024, 5, 11, 9, 0), event: 'Designer Assigned: Carol Danvers', actor: 'Admin' },
       { timestamp: new Date(2024, 5, 11, 9, 5), event: 'Status changed to In Progress', actor: 'System' },
-      { timestamp: new Date(2024, 5, 18, 17, 0), event: 'Initial Draft Submitted', actor: 'Carol Danvers' },
+      { timestamp: new Date(2024, 5, 18, 17, 0), event: 'Initial Draft Submitted', actor: 'Carol Danvers', notes: 'brochure_draft_v1.pdf submitted.' },
       { timestamp: new Date(2024, 5, 18, 17, 5), event: 'Status changed to Awaiting Client Review', actor: 'System' },
-    ]
+    ],
+    clientBrief: "Need a tri-fold brochure for a real estate agency. Modern, professional, and trustworthy feel. Include space for property listings and agent contact info.",
+    deliverables: [ { name: 'brochure_draft_v1.pdf', url: '#', submittedAt: new Date(2024, 5, 18, 17, 0)} ]
   },
 ];
 
@@ -262,3 +281,4 @@ export default function AdminOrdersPage(): ReactElement {
   );
 }
 
+    

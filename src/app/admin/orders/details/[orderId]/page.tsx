@@ -27,7 +27,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow } from 'date-fns';
-import { cn } from '@/lib/utils'; // Added this import
+import { cn } from '@/lib/utils';
 
 // Duplicating interfaces here for simplicity, in a larger app, these would be shared
 type OrderStatus = 'Pending Assignment' | 'In Progress' | 'Awaiting Client Review' | 'Revision Requested' | 'Completed' | 'Cancelled' | 'Refunded';
@@ -55,12 +55,11 @@ interface Order {
   paymentMethod?: string;
   transactionId?: string;
   orderEvents: OrderEvent[];
-  // Potential future fields
   clientBrief?: string;
   deliverables?: { name: string, url: string, submittedAt: Date }[];
 }
 
-// Using the same initial data source for consistency
+// Using the same initial data source for consistency from orders/page.tsx for now
 const initialOrdersData: Order[] = [
   { 
     id: 'order001', 
@@ -79,8 +78,16 @@ const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 5, 2, 9, 0), event: 'Designer Assigned: Bob The Builder', actor: 'Admin' },
       { timestamp: new Date(2024, 5, 2, 9, 5), event: 'Status changed to In Progress', actor: 'System' },
       { timestamp: new Date(2024, 5, 10, 17, 0), event: 'First draft submitted by designer.', actor: 'Bob The Builder', notes: 'Attached logo_concept_v1.zip' },
+      { timestamp: new Date(2024, 5, 11, 10, 0), event: 'Client requested revisions.', actor: 'Alice Johnson', notes: 'Needs more color options.' },
+      { timestamp: new Date(2024, 5, 11, 10, 5), event: 'Status changed to Revision Requested', actor: 'System' },
+      { timestamp: new Date(2024, 5, 12, 14,0), event: 'Revised draft submitted by designer.', actor: 'Bob The Builder', notes: 'logo_concept_v2.zip attached with new color palettes.' },
+      { timestamp: new Date(2024, 5, 12, 14,5), event: 'Status changed to Awaiting Client Review', actor: 'System' },
     ],
-    clientBrief: "Looking for a minimalist logo for a new tech startup. Colors: blue and silver. Icon should represent innovation.",
+    clientBrief: "Looking for a minimalist logo for a new tech startup 'InnovateX'. Colors: prefer blues and silvers. Icon should represent innovation and connection. Modern and sleek feel.",
+    deliverables: [
+      { name: 'logo_concept_v1.zip', url: '#', submittedAt: new Date(2024, 5, 10, 17, 0)},
+      { name: 'logo_concept_v2.zip', url: '#', submittedAt: new Date(2024, 5, 12, 14, 0)},
+    ]
   },
   { 
     id: 'order002', 
@@ -96,7 +103,7 @@ const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 5, 5, 14, 5), event: 'Payment Successful (PhonePe)', actor: 'System' },
       { timestamp: new Date(2024, 5, 5, 14, 10), event: 'Status changed to Pending Assignment', actor: 'System' },
     ],
-    clientBrief: "Need 5 engaging posts for a summer sale campaign on Instagram and Facebook. Theme: Bright and sunny."
+    clientBrief: "Need 5 engaging posts for a summer sale campaign on Instagram and Facebook. Theme: Bright and sunny. Target audience: Young adults (18-25)."
   },
   { 
     id: 'order003', 
@@ -115,9 +122,12 @@ const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 4, 21, 10, 0), event: 'Designer Assigned: Alice Wonderland', actor: 'Admin' },
       { timestamp: new Date(2024, 4, 21, 10, 5), event: 'Status changed to In Progress', actor: 'System' },
       { timestamp: new Date(2024, 5, 8, 12, 0), event: 'Deliverables Submitted', actor: 'Alice Wonderland', notes: 'Homepage_mockup_final.fig uploaded.' },
+      { timestamp: new Date(2024, 5, 8, 12, 5), event: 'Status changed to Awaiting Client Review', actor: 'System' },
       { timestamp: new Date(2024, 5, 9, 15, 30), event: 'Client Approved Order', actor: 'Diana Prince' },
       { timestamp: new Date(2024, 5, 9, 15, 35), event: 'Status changed to Completed', actor: 'System' },
+      { timestamp: new Date(2024, 5, 9, 16, 0), event: 'Review request sent to client', actor: 'System' },
     ],
+    clientBrief: "Design a modern and clean homepage mockup for an e-commerce store selling eco-friendly products. Key sections: Hero banner, featured products, testimonials, blog highlights.",
     deliverables: [{ name: 'Homepage_mockup_final.fig', url: '#', submittedAt: new Date(2024, 5, 8, 12, 0)}],
   },
 ];
@@ -304,3 +314,5 @@ export default function AdminOrderDetailPage(): ReactElement {
     </div>
   );
 }
+
+    
