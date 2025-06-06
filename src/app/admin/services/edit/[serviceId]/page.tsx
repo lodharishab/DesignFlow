@@ -406,7 +406,10 @@ export default function AdminEditServicePage(): ReactElement {
         </CardContent>
       </Card>
 
-      <CardFooter className="flex justify-between items-center pt-6">
+      <CardFooter className="flex justify-end space-x-3 pt-6">
+        <Button variant="outline" asChild disabled={isSaving || isDeleting}>
+            <Link href="/admin/services"><XCircle className="mr-2 h-4 w-4" />Cancel</Link>
+        </Button>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" disabled={isSaving || isDeleting}>
@@ -423,7 +426,7 @@ export default function AdminEditServicePage(): ReactElement {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={isDeleting}>Cancel Dialog</AlertDialogCancel>
               <AlertDialogAction onClick={handleDeleteService} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
                 {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Yes, delete service
@@ -431,16 +434,10 @@ export default function AdminEditServicePage(): ReactElement {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        
-        <div className="flex space-x-3">
-          <Button variant="outline" asChild disabled={isSaving || isDeleting}>
-            <Link href="/admin/services"><XCircle className="mr-2 h-4 w-4" />Cancel</Link>
-          </Button>
-          <Button onClick={handleSaveChanges} disabled={isSaving || isDeleting}>
-            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Save Changes
-          </Button>
-        </div>
+        <Button onClick={handleSaveChanges} disabled={isSaving || isDeleting}>
+          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+          Save Changes
+        </Button>
       </CardFooter>
     </div>
   );
