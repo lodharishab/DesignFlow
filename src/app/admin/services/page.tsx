@@ -199,9 +199,27 @@ export default function AdminServicesPage(): ReactElement {
                     <ArchiveIcon className="mr-2 h-4 w-4" /> Archive Selected
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleBulkDelete} className="text-destructive">
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete Selected
-                  </DropdownMenuItem>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete Selected
+                        </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Bulk Deletion</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete {selectedServiceIds.size} selected service(s)? This action cannot be undone. (Simulated)
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                            Delete
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -211,10 +229,10 @@ export default function AdminServicesPage(): ReactElement {
               <TableRow>
                 <TableHead className="w-[50px]">
                   <Checkbox
-                    checked={isAllSelected}
+                    checked={isIndeterminate ? "indeterminate" : isAllSelected}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all rows"
-                    indeterminate={isIndeterminate}
+                    disabled={services.length === 0}
                   />
                 </TableHead>
                 <TableHead className="w-[250px]">Service Name</TableHead>
@@ -274,8 +292,8 @@ export default function AdminServicesPage(): ReactElement {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeleteService(service.id, service.name)}>
-                            Continue
+                          <AlertDialogAction onClick={() => handleDeleteService(service.id, service.name)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                            Delete
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -290,3 +308,4 @@ export default function AdminServicesPage(): ReactElement {
     </div>
   );
 }
+
