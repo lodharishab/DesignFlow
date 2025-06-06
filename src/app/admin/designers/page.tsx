@@ -44,7 +44,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"; // Removed AlertDialogTrigger, not used directly for delete confirm
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; 
 
 interface Designer {
   id: string;
@@ -59,10 +60,10 @@ interface Designer {
 }
 
 const initialDesignersData: Designer[] = [
-  { id: 'des001', name: 'Alice Wonderland', email: 'alice.w@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman avatar', status: 'Active', joinDate: new Date(2023, 5, 15), servicesApproved: 5, portfolioLink: '#' },
-  { id: 'des002', name: 'Bob The Builder', email: 'bob.b@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'man avatar', status: 'Pending Approval', joinDate: new Date(2023, 8, 20), servicesApproved: 0, portfolioLink: '#' },
-  { id: 'des003', name: 'Carol Danvers', email: 'carol.d@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman avatar', status: 'Active', joinDate: new Date(2022, 11, 1), servicesApproved: 8, portfolioLink: '#' },
-  { id: 'des004', name: 'David Copperfield', email: 'david.c@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'man avatar', status: 'Suspended', joinDate: new Date(2023, 1, 10), servicesApproved: 2, portfolioLink: '#' },
+  { id: 'des001', name: 'Alice Wonderland', email: 'alice.w@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman avatar', status: 'Active', joinDate: new Date(2023, 5, 15), servicesApproved: 5, portfolioLink: 'https://example.com/alice' },
+  { id: 'des002', name: 'Bob The Builder', email: 'bob.b@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'man avatar', status: 'Pending Approval', joinDate: new Date(2023, 8, 20), servicesApproved: 0, portfolioLink: 'https://example.com/bob' },
+  { id: 'des003', name: 'Carol Danvers', email: 'carol.d@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman avatar', status: 'Active', joinDate: new Date(2022, 11, 1), servicesApproved: 8 },
+  { id: 'des004', name: 'David Copperfield', email: 'david.c@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'man avatar', status: 'Suspended', joinDate: new Date(2023, 1, 10), servicesApproved: 2, portfolioLink: 'https://example.com/david' },
   { id: 'des005', name: 'Eve Polastri', email: 'eve.p@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman face', status: 'Pending Approval', joinDate: new Date(2024, 0, 5), servicesApproved: 0 },
 ];
 
@@ -176,7 +177,7 @@ export default function AdminDesignersPage(): ReactElement {
           Manage Designers
         </h1>
         <Button asChild>
-          <Link href="#"> 
+          <Link href="/admin/designers/new"> 
             <PlusCircle className="mr-2 h-4 w-4" /> Add New Designer
           </Link>
         </Button>

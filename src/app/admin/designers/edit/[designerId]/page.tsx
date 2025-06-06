@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Save, XCircle, Users, Mail, LinkIcon as PortfolioLinkIcon, CalendarDays, Activity, Loader2, Camera } from 'lucide-react';
+import { Save, XCircle, Users, Mail, Link as LinkIconLucide, CalendarDays, Activity, Loader2, Camera, Image as ImageIcon } from 'lucide-react'; // Renamed LinkIcon to LinkIconLucide
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { format } from 'date-fns';
+import { Separator } from '@/components/ui/separator';
+
 
 interface Designer {
   id: string;
@@ -184,7 +186,7 @@ export default function AdminEditDesignerPage(): ReactElement {
               </Select>
             </div>
              <div className="space-y-2">
-              <Label htmlFor="portfolioLink"><PortfolioLinkIcon className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Portfolio Link</Label>
+              <Label htmlFor="portfolioLink"><LinkIconLucide className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Portfolio Link</Label>
               <Input 
                 id="portfolioLink" 
                 value={portfolioLink}
@@ -207,7 +209,7 @@ export default function AdminEditDesignerPage(): ReactElement {
                 />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="avatarHint">Avatar AI Hint</Label>
+                <Label htmlFor="avatarHint"><ImageIcon className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Avatar AI Hint</Label>
                 <Input 
                     id="avatarHint" 
                     value={avatarHint}
@@ -252,5 +254,3 @@ export default function AdminEditDesignerPage(): ReactElement {
     </div>
   );
 }
-
-    

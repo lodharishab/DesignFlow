@@ -14,8 +14,8 @@ export default function AdminDashboardPage() {
 
   const quickLinks = [
     { href: "/admin/services/new", label: "Add New Service", icon: Briefcase },
-    { href: "/admin/designers/applications", label: "Review Designer Applications", icon: Users },
-    { href: "/admin/users", label: "Manage Users", icon: UsersRound }, // New quick link
+    { href: "/admin/designers/applications", label: "Review Designer Applications", icon: Users }, // Placeholder for now
+    { href: "/admin/users", label: "Manage Users", icon: UsersRound },
     { href: "/admin/orders", label: "View All Orders", icon: ClipboardList },
   ];
 

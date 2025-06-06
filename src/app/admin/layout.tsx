@@ -30,7 +30,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
-  SidebarFooter, // Added SidebarFooter here
+  SidebarFooter,
   useSidebar 
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -68,7 +68,7 @@ const navItems = [
 function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
   const pathname = usePathname();
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
-  const { toggleSidebar } = useSidebar(); // Consuming context correctly
+  const { toggleSidebar } = useSidebar(); 
 
   useEffect(() => {
     const initiallyOpen: Record<string, boolean> = {};
@@ -177,7 +177,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={toggleSidebar} // toggleSidebar is now from context
+                onClick={toggleSidebar}
                 className="h-8 w-8" 
                 aria-label="Open menu"
               >

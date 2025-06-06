@@ -1,0 +1,208 @@
+
+"use client";
+
+import { useState, type ReactElement, useEffect, useMemo } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { 
+  ClipboardList, 
+  MoreHorizontal, 
+  User, 
+  Brush, 
+  CalendarDays, 
+  IndianRupee, 
+  Truck, 
+  CheckCircle, 
+  XCircle,
+  Clock,
+  Edit3,
+  FileText
+} from 'lucide-react';
+import Link from 'next/link';
+import { useToast } from "@/hooks/use-toast";
+import { format } from 'date-fns';
+
+type OrderStatus = 'Pending Assignment' | 'In Progress' | 'Awaiting Client Review' | 'Revision Requested' | 'Completed' | 'Cancelled' | 'Refunded';
+
+interface Order {
+  id: string;
+  clientName: string;
+  clientId: string;
+  designerName?: string;
+  designerId?: string;
+  serviceName: string;
+  serviceId: string;
+  orderDate: Date;
+  dueDate?: Date;
+  status: OrderStatus;
+  totalAmount: number;
+  currency: string;
+}
+
+const initialOrdersData: Order[] = [
+  { 
+    id: 'order001', 
+    clientName: 'Alice Johnson', clientId: 'cli001', 
+    designerName: 'Bob The Builder', designerId: 'des002',
+    serviceName: 'Modern Logo Design', serviceId: 'svc001',
+    orderDate: new Date(2024, 5, 1), 
+    dueDate: new Date(2024, 5, 15),
+    status: 'In Progress', 
+    totalAmount: 199, currency: 'INR' 
+  },
+  { 
+    id: 'order002', 
+    clientName: 'Charlie Brown', clientId: 'cli003', 
+    serviceName: 'Social Media Post Pack', serviceId: 'svc002',
+    orderDate: new Date(2024, 5, 5), 
+    status: 'Pending Assignment', 
+    totalAmount: 99, currency: 'INR' 
+  },
+  { 
+    id: 'order003', 
+    clientName: 'Diana Prince', clientId: 'cli004',
+    designerName: 'Alice Wonderland', designerId: 'des001',
+    serviceName: 'UI/UX Web Design Mockup', serviceId: 'svc004',
+    orderDate: new Date(2024, 4, 20), 
+    dueDate: new Date(2024, 5, 10),
+    status: 'Completed', 
+    totalAmount: 399, currency: 'INR' 
+  },
+  { 
+    id: 'order004', 
+    clientName: 'Edward Scissorhands', clientId: 'cli005',
+    serviceName: 'Custom Illustration', serviceId: 'svc005',
+    orderDate: new Date(2024, 5, 8), 
+    status: 'Cancelled', 
+    totalAmount: 149, currency: 'INR' 
+  },
+   { 
+    id: 'order005', 
+    clientName: 'Fiona Gallagher', clientId: 'cli006',
+    designerName: 'Carol Danvers', designerId: 'des003',
+    serviceName: 'Professional Brochure Design', serviceId: 'svc003',
+    orderDate: new Date(2024, 5, 10), 
+    dueDate: new Date(2024, 5, 25),
+    status: 'Awaiting Client Review', 
+    totalAmount: 249, currency: 'INR' 
+  },
+];
+
+export default function AdminOrdersPage(): ReactElement {
+  const [orders, setOrders] = useState<Order[]>(initialOrdersData);
+  const { toast } = useToast();
+
+  const getStatusBadgeVariant = (status: OrderStatus) => {
+    switch (status) {
+      case 'Completed': return 'default'; // Green in default theme
+      case 'In Progress': return 'secondary'; // Blue-ish
+      case 'Pending Assignment': return 'outline'; // Yellow-ish / Orange-ish
+      case 'Awaiting Client Review': return 'outline'; // Similar to pending
+      case 'Cancelled': return 'destructive';
+      case 'Refunded': return 'destructive';
+      case 'Revision Requested': return 'secondary'; // Can make this different if needed
+      default: return 'secondary';
+    }
+  };
+  
+  const handleUpdateStatus = (orderId: string, newStatus: OrderStatus) => {
+    setOrders(prevOrders => 
+      prevOrders.map(order => 
+        order.id === orderId ? { ...order, status: newStatus } : order
+      )
+    );
+    toast({
+      title: "Order Status Updated (Simulated)",
+      description: `Order ${orderId} status changed to ${newStatus}.`,
+      duration: 3000,
+    });
+  };
+
+
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold font-headline flex items-center">
+          <ClipboardList className="mr-3 h-8 w-8 text-primary" />
+          Manage Orders
+        </h1>
+        {/* <Button> <PlusCircle className="mr-2 h-4 w-4" /> Add New Order (Manual) </Button> */}
+      </div>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle>All Customer Orders</CardTitle>
+          <CardDescription>View, track, and manage all orders placed on the platform. Status updates are simulated.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Order ID</TableHead>
+                <TableHead><User className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Client</TableHead>
+                <TableHead><Brush className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Designer</TableHead>
+                <TableHead><FileText className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Service</TableHead>
+                <TableHead><CalendarDays className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Order Date</TableHead>
+                <TableHead><Clock className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Status</TableHead>
+                <TableHead className="text-right"><IndianRupee className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Total</TableHead>
+                <TableHead className="text-right w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {orders.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center h-24">
+                    No orders found.
+                  </TableCell>
+                </TableRow>
+              )}
+              {orders.map(order => (
+                <TableRow key={order.id}>
+                  <TableCell className="font-medium">{order.id}</TableCell>
+                  <TableCell>{order.clientName}</TableCell>
+                  <TableCell>{order.designerName || <span className="text-muted-foreground italic">N/A</span>}</TableCell>
+                  <TableCell className="max-w-[200px] truncate" title={order.serviceName}>{order.serviceName}</TableCell>
+                  <TableCell>{format(order.orderDate, 'MMM d, yyyy')}</TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusBadgeVariant(order.status)}>{order.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">₹{order.totalAmount.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/admin/orders/details/${order.id}`}>View Details</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled>Assign Designer</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, 'In Progress')}>Set to In Progress</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, 'Completed')}>Set to Completed</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, 'Cancelled')} className="text-destructive">Cancel Order</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
