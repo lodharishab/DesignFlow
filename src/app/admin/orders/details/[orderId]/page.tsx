@@ -21,7 +21,8 @@ import {
   ArrowLeft,
   Edit,
   ListChecks,
-  Loader2
+  Loader2,
+  Tag // Added Tag icon for tier
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -29,7 +30,6 @@ import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 
-// Duplicating interfaces here for simplicity, in a larger app, these would be shared
 type OrderStatus = 'Pending Assignment' | 'In Progress' | 'Awaiting Client Review' | 'Revision Requested' | 'Completed' | 'Cancelled' | 'Refunded';
 
 interface OrderEvent {
@@ -47,6 +47,7 @@ interface Order {
   designerId?: string;
   serviceName: string;
   serviceId: string;
+  serviceTier?: string; // Added service tier
   orderDate: Date;
   dueDate?: Date;
   status: OrderStatus;
@@ -59,13 +60,12 @@ interface Order {
   deliverables?: { name: string, url: string, submittedAt: Date }[];
 }
 
-// Using the same initial data source for consistency from orders/page.tsx for now
 const initialOrdersData: Order[] = [
   { 
     id: 'order001', 
     clientName: 'Alice Johnson', clientId: 'cli001', 
     designerName: 'Bob The Builder', designerId: 'des002',
-    serviceName: 'Modern Logo Design', serviceId: 'svc001',
+    serviceName: 'Modern Logo Design', serviceId: 'svc001', serviceTier: 'Standard',
     orderDate: new Date(2024, 5, 1, 10, 30), 
     dueDate: new Date(2024, 5, 15),
     status: 'In Progress', 
@@ -92,7 +92,7 @@ const initialOrdersData: Order[] = [
   { 
     id: 'order002', 
     clientName: 'Charlie Brown', clientId: 'cli003', 
-    serviceName: 'Social Media Post Pack', serviceId: 'svc002',
+    serviceName: 'Social Media Post Pack', serviceId: 'svc002', serviceTier: 'Basic',
     orderDate: new Date(2024, 5, 5, 14, 0), 
     status: 'Pending Assignment', 
     totalAmount: 99, currency: 'INR',
@@ -109,26 +109,41 @@ const initialOrdersData: Order[] = [
     id: 'order003', 
     clientName: 'Diana Prince', clientId: 'cli004',
     designerName: 'Alice Wonderland', designerId: 'des001',
-    serviceName: 'UI/UX Web Design Mockup', serviceId: 'svc004',
+    serviceName: 'UI/UX Web Design Mockup', serviceId: 'svc004', serviceTier: 'Premium',
     orderDate: new Date(2024, 4, 20, 16, 45), 
     dueDate: new Date(2024, 5, 10),
     status: 'Completed', 
     totalAmount: 399, currency: 'INR',
     paymentMethod: 'Razorpay',
     transactionId: 'pay_Mnbvcxz87Uyt',
-    orderEvents: [
-      { timestamp: new Date(2024, 4, 20, 16, 45), event: 'Order Placed', actor: 'Diana Prince' },
-      { timestamp: new Date(2024, 4, 20, 16, 50), event: 'Payment Successful (Razorpay)', actor: 'System' },
-      { timestamp: new Date(2024, 4, 21, 10, 0), event: 'Designer Assigned: Alice Wonderland', actor: 'Admin' },
-      { timestamp: new Date(2024, 4, 21, 10, 5), event: 'Status changed to In Progress', actor: 'System' },
-      { timestamp: new Date(2024, 5, 8, 12, 0), event: 'Deliverables Submitted', actor: 'Alice Wonderland', notes: 'Homepage_mockup_final.fig uploaded.' },
-      { timestamp: new Date(2024, 5, 8, 12, 5), event: 'Status changed to Awaiting Client Review', actor: 'System' },
-      { timestamp: new Date(2024, 5, 9, 15, 30), event: 'Client Approved Order', actor: 'Diana Prince' },
-      { timestamp: new Date(2024, 5, 9, 15, 35), event: 'Status changed to Completed', actor: 'System' },
-      { timestamp: new Date(2024, 5, 9, 16, 0), event: 'Review request sent to client', actor: 'System' },
-    ],
-    clientBrief: "Design a modern and clean homepage mockup for an e-commerce store selling eco-friendly products. Key sections: Hero banner, featured products, testimonials, blog highlights.",
+    orderEvents: [ /* ... events ... */ ],
+    clientBrief: "Design a modern and clean homepage mockup for an e-commerce store selling eco-friendly products.",
     deliverables: [{ name: 'Homepage_mockup_final.fig', url: '#', submittedAt: new Date(2024, 5, 8, 12, 0)}],
+  },
+  { 
+    id: 'order004', 
+    clientName: 'Edward Scissorhands', clientId: 'cli005',
+    serviceName: 'Custom Illustration', serviceId: 'svc005', serviceTier: 'Standard',
+    orderDate: new Date(2024, 5, 8, 9, 15), 
+    status: 'Cancelled', 
+    totalAmount: 149, currency: 'INR',
+    paymentMethod: 'Razorpay',
+    transactionId: 'pay_Lkjhgf56Qwe',
+    orderEvents: [ /* ... events ... */ ]
+  },
+   { 
+    id: 'order005', 
+    clientName: 'Fiona Gallagher', clientId: 'cli006',
+    designerName: 'Carol Danvers', designerId: 'des003',
+    serviceName: 'Professional Brochure Design', serviceId: 'svc003', serviceTier: 'Standard',
+    orderDate: new Date(2024, 5, 10, 11, 20), 
+    dueDate: new Date(2024, 5, 25),
+    status: 'Awaiting Client Review', 
+    totalAmount: 249, currency: 'INR',
+    paymentMethod: 'PhonePe',
+    transactionId: 'txn_Poiuyt09Mnb',
+    orderEvents: [ /* ... events ... */ ],
+    deliverables: [ { name: 'brochure_draft_v1.pdf', url: '#', submittedAt: new Date(2024, 5, 18, 17, 0)} ]
   },
 ];
 
@@ -220,16 +235,29 @@ export default function AdminOrderDetailPage(): ReactElement {
             <div className="space-y-1">
               <h4 className="font-semibold text-foreground flex items-center"><User className="mr-2 h-4 w-4 text-muted-foreground"/>Client Details</h4>
               <p>Name: {order.clientName} ({order.clientId})</p>
-              {/* Add more client details here if available, e.g., email, phone */}
             </div>
             <div className="space-y-1">
               <h4 className="font-semibold text-foreground flex items-center"><Brush className="mr-2 h-4 w-4 text-muted-foreground"/>Designer Details</h4>
-              <p>Name: {order.designerName || <span className="italic text-muted-foreground">Not Assigned</span>} {order.designerId && `(${order.designerId})`}</p>
-              {/* Add more designer details */}
+              <p>
+                Name: {order.designerName ? (
+                  order.designerId ? (
+                    <Link href={`/admin/designers/edit/${order.designerId}`} className="text-primary hover:underline">
+                      {order.designerName} ({order.designerId})
+                    </Link>
+                  ) : (
+                    `${order.designerName} (ID not available)`
+                  )
+                ) : (
+                  <span className="italic text-muted-foreground">Not Assigned</span>
+                )}
+              </p>
             </div>
              <div className="space-y-1">
               <h4 className="font-semibold text-foreground flex items-center"><FileText className="mr-2 h-4 w-4 text-muted-foreground"/>Service Details</h4>
               <p>Name: {order.serviceName} ({order.serviceId})</p>
+              {order.serviceTier && (
+                <p className="flex items-center"><Tag className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />Tier: {order.serviceTier}</p>
+              )}
               {order.dueDate && <p>Due Date: {format(order.dueDate, 'PPP')}</p>}
             </div>
             <div className="space-y-1">
