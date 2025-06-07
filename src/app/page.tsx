@@ -22,10 +22,10 @@ const portfolioItems = [
 ];
 
 const clientBenefits = [
-  { icon: Award, title: 'Expert Designers', description: 'Access a curated network of vetted professional designers ready to bring your vision to life.' },
-  { icon: Tag, title: 'Transparent Pricing', description: 'No surprises. Fixed prices for predefined service packages, so you know the cost upfront.' },
-  { icon: Zap, title: 'Streamlined Process', description: 'Easy project submission, clear communication, and efficient delivery from start to finish.' },
-  { icon: ShieldCheck, title: 'Quality Guaranteed', description: 'We ensure high-quality results that meet your expectations and help your brand shine.' },
+  { icon: Award, title: 'Expert Designers', description: 'Connect with vetted, top-tier designers. Our curated network ensures your project is handled by skilled professionals.' },
+  { icon: Tag, title: 'Transparent Pricing', description: 'Say goodbye to budget overruns. Our fixed-price service packages mean you know the cost upfront, every time.' },
+  { icon: Zap, title: 'Streamlined Process', description: 'From clear briefs to efficient delivery, our platform simplifies every step. Get your designs faster, with less hassle.' },
+  { icon: ShieldCheck, title: 'Quality Guaranteed', description: 'Your satisfaction is our priority. We stand behind the quality of our designers\' work to ensure exceptional results.' },
 ];
 
 export default function HomePage() {
@@ -41,7 +41,7 @@ export default function HomePage() {
               Transform Your Ideas into <span className="text-primary">Stunning Designs</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-              DesignFlow provides access to top-tier design talent for all your creative needs, with transparent pricing and a seamless, reliable process.
+              DesignFlow connects you with expert designers for fixed-price services. Get high-quality creative work, hassle-free.
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Button size="lg" asChild className="w-full sm:w-auto">
@@ -61,7 +61,7 @@ export default function HomePage() {
         {/* Why DesignFlow for Clients Section */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-5">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-16">Why Choose DesignFlow for Your Projects?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-16">The DesignFlow Advantage: Simple, Reliable, Quality.</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {clientBenefits.map((benefit) => (
                 <Card key={benefit.title} className="text-center shadow-lg hover:shadow-xl transition-shadow p-2">
@@ -88,17 +88,17 @@ export default function HomePage() {
               <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card shadow-md">
                 <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">1</div>
                 <h3 className="text-xl font-semibold font-headline mb-2">Browse & Select</h3>
-                <p className="text-muted-foreground text-sm">Choose from our wide range of predefined design services with clear deliverables and pricing.</p>
+                <p className="text-muted-foreground text-sm">Explore diverse, fixed-scope design services. Find the perfect package with clearly defined deliverables and upfront pricing.</p>
               </div>
               <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card shadow-md">
                 <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">2</div>
                 <h3 className="text-xl font-semibold font-headline mb-2">Submit Your Brief</h3>
-                <p className="text-muted-foreground text-sm">Provide your project details and requirements through our simple and guided submission process.</p>
+                <p className="text-muted-foreground text-sm">Detail your vision with our intuitive brief submission. We guide you to provide all necessary info for a successful project.</p>
               </div>
               <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card shadow-md">
                 <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">3</div>
                 <h3 className="text-xl font-semibold font-headline mb-2">Collaborate & Approve</h3>
-                <p className="text-muted-foreground text-sm">Work with your matched expert designer, provide feedback, and receive your perfect design.</p>
+                <p className="text-muted-foreground text-sm">Engage directly with your chosen expert. Provide feedback, track progress, and approve your final design with ease.</p>
               </div>
             </div>
           </div>
@@ -170,3 +170,4 @@ export default function HomePage() {
     </div>
   );
 }
+
