@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { LogIn, UserPlus, Brush, LayoutGrid, PanelLeftClose } from 'lucide-react';
+import { LogIn, UserPlus, Brush, LayoutGrid, PanelLeftClose, Briefcase } from 'lucide-react'; // Added Briefcase
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/shared/mode-toggle';
 import { 
@@ -70,6 +70,18 @@ export function Navbar() {
                  </SheetClose>
               </SheetHeader>
               <div className="flex flex-col space-y-3">
+                <Button variant="ghost" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link href="/portfolio">
+                    <Briefcase className="mr-3 h-5 w-5" />
+                    Portfolio
+                  </Link>
+                </Button>
+                 <Button variant="ghost" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link href="/services">
+                    <LayoutGrid className="mr-3 h-5 w-5" />
+                    Services
+                  </Link>
+                </Button>
                 <Button variant="default" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
                   <Link href="/login">
                     <LogIn className="mr-3 h-5 w-5" />

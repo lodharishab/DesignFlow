@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, LayoutGrid, Sparkles } from 'lucide-react'; // Added Sparkles
+import { ChevronDown, LayoutGrid, Sparkles, Briefcase } from 'lucide-react'; // Added Briefcase
 
 // Mock data for categories and sub-categories
 const mockCategories = [
@@ -102,7 +102,7 @@ export function CategoriesNavbar() {
         
         {/* Popular Category Links - Hidden on small screens, flex on medium and up */}
         {popularCategories.length > 0 && (
-          <div className="ml-6 flex items-center space-x-4"> {/* md:flex was here, removed as parent nav is now hidden on mobile */}
+          <div className="ml-6 flex items-center space-x-4"> 
             <span className="text-sm font-medium text-muted-foreground flex items-center">
               <Sparkles className="mr-2 h-4 w-4 text-primary/80" />
               Popular:
@@ -118,15 +118,15 @@ export function CategoriesNavbar() {
             ))}
           </div>
         )}
-
-        {/* Other links for the secondary navbar could go here, e.g., "Newest Additions" */}
-        {/* Example:
-        <Link href="/how-it-works" className="ml-4 text-sm font-medium text-muted-foreground hover:text-primary">
-          How It Works
-        </Link>
-        */}
+        <div className="ml-auto flex items-center">
+           <Link
+              href="/portfolio"
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center"
+            >
+              <Briefcase className="mr-2 h-4 w-4" /> Portfolio
+            </Link>
+        </div>
       </div>
     </nav>
   );
 }
-

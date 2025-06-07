@@ -1,5 +1,4 @@
 
-
 "use client"; 
 
 import { Navbar } from '@/components/layout/navbar';
@@ -34,6 +33,7 @@ interface PortfolioItem {
   id: string;
   title: string;
   category: string;
+  categorySlug: string; // Added for linking
   imageUrls: string[];
   imageHints: string[];
 }
@@ -43,6 +43,7 @@ const portfolioItemsData: PortfolioItem[] = [
     id: 'ecomm-reimagined',
     title: 'E-commerce Reimagined',
     category: 'Web UI/UX',
+    categorySlug: 'web-ui-ux',
     imageUrls: [
       'https://placehold.co/600x400.png',
       'https://placehold.co/600x400.png',
@@ -54,6 +55,7 @@ const portfolioItemsData: PortfolioItem[] = [
     id: 'fintech-mobile-suite',
     title: 'Fintech Mobile Suite',
     category: 'App Design',
+    categorySlug: 'app-design',
     imageUrls: [
       'https://placehold.co/600x400.png',
       'https://placehold.co/600x400.png',
@@ -65,6 +67,7 @@ const portfolioItemsData: PortfolioItem[] = [
     id: 'startup-brand-identity',
     title: 'Startup Brand Identity',
     category: 'Logo & Branding',
+    categorySlug: 'logo-branding',
     imageUrls: [
       'https://placehold.co/600x400.png',
       'https://placehold.co/600x400.png',
@@ -76,6 +79,7 @@ const portfolioItemsData: PortfolioItem[] = [
     id: 'gourmet-restaurant-menus',
     title: 'Gourmet Restaurant Menus',
     category: 'Print Design',
+    categorySlug: 'print-design',
     imageUrls: [
       'https://placehold.co/600x400.png',
       'https://placehold.co/600x400.png',
@@ -83,9 +87,10 @@ const portfolioItemsData: PortfolioItem[] = [
     imageHints: ['elegant menu', 'restaurant branding'],
   },
   {
-    id: 'fantasy-game-art',
+    id: 'fantasy-game-assets',
     title: 'Fantasy Game Assets',
     category: 'Illustration & Icons',
+    categorySlug: 'illustration-icons',
     imageUrls: [
       'https://placehold.co/600x400.png',
       'https://placehold.co/600x400.png',
@@ -94,9 +99,10 @@ const portfolioItemsData: PortfolioItem[] = [
     imageHints: ['digital painting game', 'icon design game', 'concept art creature'],
   },
   {
-    id: 'corporate-explainer-video',
+    id: 'corporate-explainer-stills',
     title: 'Corporate Explainer Stills',
     category: 'Animation & Motion',
+    categorySlug: 'animation-motion',
     imageUrls: [
       'https://placehold.co/600x400.png',
       'https://placehold.co/600x400.png',
@@ -105,7 +111,7 @@ const portfolioItemsData: PortfolioItem[] = [
   },
 ];
 
-const PortfolioShowcaseCard: React.FC<PortfolioItem> = ({ id, title, category, imageUrls, imageHints }) => {
+const PortfolioShowcaseCard: React.FC<PortfolioItem> = ({ id, title, category, categorySlug, imageUrls, imageHints }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
@@ -133,8 +139,6 @@ const PortfolioShowcaseCard: React.FC<PortfolioItem> = ({ id, title, category, i
     );
   }
 
-  const categorySlug = category.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-
   return (
     <Card className="overflow-hidden shadow-lg h-full flex flex-col group">
       <div className="block relative aspect-[4/3] w-full">
@@ -151,8 +155,8 @@ const PortfolioShowcaseCard: React.FC<PortfolioItem> = ({ id, title, category, i
         />
       </div>
       <CardContent className="p-4 bg-card flex-grow">
-        <Link href={`/services?category=${categorySlug}`} passHref legacyBehavior>
-          <a className="block">
+        <Link href={`/portfolio?category=${categorySlug}`} passHref legacyBehavior>
+          <a>
             <h3 className="font-headline text-lg font-semibold group-hover:text-primary transition-colors">{category}</h3>
           </a>
         </Link>
@@ -261,11 +265,21 @@ export default function HomePage() {
         {/* Our Work / Portfolio Section */}
         <section className="py-16 md:py-24 bg-gradient-to-br from-secondary/50 to-background">
           <div className="container mx-auto px-5">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">Explore Our Portfolio Highlights</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-4">Explore Our Portfolio Highlights</h2>
+             <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+              Get inspired by the quality and creativity our designers bring to every project.
+            </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {portfolioItemsData.map(item => (
                 <PortfolioShowcaseCard key={item.id} {...item} />
               ))}
+            </div>
+             <div className="text-center mt-16">
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/portfolio">
+                  View Full Portfolio
+                </Link>
+              </Button>
             </div>
           </div>
         </section>
