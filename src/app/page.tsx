@@ -13,12 +13,18 @@ const featuredServices = [
   { id: '1', name: 'Modern Logo Design', description: 'Get a unique and memorable logo for your brand.', tiers: [{name: 'Standard', price: 199}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo design' },
   { id: '2', name: 'Social Media Post Pack', description: 'Engaging posts designed for your social media channels.', tiers: [{name: 'Standard', price: 99}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media' },
   { id: '3', name: 'Professional Brochure Design', description: 'Stunning brochures to showcase your business.', tiers: [{name: 'Standard', price: 249}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'brochure design' },
+  { id: '4', name: 'UI/UX Web Design Mockup', description: 'High-fidelity mockup for one key page of your website or app.', tiers: [{name: 'Standard', price: 399}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website mockup' },
+  { id: '5', name: 'Custom Illustration', description: 'Unique vector or raster illustration based on your brief.', tiers: [{name: 'Standard', price: 149}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'character art' },
+  { id: '6', name: 'Packaging Design Concept', description: 'Creative packaging concept for your product.', tiers: [{name: 'Standard', price: 299}], category: 'Packaging', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product box' },
 ];
 
 const portfolioItems = [
   { title: 'E-commerce Website UI/UX', category: 'Web Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website ui' },
   { title: 'Tech Startup Branding', category: 'Logo & Branding', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'tech logo' },
   { title: 'Restaurant Menu Design', category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'restaurant menu' },
+  { title: 'Mobile App Icon Set', category: 'Icon Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'app icons' },
+  { title: 'Animated Explainer Video Stills', category: 'Animation', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'animation character' },
+  { title: 'Book Cover Illustration', category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'book cover' },
 ];
 
 const clientBenefits = [
@@ -108,7 +114,7 @@ export default function HomePage() {
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-5">
             <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">Popular Design Services</h2>
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredServices.map(service => (
                 <ServiceCard key={service.id} {...service} />
               ))}
@@ -127,7 +133,7 @@ export default function HomePage() {
         <section className="py-16 md:py-24 bg-gradient-to-br from-secondary/50 to-background">
           <div className="container mx-auto px-5">
             <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">See Our Designs in Action</h2>
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {portfolioItems.map((item, index) => (
                 <Card key={index} className="overflow-hidden shadow-lg group">
                   <div className="relative aspect-[4/3] w-full">
