@@ -11,8 +11,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['var(--font-rubik)', 'sans-serif'], // Changed to Rubik
-        headline: ['var(--font-rubik)', 'serif'], // Changed to Rubik
+        body: ['var(--font-onest)', 'sans-serif'], // Onest for body
+        headline: ['var(--font-oswald)', 'sans-serif'], // Oswald for headlines
         code: ['monospace', 'monospace'],
       },
       colors: {
