@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   XCircle as XCircleIcon,
   ChevronDown,
+  ChevronUp, // Added ChevronUp
   ArrowUpDown,
   Search
 } from 'lucide-react';
