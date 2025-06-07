@@ -12,8 +12,8 @@ export interface PortfolioItem {
   _id?: string; // MongoDB ID
   id: string; // Slug / friendly ID
   designerId?: string; // ID of the designer who created this
-  title: string;
-  category: string;
+  title: string; // Specific project title
+  category: string; // Service category - this will be the main "title" on the card
   categorySlug: string;
   clientName?: string;
   projectDate?: string;
@@ -43,27 +43,30 @@ export function PortfolioItemCard({ item, className }: PortfolioItemCardProps) {
         <a className="block relative aspect-[4/3] w-full overflow-hidden rounded-t-lg">
           <Image 
             src={item.coverImageUrl} 
-            alt={item.title} 
+            alt={item.title} // Alt tag should still be specific
             fill
             style={{ objectFit: "cover" }}
             className="transition-transform duration-500 ease-in-out group-hover:scale-110"
             data-ai-hint={item.coverImageHint}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-            <h3 className="font-headline text-lg text-white drop-shadow-md">{item.title}</h3>
-          </div>
+          {/* Removed hover overlay with specific title for simplicity */}
         </a>
       </Link>
-      <CardContent className="p-4 flex-grow">
-        <div className="flex items-center justify-between">
-            <Link href={`/portfolio?category=${item.categorySlug}`} passHref legacyBehavior>
-                <a className="inline-block">
-                    <Badge variant="secondary" className="text-xs hover:bg-primary/10 hover:text-primary transition-colors">
-                        {item.category}
-                    </Badge>
-                </a>
-            </Link>
+      <CardContent className="p-4 flex-grow flex flex-col">
+        {/* Display Category as the main title */}
+        <Link href={`/portfolio?category=${item.categorySlug}`} passHref legacyBehavior>
+            <a className="inline-block">
+                 <h3 className="font-headline text-lg text-foreground group-hover:text-primary transition-colors mb-2 leading-tight">
+                    {item.category}
+                </h3>
+            </a>
+        </Link>
+
+        {/* Display specific project title more subtly or not at all if too much */}
+        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{item.title}</p>
+        
+        <div className="mt-auto flex items-center justify-between pt-2 border-t border-border/50">
           {item.designer && (
             <Link href={`/designers/${item.designer.slug}`} passHref legacyBehavior>
               <a className="flex items-center space-x-1.5 text-xs text-muted-foreground hover:text-primary group/designer">
@@ -76,8 +79,11 @@ export function PortfolioItemCard({ item, className }: PortfolioItemCardProps) {
               </a>
             </Link>
           )}
+           {/* Optionally, keep a category badge if visual distinction is still desired */}
+           {/* <Badge variant="outline" className="text-xs">{item.category}</Badge> */}
         </div>
       </CardContent>
     </Card>
   );
 }
+

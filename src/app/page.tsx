@@ -11,7 +11,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react'; 
-import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
+import type { PortfolioItem } from '@/components/shared/portfolio-item-card'; // Ensure this path is correct
 import { cn } from '@/lib/utils';
 
 const featuredServices = [
@@ -30,20 +30,25 @@ const clientBenefits = [
   { icon: ShieldCheck, title: 'Quality Guaranteed', description: 'Your satisfaction is our success. We stand behind the quality of our designers\' work, offering revisions and support to ensure exceptional results.' },
 ];
 
-const portfolioItemsData: PortfolioItem[] = [
+// Data structure from portfolio/page.tsx is richer, let's align
+export const portfolioItemsData: PortfolioItem[] = [
   {
-    id: 'ecomm-reimagined-platform',
+    id: 'ecomm-reimagined-platform', 
     title: 'E-commerce Reimagined Platform',
     category: 'Web UI/UX',
     categorySlug: 'web-ui-ux',
+    clientName: 'FutureRetail Inc.',
+    projectDate: 'July 2024',
     coverImageUrl: 'https://placehold.co/600x450.png',
     coverImageHint: 'modern website homepage',
-    projectDescription: 'A complete overhaul of a multi-vendor e-commerce platform, focusing on a streamlined user journey, enhanced product discovery, and a modern, clean aesthetic.',
+    projectDescription: 'A complete overhaul of a multi-vendor e-commerce platform, focusing on a streamlined user journey, enhanced product discovery, and a modern, clean aesthetic. The project involved extensive UX research, interactive prototyping, and a comprehensive UI style guide.',
     galleryImages: [
-      { url: 'https://placehold.co/600x450.png', hint: 'modern website homepage' },
-      { url: 'https://placehold.co/600x450.png', hint: 'dashboard analytics view' },
-      { url: 'https://placehold.co/600x450.png', hint: 'mobile app checkout' },
+      { url: 'https://placehold.co/600x450.png', hint: 'modern website homepage', caption: 'Dashboard Overview' },
+      { url: 'https://placehold.co/1200x800.png', hint: 'dashboard analytics view', caption: 'Dashboard Overview' },
+      { url: 'https://placehold.co/1200x800.png', hint: 'product listing page', caption: 'Product Grid' },
+      { url: 'https://placehold.co/1200x800.png', hint: 'mobile app checkout', caption: 'Mobile Checkout Flow' },
     ],
+    tags: ['e-commerce', 'ux design', 'ui design', 'web application', 'figma', 'responsive'],
     designer: { id:'des001', slug: 'alice-wonderland', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
   },
   {
@@ -51,27 +56,33 @@ const portfolioItemsData: PortfolioItem[] = [
     title: 'Fintech Mobile Banking App',
     category: 'App Design',
     categorySlug: 'app-design',
+    clientName: 'InnovateBank Corp.',
+    projectDate: 'May 2024',
     coverImageUrl: 'https://placehold.co/600x450.png',
     coverImageHint: 'finance app screen',
-    projectDescription: 'Sleek and secure mobile application design for a new-age digital bank.',
+    projectDescription: 'Sleek and secure mobile application design for a new-age digital bank. Features include intuitive navigation, personalized dashboards, and gamified savings goals. Designed for iOS and Android.',
     galleryImages: [
-      { url: 'https://placehold.co/600x450.png', hint: 'finance app screen' },
-      { url: 'https://placehold.co/600x450.png', hint: 'app transaction history' },
+      { url: 'https://placehold.co/600x450.png', hint: 'finance app screen', caption: 'Secure Login' },
+      { url: 'https://placehold.co/1200x800.png', hint: 'app transaction history', caption: 'Transaction Details' },
     ],
-     designer: { id:'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
+    tags: ['mobile app', 'fintech', 'ios', 'android', 'ui/ux', 'security'],
+    designer: { id:'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
   },
   {
     id: 'eco-startup-brand-identity',
     title: 'Eco Startup Brand Identity',
     category: 'Logo & Branding',
     categorySlug: 'logo-branding',
+    clientName: 'GreenLeaf Goods',
+    projectDate: 'April 2024',
     coverImageUrl: 'https://placehold.co/600x450.png',
     coverImageHint: 'nature logo design',
-    projectDescription: 'Complete brand identity package for an eco-conscious startup.',
+    projectDescription: 'Complete brand identity package for an eco-conscious startup, including logo, color palette, typography, and brand guidelines. The identity aims to convey sustainability and trustworthiness.',
     galleryImages: [
-      { url: 'https://placehold.co/600x450.png', hint: 'nature logo design' },
-      { url: 'https://placehold.co/600x450.png', hint: 'brand stationery mockup' },
+      { url: 'https://placehold.co/600x450.png', hint: 'nature logo design', caption: 'Brand Stationery Mockup' },
+      { url: 'https://placehold.co/1200x800.png', hint: 'brand style guide page', caption: 'Brand Guidelines Snippet' },
     ],
+    tags: ['branding', 'logo design', 'sustainability', 'identity system', 'startup'],
     designer: { id:'des003', slug: 'carol-danvers', name: 'Carol Danvers', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
   },
   {
@@ -79,27 +90,32 @@ const portfolioItemsData: PortfolioItem[] = [
     title: 'Artisanal Cafe Print Suite',
     category: 'Print Design',
     categorySlug: 'print-design',
+    clientName: 'The Daily Grind Cafe',
+    projectDate: 'March 2024',
     coverImageUrl: 'https://placehold.co/600x450.png',
     coverImageHint: 'coffee shop menu',
-    projectDescription: 'A cohesive set of print materials for a local artisanal cafe.',
+    projectDescription: 'A cohesive set of print materials for a local artisanal cafe, including menus, loyalty cards, and promotional flyers, all reflecting a rustic yet modern brand aesthetic.',
     galleryImages: [
-      { url: 'https://placehold.co/600x450.png', hint: 'coffee shop menu' },
-      { url: 'https://placehold.co/600x450.png', hint: 'loyalty card design' },
+      { url: 'https://placehold.co/600x450.png', hint: 'coffee shop menu', caption: 'Loyalty Card Design' },
     ],
+    tags: ['print design', 'menu design', 'cafe branding', 'local business', 'rustic'],
     designer: { id:'des004', slug: 'david-copperfield', name: 'David Copperfield', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
   },
   {
     id: 'whimsical-childrens-book-illustrations',
-    title: 'Whimsical Children\'s Book Illustrations',
+    title: 'Whimsical Children\'s Book',
     category: 'Illustration',
     categorySlug: 'illustration',
+    clientName: 'Little Readers Publishing',
+    projectDate: 'June 2024',
     coverImageUrl: 'https://placehold.co/600x450.png',
     coverImageHint: 'storybook character art',
-    projectDescription: 'A series of enchanting illustrations for a children\'s storybook.',
+    projectDescription: 'A series of enchanting illustrations for a children\'s storybook, featuring vibrant characters and imaginative scenes. The style is playful and engaging for young readers.',
     galleryImages: [
-      { url: 'https://placehold.co/600x450.png', hint: 'storybook character art' },
-      { url: 'https://placehold.co/600x450.png', hint: 'book spread illustration' },
+      { url: 'https://placehold.co/600x450.png', hint: 'storybook character art', caption: 'Sample Spread 1' },
+      { url: 'https://placehold.co/1200x800.png', hint: 'book spread illustration', caption: 'Character Development' },
     ],
+    tags: ['illustration', 'childrens book', 'character design', 'digital art', 'vibrant'],
     designer: { id:'des001', slug: 'alice-wonderland', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
   },
   {
@@ -107,16 +123,19 @@ const portfolioItemsData: PortfolioItem[] = [
     title: 'Sustainable Cosmetics Packaging',
     category: 'Packaging Design',
     categorySlug: 'packaging-design',
+    clientName: 'Aura Organics',
+    projectDate: 'February 2024',
     coverImageUrl: 'https://placehold.co/600x450.png',
     coverImageHint: 'cosmetic product packaging',
-    projectDescription: 'A line of eco-friendly and visually appealing packaging designs.',
+    projectDescription: 'A line of eco-friendly and visually appealing packaging designs for an organic cosmetics brand. The design emphasizes natural ingredients and minimalist luxury.',
     galleryImages: [
-      { url: 'https://placehold.co/600x450.png', hint: 'cosmetic product packaging' },
-      { url: 'https://placehold.co/600x450.png', hint: 'product label detail' },
+      { url: 'https://placehold.co/600x450.png', hint: 'cosmetic product packaging', caption: 'Label Close-up' },
     ],
+    tags: ['packaging design', 'cosmetics', 'sustainability', 'brand identity', 'minimalist'],
     designer: { id:'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
   },
 ];
+
 
 interface PortfolioShowcaseCardProps {
   item: PortfolioItem;
@@ -172,18 +191,16 @@ const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ item }) =
             </a>
         </Link>
       <CardContent className="p-4 bg-card flex-grow">
-        <Link href={`/portfolio?category=${item.categorySlug}`} passHref legacyBehavior>
+        <Link href={`/services?category=${item.categorySlug}`} passHref legacyBehavior>
           <a className="inline-block">
-             <h3 className="font-semibold text-sm text-primary hover:underline ">{item.category}</h3>
+             <h3 className="font-headline text-xl text-foreground group-hover:text-primary transition-colors leading-tight">
+                {item.category}
+             </h3>
           </a>
         </Link>
-        <Link href={`/portfolio/${item.id}`} passHref legacyBehavior>
-             <a className="block">
-                <p className="font-headline text-lg text-foreground group-hover:text-primary transition-colors mt-0.5">{item.title}</p>
-             </a>
-        </Link>
+        {/* Specific project title removed for simplicity on card view */}
         {item.designer && (
-            <Link href={`/designers/${item.designer.slug}`} className="text-xs text-muted-foreground mt-1 hover:text-primary hover:underline">
+            <Link href={`/designers/${item.designer.slug}`} className="text-xs text-muted-foreground mt-1 hover:text-primary hover:underline block">
                 By {item.designer.name}
             </Link>
         )}
@@ -330,3 +347,4 @@ export default function HomePage() {
     </div>
   );
 }
+

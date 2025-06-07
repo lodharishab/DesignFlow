@@ -74,14 +74,8 @@ function PortfolioDetailPageContent() {
           <Card className="shadow-xl p-6 md:p-10 bg-card">
             <div className="grid md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-6">
-                <Link href={`/portfolio?category=${item.categorySlug}`} passHref legacyBehavior>
-                  <a className="inline-block">
-                    <Badge variant="outline" className="text-sm py-1 px-3 mb-2 hover:bg-accent">
-                        <Tag className="mr-2 h-4 w-4" /> {item.category}
-                    </Badge>
-                  </a>
-                </Link>
-                <h1 className="text-3xl md:text-5xl font-bold font-headline">{item.title}</h1>
+                <h1 className="text-3xl md:text-5xl font-bold font-headline text-primary">{item.category}</h1>
+                <h2 className="text-2xl md:text-3xl font-semibold text-foreground -mt-2">{item.title}</h2>
                 
                 <div className="text-muted-foreground space-y-1 text-sm">
                   {item.clientName && <p className="flex items-center"><Briefcase className="mr-2 h-4 w-4" />Client: {item.clientName}</p>}
@@ -89,7 +83,7 @@ function PortfolioDetailPageContent() {
                 </div>
 
                 <Separator />
-                <h2 className="text-xl font-semibold font-headline">Project Overview</h2>
+                <h3 className="text-xl font-semibold font-headline">Project Overview</h3>
                 <p className="text-foreground leading-relaxed whitespace-pre-line">{item.projectDescription}</p>
 
                 {item.tags && item.tags.length > 0 && (
@@ -127,6 +121,13 @@ function PortfolioDetailPageContent() {
                     </CardContent>
                   </Card>
                 )}
+                 <Link href={`/portfolio?category=${item.categorySlug}`} passHref legacyBehavior>
+                  <a className="block">
+                    <Badge variant="outline" className="text-sm py-1 px-3 mb-2 hover:bg-accent">
+                        <Tag className="mr-2 h-4 w-4" /> Related: {item.category}
+                    </Badge>
+                  </a>
+                </Link>
                 <Card className="bg-primary/10 p-5 text-center">
                     <Lightbulb className="h-10 w-10 text-primary mx-auto mb-3" />
                     <h3 className="text-lg font-headline font-semibold mb-2">Have a Similar Project?</h3>
@@ -182,3 +183,4 @@ export default function PortfolioItemPage() {
     </Suspense>
   );
 }
+
