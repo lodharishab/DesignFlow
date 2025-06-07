@@ -9,7 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 export interface PortfolioItem {
-  id: string;
+  _id?: string; // MongoDB ID
+  id: string; // Slug / friendly ID
+  designerId?: string; // ID of the designer who created this
   title: string;
   category: string;
   categorySlug: string;
@@ -21,8 +23,8 @@ export interface PortfolioItem {
   galleryImages: Array<{ url: string; hint: string; caption?: string }>;
   tags?: string[];
   designer?: { 
-    id: string; // Link to DesignerProfile
-    slug: string; // For URL
+    id: string;
+    slug: string; 
     name: string; 
     avatarUrl?: string; 
     imageHint?: string;

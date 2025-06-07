@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -38,8 +39,8 @@ import {
 const navItems = [
   { href: '/designer/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/designer/orders', icon: Briefcase, label: 'My Orders' },
+  { href: '/designer/portfolio', icon: Palette, label: 'My Portfolio' }, // Updated Label
   { href: '/designer/applications', icon: FileText, label: 'Service Applications' },
-  { href: '/designer/portfolio', icon: Palette, label: 'Portfolio' },
   { href: '/designer/profile', icon: UserCircle, label: 'Profile' },
 ];
 
@@ -65,7 +66,7 @@ export default function DesignerLayout({
               <SidebarMenuItem key={item.label}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname.startsWith(item.href)}
+                  isActive={pathname.startsWith(item.href)} // Use startsWith for parent routes
                   tooltip={{ children: item.label, side: 'right', align: 'center' }}
                 >
                   <Link href={item.href}>
@@ -91,6 +92,7 @@ export default function DesignerLayout({
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
+                      {/* Replace with actual designer avatar data if available */}
                       <AvatarImage src="https://placehold.co/100x100.png" alt="Designer User" data-ai-hint="person avatar" />
                       <AvatarFallback>DE</AvatarFallback>
                     </Avatar>
@@ -99,6 +101,7 @@ export default function DesignerLayout({
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
+                       {/* Replace with actual designer data if available */}
                       <p className="text-sm font-medium leading-none">Designer User</p>
                       <p className="text-xs leading-none text-muted-foreground">
                         designer@designflow.com
