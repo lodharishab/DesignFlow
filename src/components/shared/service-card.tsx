@@ -42,7 +42,7 @@ export function ServiceCard({ id, name, description, category, tiers, imageUrl, 
         <div className="flex justify-between items-center mb-1">
           <Badge variant="secondary" className="w-fit">{category}</Badge>
         </div>
-        <CardTitle className="mt-1 font-headline text-xl">{name}</CardTitle>
+        <h3 className="mt-1 font-headline text-xl font-semibold leading-none tracking-tight">{name}</h3>
         <CardDescription className="text-sm h-16 overflow-hidden text-ellipsis">
           {description}
         </CardDescription>

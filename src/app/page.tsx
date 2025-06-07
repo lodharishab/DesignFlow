@@ -41,7 +41,7 @@ export default function HomePage() {
               Transform Your Ideas into <span className="text-primary">Stunning Designs</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-              DesignFlow connects you with expert designers for fixed-price services. Get high-quality creative work, hassle-free.
+              DesignFlow connects you with expert designers for fixed-price services. Get high-quality creative work, hassle-free, and know the cost upfront.
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Button size="lg" asChild className="w-full sm:w-auto">
@@ -69,7 +69,7 @@ export default function HomePage() {
                     <div className="bg-primary/10 p-4 rounded-full mb-4 inline-flex">
                       <benefit.icon className="h-10 w-10 text-primary" />
                     </div>
-                    <CardTitle className="font-headline text-xl">{benefit.title}</CardTitle>
+                    <h3 className="font-headline text-xl font-semibold leading-none tracking-tight">{benefit.title}</h3>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground text-sm">{benefit.description}</p>
@@ -88,17 +88,17 @@ export default function HomePage() {
               <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card shadow-md">
                 <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">1</div>
                 <h3 className="text-xl font-semibold font-headline mb-2">Browse & Select</h3>
-                <p className="text-muted-foreground text-sm">Explore diverse, fixed-scope design services. Find the perfect package with clearly defined deliverables and upfront pricing.</p>
+                <p className="text-muted-foreground text-sm">Explore diverse, fixed-scope design services. Find the perfect package with clearly defined deliverables and upfront pricing. No surprises.</p>
               </div>
               <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card shadow-md">
                 <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">2</div>
                 <h3 className="text-xl font-semibold font-headline mb-2">Submit Your Brief</h3>
-                <p className="text-muted-foreground text-sm">Detail your vision with our intuitive brief submission. We guide you to provide all necessary info for a successful project.</p>
+                <p className="text-muted-foreground text-sm">Detail your vision with our intuitive brief submission. We guide you to provide all necessary info for a successful project start.</p>
               </div>
               <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card shadow-md">
                 <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">3</div>
                 <h3 className="text-xl font-semibold font-headline mb-2">Collaborate & Approve</h3>
-                <p className="text-muted-foreground text-sm">Engage directly with your chosen expert. Provide feedback, track progress, and approve your final design with ease.</p>
+                <p className="text-muted-foreground text-sm">Engage directly with your chosen expert designer. Provide feedback, track progress seamlessly, and approve your final design with confidence.</p>
               </div>
             </div>
           </div>
@@ -155,7 +155,7 @@ export default function HomePage() {
           <div className="container mx-auto px-5 text-center">
             <h2 className="text-3xl md:text-4xl font-bold font-headline mb-6">Ready to Elevate Your Brand?</h2>
             <p className="text-lg md:text-xl opacity-90 mb-10 max-w-2xl mx-auto">
-              Let our expert designers create something amazing for you. Start your project today!
+              Let our expert designers create something amazing for you. Start your project today and experience the DesignFlow difference!
             </p>
             <Button size="lg" variant="secondary" asChild className="bg-primary-foreground text-primary hover:bg-primary-foreground/90">
               <Link href="/services">
@@ -170,4 +170,3 @@ export default function HomePage() {
     </div>
   );
 }
-

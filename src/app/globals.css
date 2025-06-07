@@ -91,8 +91,8 @@
 
   /* Apply styles for elements using the font-headline utility class */
   .font-headline {
-    /* font-family: var(--font-oswald); /* This is applied by Tailwind via the utility class */
-    /* font-weight: 600; /* This is inherent in var(--font-oswald) via font import */
+    /* font-family: var(--font-oswald) is applied by Tailwind's font-headline utility */
+    /* font-weight: 600 is applied by Tailwind's font-headline utility linked to Oswald 600 weight */
     text-transform: uppercase;
     letter-spacing: 1.8px;
   }
