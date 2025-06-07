@@ -60,7 +60,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger, // Added AlertDialogTrigger
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 interface User {
@@ -132,7 +132,6 @@ export default function UserManagementPage(): ReactElement {
     if (sortConfig.key !== key) {
       return <ArrowUpDown className="ml-2 h-3 w-3 text-muted-foreground/50" />;
     }
-    // Swapped for intuitive sorting: ChevronDown for ascending (click to make descending), ChevronUp for descending (click to make ascending)
     return sortConfig.direction === 'ascending' ?
       <ChevronDown className="ml-1 h-4 w-4" /> : 
       <ChevronUp className="ml-1 h-4 w-4" />;
@@ -611,7 +610,6 @@ export default function UserManagementPage(): ReactElement {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        {/* Placeholder Links - these should navigate to actual view/edit pages */}
                         <DropdownMenuItem asChild>
                             <Link href={`/admin/users/view/${user.id}`} className="flex items-center"> 
                                 <Eye className="mr-2 h-4 w-4" /> View Details (soon)
@@ -619,7 +617,7 @@ export default function UserManagementPage(): ReactElement {
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Link href={`/admin/users/edit/${user.id}`} className="flex items-center">
-                                <Edit3 className="mr-2 h-4 w-4" /> Edit User (soon)
+                                <Edit3 className="mr-2 h-4 w-4" /> Edit User
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -668,5 +666,6 @@ export default function UserManagementPage(): ReactElement {
     </div>
   );
 }
+    
 
     
