@@ -88,7 +88,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* The DesignFlow Advantage Section (Moved Here) */}
+        {/* The DesignFlow Advantage Section */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-5">
             <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-16">The DesignFlow Advantage: Simple, Reliable, Quality.</h2>
@@ -133,25 +133,36 @@ export default function HomePage() {
         <section className="py-16 md:py-24 bg-gradient-to-br from-secondary/50 to-background">
           <div className="container mx-auto px-5">
             <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">See Our Designs in Action</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {portfolioItems.map((item, index) => (
-                <Card key={index} className="overflow-hidden shadow-lg group">
-                  <div className="relative aspect-[4/3] w-full">
-                    <Image 
-                      src={item.imageUrl} 
-                      alt={item.title} 
-                      fill
-                      style={{ objectFit: "cover" }}
-                      className="group-hover:scale-105 transition-transform duration-300"
-                      data-ai-hint={item.imageHint}
-                    />
-                  </div>
-                  <CardContent className="p-4 bg-card">
-                    <h3 className="font-headline text-lg font-semibold">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground">{item.category}</p>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="mt-8 group"> {/* Added group for hover:pause */}
+              <div className="overflow-hidden w-full relative"> {/* Masking container */}
+                <div className="flex animate-marquee group-hover:pause-animation whitespace-nowrap py-4">
+                  {/* Duplicate items for seamless scroll */}
+                  {[...portfolioItems, ...portfolioItems].map((item, index) => (
+                    <div key={index} className="mx-4 flex-shrink-0 w-[280px] sm:w-[320px] md:w-[350px]"> {/* Card container */}
+                      <Card className="overflow-hidden shadow-lg h-full flex flex-col">
+                        <div className="relative aspect-[4/3] w-full">
+                          <Image 
+                            src={item.imageUrl} 
+                            alt={item.title} 
+                            fill
+                            style={{ objectFit: "cover" }}
+                            className="transition-transform duration-300"
+                            data-ai-hint={item.imageHint}
+                            sizes="(max-width: 640px) 280px, (max-width: 768px) 320px, 350px"
+                          />
+                        </div>
+                        <CardContent className="p-4 bg-card flex-grow">
+                          <h3 className="font-headline text-lg font-semibold">{item.title}</h3>
+                          <p className="text-sm text-muted-foreground">{item.category}</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  ))}
+                </div>
+                {/* Fading Edges for Marquee */}
+                <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background via-background/70 to-transparent pointer-events-none"></div>
+                <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background via-background/70 to-transparent pointer-events-none"></div>
+              </div>
             </div>
           </div>
         </section>
