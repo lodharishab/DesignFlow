@@ -1,5 +1,6 @@
 
-"use client"; // Add this at the top if PortfolioShowcaseCard uses hooks
+
+"use client"; 
 
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
@@ -10,7 +11,7 @@ import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, 
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import React, { useState, useEffect } from 'react'; // Import useState and useEffect
+import React, { useState, useEffect } from 'react'; 
 
 const featuredServices = [
   { id: '1', name: 'Modern Logo Design', description: 'Get a unique and memorable logo for your brand.', tiers: [{name: 'Standard', price: 199}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo design' },
@@ -112,7 +113,7 @@ const PortfolioShowcaseCard: React.FC<PortfolioItem> = ({ id, title, category, i
 
     const timer = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
-    }, 3500); // Change image every 3.5 seconds
+    }, 3500); 
 
     return () => clearInterval(timer);
   }, [imageUrls.length]);
@@ -132,25 +133,25 @@ const PortfolioShowcaseCard: React.FC<PortfolioItem> = ({ id, title, category, i
     );
   }
 
+  const categorySlug = category.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
   return (
     <Card className="overflow-hidden shadow-lg h-full flex flex-col group">
-      <Link href={`/portfolio/${id}`} passHref legacyBehavior>
-        <a className="block relative aspect-[4/3] w-full">
-          <Image
-            key={imageUrls[currentImageIndex]} // Add key to force re-render on src change for transitions
-            src={imageUrls[currentImageIndex]}
-            alt={`${title} - image ${currentImageIndex + 1}`}
-            fill
-            style={{ objectFit: 'cover' }}
-            className="transition-opacity duration-500 ease-in-out group-hover:scale-105"
-            data-ai-hint={imageHints[currentImageIndex % imageHints.length]} // Cycle hints if not enough
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            priority={currentImageIndex === 0} // Prioritize first image
-          />
-        </a>
-      </Link>
+      <div className="block relative aspect-[4/3] w-full">
+        <Image
+          key={imageUrls[currentImageIndex]} 
+          src={imageUrls[currentImageIndex]}
+          alt={`${title} - image ${currentImageIndex + 1}`}
+          fill
+          style={{ objectFit: 'cover' }}
+          className="transition-opacity duration-500 ease-in-out group-hover:scale-105"
+          data-ai-hint={imageHints[currentImageIndex % imageHints.length]} 
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority={currentImageIndex === 0} 
+        />
+      </div>
       <CardContent className="p-4 bg-card flex-grow">
-        <Link href={`/portfolio/${id}`} passHref legacyBehavior>
+        <Link href={`/services?category=${categorySlug}`} passHref legacyBehavior>
           <a className="block">
             <h3 className="font-headline text-lg font-semibold group-hover:text-primary transition-colors">{category}</h3>
           </a>
