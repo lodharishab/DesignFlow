@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock } from 'lucide-react';
@@ -11,12 +12,10 @@ export default function DesignerDashboardPage() {
 
   const applicationStatus = {
     serviceName: 'UI/UX Web Design Mockup',
-    status: 'Pending Admin Approval',
-    icon: Clock,
-    color: 'text-yellow-500'
+    status: 'Approved', // Changed from 'Pending Admin Approval'
+    icon: CheckCircle, // Changed from Clock
+    color: 'text-green-500' // Changed from 'text-yellow-500'
   };
-  // const applicationStatus = { serviceName: 'Custom Illustration', status: 'Approved', icon: CheckCircle, color: 'text-green-500'};
-
 
   return (
     <div className="space-y-8">
@@ -76,7 +75,7 @@ export default function DesignerDashboardPage() {
               </div>
             </div>
             <Button className="w-full" asChild>
-              <Link href="/designer/applications">
+              <Link href="/designer/services-notifications">
                 Manage Applications <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
