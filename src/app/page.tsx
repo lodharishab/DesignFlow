@@ -1,4 +1,6 @@
 
+"use client"; // Add this at the top if PortfolioShowcaseCard uses hooks
+
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
@@ -8,6 +10,7 @@ import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, 
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react'; // Import useState and useEffect
 
 const featuredServices = [
   { id: '1', name: 'Modern Logo Design', description: 'Get a unique and memorable logo for your brand.', tiers: [{name: 'Standard', price: 199}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo design' },
@@ -18,21 +21,146 @@ const featuredServices = [
   { id: '6', name: 'Packaging Design Concept', description: 'Creative packaging concept for your product.', tiers: [{name: 'Standard', price: 299}], category: 'Packaging', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product box' },
 ];
 
-const portfolioItems = [
-  { title: 'E-commerce Website UI/UX', category: 'Web Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website ui' },
-  { title: 'Tech Startup Branding', category: 'Logo & Branding', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'tech logo' },
-  { title: 'Restaurant Menu Design', category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'restaurant menu' },
-  { title: 'Mobile App Icon Set', category: 'Icon Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'app icons' },
-  { title: 'Animated Explainer Video Stills', category: 'Animation', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'animation character' },
-  { title: 'Book Cover Illustration', category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'book cover' },
-];
-
 const clientBenefits = [
   { icon: Award, title: 'Expert Designers', description: 'Connect with vetted, top-tier designers. Our curated network ensures your project is handled by skilled professionals who deliver excellence.' },
   { icon: Tag, title: 'Transparent Pricing', description: 'Say goodbye to budget surprises. Our fixed-price service packages mean you know the cost upfront, ensuring clarity and control over your expenses.' },
   { icon: Zap, title: 'Streamlined Process', description: 'From intuitive briefs to efficient delivery, our platform simplifies every step. Get your designs faster, with less hassle and more collaboration.' },
   { icon: ShieldCheck, title: 'Quality Guaranteed', description: 'Your satisfaction is our success. We stand behind the quality of our designers\' work, offering revisions and support to ensure exceptional results.' },
 ];
+
+
+interface PortfolioItem {
+  id: string;
+  title: string;
+  category: string;
+  imageUrls: string[];
+  imageHints: string[];
+}
+
+const portfolioItemsData: PortfolioItem[] = [
+  {
+    id: 'ecomm-reimagined',
+    title: 'E-commerce Reimagined',
+    category: 'Web UI/UX',
+    imageUrls: [
+      'https://placehold.co/600x400.png?text=Ecom+View+Alpha',
+      'https://placehold.co/600x400.png?text=Ecom+View+Bravo',
+      'https://placehold.co/600x400.png?text=Ecom+View+Charlie',
+    ],
+    imageHints: ['website interface', 'product detail', 'checkout flow'],
+  },
+  {
+    id: 'fintech-mobile-suite',
+    title: 'Fintech Mobile Suite',
+    category: 'App Design',
+    imageUrls: [
+      'https://placehold.co/600x400.png?text=Fintech+App+1',
+      'https://placehold.co/600x400.png?text=Fintech+App+2',
+      'https://placehold.co/600x400.png?text=Fintech+App+3',
+    ],
+    imageHints: ['mobile finance app', 'app dashboard', 'transaction screen'],
+  },
+  {
+    id: 'startup-brand-identity',
+    title: 'Startup Brand Identity',
+    category: 'Logo & Branding',
+    imageUrls: [
+      'https://placehold.co/600x400.png?text=New+Startup+Logo',
+      'https://placehold.co/600x400.png?text=Brand+Guidelines',
+      'https://placehold.co/600x400.png?text=Social+Media+Kit',
+    ],
+    imageHints: ['modern tech logo', 'brand styleguide', 'social branding'],
+  },
+  {
+    id: 'gourmet-restaurant-menus',
+    title: 'Gourmet Restaurant Menus',
+    category: 'Print Design',
+    imageUrls: [
+      'https://placehold.co/600x400.png?text=Menu+Design+Cover',
+      'https://placehold.co/600x400.png?text=Menu+Interior+Spread',
+    ],
+    imageHints: ['elegant menu', 'restaurant branding'],
+  },
+  {
+    id: 'fantasy-game-art',
+    title: 'Fantasy Game Assets',
+    category: 'Illustration & Icons',
+    imageUrls: [
+      'https://placehold.co/600x400.png?text=Game+Character+Art',
+      'https://placehold.co/600x400.png?text=Game+Environment',
+      'https://placehold.co/600x400.png?text=Prop+Icons',
+    ],
+    imageHints: ['digital painting game', 'icon design game', 'concept art creature'],
+  },
+  {
+    id: 'corporate-explainer-video',
+    title: 'Corporate Explainer Stills',
+    category: 'Animation & Motion',
+    imageUrls: [
+      'https://placehold.co/600x400.png?text=Explainer+Scene+A',
+      'https://placehold.co/600x400.png?text=Explainer+Scene+B',
+    ],
+    imageHints: ['motion design still', 'animated characters'],
+  },
+];
+
+const PortfolioShowcaseCard: React.FC<PortfolioItem> = ({ id, title, category, imageUrls, imageHints }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (imageUrls.length <= 1) return;
+
+    const timer = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
+    }, 3500); // Change image every 3.5 seconds
+
+    return () => clearInterval(timer);
+  }, [imageUrls.length]);
+
+  if (!imageUrls || imageUrls.length === 0) {
+    return (
+      <Card className="overflow-hidden shadow-lg h-full flex flex-col group">
+        <div className="block relative aspect-[4/3] w-full bg-muted flex items-center justify-center">
+           <PackageSearch className="w-16 h-16 text-muted-foreground opacity-50" />
+        </div>
+        <CardContent className="p-4 bg-card flex-grow">
+          <h3 className="font-headline text-lg font-semibold group-hover:text-primary transition-colors">{title}</h3>
+          <p className="text-sm text-muted-foreground">{category}</p>
+           <p className="text-xs text-destructive mt-1">Image(s) missing</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="overflow-hidden shadow-lg h-full flex flex-col group">
+      <Link href={`/portfolio/${id}`} passHref legacyBehavior>
+        <a className="block relative aspect-[4/3] w-full">
+          <Image
+            key={imageUrls[currentImageIndex]} // Add key to force re-render on src change for transitions
+            src={imageUrls[currentImageIndex]}
+            alt={`${title} - image ${currentImageIndex + 1}`}
+            fill
+            style={{ objectFit: 'cover' }}
+            className="transition-opacity duration-500 ease-in-out group-hover:scale-105"
+            data-ai-hint={imageHints[currentImageIndex % imageHints.length]} // Cycle hints if not enough
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority={currentImageIndex === 0} // Prioritize first image
+          />
+        </a>
+      </Link>
+      <CardContent className="p-4 bg-card flex-grow">
+        <Link href={`/portfolio/${id}`} passHref legacyBehavior>
+          <a className="block">
+            <h3 className="font-headline text-lg font-semibold group-hover:text-primary transition-colors">{title}</h3>
+          </a>
+        </Link>
+        <p className="text-sm text-muted-foreground">{category}</p>
+      </CardContent>
+    </Card>
+  );
+};
+
 
 export default function HomePage() {
   return (
@@ -47,7 +175,7 @@ export default function HomePage() {
               Transform Your Ideas into <span className="text-primary">Stunning Designs</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-              DesignFlow is your ultimate marketplace for expert design services at fixed prices. Experience high-quality creative work, a hassle-free process, and upfront cost clarity.
+              DesignFlow is your ultimate marketplace for expert design services. Experience high-quality creative work, a hassle-free process, and upfront cost clarity, all in one place.
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Button size="lg" asChild className="w-full sm:w-auto">
@@ -132,37 +260,11 @@ export default function HomePage() {
         {/* Our Work / Portfolio Section */}
         <section className="py-16 md:py-24 bg-gradient-to-br from-secondary/50 to-background">
           <div className="container mx-auto px-5">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">See Our Designs in Action</h2>
-            <div className="mt-8 group"> {/* Added group for hover:pause */}
-              <div className="overflow-hidden w-full relative"> {/* Masking container */}
-                <div className="flex animate-marquee group-hover:pause-animation whitespace-nowrap py-4">
-                  {/* Duplicate items for seamless scroll */}
-                  {[...portfolioItems, ...portfolioItems].map((item, index) => (
-                    <div key={index} className="mx-4 flex-shrink-0 w-[280px] sm:w-[320px] md:w-[350px]"> {/* Card container */}
-                      <Card className="overflow-hidden shadow-lg h-full flex flex-col">
-                        <div className="relative aspect-[4/3] w-full">
-                          <Image 
-                            src={item.imageUrl} 
-                            alt={item.title} 
-                            fill
-                            style={{ objectFit: "cover" }}
-                            className="transition-transform duration-300"
-                            data-ai-hint={item.imageHint}
-                            sizes="(max-width: 640px) 280px, (max-width: 768px) 320px, 350px"
-                          />
-                        </div>
-                        <CardContent className="p-4 bg-card flex-grow">
-                          <h3 className="font-headline text-lg font-semibold">{item.title}</h3>
-                          <p className="text-sm text-muted-foreground">{item.category}</p>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  ))}
-                </div>
-                {/* Fading Edges for Marquee */}
-                <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background via-background/70 to-transparent pointer-events-none"></div>
-                <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background via-background/70 to-transparent pointer-events-none"></div>
-              </div>
+            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">Explore Our Portfolio Highlights</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {portfolioItemsData.map(item => (
+                <PortfolioShowcaseCard key={item.id} {...item} />
+              ))}
             </div>
           </div>
         </section>
@@ -187,3 +289,4 @@ export default function HomePage() {
     </div>
   );
 }
+
