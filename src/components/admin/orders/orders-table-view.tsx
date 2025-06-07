@@ -39,16 +39,16 @@ import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, isPast, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 
-type OrderStatus = 'Pending Assignment' | 'In Progress' | 'Awaiting Client Review' | 'Revision Requested' | 'Completed' | 'Cancelled' | 'Refunded';
+export type OrderStatus = 'Pending Assignment' | 'In Progress' | 'Awaiting Client Review' | 'Revision Requested' | 'Completed' | 'Cancelled' | 'Refunded';
 
-interface OrderEvent {
+export interface OrderEvent {
   timestamp: Date;
   event: string;
   actor?: string;
   notes?: string;
 }
 
-interface Order {
+export interface Order {
   id: string;
   clientName: string;
   clientId: string;
@@ -70,7 +70,7 @@ interface Order {
   deliverables?: { name: string, url: string, submittedAt: Date }[];
 }
 
-const initialOrdersData: Order[] = [
+export const initialOrdersData: Order[] = [
   {
     id: 'order001',
     clientName: 'Alice Johnson', clientId: 'cli001',
@@ -173,7 +173,7 @@ interface OrdersTableViewProps {
 type SortableOrderKeys = 'id' | 'clientName' | 'serviceName' | 'orderDate' | 'totalAmount' | 'designerName';
 
 export function OrdersTableView({ fixedStatusFilter }: OrdersTableViewProps): ReactElement {
-  const [allOrders, setAllOrders] = useState<Order[]>(initialOrdersData);
+  const [allOrdersData, setAllOrdersData] = useState<Order[]>(initialOrdersData); // Renamed to avoid conflict with argument
   const { toast } = useToast();
   const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
 
@@ -213,7 +213,7 @@ export function OrdersTableView({ fixedStatusFilter }: OrdersTableViewProps): Re
 
 
   const displayedOrders = useMemo(() => {
-    let sortableItems = [...allOrders];
+    let sortableItems = [...allOrdersData];
 
     if (fixedStatusFilter !== 'All') {
       sortableItems = sortableItems.filter(order => order.status === fixedStatusFilter);
@@ -251,7 +251,7 @@ export function OrdersTableView({ fixedStatusFilter }: OrdersTableViewProps): Re
       });
     }
     return sortableItems;
-  }, [allOrders, fixedStatusFilter, searchFilters, sortConfig]);
+  }, [allOrdersData, fixedStatusFilter, searchFilters, sortConfig]);
 
   const toggleExpandOrder = (orderId: string) => {
     setExpandedOrderIds(prev => {
@@ -279,7 +279,7 @@ export function OrdersTableView({ fixedStatusFilter }: OrdersTableViewProps): Re
   };
 
   const handleUpdateStatus = (orderId: string, newStatus: OrderStatus) => {
-    setAllOrders(prevOrders =>
+    setAllOrdersData(prevOrders =>
       prevOrders.map(order =>
         order.id === orderId ? {
           ...order, status: newStatus,
