@@ -60,6 +60,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger, // Added AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 
 interface User {
@@ -131,8 +132,9 @@ export default function UserManagementPage(): ReactElement {
     if (sortConfig.key !== key) {
       return <ArrowUpDown className="ml-2 h-3 w-3 text-muted-foreground/50" />;
     }
+    // Swapped for intuitive sorting: ChevronDown for ascending (click to make descending), ChevronUp for descending (click to make ascending)
     return sortConfig.direction === 'ascending' ?
-      <ChevronDown className="ml-1 h-4 w-4" /> : // Swapped for intuitive sorting
+      <ChevronDown className="ml-1 h-4 w-4" /> : 
       <ChevronUp className="ml-1 h-4 w-4" />;
   };
 
