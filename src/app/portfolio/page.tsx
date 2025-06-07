@@ -1,25 +1,29 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { PortfolioItemCard, type PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { useSearchParams } from 'next/navigation';
-import { PackageSearch, ListFilter } from 'lucide-react';
+import { PackageSearch, ListFilter, X, Tag, UserCircle, Palette, Users } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 // Enhanced Portfolio Data Structure
 const portfolioItemsData: PortfolioItem[] = [
   {
-    id: 'ecomm-reimagined-platform', // More unique ID
+    id: 'ecomm-reimagined-platform', 
     title: 'E-commerce Reimagined Platform',
     category: 'Web UI/UX',
     categorySlug: 'web-ui-ux',
     clientName: 'FutureRetail Inc.',
     projectDate: 'July 2024',
-    coverImageUrl: 'https://placehold.co/600x450.png', // 4:3 aspect ratio
+    coverImageUrl: 'https://placehold.co/600x450.png',
     coverImageHint: 'modern website homepage',
     projectDescription: 'A complete overhaul of a multi-vendor e-commerce platform, focusing on a streamlined user journey, enhanced product discovery, and a modern, clean aesthetic. The project involved extensive UX research, interactive prototyping, and a comprehensive UI style guide.',
     galleryImages: [
@@ -27,7 +31,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'product listing page', caption: 'Product Grid' },
       { url: 'https://placehold.co/1200x800.png', hint: 'mobile app checkout', caption: 'Mobile Checkout Flow' },
     ],
-    tags: ['e-commerce', 'ux design', 'ui design', 'web application', 'figma'],
+    tags: ['e-commerce', 'ux design', 'ui design', 'web application', 'figma', 'responsive'],
     designer: { name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar', profileUrl: '/designers/alice-wonderland' },
   },
   {
@@ -44,7 +48,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'app login screen', caption: 'Secure Login' },
       { url: 'https://placehold.co/1200x800.png', hint: 'app transaction history', caption: 'Transaction Details' },
     ],
-    tags: ['mobile app', 'fintech', 'ios', 'android', 'ui/ux'],
+    tags: ['mobile app', 'fintech', 'ios', 'android', 'ui/ux', 'security'],
     designer: { name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar', profileUrl: '/designers/bob-the-builder' },
   },
   {
@@ -61,7 +65,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'brand stationery mockup', caption: 'Stationery Design' },
       { url: 'https://placehold.co/1200x800.png', hint: 'brand style guide page', caption: 'Brand Guidelines Snippet' },
     ],
-    tags: ['branding', 'logo design', 'sustainability', 'identity system'],
+    tags: ['branding', 'logo design', 'sustainability', 'identity system', 'startup'],
     designer: { name: 'Carol Danvers', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar', profileUrl: '/designers/carol-danvers' },
   },
   {
@@ -77,7 +81,7 @@ const portfolioItemsData: PortfolioItem[] = [
     galleryImages: [
       { url: 'https://placehold.co/1200x800.png', hint: 'loyalty card design', caption: 'Loyalty Card' },
     ],
-    tags: ['print design', 'menu design', 'cafe branding', 'local business'],
+    tags: ['print design', 'menu design', 'cafe branding', 'local business', 'rustic'],
     designer: { name: 'David Copperfield', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar', profileUrl: '/designers/david-copperfield' },
   },
   {
@@ -94,7 +98,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'book spread illustration', caption: 'Sample Spread 1' },
       { url: 'https://placehold.co/1200x800.png', hint: 'character sketches book', caption: 'Character Development' },
     ],
-    tags: ['illustration', 'childrens book', 'character design', 'digital art'],
+    tags: ['illustration', 'childrens book', 'character design', 'digital art', 'vibrant'],
     designer: { name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar', profileUrl: '/designers/alice-wonderland' },
   },
   {
@@ -110,7 +114,7 @@ const portfolioItemsData: PortfolioItem[] = [
     galleryImages: [
       { url: 'https://placehold.co/1200x800.png', hint: 'product label detail', caption: 'Label Close-up' },
     ],
-    tags: ['packaging design', 'cosmetics', 'sustainability', 'brand identity'],
+    tags: ['packaging design', 'cosmetics', 'sustainability', 'brand identity', 'minimalist'],
     designer: { name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar', profileUrl: '/designers/bob-the-builder' },
   },
   {
@@ -126,7 +130,7 @@ const portfolioItemsData: PortfolioItem[] = [
     galleryImages: [
       { url: 'https://placehold.co/1200x800.png', hint: 'conference title screen', caption: 'Main Title Card' },
     ],
-    tags: ['motion graphics', 'animation', 'event branding', 'after effects'],
+    tags: ['motion graphics', 'animation', 'event branding', 'after effects', 'futuristic'],
     designer: { name: 'Carol Danvers', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar', profileUrl: '/designers/carol-danvers' },
   },
    {
@@ -143,7 +147,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'data chart slide', caption: 'Data Visualization' },
       { url: 'https://placehold.co/1200x800.png', hint: 'team slide design', caption: 'Team Introduction Slide' },
     ],
-    tags: ['presentation design', 'pitch deck', 'powerpoint', 'keynote', 'corporate'],
+    tags: ['presentation design', 'pitch deck', 'powerpoint', 'keynote', 'corporate', 'data visualization'],
     designer: { name: 'David Copperfield', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar', profileUrl: '/designers/david-copperfield' },
   }
 ];
@@ -154,6 +158,8 @@ const PortfolioPageContent = () => {
   const initialCategorySlug = searchParams.get('category');
   
   const [activeCategorySlug, setActiveCategorySlug] = useState<string | null>(initialCategorySlug);
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [selectedDesigners, setSelectedDesigners] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setActiveCategorySlug(initialCategorySlug);
@@ -169,65 +175,184 @@ const PortfolioPageContent = () => {
     return Array.from(categoriesMap.values()).sort((a,b) => a.name.localeCompare(b.name));
   }, []);
 
+  const uniqueTags = useMemo(() => {
+    const tagsSet = new Set<string>();
+    portfolioItemsData.forEach(item => {
+      item.tags?.forEach(tag => tagsSet.add(tag.toLowerCase()));
+    });
+    return Array.from(tagsSet).sort();
+  }, []);
+
+  const uniqueDesigners = useMemo(() => {
+    const designersSet = new Set<string>();
+    portfolioItemsData.forEach(item => {
+      if (item.designer?.name) {
+        designersSet.add(item.designer.name);
+      }
+    });
+    return Array.from(designersSet).sort();
+  }, []);
+
+  const handleCategoryClick = useCallback((slug: string | null) => {
+    setActiveCategorySlug(slug);
+  }, []);
+
+  const handleTagChange = useCallback((tag: string, checked: boolean) => {
+    setSelectedTags(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(tag);
+      } else {
+        newSet.delete(tag);
+      }
+      return newSet;
+    });
+  }, []);
+  
+  const handleDesignerChange = useCallback((designerName: string, checked: boolean) => {
+    setSelectedDesigners(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(designerName);
+      } else {
+        newSet.delete(designerName);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const clearAllFilters = useCallback(() => {
+    setActiveCategorySlug(null);
+    setSelectedTags(new Set());
+    setSelectedDesigners(new Set());
+  }, []);
+
   const filteredPortfolioItems = useMemo(() => {
-    if (!activeCategorySlug) {
-      return portfolioItemsData;
-    }
-    return portfolioItemsData.filter(item => item.categorySlug === activeCategorySlug);
-  }, [activeCategorySlug]);
+    return portfolioItemsData.filter(item => {
+      const categoryMatch = !activeCategorySlug || item.categorySlug === activeCategorySlug;
+      const tagsMatch = selectedTags.size === 0 || item.tags?.some(tag => selectedTags.has(tag.toLowerCase()));
+      const designerMatch = selectedDesigners.size === 0 || (item.designer?.name && selectedDesigners.has(item.designer.name));
+      return categoryMatch && tagsMatch && designerMatch;
+    });
+  }, [activeCategorySlug, selectedTags, selectedDesigners]);
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <CategoriesNavbar />
       <main className="flex-grow container mx-auto py-12 px-5">
-        <h1 className="text-4xl font-bold font-headline mb-4 text-center">Explore Our Work</h1>
-        <p className="text-lg text-muted-foreground text-center mb-10 max-w-2xl mx-auto">
-          Dive into a curated collection of projects crafted by our talented designers. Get inspired and see the quality we deliver.
-        </p>
-
-        <div className="mb-10 flex flex-wrap justify-center gap-2 md:gap-3">
-          <Button
-            variant={!activeCategorySlug ? 'default' : 'outline'}
-            onClick={() => setActiveCategorySlug(null)}
-            className="rounded-full px-4 py-2 text-sm"
-          >
-            All Projects
-          </Button>
-          {uniqueCategories.map(category => (
-            <Button
-              key={category.slug}
-              variant={activeCategorySlug === category.slug ? 'default' : 'outline'}
-              onClick={() => setActiveCategorySlug(category.slug)}
-              className="rounded-full px-4 py-2 text-sm"
-            >
-              {category.name}
-            </Button>
-          ))}
-        </div>
-        
-        {filteredPortfolioItems.length > 0 ? (
-          <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-            {filteredPortfolioItems.map(item => (
-              <PortfolioItemCard key={item.id} item={item} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <PackageSearch className="mx-auto h-24 w-24 text-muted-foreground opacity-50" />
-            <h2 className="mt-6 text-2xl font-semibold">No Projects Found</h2>
-            <p className="mt-2 text-muted-foreground">
-              {activeCategorySlug 
-                ? `There are no projects in the "${uniqueCategories.find(c => c.slug === activeCategorySlug)?.name}" category yet.`
-                : "We're constantly adding new projects. Check back soon!"}
+        <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold font-headline mb-4">Explore Our Work</h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Dive into a curated collection of projects crafted by our talented designers. Get inspired and see the quality we deliver.
             </p>
-            {activeCategorySlug && (
-              <Button variant="link" onClick={() => setActiveCategorySlug(null)} className="mt-4">
-                Show All Projects
-              </Button>
+        </div>
+
+        <div className="md:grid md:grid-cols-[300px_1fr] md:gap-8">
+          {/* Filter Sidebar */}
+          <aside className="mb-8 md:mb-0 md:sticky md:top-24 md:h-[calc(100vh-7rem)] md:overflow-y-auto pr-4">
+            <Card className="shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between pb-3">
+                <CardTitle className="text-lg font-headline flex items-center"><ListFilter className="mr-2 h-5 w-5 text-primary" /> Filters</CardTitle>
+                <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-xs">
+                  <X className="mr-1 h-3 w-3" /> Clear All
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Categories Filter */}
+                <section>
+                  <h3 className="text-md font-semibold mb-3 flex items-center"><Palette className="mr-2 h-4 w-4 text-muted-foreground" />Categories</h3>
+                  <ul className="space-y-1.5">
+                    <li>
+                      <Button
+                        variant={!activeCategorySlug ? 'secondary' : 'ghost'}
+                        className="w-full justify-start text-sm"
+                        onClick={() => handleCategoryClick(null)}
+                      >
+                        All Projects
+                      </Button>
+                    </li>
+                    {uniqueCategories.map(category => (
+                      <li key={category.slug}>
+                        <Button
+                          variant={activeCategorySlug === category.slug ? 'secondary' : 'ghost'}
+                          className="w-full justify-start text-sm"
+                          onClick={() => handleCategoryClick(category.slug)}
+                        >
+                          {category.name}
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+                <Separator />
+                {/* Tags Filter */}
+                {uniqueTags.length > 0 && (
+                  <section>
+                    <h3 className="text-md font-semibold mb-3 flex items-center"><Tag className="mr-2 h-4 w-4 text-muted-foreground" />Tags</h3>
+                    <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                      {uniqueTags.map(tag => (
+                        <div key={tag} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`tag-${tag}`}
+                            checked={selectedTags.has(tag)}
+                            onCheckedChange={(checked) => handleTagChange(tag, !!checked)}
+                          />
+                          <Label htmlFor={`tag-${tag}`} className="text-sm font-normal capitalize cursor-pointer">
+                            {tag}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                <Separator />
+                {/* Designers Filter */}
+                {uniqueDesigners.length > 0 && (
+                  <section>
+                    <h3 className="text-md font-semibold mb-3 flex items-center"><Users className="mr-2 h-4 w-4 text-muted-foreground" />Designers</h3>
+                     <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                      {uniqueDesigners.map(designerName => (
+                        <div key={designerName} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`designer-${designerName.replace(/\s+/g, '-')}`}
+                            checked={selectedDesigners.has(designerName)}
+                            onCheckedChange={(checked) => handleDesignerChange(designerName, !!checked)}
+                          />
+                          <Label htmlFor={`designer-${designerName.replace(/\s+/g, '-')}`} className="text-sm font-normal cursor-pointer">
+                            {designerName}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </CardContent>
+            </Card>
+          </aside>
+
+          {/* Portfolio Grid */}
+          <div className="min-w-0"> {/* Prevents grid blowout */}
+            {filteredPortfolioItems.length > 0 ? (
+              <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                {filteredPortfolioItems.map(item => (
+                  <PortfolioItemCard key={item.id} item={item} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 col-span-full">
+                <PackageSearch className="mx-auto h-24 w-24 text-muted-foreground opacity-50" />
+                <h2 className="mt-6 text-2xl font-semibold">No Projects Found</h2>
+                <p className="mt-2 text-muted-foreground">
+                  Try adjusting your filters or check back later for new projects.
+                </p>
+                <Button variant="link" onClick={clearAllFilters} className="mt-4">
+                  Clear All Filters
+                </Button>
+              </div>
             )}
           </div>
-        )}
+        </div>
       </main>
       <Footer />
     </div>
@@ -241,3 +366,4 @@ export default function PortfolioPage() {
     </Suspense>
   );
 }
+
