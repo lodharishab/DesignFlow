@@ -1,22 +1,53 @@
 
 "use client";
 
-import { useState, useEffect, useMemo, type ReactElement } from 'react';
+import { useState, useEffect, useMemo, type ReactElement, ChangeEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, User, CalendarDays, Info, Eye, ArrowRight, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { 
+  Briefcase, 
+  User, 
+  CalendarDays, 
+  Info, 
+  Eye, 
+  ArrowRight, 
+  AlertTriangle, 
+  CheckCircle2, 
+  Clock, 
+  ArrowUpDown, 
+  ChevronUp, 
+  ChevronDown,
+  ListFilter
+} from 'lucide-react';
 import Link from 'next/link';
 import { format, isPast, formatDistanceToNow } from 'date-fns';
-import { initialOrdersData as allOrders, type Order, type OrderStatus } from '@/components/admin/orders/orders-table-view'; // Reusing admin types and data
+import { initialOrdersData as allOrders, type Order, type OrderStatus } from '@/components/admin/orders/orders-table-view';
 
 // Hardcoded designer ID for prototype
-const MOCK_DESIGNER_ID = 'des002'; // Bob The Builder (order001 is 'In Progress' for him)
+const MOCK_DESIGNER_ID = 'des002'; // Bob The Builder
+
+type SortableDesignerOrderKeys = 'id' | 'serviceName' | 'clientName' | 'dueDate' | 'status';
+
+const designerOrderStatusFilters: { label: string; value: OrderStatus | 'All'; icon?: React.ElementType }[] = [
+  { label: 'All My Orders', value: 'All', icon: ListFilter },
+  { label: 'In Progress', value: 'In Progress', icon: Clock },
+  { label: 'Awaiting Client Review', value: 'Awaiting Client Review', icon: Eye },
+  { label: 'Revision Requested', value: 'Revision Requested', icon: AlertTriangle },
+  { label: 'Completed', value: 'Completed', icon: CheckCircle2 },
+];
 
 export default function DesignerOrdersPage(): ReactElement {
   const [assignedOrders, setAssignedOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
+  const [sortConfig, setSortConfig] = useState<{ key: SortableDesignerOrderKeys | null; direction: 'ascending' | 'descending' }>({
+    key: 'dueDate',
+    direction: 'ascending',
+  });
 
   useEffect(() => {
     // Simulate fetching orders for the designer
@@ -25,13 +56,60 @@ export default function DesignerOrdersPage(): ReactElement {
     setIsLoading(false);
   }, []);
 
+  const requestSort = (key: SortableDesignerOrderKeys) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIndicator = (key: SortableDesignerOrderKeys) => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown className="ml-2 h-3 w-3 text-muted-foreground/50" />;
+    }
+    return sortConfig.direction === 'ascending' ?
+      <ChevronUp className="ml-1 h-4 w-4" /> :
+      <ChevronDown className="ml-1 h-4 w-4" />;
+  };
+
+  const displayedOrders = useMemo(() => {
+    let filtered = [...assignedOrders];
+
+    if (statusFilter !== 'All') {
+      filtered = filtered.filter(order => order.status === statusFilter);
+    }
+
+    if (sortConfig.key) {
+      filtered.sort((a, b) => {
+        const valA = a[sortConfig.key!];
+        const valB = b[sortConfig.key!];
+
+        let comparison = 0;
+        if (valA === undefined || valA === null) comparison = -1;
+        else if (valB === undefined || valB === null) comparison = 1;
+        else if (valA instanceof Date && valB instanceof Date) {
+          comparison = valA.getTime() - valB.getTime();
+        } else if (typeof valA === 'string' && typeof valB === 'string') {
+          comparison = valA.localeCompare(valB);
+        } else if (typeof valA === 'number' && typeof valB === 'number') {
+          // This case isn't used for current sort keys but good to have
+          comparison = valA - valB;
+        }
+        
+        return sortConfig.direction === 'ascending' ? comparison : comparison * -1;
+      });
+    }
+    return filtered;
+  }, [assignedOrders, statusFilter, sortConfig]);
+
   const getStatusBadgeVariant = (status: OrderStatus) => {
     switch (status) {
-      case 'Completed': return 'default'; // Greenish or positive
-      case 'In Progress': return 'secondary'; // Blueish or neutral active
-      case 'Pending Assignment': return 'outline'; // Should not appear here ideally
-      case 'Awaiting Client Review': return 'outline'; // Yellowish or pending
-      case 'Revision Requested': return 'secondary'; // Orange/yellowish
+      case 'Completed': return 'default';
+      case 'In Progress': return 'secondary';
+      case 'Pending Assignment': return 'outline'; // Should not appear for assigned orders
+      case 'Awaiting Client Review': return 'outline';
+      case 'Revision Requested': return 'secondary';
       case 'Cancelled': return 'destructive';
       default: return 'secondary';
     }
@@ -41,7 +119,7 @@ export default function DesignerOrdersPage(): ReactElement {
     switch (status) {
       case 'In Progress': return <Clock className="mr-1.5 h-3.5 w-3.5" />;
       case 'Awaiting Client Review': return <Eye className="mr-1.5 h-3.5 w-3.5" />;
-      case 'Revision Requested': return <AlertTriangle className="mr-1.5 h-3.5 w-3.5" />;
+      case 'Revision Requested': return <AlertTriangle className="mr-1.5 h-3.5 w-3.5 text-orange-500" />;
       case 'Completed': return <CheckCircle2 className="mr-1.5 h-3.5 w-3.5 text-green-500" />;
       default: return <Info className="mr-1.5 h-3.5 w-3.5" />;
     }
@@ -60,61 +138,91 @@ export default function DesignerOrdersPage(): ReactElement {
         </h1>
       </div>
 
-      {assignedOrders.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <Briefcase className="mx-auto h-16 w-16 text-muted-foreground opacity-50" />
-            <p className="mt-4 text-lg font-semibold">No Orders Assigned</p>
-            <p className="text-muted-foreground">
-              You currently have no active orders assigned to you.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Current Projects</CardTitle>
-            <CardDescription>Manage your active and upcoming design projects.</CardDescription>
-          </CardHeader>
-          <CardContent>
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle>Manage Your Projects</CardTitle>
+          <CardDescription>Track progress, submit deliverables, and communicate with clients.</CardDescription>
+           <div className="pt-4 flex flex-wrap gap-2">
+            {designerOrderStatusFilters.map(filter => (
+              <Button
+                key={filter.value}
+                variant={statusFilter === filter.value ? 'default' : 'outline'}
+                onClick={() => setStatusFilter(filter.value)}
+                size="sm"
+              >
+                {filter.icon && <filter.icon className="mr-2 h-4 w-4" />}
+                {filter.label}
+              </Button>
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {displayedOrders.length === 0 ? (
+             <div className="text-center py-10">
+                <Briefcase className="mx-auto h-16 w-16 text-muted-foreground opacity-50" />
+                <p className="mt-4 text-lg font-semibold">No orders match your current filters.</p>
+                {statusFilter !== 'All' && (
+                    <Button variant="link" onClick={() => setStatusFilter('All')}>Show all my orders</Button>
+                )}
+            </div>
+          ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Service</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>
+                     <Button variant="ghost" onClick={() => requestSort('id')} className="px-1 text-xs sm:text-sm -ml-2">
+                        Order ID {getSortIndicator('id')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                     <Button variant="ghost" onClick={() => requestSort('serviceName')} className="px-1 text-xs sm:text-sm -ml-2">
+                        Service {getSortIndicator('serviceName')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('clientName')} className="px-1 text-xs sm:text-sm -ml-2">
+                        <User className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" /> Client {getSortIndicator('clientName')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('dueDate')} className="px-1 text-xs sm:text-sm -ml-2">
+                        <CalendarDays className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" /> Due Date {getSortIndicator('dueDate')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('status')} className="px-1 text-xs sm:text-sm -ml-2">
+                        <Clock className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />Status {getSortIndicator('status')}
+                    </Button>
+                  </TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {assignedOrders.map(order => (
+                {displayedOrders.map(order => (
                   <TableRow key={order.id}>
-                    <TableCell className="font-medium text-primary hover:underline">
+                    <TableCell className="font-medium text-primary hover:underline text-xs sm:text-sm">
                       <Link href={`/designer/orders/${order.id}`}>
                         {order.id}
                       </Link>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-xs sm:text-sm">
                         {order.serviceName}
-                        {order.serviceTier && <span className="text-xs text-muted-foreground ml-1">({order.serviceTier})</span>}
+                        {order.serviceTier && <span className="block text-xs text-muted-foreground mt-0.5">({order.serviceTier})</span>}
                     </TableCell>
-                    <TableCell className="flex items-center">
-                      <User className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <TableCell className="text-xs sm:text-sm">
                       {order.clientName}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-xs sm:text-sm">
                       {order.dueDate ? (
                         <>
                           {format(order.dueDate, 'MMM d, yyyy')}
                           {order.status !== 'Completed' && order.status !== 'Cancelled' && isPast(order.dueDate) && (
-                            <span className="block text-xs text-destructive">
+                            <span className="block text-xs text-destructive mt-0.5">
                               Overdue by {formatDistanceToNow(order.dueDate, { addSuffix: false })}
                             </span>
                           )}
                            {order.status !== 'Completed' && order.status !== 'Cancelled' && !isPast(order.dueDate) && (
-                            <span className="block text-xs text-green-600">
+                            <span className="block text-xs text-green-600 mt-0.5">
                               Due in {formatDistanceToNow(order.dueDate, { addSuffix: false })}
                             </span>
                           )}
@@ -124,7 +232,7 @@ export default function DesignerOrdersPage(): ReactElement {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getStatusBadgeVariant(order.status)} className="text-xs">
+                      <Badge variant={getStatusBadgeVariant(order.status)} className="text-xs whitespace-nowrap">
                         {getStatusIcon(order.status)}
                         {order.status}
                       </Badge>
@@ -132,7 +240,7 @@ export default function DesignerOrdersPage(): ReactElement {
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" asChild>
                         <Link href={`/designer/orders/${order.id}`}>
-                          View Details <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                          Manage <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                         </Link>
                       </Button>
                     </TableCell>
@@ -140,9 +248,10 @@ export default function DesignerOrdersPage(): ReactElement {
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
+
