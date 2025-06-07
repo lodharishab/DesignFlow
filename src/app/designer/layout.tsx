@@ -10,7 +10,8 @@ import {
   Palette, 
   UserCircle,
   Brush,
-  PanelLeft
+  Settings, // Added for Profile/Settings
+  Bell // Added for Service Notifications
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -38,10 +39,10 @@ import {
 
 const navItems = [
   { href: '/designer/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/designer/orders', icon: Briefcase, label: 'My Orders' },
-  { href: '/designer/portfolio', icon: Palette, label: 'My Portfolio' }, // Updated Label
-  { href: '/designer/applications', icon: FileText, label: 'Service Applications' },
-  { href: '/designer/profile', icon: UserCircle, label: 'Profile' },
+  { href: '/designer/orders', icon: Briefcase, label: 'My Orders' }, // Placeholder, assuming future page
+  { href: '/designer/portfolio', icon: Palette, label: 'My Portfolio' },
+  { href: '/designer/services-notifications', icon: Bell, label: 'Service Alerts' }, // Renamed from applications
+  { href: '/designer/profile', icon: Settings, label: 'Profile & Settings' }, // Using Settings icon
 ];
 
 export default function DesignerLayout({
@@ -66,7 +67,7 @@ export default function DesignerLayout({
               <SidebarMenuItem key={item.label}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname.startsWith(item.href)} // Use startsWith for parent routes
+                  isActive={pathname.startsWith(item.href)} 
                   tooltip={{ children: item.label, side: 'right', align: 'center' }}
                 >
                   <Link href={item.href}>
@@ -109,7 +110,7 @@ export default function DesignerLayout({
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/designer/profile">Profile</Link></DropdownMenuItem>
                   <DropdownMenuItem>Earnings</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>Log out</DropdownMenuItem>
