@@ -1,0 +1,344 @@
+
+"use client";
+
+import { useState, useEffect, type ReactElement, Suspense } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { 
+  Briefcase, 
+  User, 
+  CalendarDays, 
+  MessageSquare,
+  ArrowLeft,
+  ClipboardList,
+  Paperclip,
+  Send,
+  Upload,
+  Tag,
+  ListChecks,
+  Loader2,
+  Info,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  Eye
+} from 'lucide-react';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useToast } from "@/hooks/use-toast";
+import { format, formatDistanceToNow, isPast } from 'date-fns';
+import { initialOrdersData as allOrders, type Order, type OrderStatus, type OrderEvent } from '@/components/admin/orders/orders-table-view'; // Reusing admin types and data
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+
+// Mock designer ID for prototype - should come from auth
+const MOCK_DESIGNER_ID = 'des002'; 
+
+const getStatusBadgeVariant = (status: OrderStatus) => {
+  switch (status) {
+    case 'Completed': return 'default';
+    case 'In Progress': return 'secondary';
+    case 'Awaiting Client Review': return 'outline';
+    case 'Revision Requested': return 'secondary';
+    case 'Cancelled': return 'destructive';
+    default: return 'secondary';
+  }
+};
+
+const getStatusIcon = (status: OrderStatus) => {
+    switch (status) {
+      case 'In Progress': return <Clock className="mr-1.5 h-4 w-4" />;
+      case 'Awaiting Client Review': return <Eye className="mr-1.5 h-4 w-4" />;
+      case 'Revision Requested': return <AlertTriangle className="mr-1.5 h-4 w-4" />;
+      case 'Completed': return <CheckCircle2 className="mr-1.5 h-4 w-4 text-green-500" />;
+      default: return <Info className="mr-1.5 h-4 w-4" />;
+    }
+  };
+
+
+function DesignerOrderDetailPageContent(): ReactElement {
+  const router = useRouter();
+  const params = useParams();
+  const { toast } = useToast();
+  
+  const orderId = params.orderId as string;
+
+  const [order, setOrder] = useState<Order | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [newMessage, setNewMessage] = useState('');
+  const [isSubmittingDeliverable, setIsSubmittingDeliverable] = useState(false);
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [deliverableDescription, setDeliverableDescription] = useState('');
+
+
+  useEffect(() => {
+    if (orderId) {
+      setIsLoading(true);
+      // Simulate fetching order details
+      const foundOrder = allOrders.find(o => o.id === orderId && o.designerId === MOCK_DESIGNER_ID);
+      if (foundOrder) {
+        setOrder(foundOrder);
+      } else {
+        toast({
+          title: "Error",
+          description: "Order not found or not assigned to you.",
+          variant: "destructive",
+          duration: 3000,
+        });
+        router.push('/designer/orders');
+      }
+      setIsLoading(false);
+    }
+  }, [orderId, router, toast]);
+
+  const handleSendMessage = () => {
+    if (!newMessage.trim() || !order) return;
+    setIsSendingMessage(true);
+    // Simulate sending message
+    const newEvent: OrderEvent = {
+        timestamp: new Date(),
+        event: `Message from Designer: ${newMessage}`,
+        actor: order.designerName || 'Designer',
+    };
+    // In a real app, this would update the backend
+    setOrder(prevOrder => prevOrder ? ({ ...prevOrder, orderEvents: [...prevOrder.orderEvents, newEvent].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()) }) : null);
+    
+    setTimeout(() => {
+        setNewMessage('');
+        toast({ title: "Message Sent (Simulated)", description: "Your message has been sent to the client." });
+        setIsSendingMessage(false);
+    }, 1000);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setFileToUpload(event.target.files[0]);
+    }
+  };
+
+  const handleSubmitDeliverable = () => {
+    if (!fileToUpload || !deliverableDescription.trim() || !order) {
+      toast({ title: "Error", description: "Please select a file and add a description.", variant: "destructive"});
+      return;
+    }
+    setIsSubmittingDeliverable(true);
+    // Simulate deliverable submission
+    const newDeliverable = {
+        name: fileToUpload.name,
+        url: '#', // Placeholder URL
+        submittedAt: new Date(),
+    };
+     const newEvent: OrderEvent = {
+        timestamp: new Date(),
+        event: `Deliverable submitted: ${fileToUpload.name} (${deliverableDescription})`,
+        actor: order.designerName || 'Designer',
+    };
+    // In a real app, this would update the backend
+    setOrder(prevOrder => prevOrder ? ({ 
+        ...prevOrder, 
+        deliverables: [...(prevOrder.deliverables || []), newDeliverable],
+        orderEvents: [...prevOrder.orderEvents, newEvent].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),
+        status: 'Awaiting Client Review' // Example status change
+    }) : null);
+
+    setTimeout(() => {
+        setFileToUpload(null);
+        setDeliverableDescription('');
+        toast({ title: "Deliverable Submitted (Simulated)", description: `${fileToUpload.name} has been sent to the client for review.`});
+        setIsSubmittingDeliverable(false);
+    }, 1500);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2 text-muted-foreground">Loading order details...</p>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return <p>Order not found or not accessible.</p>;
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <Button variant="outline" onClick={() => router.back()} className="w-full md:w-auto">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to My Orders
+        </Button>
+         <Badge variant={getStatusBadgeVariant(order.status)} className="text-base px-4 py-2 self-start md:self-center">
+            {getStatusIcon(order.status)}
+            {order.status}
+        </Badge>
+      </div>
+
+      <Card className="shadow-lg">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+          <div>
+            <CardTitle className="font-headline text-2xl flex items-center">
+              <Briefcase className="mr-3 h-7 w-7 text-primary" />
+              Order: {order.id}
+            </CardTitle>
+            <CardDescription>
+              Service: {order.serviceName} {order.serviceTier && `(${order.serviceTier})`}
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+            <div className="space-y-1">
+              <h4 className="font-semibold text-foreground flex items-center"><User className="mr-2 h-4 w-4 text-muted-foreground"/>Client Details</h4>
+              <p>Name: {order.clientName} ({order.clientId})</p>
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-semibold text-foreground flex items-center"><CalendarDays className="mr-2 h-4 w-4 text-muted-foreground"/>Key Dates</h4>
+              <p>Ordered: {format(order.orderDate, 'PPp')}</p>
+              {order.dueDate && 
+                <div>
+                  <p>Due: {format(order.dueDate, 'PPp')}</p>
+                  {order.status !== 'Completed' && order.status !== 'Cancelled' && (
+                     <p className={`text-xs font-medium mt-0.5 ${isPast(order.dueDate) ? 'text-destructive' : 'text-green-600 dark:text-green-500'}`}>
+                      {isPast(order.dueDate)
+                        ? `Overdue by ${formatDistanceToNow(order.dueDate, { addSuffix: false })}`
+                        : `Due in ${formatDistanceToNow(order.dueDate, { addSuffix: false })}`}
+                    </p>
+                  )}
+                </div>
+              }
+            </div>
+            {order.serviceScope && order.serviceScope.length > 0 && (
+                <div className="md:col-span-2 lg:col-span-1 lg:row-span-2 space-y-1">
+                    <h4 className="font-semibold text-foreground flex items-center"><ListChecks className="mr-2 h-4 w-4 text-muted-foreground"/>Service Scope</h4>
+                    <ul className="list-disc list-inside pl-1 space-y-0.5 text-muted-foreground">
+                        {order.serviceScope.map((item, idx) => <li key={idx}>{item}</li>)}
+                    </ul>
+                </div>
+            )}
+          </div>
+          
+          {order.clientBrief && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <h4 className="font-semibold text-foreground flex items-center"><ClipboardList className="mr-2 h-4 w-4 text-muted-foreground"/>Client Brief</h4>
+                <p className="whitespace-pre-line bg-muted p-4 rounded-md text-muted-foreground">{order.clientBrief}</p>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Submit Deliverables Section */}
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="font-headline text-xl flex items-center"><Upload className="mr-2 h-5 w-5 text-primary"/>Submit/Manage Deliverables</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="deliverableFile">Upload File</Label>
+                    <Input id="deliverableFile" type="file" onChange={handleFileChange} disabled={isSubmittingDeliverable}/>
+                    {fileToUpload && <p className="text-xs text-muted-foreground">Selected: {fileToUpload.name}</p>}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="deliverableDescription">Description/Notes for Client</Label>
+                    <Textarea 
+                        id="deliverableDescription" 
+                        value={deliverableDescription}
+                        onChange={(e) => setDeliverableDescription(e.target.value)}
+                        placeholder="e.g., First draft of logo concepts, Version 2 with color variations..."
+                        rows={3}
+                        disabled={isSubmittingDeliverable}
+                    />
+                </div>
+                <Button 
+                    onClick={handleSubmitDeliverable} 
+                    disabled={isSubmittingDeliverable || !fileToUpload || !deliverableDescription.trim()}
+                    className="w-full"
+                >
+                    {isSubmittingDeliverable ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Paperclip className="mr-2 h-4 w-4" />}
+                    {isSubmittingDeliverable ? 'Submitting...' : 'Submit Deliverable to Client'}
+                </Button>
+
+                {order.deliverables && order.deliverables.length > 0 && (
+                    <>
+                        <Separator className="my-4" />
+                        <h5 className="text-sm font-medium text-muted-foreground">Previously Submitted:</h5>
+                        <ul className="space-y-2 text-xs">
+                            {order.deliverables.map((file, idx) => (
+                            <li key={idx} className="p-2 border rounded-md bg-secondary/50 flex justify-between items-center">
+                                <span>{file.name} ({format(file.submittedAt, 'PPp')})</span>
+                                <Button variant="ghost" size="sm" asChild><Link href={file.url} target="_blank">Download</Link></Button>
+                            </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
+            </CardContent>
+        </Card>
+
+        {/* Communication Section */}
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="font-headline text-xl flex items-center"><MessageSquare className="mr-2 h-5 w-5 text-primary"/>Communication Log</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="newMessage">Send a Message to Client</Label>
+                    <Textarea 
+                        id="newMessage" 
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type your message here..."
+                        rows={3}
+                        disabled={isSendingMessage}
+                    />
+                </div>
+                <Button onClick={handleSendMessage} disabled={isSendingMessage || !newMessage.trim()} className="w-full">
+                    {isSendingMessage ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                    {isSendingMessage ? 'Sending...' : 'Send Message'}
+                </Button>
+                
+                <Separator className="my-4" />
+                <h5 className="text-sm font-medium text-muted-foreground">Message History:</h5>
+                <div className="max-h-60 overflow-y-auto space-y-3 pr-2">
+                    {order.orderEvents.length > 0 ? (
+                        order.orderEvents.map((event, index) => (
+                        <div key={index} className={cn(
+                            "p-2.5 rounded-lg text-xs",
+                            event.actor === (order.designerName || 'Designer') ? "bg-primary/10 text-primary-foreground ml-auto max-w-[85%]" : "bg-muted text-muted-foreground mr-auto max-w-[85%]",
+                             (event.actor === (order.designerName || 'Designer') ? "self-end text-right" : "self-start text-left")
+                        )}>
+                            <p className="font-medium">
+                                {event.event}
+                            </p>
+                            <p className="text-xs opacity-80 mt-0.5">
+                            {event.actor || 'System'} - {format(event.timestamp, 'MMM d, HH:mm')} ({formatDistanceToNow(event.timestamp, { addSuffix: true })})
+                            </p>
+                        </div>
+                        ))
+                    ) : (
+                        <p className="text-xs text-muted-foreground italic">No messages or updates yet.</p>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+export default function DesignerOrderDetailWrapper(): ReactElement {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2 text-muted-foreground">Loading order...</p></div>}>
+            <DesignerOrderDetailPageContent />
+        </Suspense>
+    )
+}
