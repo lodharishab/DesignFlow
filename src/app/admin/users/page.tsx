@@ -22,7 +22,7 @@ import {
   CheckCircle2,
   XCircle as XCircleIcon,
   ChevronDown,
-  ChevronUp, // Added ChevronUp
+  ChevronUp,
   ArrowUpDown,
   Search
 } from 'lucide-react';
@@ -38,6 +38,14 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
