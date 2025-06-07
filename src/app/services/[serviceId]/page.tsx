@@ -29,6 +29,16 @@ interface ServiceTierDetail {
   icon: LucideIcon; 
 }
 
+interface ApprovedDesigner {
+  id: string; // Matches DesignerProfile id
+  slug: string; // For linking to /designers/[slug]
+  name: string;
+  avatarUrl: string;
+  rating: number;
+  projectsCompleted: number;
+  imageHint: string;
+}
+
 interface ServiceDetail {
   id: string;
   name: string;
@@ -39,14 +49,7 @@ interface ServiceDetail {
   imageUrl: string;
   imageHint: string;
   tiers: ServiceTierDetail[];
-  approvedDesigners: Array<{
-    id: string;
-    name: string;
-    avatarUrl: string;
-    rating: number;
-    projectsCompleted: number;
-    imageHint: string;
-  }>;
+  approvedDesigners: ApprovedDesigner[];
 }
 
 const serviceDetailsData: { [key: string]: ServiceDetail } = {
@@ -80,8 +83,8 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
       },
     ],
     approvedDesigners: [
-      { id: 'd1', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', rating: 4.9, projectsCompleted: 120, imageHint: 'designer portrait' },
-      { id: 'd2', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', rating: 4.8, projectsCompleted: 95, imageHint: 'designer portrait' },
+      { id: 'des001', slug: 'alice-wonderland', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', rating: 4.9, projectsCompleted: 120, imageHint: 'designer portrait' },
+      { id: 'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', rating: 4.8, projectsCompleted: 95, imageHint: 'designer portrait' },
     ],
   },
   '2': {
@@ -108,7 +111,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
       },
     ],
     approvedDesigners: [
-       { id: 'd3', name: 'Carol Danvers', avatarUrl: 'https://placehold.co/40x40.png', rating: 5.0, projectsCompleted: 200, imageHint: 'designer portrait' },
+       { id: 'des003', slug: 'carol-danvers', name: 'Carol Danvers', avatarUrl: 'https://placehold.co/40x40.png', rating: 5.0, projectsCompleted: 200, imageHint: 'designer portrait' },
     ],
   },
    '3': {
@@ -160,7 +163,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
         },
     ],
     approvedDesigners: [
-      { id: 'd1', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', rating: 4.9, projectsCompleted: 120, imageHint: 'designer portrait' },
+      { id: 'des001', slug: 'alice-wonderland', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', rating: 4.9, projectsCompleted: 120, imageHint: 'designer portrait' },
     ],
   },
   '5': {
@@ -218,7 +221,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
         },
     ],
     approvedDesigners: [
-      { id: 'd2', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', rating: 4.8, projectsCompleted: 95, imageHint: 'designer portrait' },
+      { id: 'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', rating: 4.8, projectsCompleted: 95, imageHint: 'designer portrait' },
     ],
   },
    '7': {
@@ -290,7 +293,6 @@ export default function ServiceDetailPage() {
 
   const handleOrderTier = (tier: ServiceTierDetail) => {
     if (!service) return;
-    // Here you would typically add to cart logic
     console.log("Ordering tier:", tier.name, "for service:", service.name);
     toast({
       title: "Added to Cart (Simulated)",
@@ -343,7 +345,6 @@ export default function ServiceDetailPage() {
       <CategoriesNavbar />
       <main className="flex-grow container mx-auto py-12 px-5">
         <div className="grid lg:grid-cols-3 gap-8 md:gap-12">
-          {/* Main Content Column */}
           <div className="lg:col-span-2 space-y-8">
             <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-lg">
               <Image
@@ -465,7 +466,9 @@ export default function ServiceDetailPage() {
                             <AvatarFallback>{designer.name.substring(0, 1)}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-semibold text-lg">{designer.name}</p>
+                            <Link href={`/designers/${designer.slug}`} className="text-lg font-semibold hover:text-primary hover:underline">
+                                {designer.name}
+                            </Link>
                             <div className="flex items-center text-sm text-muted-foreground">
                               <Star className="h-4 w-4 mr-1 text-yellow-400 fill-current" /> {designer.rating} ({designer.projectsCompleted} projects)
                             </div>
@@ -482,7 +485,6 @@ export default function ServiceDetailPage() {
             )}
           </div>
 
-          {/* Right Sidebar Column */}
           <div className="lg:col-span-1 space-y-6">
             <div className="sticky top-24 space-y-6">
               {selectedTierDetails && (

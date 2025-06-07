@@ -8,14 +8,14 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { PortfolioItemCard, type PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { useSearchParams } from 'next/navigation';
-import { PackageSearch, ListFilter, X, Tag, UserCircle, Palette, Users } from 'lucide-react';
+import { PackageSearch, ListFilter, X, Tag, Users, Palette } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 
-// Enhanced Portfolio Data Structure
-const portfolioItemsData: PortfolioItem[] = [
+// Enhanced Portfolio Data Structure - IMPORTANT: Keep this in sync with other uses
+export const allPortfolioItemsData: PortfolioItem[] = [
   {
     id: 'ecomm-reimagined-platform', 
     title: 'E-commerce Reimagined Platform',
@@ -32,7 +32,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'mobile app checkout', caption: 'Mobile Checkout Flow' },
     ],
     tags: ['e-commerce', 'ux design', 'ui design', 'web application', 'figma', 'responsive'],
-    designer: { name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar', profileUrl: '/designers/alice-wonderland' },
+    designer: { id: 'des001', slug: 'alice-wonderland', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
   },
   {
     id: 'fintech-mobile-banking-app',
@@ -49,7 +49,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'app transaction history', caption: 'Transaction Details' },
     ],
     tags: ['mobile app', 'fintech', 'ios', 'android', 'ui/ux', 'security'],
-    designer: { name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar', profileUrl: '/designers/bob-the-builder' },
+    designer: { id: 'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
   },
   {
     id: 'eco-startup-brand-identity',
@@ -66,7 +66,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'brand style guide page', caption: 'Brand Guidelines Snippet' },
     ],
     tags: ['branding', 'logo design', 'sustainability', 'identity system', 'startup'],
-    designer: { name: 'Carol Danvers', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar', profileUrl: '/designers/carol-danvers' },
+    designer: { id: 'des003', slug: 'carol-danvers', name: 'Carol Danvers', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
   },
   {
     id: 'artisanal-cafe-print-suite',
@@ -82,7 +82,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'loyalty card design', caption: 'Loyalty Card' },
     ],
     tags: ['print design', 'menu design', 'cafe branding', 'local business', 'rustic'],
-    designer: { name: 'David Copperfield', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar', profileUrl: '/designers/david-copperfield' },
+    designer: { id: 'des004', slug: 'david-copperfield', name: 'David Copperfield', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
   },
   {
     id: 'whimsical-childrens-book-illustrations',
@@ -99,7 +99,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'character sketches book', caption: 'Character Development' },
     ],
     tags: ['illustration', 'childrens book', 'character design', 'digital art', 'vibrant'],
-    designer: { name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar', profileUrl: '/designers/alice-wonderland' },
+    designer: { id: 'des001', slug: 'alice-wonderland', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
   },
   {
     id: 'sustainable-cosmetics-packaging',
@@ -115,7 +115,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'product label detail', caption: 'Label Close-up' },
     ],
     tags: ['packaging design', 'cosmetics', 'sustainability', 'brand identity', 'minimalist'],
-    designer: { name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar', profileUrl: '/designers/bob-the-builder' },
+    designer: { id: 'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
   },
   {
     id: 'tech-conference-motion-graphics',
@@ -131,7 +131,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'conference title screen', caption: 'Main Title Card' },
     ],
     tags: ['motion graphics', 'animation', 'event branding', 'after effects', 'futuristic'],
-    designer: { name: 'Carol Danvers', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar', profileUrl: '/designers/carol-danvers' },
+    designer: { id: 'des003', slug: 'carol-danvers', name: 'Carol Danvers', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
   },
    {
     id: 'corporate-pitch-deck-redesign',
@@ -148,7 +148,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/1200x800.png', hint: 'team slide design', caption: 'Team Introduction Slide' },
     ],
     tags: ['presentation design', 'pitch deck', 'powerpoint', 'keynote', 'corporate', 'data visualization'],
-    designer: { name: 'David Copperfield', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar', profileUrl: '/designers/david-copperfield' },
+    designer: { id: 'des004', slug: 'david-copperfield', name: 'David Copperfield', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
   }
 ];
 
@@ -167,7 +167,7 @@ const PortfolioPageContent = () => {
 
   const uniqueCategories = useMemo(() => {
     const categoriesMap = new Map<string, { name: string, slug: string }>();
-    portfolioItemsData.forEach(item => {
+    allPortfolioItemsData.forEach(item => {
       if (!categoriesMap.has(item.categorySlug)) {
         categoriesMap.set(item.categorySlug, { name: item.category, slug: item.categorySlug });
       }
@@ -177,20 +177,20 @@ const PortfolioPageContent = () => {
 
   const uniqueTags = useMemo(() => {
     const tagsSet = new Set<string>();
-    portfolioItemsData.forEach(item => {
+    allPortfolioItemsData.forEach(item => {
       item.tags?.forEach(tag => tagsSet.add(tag.toLowerCase()));
     });
     return Array.from(tagsSet).sort();
   }, []);
 
   const uniqueDesigners = useMemo(() => {
-    const designersSet = new Set<string>();
-    portfolioItemsData.forEach(item => {
-      if (item.designer?.name) {
-        designersSet.add(item.designer.name);
+    const designersMap = new Map<string, { id: string, name: string, slug: string }>();
+    allPortfolioItemsData.forEach(item => {
+      if (item.designer && !designersMap.has(item.designer.id)) {
+        designersMap.set(item.designer.id, { id: item.designer.id, name: item.designer.name, slug: item.designer.slug });
       }
     });
-    return Array.from(designersSet).sort();
+    return Array.from(designersMap.values()).sort((a,b) => a.name.localeCompare(b.name));
   }, []);
 
   const handleCategoryClick = useCallback((slug: string | null) => {
@@ -200,11 +200,8 @@ const PortfolioPageContent = () => {
   const handleTagChange = useCallback((tag: string, checked: boolean) => {
     setSelectedTags(prev => {
       const newSet = new Set(prev);
-      if (checked) {
-        newSet.add(tag);
-      } else {
-        newSet.delete(tag);
-      }
+      if (checked) newSet.add(tag);
+      else newSet.delete(tag);
       return newSet;
     });
   }, []);
@@ -212,11 +209,8 @@ const PortfolioPageContent = () => {
   const handleDesignerChange = useCallback((designerName: string, checked: boolean) => {
     setSelectedDesigners(prev => {
       const newSet = new Set(prev);
-      if (checked) {
-        newSet.add(designerName);
-      } else {
-        newSet.delete(designerName);
-      }
+      if (checked) newSet.add(designerName);
+      else newSet.delete(designerName);
       return newSet;
     });
   }, []);
@@ -228,7 +222,7 @@ const PortfolioPageContent = () => {
   }, []);
 
   const filteredPortfolioItems = useMemo(() => {
-    return portfolioItemsData.filter(item => {
+    return allPortfolioItemsData.filter(item => {
       const categoryMatch = !activeCategorySlug || item.categorySlug === activeCategorySlug;
       const tagsMatch = selectedTags.size === 0 || item.tags?.some(tag => selectedTags.has(tag.toLowerCase()));
       const designerMatch = selectedDesigners.size === 0 || (item.designer?.name && selectedDesigners.has(item.designer.name));
@@ -254,9 +248,11 @@ const PortfolioPageContent = () => {
             <Card className="shadow-md">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
                 <CardTitle className="text-lg font-headline flex items-center"><ListFilter className="mr-2 h-5 w-5 text-primary" /> Filters</CardTitle>
-                <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-xs">
-                  <X className="mr-1 h-3 w-3" /> Clear All
-                </Button>
+                {(activeCategorySlug || selectedTags.size > 0 || selectedDesigners.size > 0) && (
+                  <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-xs">
+                    <X className="mr-1 h-3 w-3" /> Clear All
+                  </Button>
+                )}
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Categories Filter */}
@@ -266,7 +262,7 @@ const PortfolioPageContent = () => {
                     <li>
                       <Button
                         variant={!activeCategorySlug ? 'secondary' : 'ghost'}
-                        className="w-full justify-start text-sm"
+                        className="w-full justify-start text-sm h-8 px-2"
                         onClick={() => handleCategoryClick(null)}
                       >
                         All Projects
@@ -276,7 +272,7 @@ const PortfolioPageContent = () => {
                       <li key={category.slug}>
                         <Button
                           variant={activeCategorySlug === category.slug ? 'secondary' : 'ghost'}
-                          className="w-full justify-start text-sm"
+                          className="w-full justify-start text-sm h-8 px-2"
                           onClick={() => handleCategoryClick(category.slug)}
                         >
                           {category.name}
@@ -290,15 +286,15 @@ const PortfolioPageContent = () => {
                 {uniqueTags.length > 0 && (
                   <section>
                     <h3 className="text-md font-semibold mb-3 flex items-center"><Tag className="mr-2 h-4 w-4 text-muted-foreground" />Tags</h3>
-                    <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                       {uniqueTags.map(tag => (
                         <div key={tag} className="flex items-center space-x-2">
                           <Checkbox
-                            id={`tag-${tag}`}
+                            id={`tag-${tag.replace(/\s+/g, '-')}`}
                             checked={selectedTags.has(tag)}
                             onCheckedChange={(checked) => handleTagChange(tag, !!checked)}
                           />
-                          <Label htmlFor={`tag-${tag}`} className="text-sm font-normal capitalize cursor-pointer">
+                          <Label htmlFor={`tag-${tag.replace(/\s+/g, '-')}`} className="text-sm font-normal capitalize cursor-pointer">
                             {tag}
                           </Label>
                         </div>
@@ -311,16 +307,16 @@ const PortfolioPageContent = () => {
                 {uniqueDesigners.length > 0 && (
                   <section>
                     <h3 className="text-md font-semibold mb-3 flex items-center"><Users className="mr-2 h-4 w-4 text-muted-foreground" />Designers</h3>
-                     <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                      {uniqueDesigners.map(designerName => (
-                        <div key={designerName} className="flex items-center space-x-2">
+                     <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                      {uniqueDesigners.map(designer => (
+                        <div key={designer.id} className="flex items-center space-x-2">
                           <Checkbox
-                            id={`designer-${designerName.replace(/\s+/g, '-')}`}
-                            checked={selectedDesigners.has(designerName)}
-                            onCheckedChange={(checked) => handleDesignerChange(designerName, !!checked)}
+                            id={`designer-${designer.id}`}
+                            checked={selectedDesigners.has(designer.name)}
+                            onCheckedChange={(checked) => handleDesignerChange(designer.name, !!checked)}
                           />
-                          <Label htmlFor={`designer-${designerName.replace(/\s+/g, '-')}`} className="text-sm font-normal cursor-pointer">
-                            {designerName}
+                          <Label htmlFor={`designer-${designer.id}`} className="text-sm font-normal cursor-pointer">
+                            {designer.name}
                           </Label>
                         </div>
                       ))}
@@ -332,15 +328,15 @@ const PortfolioPageContent = () => {
           </aside>
 
           {/* Portfolio Grid */}
-          <div className="min-w-0"> {/* Prevents grid blowout */}
+          <div className="min-w-0"> 
             {filteredPortfolioItems.length > 0 ? (
-              <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
                 {filteredPortfolioItems.map(item => (
                   <PortfolioItemCard key={item.id} item={item} />
                 ))}
               </div>
             ) : (
-              <div className="text-center py-16 col-span-full">
+              <div className="text-center py-16 col-span-full flex flex-col items-center justify-center h-full">
                 <PackageSearch className="mx-auto h-24 w-24 text-muted-foreground opacity-50" />
                 <h2 className="mt-6 text-2xl font-semibold">No Projects Found</h2>
                 <p className="mt-2 text-muted-foreground">
@@ -366,4 +362,3 @@ export default function PortfolioPage() {
     </Suspense>
   );
 }
-

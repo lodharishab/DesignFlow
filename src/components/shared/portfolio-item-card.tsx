@@ -3,9 +3,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Eye, UserCircle } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { UserCircle } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -21,7 +20,13 @@ export interface PortfolioItem {
   projectDescription: string;
   galleryImages: Array<{ url: string; hint: string; caption?: string }>;
   tags?: string[];
-  designer?: { name: string; avatarUrl?: string; profileUrl?: string; imageHint?: string };
+  designer?: { 
+    id: string; // Link to DesignerProfile
+    slug: string; // For URL
+    name: string; 
+    avatarUrl?: string; 
+    imageHint?: string;
+  };
 }
 
 interface PortfolioItemCardProps {
@@ -58,7 +63,7 @@ export function PortfolioItemCard({ item, className }: PortfolioItemCardProps) {
                 </a>
             </Link>
           {item.designer && (
-            <Link href={item.designer.profileUrl || '#'} passHref legacyBehavior>
+            <Link href={`/designers/${item.designer.slug}`} passHref legacyBehavior>
               <a className="flex items-center space-x-1.5 text-xs text-muted-foreground hover:text-primary group/designer">
                 {item.designer.avatarUrl ? (
                   <Image src={item.designer.avatarUrl} alt={item.designer.name} width={20} height={20} className="rounded-full group-hover/designer:ring-2 group-hover/designer:ring-primary transition-all" data-ai-hint={item.designer.imageHint || 'designer avatar'} />
@@ -71,7 +76,6 @@ export function PortfolioItemCard({ item, className }: PortfolioItemCardProps) {
           )}
         </div>
       </CardContent>
-      {/* Optional: Could add a small footer with a "View Project" button if needed, but Behance style is often minimal here */}
     </Card>
   );
 }

@@ -11,7 +11,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react'; 
-import type { PortfolioItem } from '@/components/shared/portfolio-item-card'; // Import the rich PortfolioItem type
+import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { cn } from '@/lib/utils';
 
 const featuredServices = [
@@ -30,7 +30,6 @@ const clientBenefits = [
   { icon: ShieldCheck, title: 'Quality Guaranteed', description: 'Your satisfaction is our success. We stand behind the quality of our designers\' work, offering revisions and support to ensure exceptional results.' },
 ];
 
-// Updated portfolioItemsData with richer structure for homepage showcase
 const portfolioItemsData: PortfolioItem[] = [
   {
     id: 'ecomm-reimagined-platform',
@@ -45,7 +44,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/600x450.png', hint: 'dashboard analytics view' },
       { url: 'https://placehold.co/600x450.png', hint: 'mobile app checkout' },
     ],
-    designer: { name: 'Alice W.' },
+    designer: { id:'des001', slug: 'alice-wonderland', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
   },
   {
     id: 'fintech-mobile-banking-app',
@@ -59,7 +58,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/600x450.png', hint: 'finance app screen' },
       { url: 'https://placehold.co/600x450.png', hint: 'app transaction history' },
     ],
-     designer: { name: 'Bob B.' },
+     designer: { id:'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
   },
   {
     id: 'eco-startup-brand-identity',
@@ -73,7 +72,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/600x450.png', hint: 'nature logo design' },
       { url: 'https://placehold.co/600x450.png', hint: 'brand stationery mockup' },
     ],
-    designer: { name: 'Carol D.' },
+    designer: { id:'des003', slug: 'carol-danvers', name: 'Carol Danvers', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
   },
   {
     id: 'artisanal-cafe-print-suite',
@@ -87,7 +86,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/600x450.png', hint: 'coffee shop menu' },
       { url: 'https://placehold.co/600x450.png', hint: 'loyalty card design' },
     ],
-    designer: { name: 'David C.' },
+    designer: { id:'des004', slug: 'david-copperfield', name: 'David Copperfield', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
   },
   {
     id: 'whimsical-childrens-book-illustrations',
@@ -101,7 +100,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/600x450.png', hint: 'storybook character art' },
       { url: 'https://placehold.co/600x450.png', hint: 'book spread illustration' },
     ],
-    designer: { name: 'Eve P.' },
+    designer: { id:'des001', slug: 'alice-wonderland', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
   },
   {
     id: 'sustainable-cosmetics-packaging',
@@ -115,7 +114,7 @@ const portfolioItemsData: PortfolioItem[] = [
       { url: 'https://placehold.co/600x450.png', hint: 'cosmetic product packaging' },
       { url: 'https://placehold.co/600x450.png', hint: 'product label detail' },
     ],
-    designer: { name: 'Frank G.' },
+    designer: { id:'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
   },
 ];
 
@@ -135,7 +134,7 @@ const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ item }) =
     }, 3500); 
 
     return () => clearInterval(timer);
-  }, [imagesToShow.length]);
+  }, [imagesToShow, imagesToShow.length]);
 
   if (imagesToShow.length === 0) {
     return (
@@ -184,7 +183,9 @@ const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ item }) =
              </a>
         </Link>
         {item.designer && (
-             <p className="text-xs text-muted-foreground mt-1">By {item.designer.name}</p>
+            <Link href={`/designers/${item.designer.slug}`} className="text-xs text-muted-foreground mt-1 hover:text-primary hover:underline">
+                By {item.designer.name}
+            </Link>
         )}
       </CardContent>
     </Card>
