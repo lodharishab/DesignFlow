@@ -28,10 +28,10 @@ const portfolioItems = [
 ];
 
 const clientBenefits = [
-  { icon: Award, title: 'Expert Designers', description: 'Connect with vetted, top-tier designers. Our curated network ensures your project is handled by skilled professionals.' },
-  { icon: Tag, title: 'Transparent Pricing', description: 'Say goodbye to budget overruns. Our fixed-price service packages mean you know the cost upfront, every time.' },
-  { icon: Zap, title: 'Streamlined Process', description: 'From clear briefs to efficient delivery, our platform simplifies every step. Get your designs faster, with less hassle.' },
-  { icon: ShieldCheck, title: 'Quality Guaranteed', description: 'Your satisfaction is our priority. We stand behind the quality of our designers\' work to ensure exceptional results.' },
+  { icon: Award, title: 'Expert Designers', description: 'Connect with vetted, top-tier designers. Our curated network ensures your project is handled by skilled professionals who deliver excellence.' },
+  { icon: Tag, title: 'Transparent Pricing', description: 'Say goodbye to budget surprises. Our fixed-price service packages mean you know the cost upfront, ensuring clarity and control over your expenses.' },
+  { icon: Zap, title: 'Streamlined Process', description: 'From intuitive briefs to efficient delivery, our platform simplifies every step. Get your designs faster, with less hassle and more collaboration.' },
+  { icon: ShieldCheck, title: 'Quality Guaranteed', description: 'Your satisfaction is our success. We stand behind the quality of our designers\' work, offering revisions and support to ensure exceptional results.' },
 ];
 
 export default function HomePage() {
@@ -47,7 +47,7 @@ export default function HomePage() {
               Transform Your Ideas into <span className="text-primary">Stunning Designs</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-              DesignFlow connects you with expert designers for fixed-price services. Get high-quality creative work, hassle-free, and know the cost upfront.
+              DesignFlow is your ultimate marketplace for expert design services at fixed prices. Experience high-quality creative work, a hassle-free process, and upfront cost clarity.
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Button size="lg" asChild className="w-full sm:w-auto">
@@ -63,8 +63,32 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        
+        {/* How It Works (Client Perspective) Section */}
+        <section className="py-16 md:py-24 bg-secondary">
+          <div className="container mx-auto px-5">
+            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">Getting Your Design is Easy</h2>
+            <div className="grid md:grid-cols-3 gap-10">
+              <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card shadow-md">
+                <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">1</div>
+                <h3 className="font-headline text-xl font-semibold mb-2">Browse & Select</h3>
+                <p className="text-muted-foreground text-sm">Explore our wide array of fixed-scope design services. Find the perfect package with clearly defined deliverables and transparent, upfront pricing. No hidden fees, just straightforward value.</p>
+              </div>
+              <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card shadow-md">
+                <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">2</div>
+                <h3 className="font-headline text-xl font-semibold mb-2">Submit Your Brief</h3>
+                <p className="text-muted-foreground text-sm">Clearly articulate your vision using our intuitive brief submission process. We guide you to provide all necessary details, ensuring designers understand your needs for a successful project launch.</p>
+              </div>
+              <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card shadow-md">
+                <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">3</div>
+                <h3 className="font-headline text-xl font-semibold mb-2">Collaborate & Approve</h3>
+                <p className="text-muted-foreground text-sm">Engage directly with your chosen expert designer through our platform. Provide feedback, track progress, and approve your final design with confidence and ease. We ensure a smooth collaboration.</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-        {/* Why DesignFlow for Clients Section */}
+        {/* The DesignFlow Advantage Section (Moved Here) */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-5">
             <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-16">The DesignFlow Advantage: Simple, Reliable, Quality.</h2>
@@ -82,30 +106,6 @@ export default function HomePage() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
-          </div>
-        </section>
-        
-        {/* How It Works (Client Perspective) Section */}
-        <section className="py-16 md:py-24 bg-secondary">
-          <div className="container mx-auto px-5">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">Getting Your Design is Easy</h2>
-            <div className="grid md:grid-cols-3 gap-10">
-              <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card shadow-md">
-                <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">1</div>
-                <h3 className="text-xl font-semibold font-headline mb-2">Browse & Select</h3>
-                <p className="text-muted-foreground text-sm">Explore diverse, fixed-scope design services. Find the perfect package with clearly defined deliverables and upfront pricing. No surprises.</p>
-              </div>
-              <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card shadow-md">
-                <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">2</div>
-                <h3 className="text-xl font-semibold font-headline mb-2">Submit Your Brief</h3>
-                <p className="text-muted-foreground text-sm">Detail your vision with our intuitive brief submission. We guide you to provide all necessary info for a successful project start.</p>
-              </div>
-              <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card shadow-md">
-                <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">3</div>
-                <h3 className="text-xl font-semibold font-headline mb-2">Collaborate & Approve</h3>
-                <p className="text-muted-foreground text-sm">Engage directly with your chosen expert designer. Provide feedback, track progress seamlessly, and approve your final design with confidence.</p>
-              </div>
             </div>
           </div>
         </section>
@@ -147,7 +147,7 @@ export default function HomePage() {
                     />
                   </div>
                   <CardContent className="p-4 bg-card">
-                    <h3 className="font-semibold font-headline text-lg">{item.title}</h3>
+                    <h3 className="font-headline text-lg font-semibold">{item.title}</h3>
                     <p className="text-sm text-muted-foreground">{item.category}</p>
                   </CardContent>
                 </Card>
