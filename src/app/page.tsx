@@ -43,9 +43,9 @@ const portfolioItemsData: PortfolioItem[] = [
     title: 'E-commerce Reimagined',
     category: 'Web UI/UX',
     imageUrls: [
-      'https://placehold.co/600x400.png?text=Ecom+View+Alpha',
-      'https://placehold.co/600x400.png?text=Ecom+View+Bravo',
-      'https://placehold.co/600x400.png?text=Ecom+View+Charlie',
+      'https://placehold.co/600x400.png',
+      'https://placehold.co/600x400.png',
+      'https://placehold.co/600x400.png',
     ],
     imageHints: ['website interface', 'product detail', 'checkout flow'],
   },
@@ -54,9 +54,9 @@ const portfolioItemsData: PortfolioItem[] = [
     title: 'Fintech Mobile Suite',
     category: 'App Design',
     imageUrls: [
-      'https://placehold.co/600x400.png?text=Fintech+App+1',
-      'https://placehold.co/600x400.png?text=Fintech+App+2',
-      'https://placehold.co/600x400.png?text=Fintech+App+3',
+      'https://placehold.co/600x400.png',
+      'https://placehold.co/600x400.png',
+      'https://placehold.co/600x400.png',
     ],
     imageHints: ['mobile finance app', 'app dashboard', 'transaction screen'],
   },
@@ -65,9 +65,9 @@ const portfolioItemsData: PortfolioItem[] = [
     title: 'Startup Brand Identity',
     category: 'Logo & Branding',
     imageUrls: [
-      'https://placehold.co/600x400.png?text=New+Startup+Logo',
-      'https://placehold.co/600x400.png?text=Brand+Guidelines',
-      'https://placehold.co/600x400.png?text=Social+Media+Kit',
+      'https://placehold.co/600x400.png',
+      'https://placehold.co/600x400.png',
+      'https://placehold.co/600x400.png',
     ],
     imageHints: ['modern tech logo', 'brand styleguide', 'social branding'],
   },
@@ -76,8 +76,8 @@ const portfolioItemsData: PortfolioItem[] = [
     title: 'Gourmet Restaurant Menus',
     category: 'Print Design',
     imageUrls: [
-      'https://placehold.co/600x400.png?text=Menu+Design+Cover',
-      'https://placehold.co/600x400.png?text=Menu+Interior+Spread',
+      'https://placehold.co/600x400.png',
+      'https://placehold.co/600x400.png',
     ],
     imageHints: ['elegant menu', 'restaurant branding'],
   },
@@ -86,9 +86,9 @@ const portfolioItemsData: PortfolioItem[] = [
     title: 'Fantasy Game Assets',
     category: 'Illustration & Icons',
     imageUrls: [
-      'https://placehold.co/600x400.png?text=Game+Character+Art',
-      'https://placehold.co/600x400.png?text=Game+Environment',
-      'https://placehold.co/600x400.png?text=Prop+Icons',
+      'https://placehold.co/600x400.png',
+      'https://placehold.co/600x400.png',
+      'https://placehold.co/600x400.png',
     ],
     imageHints: ['digital painting game', 'icon design game', 'concept art creature'],
   },
@@ -97,8 +97,8 @@ const portfolioItemsData: PortfolioItem[] = [
     title: 'Corporate Explainer Stills',
     category: 'Animation & Motion',
     imageUrls: [
-      'https://placehold.co/600x400.png?text=Explainer+Scene+A',
-      'https://placehold.co/600x400.png?text=Explainer+Scene+B',
+      'https://placehold.co/600x400.png',
+      'https://placehold.co/600x400.png',
     ],
     imageHints: ['motion design still', 'animated characters'],
   },
@@ -124,8 +124,8 @@ const PortfolioShowcaseCard: React.FC<PortfolioItem> = ({ id, title, category, i
            <PackageSearch className="w-16 h-16 text-muted-foreground opacity-50" />
         </div>
         <CardContent className="p-4 bg-card flex-grow">
-          <h3 className="font-headline text-lg font-semibold group-hover:text-primary transition-colors">{title}</h3>
-          <p className="text-sm text-muted-foreground">{category}</p>
+          <h3 className="font-headline text-lg font-semibold group-hover:text-primary transition-colors">{category}</h3>
+          <p className="text-sm text-muted-foreground mt-1">{title}</p>
            <p className="text-xs text-destructive mt-1">Image(s) missing</p>
         </CardContent>
       </Card>
@@ -152,10 +152,10 @@ const PortfolioShowcaseCard: React.FC<PortfolioItem> = ({ id, title, category, i
       <CardContent className="p-4 bg-card flex-grow">
         <Link href={`/portfolio/${id}`} passHref legacyBehavior>
           <a className="block">
-            <h3 className="font-headline text-lg font-semibold group-hover:text-primary transition-colors">{title}</h3>
+            <h3 className="font-headline text-lg font-semibold group-hover:text-primary transition-colors">{category}</h3>
           </a>
         </Link>
-        <p className="text-sm text-muted-foreground">{category}</p>
+        <p className="text-sm text-muted-foreground mt-1">{title}</p>
       </CardContent>
     </Card>
   );
