@@ -38,7 +38,7 @@ interface PortfolioShowcaseCardProps {
   item: PortfolioItem;
 }
 
-const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ item }) => {
+export const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ item }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const imagesToShow = item.galleryImages && item.galleryImages.length > 0 ? item.galleryImages : [{ url: item.coverImageUrl, hint: item.coverImageHint || item.title, caption: item.title }];
 
