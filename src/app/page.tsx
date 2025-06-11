@@ -6,22 +6,22 @@ import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { ServiceCard } from '@/components/shared/service-card';
-import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, Lightbulb, PackageSearch, MessageSquare, ExternalLink } from 'lucide-react';
+import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, Lightbulb, PackageSearch, MessageSquare, ExternalLink, Camera, Film, Presentation } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react'; 
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card'; 
 import { cn } from '@/lib/utils';
-import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page'; // Import the Indianized data
+import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page'; 
 
 const featuredServices = [
-  { id: '1', name: 'Modern Logo Design', description: 'Unique logos for Indian brands and startups.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian startup logo' },
-  { id: '2', name: 'Social Media Pack (India)', description: 'Engaging posts for Indian festivals and social media.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'diwali social media' },
-  { id: '3', name: 'Brochure Design (India)', description: 'Professional brochures for Indian businesses.', tiers: [{name: 'Standard', price: 7999}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian business brochure' },
-  { id: '4', name: 'UI/UX Web Design (India)', description: 'User-friendly web mockups for the Indian market.', tiers: [{name: 'Standard', price: 15999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design india' },
-  { id: '5', name: 'Custom Illustration (Indian Art)', description: 'Illustrations with traditional or modern Indian styles.', tiers: [{name: 'Standard', price: 7999}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian folk art' },
-  { id: '6', name: 'Packaging Design (India)', description: 'Creative packaging for Indian products.', tiers: [{name: 'Standard', price: 12999}], category: 'Packaging Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian sweet box' },
+  { id: '1', name: 'Modern Logo Design', description: 'Unique logos for Indian brands and startups, capturing your brand essence.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian startup logo' },
+  { id: '2', name: 'Social Media Pack', description: 'Engaging posts for Indian festivals and social media campaigns. Boost your online presence.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'diwali social media' },
+  { id: '3', name: 'Professional Brochure Design', description: 'Professional brochures for Indian businesses, perfect for marketing and events.', tiers: [{name: 'Standard', price: 7999}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian business brochure' },
+  { id: '4', name: 'UI/UX Web Design Mockup', description: 'User-friendly web mockups for the Indian market, focusing on great user experience.', tiers: [{name: 'Standard', price: 15999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design india' },
+  { id: '5', name: 'Custom Illustration', description: 'Illustrations with traditional or modern Indian styles, bringing your ideas to life.', tiers: [{name: 'Standard', price: 7999}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian folk art' },
+  { id: '6', name: 'Packaging Design Concept', description: 'Creative packaging concepts for Indian products, designed to stand out.', tiers: [{name: 'Standard', price: 12999}], category: 'Packaging', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian sweet box' },
 ];
 
 const clientBenefits = [
@@ -31,7 +31,6 @@ const clientBenefits = [
   { icon: ShieldCheck, title: 'Quality Guaranteed', description: 'Your satisfaction is our success. We stand behind the quality of our designers\' work, offering revisions and support to ensure exceptional results that resonate with your audience.' },
 ];
 
-// Select a subset of the now Indianized globalPortfolioItems for the homepage
 const portfolioItemsData: PortfolioItem[] = globalPortfolioItems.slice(0, 6);
 
 
@@ -243,3 +242,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    

@@ -7,7 +7,7 @@ import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock, Package, Tag, Icon as LucideIcon, Tags, IndianRupee } from 'lucide-react'; 
+import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock, Package, Tag, Icon as LucideIcon, Tags, IndianRupee, Camera, Film, Presentation } from 'lucide-react'; 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -27,12 +27,12 @@ interface ServiceTierDetail {
   deliveryTimeUnit: 'days' | 'business_days' | 'weeks';
   scope: string[];
   tierDescription?: string;
-  icon: LucideIcon; 
+  icon: LucideIconType; 
 }
 
 interface ApprovedDesigner {
-  id: string; // Matches DesignerProfile id
-  slug: string; // For linking to /designers/[slug]
+  id: string; 
+  slug: string; 
   name: string;
   avatarUrl: string;
   rating: number;
@@ -60,7 +60,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     generalDescription: 'Get a unique and memorable logo for your brand that resonates with your target audience.',
     longDescription: 'Our process ensures a collaborative experience resulting in a logo you’ll love. We focus on versatility, scalability, and timelessness for Indian and global brands. Each tier offers a different level of complexity and deliverables to match your needs, from essential concepts to comprehensive brand assets. We work closely with you to understand your vision and translate it into a powerful visual identity.',
     category: 'Logo Design',
-    tags: ['branding', 'minimalist', 'vector', 'startup india'],
+    tags: ['branding', 'minimalist', 'vector', 'startup india', 'brand identity'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'modern logo for indian startup',
     tiers: [
@@ -87,11 +87,11 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
   },
   '2': {
     id: '2',
-    name: 'Social Media Post Pack (India Focus)',
-    generalDescription: 'Engaging posts designed for your social media channels, optimized for Indian audiences.',
+    name: 'Social Media Pack',
+    generalDescription: 'Engaging posts designed for your social media channels, optimized for Indian audiences and festive seasons.',
     longDescription: 'Boost your online presence with professionally designed social media posts tailored to your brand and campaign goals in India. We provide source files and high-resolution images ready for publishing across platforms like Instagram, Facebook, and regional social media. Content is optimized for engagement and visual appeal, considering Indian festivals and trends.',
     category: 'Social Media',
-    tags: ['instagram india', 'facebook marketing', 'regional content', 'festival posts'],
+    tags: ['instagram india', 'facebook marketing', 'regional content', 'festival posts', 'social media marketing'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'diwali social media post',
     tiers: [
@@ -112,11 +112,11 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
   },
    '3': {
     id: '3',
-    name: 'Professional Brochure Design (India)',
+    name: 'Professional Brochure Design',
     generalDescription: 'Stunning tri-fold or bi-fold brochures to showcase your business effectively to the Indian market.',
     longDescription: 'Comprehensive brochure design including concept, layout, and print-ready files. We work with you to create a compelling narrative and visual style that captures attention and effectively communicates your message in an Indian context. Ideal for marketing materials, event handouts, and informational packets for businesses in India.',
     category: 'Print Design',
-    tags: ['brochure india', 'marketing collateral', 'print advertising'],
+    tags: ['brochure india', 'marketing collateral', 'print advertising', 'catalogue design'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'indian business brochure',
     tiers: [
@@ -137,11 +137,11 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
   },
    '4': {
     id: '4',
-    name: 'UI/UX Web Design Mockup (India)',
+    name: 'UI/UX Web Design Mockup',
     generalDescription: 'High-fidelity mockup for one key page of your website or app, tailored for Indian users.',
     longDescription: 'Detailed UI/UX design for a single, critical page, including wireframes, mockups, and a style guide for key elements. Ideal for presentations or developer handoff. We focus on user-centric design principles considering the Indian digital landscape to ensure an intuitive and visually appealing experience. Suitable for landing pages, product pages, or core app screens targeting India.',
     category: 'UI/UX Design',
-    tags: ['website india', 'app design india', 'mockup', 'figma', 'vernacular'],
+    tags: ['website india', 'app design india', 'mockup', 'figma', 'vernacular', 'landing page design'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'indian mobile app ui',
     tiers: [
@@ -162,11 +162,11 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
   },
   '5': {
     id: '5',
-    name: 'Custom Illustration (Indian Themes)',
-    generalDescription: 'Unique vector or raster illustration based on your brief, with options for Indian cultural themes.',
+    name: 'Custom Illustration',
+    generalDescription: 'Unique vector or raster illustration based on your brief, with options for Indian cultural themes or modern styles.',
     longDescription: 'From simple icons to complex scenes, get custom illustrations in your desired style. Perfect for websites, marketing materials, or personal projects with an Indian touch. We bring your ideas to life visually, ensuring the illustration aligns with your brand and message. Discuss your style preferences (e.g., Madhubani-inspired, modern flat, detailed Warli) with our designers.',
     category: 'Illustration',
-    tags: ['indian art style', 'digital painting', 'character design india', 'cultural illustration'],
+    tags: ['indian art style', 'digital painting', 'character design india', 'cultural illustration', 'vector illustration'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'indian folk art illustration',
     tiers: [
@@ -193,11 +193,11 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
   },
   '6': {
     id: '6',
-    name: 'Packaging Design Concept (Indian Products)',
+    name: 'Packaging Design Concept',
     generalDescription: 'Creative packaging concept for your product, designed for the Indian retail landscape.',
     longDescription: 'Develop a unique and attractive packaging design concept that makes your product stand out on Indian shelves. Includes mockups and initial dieline considerations to help visualize the final product. We consider your brand, target audience, and product characteristics to create a compelling packaging solution suitable for India.',
     category: 'Packaging',
-    tags: ['product packaging india', 'box design india', 'label design', 'fmcg india'],
+    tags: ['product packaging india', 'box design india', 'label design', 'fmcg india', 'sustainable packaging'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'indian spice packaging',
     tiers: [
@@ -218,11 +218,11 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
   },
    '7': {
     id: '7',
-    name: 'Basic Logo Sketch (Indian Concepts)',
+    name: 'Basic Logo Sketch',
     generalDescription: 'Quick logo sketches for initial ideas, with an option for Indian design elements.',
     longDescription: 'Get 3-5 rough logo sketches to explore initial concepts and directions for your brand identity. This is a great starting point for brainstorming and refining your vision before committing to a full design. These are conceptual sketches, not finalized logos, and can incorporate Indian motifs if requested.',
     category: 'Logo Design',
-    tags: ['logo sketch india', 'concept design', 'ideation india', 'indian motifs'],
+    tags: ['logo sketch india', 'concept design', 'ideation india', 'indian motifs', 'quick design'],
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'indian elephant logo sketch',
     tiers: [
@@ -234,6 +234,81 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
         },
     ],
     approvedDesigners: [],
+  },
+  '8': {
+    id: '8',
+    name: 'Animated Explainer Video',
+    generalDescription: 'Short animated videos (2D) to explain your product/service, with Hinglish voiceover option.',
+    longDescription: 'Engage your audience with a concise and compelling 2D animated explainer video. We cover scriptwriting assistance, storyboarding, animation, and voiceover (English or Hinglish options available). Perfect for product demos, service explanations, or social media campaigns targeting the Indian market.',
+    category: 'Motion Graphics',
+    tags: ['2d animation', 'marketing video', 'product demo', 'hinglish content', 'video marketing'],
+    imageUrl: 'https://placehold.co/800x500.png',
+    imageHint: 'explainer video animation character',
+    tiers: [
+      { name: 'Standard', price: 19999, deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'weeks', scope: ['Up to 30 seconds animation', 'Custom graphics', 'Background music', 'English voiceover'], tierDescription: 'A short and impactful animated video.', icon: Star },
+      { name: 'Premium', price: 34999, deliveryTimeMin: 3, deliveryTimeMax: 4, deliveryTimeUnit: 'weeks', scope: ['Up to 60 seconds animation', 'Custom graphics & characters', 'Background music & sound effects', 'Hinglish/English voiceover', 'Script assistance'], tierDescription: 'A more comprehensive video with enhanced features.', icon: Zap },
+    ],
+    approvedDesigners: designersData.filter(d => d.specialties.includes('Motion Graphics') || d.specialties.includes('Video Editing')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.9, projectsCompleted: Math.floor(Math.random()*15)+5, imageHint: d.imageHint})),
+  },
+  '9': {
+    id: '9',
+    name: 'Business Presentation Design',
+    generalDescription: 'Professional presentations for Indian businesses, investors, and conferences.',
+    longDescription: 'Create impactful and visually appealing presentations that effectively communicate your message. We design custom templates, infographics, and ensure a cohesive visual style. Suitable for pitch decks, sales presentations, and corporate reports tailored for an Indian audience.',
+    category: 'Presentations',
+    tags: ['pitch deck india', 'corporate presentation', 'powerpoint design', 'investor deck', 'keynote slides'],
+    imageUrl: 'https://placehold.co/800x500.png',
+    imageHint: 'business ppt slide data chart',
+    tiers: [
+      { name: 'Standard', price: 8999, deliveryTimeMin: 4, deliveryTimeMax: 6, deliveryTimeUnit: 'days', scope: ['Up to 15 slides custom design', 'Data visualization (charts/graphs)', 'Stock images included'], tierDescription: 'Professional design for standard presentations.', icon: Star },
+      { name: 'Premium', price: 15999, deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'days', scope: ['Up to 30 slides custom design', 'Advanced data visualization', 'Custom graphics & icons', 'Editable template provided'], tierDescription: 'Comprehensive design for critical presentations.', icon: Zap },
+    ],
+    approvedDesigners: designersData.filter(d => d.specialties.includes('Presentation Design') || d.specialties.includes('Corporate Branding')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.7, projectsCompleted: Math.floor(Math.random()*40)+10, imageHint: d.imageHint})),
+  },
+  '10': {
+    id: '10',
+    name: 'App Icon Design',
+    generalDescription: 'Memorable and scalable app icons for iOS and Android, designed to appeal to the Indian mobile user base.',
+    longDescription: 'Craft a distinctive app icon that stands out on app stores and user devices. We focus on creating visually appealing, recognizable, and platform-compliant icons that reflect your app\'s identity and attract Indian users.',
+    category: 'UI/UX Design',
+    tags: ['app icon', 'ios design', 'android design', 'mobile branding', 'icon set'],
+    imageUrl: 'https://placehold.co/800x500.png',
+    imageHint: 'mobile app icon colorful',
+    tiers: [
+      { name: 'Standard', price: 3999, deliveryTimeMin: 2, deliveryTimeMax: 4, deliveryTimeUnit: 'days', scope: ['2 App icon concepts', 'Vector source file (SVG)', 'Required app store sizes'], tierDescription: 'Professional app icon design with multiple concepts.', icon: Star },
+      { name: 'Premium', price: 6999, deliveryTimeMin: 4, deliveryTimeMax: 6, deliveryTimeUnit: 'days', scope: ['4 App icon concepts', 'Full icon set (e.g., notification, settings)', 'Vector source files (SVG, AI)', 'App store preview mockups'], tierDescription: 'Comprehensive icon design package with additional assets.', icon: Zap },
+    ],
+    approvedDesigners: designersData.filter(d => d.specialties.includes('Icon Design') || d.specialties.includes('App Design')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.8, projectsCompleted: Math.floor(Math.random()*35)+12, imageHint: d.imageHint})),
+  },
+  '11': {
+    id: '11',
+    name: 'E-commerce Product Photography Editing',
+    generalDescription: 'Professional editing and retouching for e-commerce product photos, suitable for Indian online marketplaces.',
+    longDescription: 'Enhance your product images to meet the standards of platforms like Amazon India, Flipkart, Myntra, etc. Services include background removal, color correction, retouching, and creating appealing visuals that drive sales.',
+    category: 'Photography',
+    tags: ['photo retouching', 'background removal', 'amazon india', 'flipkart', 'image enhancement', 'product photography'],
+    imageUrl: 'https://placehold.co/800x500.png',
+    imageHint: 'product photo editing fashion',
+    tiers: [
+      { name: 'Basic', price: 1999, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'days', scope: ['Up to 10 images', 'Background removal/replacement', 'Basic color correction'], tierDescription: 'Essential editing for clean product photos.', icon: Shield },
+      { name: 'Standard', price: 4999, deliveryTimeMin: 2, deliveryTimeMax: 4, deliveryTimeUnit: 'days', scope: ['Up to 25 images', 'Advanced retouching', 'Color correction & enhancement', 'Shadow creation'], tierDescription: 'Comprehensive editing for high-quality e-commerce listings.', icon: Star },
+    ],
+     approvedDesigners: designersData.filter(d => d.specialties.includes('Photography') || d.specialties.includes('Photo Editing')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.6, projectsCompleted: Math.floor(Math.random()*100)+40, imageHint: d.imageHint})),
+  },
+  '12': {
+    id: '12',
+    name: 'Infographic Design',
+    generalDescription: 'Visually compelling infographics to present data and information clearly for Indian audiences.',
+    longDescription: 'Transform complex data and information into engaging and easy-to-understand infographics. We design custom graphics, charts, and layouts that effectively communicate your message for reports, social media, or presentations targeting the Indian market.',
+    category: 'Illustration',
+    tags: ['data visualization', 'report design', 'visual content', 'content marketing india', 'information design'],
+    imageUrl: 'https://placehold.co/800x500.png',
+    imageHint: 'data infographic chart india',
+    tiers: [
+      { name: 'Standard', price: 6999, deliveryTimeMin: 4, deliveryTimeMax: 6, deliveryTimeUnit: 'days', scope: ['1 Infographic (up to 5 data points)', 'Custom design', 'Source file (AI/EPS)'], tierDescription: 'Professionally designed infographic for clear data presentation.', icon: Star },
+      { name: 'Premium', price: 11999, deliveryTimeMin: 6, deliveryTimeMax: 9, deliveryTimeUnit: 'days', scope: ['1 Detailed Infographic (up to 10 data points)', 'Custom illustration & icons', 'Multiple formats (web & print)', 'Source file & commercial use'], tierDescription: 'Highly detailed and custom-illustrated infographic for maximum impact.', icon: Zap },
+    ],
+     approvedDesigners: designersData.filter(d => d.specialties.includes('Illustration') || d.specialties.includes('Data Visualization')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.7, projectsCompleted: Math.floor(Math.random()*20)+8, imageHint: d.imageHint})),
   },
 };
 
@@ -535,3 +610,5 @@ export default function ServiceDetailPage() {
     </div>
   );
 }
+
+    

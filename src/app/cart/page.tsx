@@ -27,7 +27,7 @@ interface CartItem {
 const initialMockCartItems: CartItem[] = [
   {
     id: '1',
-    name: 'Modern Logo Design (India)',
+    name: 'Modern Logo Design',
     tierName: 'Standard',
     price: 9999,
     imageUrl: 'https://placehold.co/600x400.png',
@@ -36,7 +36,7 @@ const initialMockCartItems: CartItem[] = [
   },
   {
     id: '2',
-    name: 'Social Media Pack (Festive)',
+    name: 'Social Media Pack (Festive)', // "Festive" is a good descriptor, not a generic "(India)"
     tierName: 'Basic',
     price: 2499,
     imageUrl: 'https://placehold.co/600x400.png',
@@ -45,7 +45,7 @@ const initialMockCartItems: CartItem[] = [
   },
   {
     id: '4',
-    name: 'UI/UX Web Design (E-commerce)',
+    name: 'UI/UX Web Design (E-commerce)', // "E-commerce" is a good descriptor
     price: 15999, 
     imageUrl: 'https://placehold.co/600x400.png',
     imageHint: 'indian e-commerce website',
@@ -54,7 +54,7 @@ const initialMockCartItems: CartItem[] = [
 ];
 
 const TAX_RATE = 0.18; // 18% GST
-const RAZORPAY_TEST_KEY_ID = "rzp_test_YOUR_KEY_ID"; // IMPORTANT: Replace with your actual Razorpay Test Key ID
+const RAZORPAY_TEST_KEY_ID = "rzp_test_YOUR_KEY_ID"; 
 
 declare global {
   interface Window {
@@ -88,7 +88,7 @@ export default function CartPage() {
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const taxes = subtotal * TAX_RATE;
   const totalAmount = subtotal + taxes;
-  const totalAmountInPaise = Math.round(totalAmount * 100); // Razorpay expects amount in paise
+  const totalAmountInPaise = Math.round(totalAmount * 100); 
 
   const handleRazorpayPayment = async () => {
     setIsProcessing(true);
@@ -298,3 +298,5 @@ export default function CartPage() {
     </div>
   );
 }
+
+    
