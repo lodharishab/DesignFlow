@@ -1,4 +1,6 @@
 
+// IMPORTANT: Ensure "use client"; is NOT at the top of this file.
+
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
@@ -138,7 +140,7 @@ export const allPortfolioItemsData: PortfolioItem[] = [
     title: 'Mumbai Fintech Investor Pitch Deck',
     category: 'Presentation Design',
     categorySlug: 'presentation-design',
-    clientName: ' paisa Growth Capital',
+    clientName: 'Paisa Growth Capital',
     projectDate: 'December 2023',
     coverImageUrl: 'https://placehold.co/600x450.png',
     coverImageHint: 'financial presentation slide',
