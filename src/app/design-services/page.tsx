@@ -101,7 +101,7 @@ export default function DesignServicesPage() {
             </p>
             <Button size="lg" asChild className="w-full sm:w-auto">
               <Link href="/services">
-                <Eye className="mr-2 h-5 w-5" /> View All Service Packages
+                <Eye className="mr-2 h-5 w-5" /> Explore Full Service Catalog
               </Link>
             </Button>
           </div>
