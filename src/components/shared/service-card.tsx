@@ -48,7 +48,7 @@ export function ServiceCard({ id, name, description, category, tiers, imageUrl, 
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p className="text-2xl font-semibold text-primary">₹{startingPrice}</p>
+        <p className="text-2xl font-semibold text-primary">₹{startingPrice.toLocaleString('en-IN')}</p>
         <p className="text-xs text-muted-foreground">Starting at</p>
       </CardContent>
       <CardFooter>

@@ -31,7 +31,7 @@ const initialMockCartItems: CartItem[] = [
     tierName: 'Standard',
     price: 9999,
     imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'indian startup logo',
+    imageHint: 'startup logo',
     quantity: 1,
   },
   {
@@ -40,7 +40,7 @@ const initialMockCartItems: CartItem[] = [
     tierName: 'Basic',
     price: 2499,
     imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'diwali social media graphics',
+    imageHint: 'social media graphics',
     quantity: 1,
   },
   {
@@ -48,7 +48,7 @@ const initialMockCartItems: CartItem[] = [
     name: 'UI/UX Web Design Mockup', 
     price: 15999, 
     imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'indian e-commerce website',
+    imageHint: 'website design',
     quantity: 1,
   }
 ];
@@ -108,7 +108,7 @@ export default function CartPage() {
       key: RAZORPAY_TEST_KEY_ID, 
       amount: totalAmountInPaise, 
       currency: "INR",
-      name: "DesignFlow India",
+      name: "DesignFlow",
       description: "Design Services Order",
       image: "https://placehold.co/100x100.png?text=DF", 
       order_id: "", 
@@ -121,12 +121,12 @@ export default function CartPage() {
         setIsProcessing(false);
       },
       prefill: {
-        name: "Test User India", 
-        email: "test.user@example.in",
+        name: "Test User", 
+        email: "test.user@example.com",
         contact: "9999988888"
       },
       notes: {
-        address: "DesignFlow India Office, Bangalore"
+        address: "DesignFlow Office, City"
       },
       theme: {
         color: "#2081F9" 

@@ -38,19 +38,19 @@ interface Service {
 const services: Service[] = [
   { 
     id: '1', name: 'Modern Logo Design', 
-    description: 'Unique logos for Indian brands, startups, and businesses. Get a memorable identity that resonates with your target audience.', 
+    description: 'Unique logos for brands, startups, and businesses. Get a memorable identity that resonates with your target audience.', 
     category: 'Logo Design', categorySlug: 'logo-design',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian startup logo',
-    tags: ['branding', 'startup india', 'vector logo', 'e-commerce logo', 'brand identity'],
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'startup logo',
+    tags: ['branding', 'startup', 'vector logo', 'e-commerce logo', 'brand identity'],
     tiers: [
       { name: 'Basic', price: 4999 }, { name: 'Standard', price: 9999 }, { name: 'Premium', price: 14999 },
     ]
   },
   { 
     id: '2', name: 'Social Media Pack', 
-    description: 'Engaging posts for Instagram, Facebook, optimized for Indian festivals, regional trends, and audience engagement.', 
+    description: 'Engaging posts for Instagram, Facebook, optimized for festivals, regional trends, and audience engagement.', 
     category: 'Social Media', categorySlug: 'social-media',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'diwali social media graphics',
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media graphics',
     tags: ['instagram marketing', 'festival creatives', 'regional content', 'whatsapp status', 'social media marketing'],
     tiers: [
       { name: 'Basic', price: 2499 }, { name: 'Standard', price: 4999 },
@@ -58,90 +58,90 @@ const services: Service[] = [
   },
   { 
     id: '3', name: 'Professional Brochure Design', 
-    description: 'Tri-fold or bi-fold brochures for Indian businesses and events. Ideal for marketing collateral and corporate profiles.', 
+    description: 'Tri-fold or bi-fold brochures for businesses and events. Ideal for marketing collateral and corporate profiles.', 
     category: 'Print Design', categorySlug: 'print-design',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian company brochure',
-    tags: ['marketing material', 'event brochure', 'corporate profile', 'print ads india', 'catalogue design'],
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'company brochure',
+    tags: ['marketing material', 'event brochure', 'corporate profile', 'print ads', 'catalogue design'],
     tiers: [
       { name: 'Standard', price: 7999 }, { name: 'Premium', price: 12999 },
     ]
   },
   { 
     id: '4', name: 'UI/UX Web Design Mockup', 
-    description: 'High-fidelity mockups for websites targeting Indian users, considering local UI patterns and accessibility.', 
+    description: 'High-fidelity mockups for websites, considering modern UI patterns and accessibility.', 
     category: 'UI/UX Design', categorySlug: 'ui-ux-design',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design india',
-    tags: ['responsive design', 'mobile first india', 'figma design', 'e-commerce ui', 'landing page design'],
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design mockup',
+    tags: ['responsive design', 'mobile first', 'figma design', 'e-commerce ui', 'landing page design'],
     tiers: [
       { name: 'Standard', price: 15999 }, { name: 'Premium', price: 23999 },
     ]
   },
   { 
     id: '5', name: 'Custom Illustration', 
-    description: 'Unique illustrations with options for Indian art styles like Madhubani, Warli, or modern digital art for various applications.', 
+    description: 'Unique illustrations with options for various art styles, modern digital art for diverse applications.', 
     category: 'Illustration', categorySlug: 'illustration',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'madhubani art digital',
-    tags: ['digital art india', 'character design', 'indian folk art', 'custom graphics', 'vector illustration'],
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'digital illustration art',
+    tags: ['digital art', 'character design', 'folk art', 'custom graphics', 'vector illustration'],
     tiers: [
       { name: 'Basic', price: 3999 }, { name: 'Standard', price: 7999 }, { name: 'Premium', price: 11999 },
     ]
   },
   { 
     id: '6', name: 'Packaging Design Concept', 
-    description: 'Creative packaging concepts for Indian FMCG, sweets, or artisanal products, designed for the local retail landscape.', 
+    description: 'Creative packaging concepts for FMCG, sweets, or artisanal products, designed for the retail landscape.', 
     category: 'Packaging', categorySlug: 'packaging',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian sweet box packaging',
-    tags: ['product packaging', 'fmcg design', 'label design', 'sustainable packaging india', 'box design'],
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product packaging concept',
+    tags: ['product packaging', 'fmcg design', 'label design', 'sustainable packaging', 'box design'],
     tiers: [
       { name: 'Standard', price: 12999 }, { name: 'Premium', price: 19999 },
     ]
   },
   { 
     id: '7', name: 'Basic Logo Sketch', 
-    description: 'Quick logo sketches exploring Indian motifs and modern design ideas for initial concept development.', 
+    description: 'Quick logo sketches exploring design motifs and modern ideas for initial concept development.', 
     category: 'Logo Design', categorySlug: 'logo-design',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian elephant logo sketch',
-    tags: ['logo ideation', 'concept sketch', 'indian motifs', 'quick design', 'brainstorming'],
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo sketch design',
+    tags: ['logo ideation', 'concept sketch', 'design motifs', 'quick design', 'brainstorming'],
     tiers: [ { name: 'Basic', price: 2499 }, ]
   },
   { 
     id: '8', name: 'Animated Explainer Video', 
-    description: 'Short animated videos (2D) to explain your product/service, with Hinglish voiceover option for wider reach in India.', 
+    description: 'Short animated videos (2D) to explain your product/service, with voiceover options for wider reach.', 
     category: 'Motion Graphics', categorySlug: 'motion-graphics',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'explainer video animation',
-    tags: ['2d animation', 'marketing video', 'product demo', 'hinglish content', 'video marketing'],
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'explainer video character animation',
+    tags: ['2d animation', 'marketing video', 'product demo', 'voiceover services', 'video marketing'],
     tiers: [ { name: 'Standard', price: 19999 }, { name: 'Premium', price: 34999 } ]
   },
   { 
     id: '9', name: 'Business Presentation Design', 
-    description: 'Professional presentations for Indian businesses, investors, and conferences, ensuring clarity and impact.', 
+    description: 'Professional presentations for businesses, investors, and conferences, ensuring clarity and impact.', 
     category: 'Presentations', categorySlug: 'presentations',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'business ppt slide india',
-    tags: ['pitch deck india', 'corporate presentation', 'powerpoint design', 'investor deck', 'keynote slides'],
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'business ppt slide design',
+    tags: ['pitch deck', 'corporate presentation', 'powerpoint design', 'investor deck', 'keynote slides'],
     tiers: [ { name: 'Standard', price: 8999 }, { name: 'Premium', price: 15999 } ]
   },
   {
     id: '10', name: 'App Icon Design',
-    description: 'Memorable and scalable app icons for iOS and Android, designed to appeal to the Indian mobile user base.',
+    description: 'Memorable and scalable app icons for iOS and Android, designed to appeal to a global mobile user base.',
     category: 'UI/UX Design', categorySlug: 'ui-ux-design',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'mobile app icon india',
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'mobile app icon',
     tags: ['app icon', 'ios design', 'android design', 'mobile branding', 'icon set'],
     tiers: [{ name: 'Standard', price: 3999 }, { name: 'Premium', price: 6999 }],
   },
   {
     id: '11', name: 'E-commerce Product Photography Editing',
-    description: 'Professional editing and retouching for e-commerce product photos, suitable for Indian online marketplaces.',
+    description: 'Professional editing and retouching for e-commerce product photos, suitable for online marketplaces.',
     category: 'Photography', categorySlug: 'photography',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product photo editing',
-    tags: ['photo retouching', 'background removal', 'amazon india', 'flipkart', 'image enhancement'],
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product photo editing services',
+    tags: ['photo retouching', 'background removal', 'amazon', 'ebay', 'image enhancement'],
     tiers: [{ name: 'Basic', price: 1999 }, { name: 'Standard', price: 4999 }],
   },
   {
     id: '12', name: 'Infographic Design',
-    description: 'Visually compelling infographics to present data and information clearly for Indian audiences.',
+    description: 'Visually compelling infographics to present data and information clearly for diverse audiences.',
     category: 'Illustration', categorySlug: 'illustration',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'data infographic india',
-    tags: ['data visualization', 'report design', 'visual content', 'content marketing india'],
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'data infographic visualization',
+    tags: ['data visualization', 'report design', 'visual content', 'content marketing'],
     tiers: [{ name: 'Standard', price: 6999 }, { name: 'Premium', price: 11999 }],
   },
 ];
@@ -174,11 +174,11 @@ const uniqueTags = Array.from(new Set(services.flatMap(service => service.tags |
 const uniqueTierNames = Array.from(new Set(services.flatMap(service => service.tiers.map(tier => tier.name)))).sort();
 
 export const metadata: Metadata = {
-  title: 'All Design Services | DesignFlow India',
-  description: 'Browse all design services offered on DesignFlow. Find solutions for logo design, UI/UX, print, social media, and more, tailored for the Indian market.',
+  title: 'All Design Services | DesignFlow',
+  description: 'Browse all design services offered on DesignFlow. Find solutions for logo design, UI/UX, print, social media, and more.',
   openGraph: {
-    title: 'All Design Services | DesignFlow India',
-    description: 'Explore our full catalog of creative design services. Connect with expert Indian designers today.',
+    title: 'All Design Services | DesignFlow',
+    description: 'Explore our full catalog of creative design services. Connect with expert designers today.',
   },
 };
 
@@ -229,8 +229,6 @@ export default function ServicesPage() {
     setSelectedTags(new Set());
     setSelectedTiers(new Set());
     setSearchTerm('');
-    // Optionally reset URL query params if desired, but might be better handled by navigation
-    // router.push('/services', { scroll: false });
   };
 
 

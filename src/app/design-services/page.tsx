@@ -13,46 +13,35 @@ import { PortfolioShowcaseCard } from '@/app/page';
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { Palette, Share2, Printer, Laptop, Brush as BrushIconLucide, Package as PackageIcon, Film, Presentation, Camera, ArrowRight, Sparkles, Eye, Briefcase } from 'lucide-react';
 import type { Icon as LucideIconType } from 'lucide-react';
-import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page';
+import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page'; 
 import type { Metadata } from 'next';
 
 // Data for the Service Categories Carousel
 const serviceCategoriesData: Array<{ name: string; slug: string; icon: LucideIconType; description: string; shortDesc: string; }> = [
-  { name: 'Logo Design', slug: 'logo-design', icon: Palette, description: 'Craft unique brand identities that resonate with your audience and reflect your business values in India.', shortDesc: 'Brand identities that resonate.' },
-  { name: 'Web UI/UX', slug: 'web-ui-ux', icon: Laptop, description: 'User-centric web and app interfaces designed for seamless experiences on all devices for the Indian market.', shortDesc: 'User-centric web & app UI/UX.' },
-  { name: 'Print Materials', slug: 'print-materials', icon: Printer, description: 'Eye-catching brochures, flyers, and business cards that make a lasting impression for your Indian business.', shortDesc: 'Brochures, flyers, cards.' },
-  { name: 'Illustrations', slug: 'illustration', icon: BrushIconLucide, description: 'Custom illustrations and graphics, from digital art to traditional Indian styles, to bring your ideas to life.', shortDesc: 'Custom digital art.' },
-  { name: 'Social Media Graphics', slug: 'social-media-graphics', icon: Share2, description: 'Engaging visuals for Instagram, Facebook, and other platforms, tailored for Indian festivals and trends.', shortDesc: 'Engaging social visuals.' },
-  { name: 'Packaging Design', slug: 'packaging', icon: PackageIcon, description: 'Innovative packaging concepts that make your products stand out on Indian shelves.', shortDesc: 'Product packaging concepts.' },
+  { name: 'Logo Design', slug: 'logo-design', icon: Palette, description: 'Craft unique brand identities that resonate with your audience and reflect your business values.', shortDesc: 'Brand identities that resonate.' },
+  { name: 'Web UI/UX', slug: 'web-ui-ux', icon: Laptop, description: 'User-centric web and app interfaces designed for seamless experiences on all devices.', shortDesc: 'User-centric web & app UI/UX.' },
+  { name: 'Print Materials', slug: 'print-materials', icon: Printer, description: 'Eye-catching brochures, flyers, and business cards that make a lasting impression for your business.', shortDesc: 'Brochures, flyers, cards.' },
+  { name: 'Illustrations', slug: 'illustration', icon: BrushIconLucide, description: 'Custom illustrations and graphics, from digital art to traditional styles, to bring your ideas to life.', shortDesc: 'Custom digital art.' },
+  { name: 'Social Media Graphics', slug: 'social-media-graphics', icon: Share2, description: 'Engaging visuals for Instagram, Facebook, and other platforms, tailored for events and trends.', shortDesc: 'Engaging social visuals.' },
+  { name: 'Packaging Design', slug: 'packaging', icon: PackageIcon, description: 'Innovative packaging concepts that make your products stand out on shelves.', shortDesc: 'Product packaging concepts.' },
   { name: 'Motion Graphics', slug: 'motion-graphics', icon: Film, description: 'Dynamic animations and explainer videos to captivate your audience and tell your story.', shortDesc: 'Animations & explainer videos.' },
   { name: 'Presentations', slug: 'presentations', icon: Presentation, description: 'Professional pitch decks and presentations that convey your message with impact.', shortDesc: 'Impactful pitch decks.' },
 ];
 
 const featuredServicesData = [
-  { id: '1', name: 'Modern Logo Design', description: 'Unique logos for Indian brands and startups, capturing your brand essence.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian startup logo' },
-  { id: '4', name: 'UI/UX Web Design Mockup', description: 'User-friendly web mockups for the Indian market, focusing on great user experience.', tiers: [{name: 'Standard', price: 15999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design india' },
-  { id: '2', name: 'Social Media Pack', description: 'Engaging posts for Indian festivals and social media campaigns. Boost your online presence.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'diwali social media' },
+  { id: '1', name: 'Modern Logo Design', description: 'Unique logos for brands and startups, capturing your brand essence.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'startup logo' },
+  { id: '4', name: 'UI/UX Web Design Mockup', description: 'User-friendly web mockups, focusing on great user experience.', tiers: [{name: 'Standard', price: 15999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design' },
+  { id: '2', name: 'Social Media Pack', description: 'Engaging posts for social media campaigns. Boost your online presence.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media marketing' },
 ];
 
 const portfolioGlanceItems: PortfolioItem[] = globalPortfolioItems.slice(0, 3);
 
-// Static metadata for this page
-// Note: `export const metadata` must be at the top level of the module
-// This requires moving the component definition or creating it in a separate file if it needs to access constants from here.
-// For simplicity, I'll define it here, assuming it's okay for this file structure.
-// If this was a Server Component, it would be simpler.
-// For Client Components, this metadata is typically handled in the nearest parent Server Component (e.g., layout.tsx or page.tsx that imports this as a child).
-// However, Next.js 13+ App Router allows metadata export from client components that are the main export of a route segment.
-
-// Since this IS a page.tsx, exporting metadata here is fine.
 export const metadata: Metadata = {
-  title: 'Discover Design Services in India',
-  description: 'Explore a wide range of creative design services tailored for the Indian market. Find expert designers for logos, UI/UX, branding, and more on DesignFlow.',
+  title: 'Discover Design Services',
+  description: 'Explore a wide range of creative design services. Find expert designers for logos, UI/UX, branding, and more on DesignFlow.',
   openGraph: {
-    title: 'Discover Design Services | DesignFlow India',
-    description: 'Browse our comprehensive catalog of design services, from logo creation to web UI/UX, perfect for Indian businesses and startups.',
-    // Add a specific OG image for this page if available
-    // images: ['/og-design-services.png'], 
+    title: 'Discover Design Services | DesignFlow',
+    description: 'Browse our comprehensive catalog of design services, from logo creation to web UI/UX, perfect for businesses and startups.',
   },
 };
 
@@ -70,7 +59,7 @@ export default function DesignServicesPage() {
               Your Vision, <span className="text-primary">Expertly Designed</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-12 max-w-3xl mx-auto">
-              Explore a comprehensive range of creative services tailored to elevate your brand. From stunning logos to seamless web experiences, our expert Indian designers are here to bring your ideas to life.
+              Explore a comprehensive range of creative services tailored to elevate your brand. From stunning logos to seamless web experiences, our expert designers are here to bring your ideas to life.
             </p>
             
             {/* Category Carousel */}
@@ -138,7 +127,7 @@ export default function DesignServicesPage() {
           <div className="container mx-auto px-5">
             <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-4">Portfolio at a Glance</h2>
             <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-              Get inspired by the quality and creativity our designers bring to projects for clients across India.
+              Get inspired by the quality and creativity our designers bring to projects for clients.
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {portfolioGlanceItems.map(item => (

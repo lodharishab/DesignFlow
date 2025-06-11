@@ -1,6 +1,4 @@
 
-"use client"; // This line will be removed
-
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
@@ -13,13 +11,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { designersData } from '@/lib/designer-data'; 
+import { designersData } from '@/lib/designer-data';
 import type { Metadata } from 'next';
 
 // Enhanced Portfolio Data Structure - IMPORTANT: Keep this in sync with other uses
 export const allPortfolioItemsData: PortfolioItem[] = [
   {
-    id: 'ecomm-reimagined-platform-india', 
+    id: 'ecomm-reimagined-platform-india',
     title: 'E-commerce Reimagined for Indian Market',
     category: 'Web UI/UX',
     categorySlug: 'web-ui-ux',
@@ -189,10 +187,10 @@ export const allPortfolioItemsData: PortfolioItem[] = [
 ];
 
 export const metadata: Metadata = {
-  title: 'Design Portfolio | DesignFlow India',
-  description: 'Explore a curated collection of stunning design projects by talented Indian designers on DesignFlow. Get inspired for your next creative endeavor.',
+  title: 'Design Portfolio | DesignFlow',
+  description: 'Explore a curated collection of stunning design projects by talented designers on DesignFlow. Get inspired for your next creative endeavor.',
   openGraph: {
-    title: 'Design Portfolio Showcase | DesignFlow India',
+    title: 'Design Portfolio Showcase | DesignFlow',
     description: 'Discover exceptional design work across various categories, from branding to UI/UX, crafted by our expert designers.',
   },
 };
@@ -201,7 +199,7 @@ export const metadata: Metadata = {
 const PortfolioPageContent = () => {
   const searchParams = useSearchParams();
   const initialCategorySlug = searchParams.get('category');
-  
+
   const [activeCategorySlug, setActiveCategorySlug] = useState<string | null>(initialCategorySlug);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [selectedDesigners, setSelectedDesigners] = useState<Set<string>>(new Set());
@@ -250,7 +248,7 @@ const PortfolioPageContent = () => {
       return newSet;
     });
   }, []);
-  
+
   const handleDesignerChange = useCallback((designerName: string, checked: boolean) => {
     setSelectedDesigners(prev => {
       const newSet = new Set(prev);
@@ -373,7 +371,7 @@ const PortfolioPageContent = () => {
           </aside>
 
           {/* Portfolio Grid */}
-          <div className="min-w-0"> 
+          <div className="min-w-0">
             {filteredPortfolioItems.length > 0 ? (
               <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
                 {filteredPortfolioItems.map(item => (
@@ -407,5 +405,3 @@ export default function PortfolioPage() {
     </Suspense>
   );
 }
-
-    
