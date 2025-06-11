@@ -38,6 +38,7 @@ import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, isPast, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { designersData } from '@/lib/designer-data'; // For linking designers
 
 export type OrderStatus = 'Pending Assignment' | 'In Progress' | 'Awaiting Client Review' | 'Revision Requested' | 'Completed' | 'Cancelled' | 'Refunded';
 
@@ -72,97 +73,145 @@ export interface Order {
 
 export const initialOrdersData: Order[] = [
   {
-    id: 'order001',
-    clientName: 'Alice Johnson', clientId: 'cli001',
-    designerName: 'Bob The Builder', designerId: 'des002',
-    serviceName: 'Modern Logo Design', serviceId: 'svc001', serviceTier: 'Standard',
-    serviceScope: ['3 Initial concepts', '3 Rounds of revisions', 'Full vector files (AI, EPS, SVG, PNG, JPG)', 'Basic brand guide (colors, fonts)'],
-    orderDate: new Date(2024, 5, 1, 10, 30),
-    dueDate: new Date(new Date().setDate(new Date().getDate() + 3)),
+    id: 'ORD7361P',
+    clientName: 'Priya Sharma', clientId: 'CLI001P',
+    designerName: designersData.find(d => d.slug === 'rohan-kapoor')?.name,
+    designerId: designersData.find(d => d.slug === 'rohan-kapoor')?.id,
+    serviceName: 'E-commerce Website UI/UX', serviceId: 'SVC004IN', serviceTier: 'Premium',
+    serviceScope: ['Up to 5 pages UI/UX design', 'Mobile, tablet, and desktop views', 'Interactive prototype', 'Full style guide'],
+    orderDate: new Date(2024, 6, 1, 10, 30),
+    dueDate: new Date(new Date().setDate(new Date().getDate() + 10)),
     status: 'In Progress',
-    totalAmount: 199, currency: 'INR',
+    totalAmount: 24999, currency: 'INR',
     paymentMethod: 'Razorpay',
-    transactionId: 'pay_Nlcftg87sHjkl',
+    transactionId: 'pay_Olcftg87sHjkl',
     orderEvents: [
-      { timestamp: new Date(2024, 5, 1, 10, 30), event: 'Order Placed', actor: 'Alice Johnson' },
-      { timestamp: new Date(2024, 5, 1, 11, 0), event: 'Payment Successful (Razorpay)', actor: 'System' },
-      { timestamp: new Date(2024, 5, 2, 9, 0), event: 'Designer Assigned: Bob The Builder', actor: 'Admin' },
-      { timestamp: new Date(2024, 5, 2, 9, 5), event: 'Status changed to In Progress', actor: 'System' },
+      { timestamp: new Date(2024, 6, 1, 10, 30), event: 'Order Placed', actor: 'Priya Sharma' },
+      { timestamp: new Date(2024, 6, 1, 11, 0), event: 'Payment Successful (Razorpay)', actor: 'System' },
+      { timestamp: new Date(2024, 6, 2, 9, 0), event: `Designer Assigned: ${designersData.find(d => d.slug === 'rohan-kapoor')?.name}`, actor: 'Admin' },
+      { timestamp: new Date(2024, 6, 2, 9, 5), event: 'Status changed to In Progress', actor: 'System' },
     ],
-    clientBrief: "Looking for a minimalist logo for a new tech startup 'InnovateX'. Colors: prefer blues and silvers. Icon should represent innovation and connection. Modern and sleek feel."
+    clientBrief: "Need a modern and clean UI/UX for a new e-commerce platform selling Indian handicrafts. Focus on mobile-first design and easy navigation for a diverse audience. Include vernacular language support considerations."
   },
   {
-    id: 'order002',
-    clientName: 'Charlie Brown', clientId: 'cli003',
-    designerName: 'David Copperfield', designerId: 'des004',
-    serviceName: 'Social Media Post Pack', serviceId: 'svc002', serviceTier: 'Basic',
-    serviceScope: ['5 social media posts', '1 Platform choice', '1 Round of revisions', 'Optimized JPG/PNG'],
-    orderDate: new Date(2024, 5, 5, 14, 0),
-    dueDate: new Date(new Date().setDate(new Date().getDate() - 2)),
+    id: 'ORD1038K',
+    clientName: 'Rajesh Kumar', clientId: 'CLI003K',
+    designerName: designersData.find(d => d.slug === 'aisha-khan')?.name,
+    designerId: designersData.find(d => d.slug === 'aisha-khan')?.id,
+    serviceName: 'Social Media Campaign Graphics', serviceId: 'SVC002IN', serviceTier: 'Standard',
+    serviceScope: ['15 social media posts', 'Up to 3 platforms', '3 Rounds of revisions', 'Source files'],
+    orderDate: new Date(2024, 6, 5, 14, 0),
+    dueDate: new Date(new Date().setDate(new Date().getDate() + 3)),
     status: 'Pending Assignment',
-    totalAmount: 99, currency: 'INR',
+    totalAmount: 7999, currency: 'INR',
     paymentMethod: 'PhonePe',
-    transactionId: 'txn_GhtrDEWAq789',
+    transactionId: 'txn_HghtrDEWAq789',
      orderEvents: [
-      { timestamp: new Date(2024, 5, 5, 14, 0), event: 'Order Placed', actor: 'Charlie Brown' },
-      { timestamp: new Date(2024, 5, 5, 14, 5), event: 'Payment Successful (PhonePe)', actor: 'System' },
-      { timestamp: new Date(2024, 5, 5, 14, 10), event: 'Status changed to Pending Assignment', actor: 'System' },
+      { timestamp: new Date(2024, 6, 5, 14, 0), event: 'Order Placed', actor: 'Rajesh Kumar' },
+      { timestamp: new Date(2024, 6, 5, 14, 5), event: 'Payment Successful (PhonePe)', actor: 'System' },
+      { timestamp: new Date(2024, 6, 5, 14, 10), event: 'Status changed to Pending Assignment', actor: 'System' },
     ],
-    clientBrief: "Need 5 engaging posts for a summer sale campaign on Instagram and Facebook. Theme: Bright and sunny. Target audience: Young adults (18-25)."
+    clientBrief: "Require engaging graphics for a Diwali festival campaign on Instagram, Facebook, and WhatsApp. Theme: Traditional yet modern, vibrant colors. Target audience: Indian families."
   },
   {
-    id: 'order003',
-    clientName: 'Diana Prince', clientId: 'cli004',
-    designerName: 'Alice Wonderland', designerId: 'des001',
-    serviceName: 'UI/UX Web Design Mockup', serviceId: 'svc004', serviceTier: 'Premium',
-    serviceScope: ['Up to 3 key pages UI/UX design', 'Mobile, tablet, and desktop views', 'Interactive prototype (clickable)', '3 revision rounds', 'Component style guide', 'Figma/XD source files'],
-    orderDate: new Date(2024, 4, 20, 16, 45),
-    dueDate: new Date(2024, 5, 10),
+    id: 'ORD2945S',
+    clientName: 'Sunita Rao', clientId: 'CLI004S',
+    designerName: designersData.find(d => d.slug === 'priya-sharma')?.name,
+    designerId: designersData.find(d => d.slug === 'priya-sharma')?.id,
+    serviceName: 'Startup Logo & Brand Identity', serviceId: 'SVC001IN', serviceTier: 'Premium',
+    serviceScope: ['5 Initial concepts', 'Unlimited revisions', 'Full vector & source files', 'Detailed brand guidelines', 'Social media kit', 'Business card design'],
+    orderDate: new Date(2024, 5, 20, 16, 45),
+    dueDate: new Date(2024, 6, 15),
     status: 'Completed',
-    totalAmount: 399, currency: 'INR',
+    totalAmount: 19999, currency: 'INR',
     paymentMethod: 'Razorpay',
-    transactionId: 'pay_Mnbvcxz87Uyt',
+    transactionId: 'pay_Nnbvcxz87Uyt',
     orderEvents: [
-        { timestamp: new Date(2024, 4, 20, 16, 45), event: 'Order Placed' },
-        { timestamp: new Date(2024, 5, 8, 12, 0), event: 'Final delivery approved by client.' },
-        { timestamp: new Date(2024, 5, 8, 12, 5), event: 'Status changed to Completed' },
+        { timestamp: new Date(2024, 5, 20, 16, 45), event: 'Order Placed', actor: 'Sunita Rao' },
+        { timestamp: new Date(2024, 6, 12, 12, 0), event: 'Final delivery approved by client.', actor: 'Sunita Rao' },
+        { timestamp: new Date(2024, 6, 12, 12, 5), event: 'Status changed to Completed', actor: 'System' },
     ],
-    deliverables: [{ name: 'Homepage_mockup_final.fig', url: '#', submittedAt: new Date(2024, 5, 8, 12, 0)}]
+    deliverables: [{ name: 'BrandIdentity_Final.zip', url: '#', submittedAt: new Date(2024, 6, 12, 12, 0)}],
+    clientBrief: "Brand identity for a new health-tech startup in Bangalore. Name: 'SwasthyaLink'. Logo should evoke trust, technology, and wellness. Prefer blues and greens."
   },
   {
-    id: 'order004',
-    clientName: 'Edward Scissorhands', clientId: 'cli005',
-    serviceName: 'Custom Illustration', serviceId: 'svc005', serviceTier: 'Standard',
-    serviceScope: ['1 custom illustration (e.g., character, small scene)', 'Medium detail', '3 revision rounds', 'Source file (AI, PSD, or other)', 'Commercial use license'],
-    orderDate: new Date(2024, 5, 8, 9, 15),
+    id: 'ORD8872V',
+    clientName: 'Vikram Mehta', clientId: 'CLI005V',
+    serviceName: 'Festival Banner Design', serviceId: 'SVC005IN', serviceTier: 'Basic',
+    serviceScope: ['2 Banner concepts (e.g., for Ganesh Chaturthi)', '1 Revision round', 'Print-ready files'],
+    orderDate: new Date(2024, 6, 8, 9, 15),
     status: 'Cancelled',
-    totalAmount: 149, currency: 'INR',
+    totalAmount: 2499, currency: 'INR',
     paymentMethod: 'Razorpay',
-    transactionId: 'pay_Lkjhgf56Qwe',
+    transactionId: 'pay_Kkjhgf56Qwe',
     orderEvents: [
-        { timestamp: new Date(2024, 5, 8, 9, 15), event: 'Order Placed' },
-        { timestamp: new Date(2024, 5, 9, 10, 0), event: 'Order Cancelled by Client' },
-    ]
+        { timestamp: new Date(2024, 6, 8, 9, 15), event: 'Order Placed', actor: 'Vikram Mehta' },
+        { timestamp: new Date(2024, 6, 9, 10, 0), event: 'Order Cancelled by Client', actor: 'Vikram Mehta' },
+    ],
+    clientBrief: "Need vibrant banners for Ganesh Chaturthi celebrations for our community. Traditional motifs with a modern touch."
   },
    {
-    id: 'order005',
-    clientName: 'Fiona Gallagher', clientId: 'cli006',
-    designerName: 'Carol Danvers', designerId: 'des003',
-    serviceName: 'Professional Brochure Design', serviceId: 'svc003', serviceTier: 'Standard',
-    serviceScope: ['Custom brochure design (up to 6 panels)', 'Stock imagery included (up to 3 images)', '3 revision rounds', 'Print-ready PDF'],
-    orderDate: new Date(2024, 5, 10, 11, 20),
-    dueDate: new Date(new Date().setDate(new Date().getDate() + 7)),
+    id: 'ORD6531A',
+    clientName: 'Anjali Iyer', clientId: 'CLI006A',
+    designerName: designersData.find(d => d.slug === 'vikram-singh')?.name,
+    designerId: designersData.find(d => d.slug === 'vikram-singh')?.id,
+    serviceName: 'Restaurant Menu Design', serviceId: 'SVC003IN', serviceTier: 'Standard',
+    serviceScope: ['Custom menu design (up to 4 pages)', 'Stock imagery included (if needed)', '3 revision rounds', 'Print-ready PDF'],
+    orderDate: new Date(2024, 6, 10, 11, 20),
+    dueDate: new Date(new Date().setDate(new Date().getDate() + 5)),
     status: 'Awaiting Client Review',
-    totalAmount: 249, currency: 'INR',
+    totalAmount: 6999, currency: 'INR',
     paymentMethod: 'PhonePe',
-    transactionId: 'txn_Poiuyt09Mnb',
+    transactionId: 'txn_Qoiuyt09Mnb',
     orderEvents: [
-        { timestamp: new Date(2024, 5, 10, 11, 20), event: 'Order Placed' },
-        { timestamp: new Date(2024, 5, 18, 17, 0), event: 'Draft submitted by designer.' },
-        { timestamp: new Date(2024, 5, 18, 17, 5), event: 'Status changed to Awaiting Client Review' },
+        { timestamp: new Date(2024, 6, 10, 11, 20), event: 'Order Placed', actor: 'Anjali Iyer' },
+        { timestamp: new Date(2024, 6, 15, 17, 0), event: 'Menu draft submitted by designer.', actor: designersData.find(d => d.slug === 'vikram-singh')?.name },
+        { timestamp: new Date(2024, 6, 15, 17, 5), event: 'Status changed to Awaiting Client Review', actor: 'System' },
     ],
-    deliverables: [ { name: 'brochure_draft_v1.pdf', url: '#', submittedAt: new Date(2024, 5, 18, 17, 0)} ]
+    deliverables: [ { name: 'RestaurantMenu_Draft_v1.pdf', url: '#', submittedAt: new Date(2024, 6, 15, 17, 0)} ],
+    clientBrief: "Menu design for a new South Indian fusion restaurant in Chennai. Needs to be elegant, easy to read, and reflect a modern take on tradition."
   },
+  {
+    id: 'ORD4011M',
+    clientName: 'Mohan Das', clientId: 'CLI007M',
+    designerName: designersData.find(d => d.slug === 'sunita-reddy')?.name,
+    designerId: designersData.find(d => d.slug === 'sunita-reddy')?.id,
+    serviceName: 'Mobile App Icon Set', serviceId: 'SVC006IN', serviceTier: 'Standard',
+    serviceScope: ['Set of 10 custom icons', 'Consistent style', 'Multiple sizes (iOS & Android)', '2 revision rounds'],
+    orderDate: new Date(2024, 5, 25, 9, 0),
+    dueDate: new Date(new Date().setDate(new Date().getDate() + 7)),
+    status: 'In Progress',
+    totalAmount: 4999, currency: 'INR',
+    paymentMethod: 'Razorpay',
+    transactionId: 'pay_Xyz123abcDef',
+    orderEvents: [
+        { timestamp: new Date(2024, 5, 25, 9, 0), event: 'Order Placed', actor: 'Mohan Das' },
+        { timestamp: new Date(2024, 5, 26, 10, 0), event: `Designer Assigned: ${designersData.find(d => d.slug === 'sunita-reddy')?.name}`, actor: 'Admin' },
+        { timestamp: new Date(2024, 5, 26, 10, 5), event: 'Status changed to In Progress', actor: 'System' },
+    ],
+    clientBrief: "Need a set of 10 unique icons for a new travel app focusing on Indian destinations. Icons should be modern, flat, and easily recognizable."
+  },
+  {
+    id: 'ORD9274R',
+    clientName: 'Riya Sen', clientId: 'CLI008R',
+    designerName: designersData.find(d => d.slug === 'arjun-mehta')?.name,
+    designerId: designersData.find(d => d.slug === 'arjun-mehta')?.id,
+    serviceName: 'Wedding Invitation Design', serviceId: 'SVC007IN', serviceTier: 'Premium',
+    serviceScope: ['Custom invitation design (main + 2 inserts)', 'Digital and print-ready files', 'Envelope design', '3 revision rounds'],
+    orderDate: new Date(2024, 4, 15, 15, 30),
+    dueDate: new Date(2024, 5, 10),
+    status: 'Revision Requested',
+    totalAmount: 9999, currency: 'INR',
+    paymentMethod: 'Bank Transfer',
+    transactionId: 'BT_WEDINV_RIYA01',
+    orderEvents: [
+        { timestamp: new Date(2024, 4, 15, 15, 30), event: 'Order Placed', actor: 'Riya Sen' },
+        { timestamp: new Date(2024, 5, 5, 18, 0), event: 'Initial invitation drafts submitted.', actor: designersData.find(d => d.slug === 'arjun-mehta')?.name },
+        { timestamp: new Date(2024, 5, 7, 10, 0), event: 'Client requested revisions on color palette.', actor: 'Riya Sen' },
+        { timestamp: new Date(2024, 5, 7, 10, 5), event: 'Status changed to Revision Requested', actor: 'System' },
+    ],
+    clientBrief: "Elegant and traditional Indian wedding invitation. Theme: Peacock feathers and gold accents. Need main invite, RSVP card, and Sangeet details card."
+  }
 ];
 
 
@@ -306,7 +355,7 @@ export function OrdersTableView({ fixedStatusFilter }: OrdersTableViewProps): Re
             <Input
               id="searchOrderId"
               name="orderId"
-              placeholder="e.g., order001"
+              placeholder="e.g., ORD7361P"
               value={searchFilters.orderId}
               onChange={handleSearchChange}
               className="pl-9"
@@ -320,7 +369,7 @@ export function OrdersTableView({ fixedStatusFilter }: OrdersTableViewProps): Re
             <Input
               id="searchClientName"
               name="clientName"
-              placeholder="e.g., Alice"
+              placeholder="e.g., Priya Sharma"
               value={searchFilters.clientName}
               onChange={handleSearchChange}
               className="pl-9"
@@ -348,7 +397,7 @@ export function OrdersTableView({ fixedStatusFilter }: OrdersTableViewProps): Re
             <Input
               id="searchDesignerName"
               name="designerName"
-              placeholder="e.g., Bob"
+              placeholder="e.g., Rohan Kapoor"
               value={searchFilters.designerName}
               onChange={handleSearchChange}
               className="pl-9"

@@ -6,15 +6,15 @@ import Link from 'next/link';
 
 export default function DesignerDashboardPage() {
   const assignedOrders = [
-    { id: 'order1', serviceName: 'Modern Logo Design', client: 'Client A', dueDate: '2023-10-25' },
-    { id: 'order3', serviceName: 'Brochure Design', client: 'Client B', dueDate: '2023-10-28' },
+    { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', client: 'Priya S.', dueDate: 'July 25, 2024' },
+    { id: 'ORD4011M', serviceName: 'Mobile App Icon Set', client: 'Mohan D.', dueDate: 'July 15, 2024' },
   ];
 
   const applicationStatus = {
-    serviceName: 'UI/UX Web Design Mockup',
-    status: 'Approved', // Changed from 'Pending Admin Approval'
-    icon: CheckCircle, // Changed from Clock
-    color: 'text-green-500' // Changed from 'text-yellow-500'
+    serviceName: 'UI/UX Web Design (India)',
+    status: 'Approved', 
+    icon: CheckCircle, 
+    color: 'text-green-500'
   };
 
   return (
@@ -62,13 +62,13 @@ export default function DesignerDashboardPage() {
           <CardHeader>
             <CardTitle className="font-headline flex items-center">
               <FileText className="mr-3 h-6 w-6 text-primary" />
-              Service Applications
+              Service Alerts & Approvals
             </CardTitle>
-            <CardDescription>Apply for services and track your application status.</CardDescription>
+            <CardDescription>Manage service notifications and track your approved specialities.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="p-4 border rounded-lg bg-secondary/30 mb-4">
-              <h4 className="font-semibold">Latest Application:</h4>
+              <h4 className="font-semibold">Latest Approval Status:</h4>
               <div className="flex items-center mt-1">
                 <applicationStatus.icon className={`mr-2 h-5 w-5 ${applicationStatus.color}`} />
                 <span>{applicationStatus.serviceName}: <span className={`${applicationStatus.color} font-medium`}>{applicationStatus.status}</span></span>
@@ -76,7 +76,7 @@ export default function DesignerDashboardPage() {
             </div>
             <Button className="w-full" asChild>
               <Link href="/designer/services-notifications">
-                Manage Applications <ArrowRight className="ml-2 h-4 w-4" />
+                Manage Service Alerts <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </CardContent>
@@ -92,10 +92,10 @@ export default function DesignerDashboardPage() {
           <CardDescription>Showcase your best work to attract clients and get approved for more services.</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-            <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-4" data-ai-hint="portfolio grid">
+            <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-4" data-ai-hint="indian art portfolio">
                 <Palette className="w-16 h-16 text-muted-foreground opacity-50" />
              </div>
-          <p className="text-muted-foreground mb-4">Keep your portfolio updated with your latest and greatest designs.</p>
+          <p className="text-muted-foreground mb-4">Keep your portfolio updated with your latest and greatest designs relevant to the Indian market.</p>
           <Button size="lg" asChild>
             <Link href="/designer/portfolio">
               Manage Portfolio <ArrowRight className="ml-2 h-4 w-4" />

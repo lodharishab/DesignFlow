@@ -7,7 +7,7 @@ import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock, Package, Tag, Icon as LucideIcon, Tags } from 'lucide-react'; 
+import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock, Package, Tag, Icon as LucideIcon, Tags, IndianRupee } from 'lucide-react'; 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -17,6 +17,7 @@ import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { useParams, useRouter } from 'next/navigation'; 
 import { useToast } from "@/hooks/use-toast";
+import { designersData } from '@/lib/designer-data';
 
 interface ServiceTierDetail {
   name: 'Basic' | 'Standard' | 'Premium'; 
@@ -57,187 +58,178 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     id: '1',
     name: 'Modern Logo Design',
     generalDescription: 'Get a unique and memorable logo for your brand that resonates with your target audience.',
-    longDescription: 'Our process ensures a collaborative experience resulting in a logo you’ll love. We focus on versatility, scalability, and timelessness. Each tier offers a different level of complexity and deliverables to match your needs, from essential concepts to comprehensive brand assets. We work closely with you to understand your vision and translate it into a powerful visual identity.',
+    longDescription: 'Our process ensures a collaborative experience resulting in a logo you’ll love. We focus on versatility, scalability, and timelessness for Indian and global brands. Each tier offers a different level of complexity and deliverables to match your needs, from essential concepts to comprehensive brand assets. We work closely with you to understand your vision and translate it into a powerful visual identity.',
     category: 'Logo Design',
-    tags: ['branding', 'minimalist', 'vector', 'identity'],
+    tags: ['branding', 'minimalist', 'vector', 'startup india'],
     imageUrl: 'https://placehold.co/800x500.png',
-    imageHint: 'modern logo showcase',
+    imageHint: 'modern logo for indian startup',
     tiers: [
       {
-        name: 'Basic', price: 99, deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days',
-        scope: ['1 Initial concept', '2 Rounds of revisions', 'Basic vector files (SVG, PNG)'],
-        tierDescription: 'A great starting point for new brands or simple logo needs. Get a foundational logo quickly and efficiently.',
+        name: 'Basic', price: 4999, deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days',
+        scope: ['1 Initial concept (culturally adapted)', '2 Rounds of revisions', 'Basic vector files (SVG, PNG)'],
+        tierDescription: 'A great starting point for new Indian brands or simple logo needs. Get a foundational logo quickly and efficiently.',
         icon: Shield,
       },
       {
-        name: 'Standard', price: 199, deliveryTimeMin: 5, deliveryTimeMax: 7, deliveryTimeUnit: 'days',
-        scope: ['3 Initial concepts', '3 Rounds of revisions', 'Full vector files (AI, EPS, SVG, PNG, JPG)', 'Basic brand guide (colors, fonts)'],
-        tierDescription: 'Our most popular option, offering a comprehensive logo package with more choices and branding elements.',
+        name: 'Standard', price: 9999, deliveryTimeMin: 5, deliveryTimeMax: 7, deliveryTimeUnit: 'days',
+        scope: ['3 Initial concepts (with Indian aesthetic options)', '3 Rounds of revisions', 'Full vector files (AI, EPS, SVG, PNG, JPG)', 'Basic brand guide (colors, fonts)'],
+        tierDescription: 'Our most popular option, offering a comprehensive logo package with more choices and branding elements relevant to the Indian context.',
         icon: Star,
       },
       {
-        name: 'Premium', price: 299, deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'days',
-        scope: ['5 Initial concepts', 'Unlimited revisions', 'Full vector & source files', 'Detailed brand guidelines', 'Social media kit'],
-        tierDescription: 'For businesses needing an extensive branding solution, maximum flexibility, and additional assets.',
+        name: 'Premium', price: 14999, deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'days',
+        scope: ['5 Initial concepts (diverse styles)', 'Unlimited revisions', 'Full vector & source files', 'Detailed brand guidelines', 'Social media kit for Indian platforms'],
+        tierDescription: 'For businesses needing an extensive branding solution, maximum flexibility, and additional assets for the Indian market.',
         icon: Zap,
       },
     ],
-    approvedDesigners: [
-      { id: 'des001', slug: 'alice-wonderland', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', rating: 4.9, projectsCompleted: 120, imageHint: 'designer portrait' },
-      { id: 'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', rating: 4.8, projectsCompleted: 95, imageHint: 'designer portrait' },
-    ],
+    approvedDesigners: designersData.filter(d => d.specialties.includes('Logo Design') || d.specialties.includes('Branding')).slice(0,2).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.8, projectsCompleted: Math.floor(Math.random()*50)+20, imageHint: d.imageHint})),
   },
   '2': {
     id: '2',
-    name: 'Social Media Post Pack',
-    generalDescription: 'Engaging posts designed for your social media channels.',
-    longDescription: 'Boost your online presence with professionally designed social media posts tailored to your brand and campaign goals. We provide source files and high-resolution images ready for publishing across various platforms. Content is optimized for engagement and visual appeal.',
+    name: 'Social Media Post Pack (India Focus)',
+    generalDescription: 'Engaging posts designed for your social media channels, optimized for Indian audiences.',
+    longDescription: 'Boost your online presence with professionally designed social media posts tailored to your brand and campaign goals in India. We provide source files and high-resolution images ready for publishing across platforms like Instagram, Facebook, and regional social media. Content is optimized for engagement and visual appeal, considering Indian festivals and trends.',
     category: 'Social Media',
-    tags: ['instagram', 'facebook', 'twitter', 'content'],
+    tags: ['instagram india', 'facebook marketing', 'regional content', 'festival posts'],
     imageUrl: 'https://placehold.co/800x500.png',
-    imageHint: 'social media campaign',
+    imageHint: 'diwali social media post',
     tiers: [
       {
-        name: 'Basic', price: 49, deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'days',
-        scope: ['5 social media posts', '1 Platform choice', '1 Round of revisions', 'Optimized JPG/PNG'],
-        tierDescription: 'Perfect for a quick boost or testing new content on a single platform.',
+        name: 'Basic', price: 2499, deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'days',
+        scope: ['5 social media posts (e.g., for a specific festival)', '1 Platform choice', '1 Round of revisions', 'Optimized JPG/PNG'],
+        tierDescription: 'Perfect for a quick boost or testing new content on a single platform for an Indian audience.',
         icon: Shield,
       },
       {
-        name: 'Standard', price: 99, deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days',
+        name: 'Standard', price: 4999, deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days',
         scope: ['10 social media posts', 'Up to 2 platforms', '2 Rounds of revisions', 'Source files (PSD or Figma)'],
-        tierDescription: 'A balanced pack for consistent social media engagement across multiple platforms.',
+        tierDescription: 'A balanced pack for consistent social media engagement across multiple platforms targeting India.',
         icon: Star,
       },
     ],
-    approvedDesigners: [
-       { id: 'des003', slug: 'carol-danvers', name: 'Carol Danvers', avatarUrl: 'https://placehold.co/40x40.png', rating: 5.0, projectsCompleted: 200, imageHint: 'designer portrait' },
-    ],
+     approvedDesigners: designersData.filter(d => d.specialties.includes('Social Media Graphics') || d.specialties.includes('Content Creation')).slice(0,2).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.9, projectsCompleted: Math.floor(Math.random()*80)+30, imageHint: d.imageHint})),
   },
    '3': {
     id: '3',
-    name: 'Professional Brochure Design',
-    generalDescription: 'Stunning tri-fold or bi-fold brochures to showcase your business effectively.',
-    longDescription: 'Comprehensive brochure design including concept, layout, and print-ready files. We work with you to create a compelling narrative and visual style that captures attention and effectively communicates your message. Ideal for marketing materials, event handouts, and informational packets.',
+    name: 'Professional Brochure Design (India)',
+    generalDescription: 'Stunning tri-fold or bi-fold brochures to showcase your business effectively to the Indian market.',
+    longDescription: 'Comprehensive brochure design including concept, layout, and print-ready files. We work with you to create a compelling narrative and visual style that captures attention and effectively communicates your message in an Indian context. Ideal for marketing materials, event handouts, and informational packets for businesses in India.',
     category: 'Print Design',
-    tags: ['brochure', 'flyer', 'marketing material'],
+    tags: ['brochure india', 'marketing collateral', 'print advertising'],
     imageUrl: 'https://placehold.co/800x500.png',
-    imageHint: 'corporate brochure',
+    imageHint: 'indian business brochure',
     tiers: [
         {
-            name: 'Standard', price: 249, deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'business_days',
+            name: 'Standard', price: 7999, deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'business_days',
             scope: ['Custom brochure design (up to 6 panels)', 'Stock imagery included (up to 3 images)', '3 revision rounds', 'Print-ready PDF'],
-            tierDescription: 'High-quality brochure design for marketing and events, covering common formats.',
+            tierDescription: 'High-quality brochure design for marketing and events, covering common formats suitable for Indian businesses.',
             icon: Star,
         },
         {
-            name: 'Premium', price: 349, deliveryTimeMin: 2, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks', 
-            scope: ['Custom brochure design (up to 12 panels)', 'Premium stock imagery (up to 5 images)', '5 revision rounds', 'Print-ready PDF & source files', 'Copywriting suggestions (up to 200 words)'],
-            tierDescription: 'Comprehensive brochure package with more content, panels, and added features like copywriting support.',
+            name: 'Premium', price: 12999, deliveryTimeMin: 2, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks', 
+            scope: ['Custom brochure design (up to 12 panels)', 'Premium stock imagery (up to 5 images)', '5 revision rounds', 'Print-ready PDF & source files', 'Copywriting suggestions (up to 200 words, English/Hindi)'],
+            tierDescription: 'Comprehensive brochure package with more content, panels, and added features like bilingual copywriting support.',
             icon: Zap,
         },
     ],
-    approvedDesigners: [],
+    approvedDesigners: designersData.filter(d => d.specialties.includes('Print Design')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.7, projectsCompleted: Math.floor(Math.random()*40)+15, imageHint: d.imageHint})),
   },
    '4': {
     id: '4',
-    name: 'UI/UX Web Design Mockup',
-    generalDescription: 'High-fidelity mockup for one key page of your website or app.',
-    longDescription: 'Detailed UI/UX design for a single, critical page, including wireframes, mockups, and a style guide for key elements. Ideal for presentations or developer handoff. We focus on user-centric design principles to ensure an intuitive and visually appealing experience. Suitable for landing pages, product pages, or core app screens.',
+    name: 'UI/UX Web Design Mockup (India)',
+    generalDescription: 'High-fidelity mockup for one key page of your website or app, tailored for Indian users.',
+    longDescription: 'Detailed UI/UX design for a single, critical page, including wireframes, mockups, and a style guide for key elements. Ideal for presentations or developer handoff. We focus on user-centric design principles considering the Indian digital landscape to ensure an intuitive and visually appealing experience. Suitable for landing pages, product pages, or core app screens targeting India.',
     category: 'UI/UX Design',
-    tags: ['website', 'app design', 'mockup', 'figma'],
+    tags: ['website india', 'app design india', 'mockup', 'figma', 'vernacular'],
     imageUrl: 'https://placehold.co/800x500.png',
-    imageHint: 'app interface design',
+    imageHint: 'indian mobile app ui',
     tiers: [
         {
-            name: 'Standard', price: 399, deliveryTimeMin: 10, deliveryTimeMax: 14, deliveryTimeUnit: 'days',
+            name: 'Standard', price: 15999, deliveryTimeMin: 10, deliveryTimeMax: 14, deliveryTimeUnit: 'days',
             scope: ['1 page UI/UX design (e.g., Homepage or Product Page)', 'Mobile and desktop views', '2 revision rounds', 'Figma/XD source file'],
-            tierDescription: 'Essential page design to visualize your web project for one key screen.',
+            tierDescription: 'Essential page design to visualize your web project for one key screen, considering Indian user patterns.',
             icon: Star,
         },
         {
-            name: 'Premium', price: 599, deliveryTimeMin: 14, deliveryTimeMax: 21, deliveryTimeUnit: 'days',
+            name: 'Premium', price: 23999, deliveryTimeMin: 14, deliveryTimeMax: 21, deliveryTimeUnit: 'days',
             scope: ['Up to 3 key pages UI/UX design', 'Mobile, tablet, and desktop views', 'Interactive prototype (clickable)', '3 revision rounds', 'Component style guide', 'Figma/XD source files'],
-            tierDescription: 'A more complete UI/UX package for core application flow, including multiple screens and an interactive prototype.',
+            tierDescription: 'A more complete UI/UX package for core application flow, including multiple screens and an interactive prototype tailored for India.',
             icon: Zap,
         },
     ],
-    approvedDesigners: [
-      { id: 'des001', slug: 'alice-wonderland', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', rating: 4.9, projectsCompleted: 120, imageHint: 'designer portrait' },
-    ],
+    approvedDesigners: designersData.filter(d => d.specialties.includes('Web UI/UX') || d.specialties.includes('App Design')).slice(0,2).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.9, projectsCompleted: Math.floor(Math.random()*60)+25, imageHint: d.imageHint})),
   },
   '5': {
     id: '5',
-    name: 'Custom Illustration',
-    generalDescription: 'Unique vector or raster illustration based on your brief.',
-    longDescription: 'From simple icons to complex scenes, get custom illustrations in your desired style. Perfect for websites, marketing materials, or personal projects. We bring your ideas to life visually, ensuring the illustration aligns with your brand and message. Discuss your style preferences (e.g., flat, detailed, cartoonish, realistic) with our designers.',
+    name: 'Custom Illustration (Indian Themes)',
+    generalDescription: 'Unique vector or raster illustration based on your brief, with options for Indian cultural themes.',
+    longDescription: 'From simple icons to complex scenes, get custom illustrations in your desired style. Perfect for websites, marketing materials, or personal projects with an Indian touch. We bring your ideas to life visually, ensuring the illustration aligns with your brand and message. Discuss your style preferences (e.g., Madhubani-inspired, modern flat, detailed Warli) with our designers.',
     category: 'Illustration',
-    tags: ['vector art', 'digital painting', 'character'],
+    tags: ['indian art style', 'digital painting', 'character design india', 'cultural illustration'],
     imageUrl: 'https://placehold.co/800x500.png',
-    imageHint: 'fantasy illustration',
+    imageHint: 'indian folk art illustration',
     tiers: [
         {
-            name: 'Basic', price: 79, deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days',
-            scope: ['1 simple icon or spot illustration', 'Limited detail', '2 revision rounds', 'PNG/JPG output'],
-            tierDescription: 'For small, simple illustration needs like icons or minor graphic elements.',
+            name: 'Basic', price: 3999, deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days',
+            scope: ['1 simple icon or spot illustration (Indian motif optional)', 'Limited detail', '2 revision rounds', 'PNG/JPG output'],
+            tierDescription: 'For small, simple illustration needs like icons or minor graphic elements, with an optional Indian flair.',
             icon: Shield,
         },
         {
-            name: 'Standard', price: 149, deliveryTimeMin: 5, deliveryTimeMax: 8, deliveryTimeUnit: 'days',
-            scope: ['1 custom illustration (e.g., character, small scene)', 'Medium detail', '3 revision rounds', 'Source file (AI, PSD, or other)', 'Commercial use license'],
-            tierDescription: 'Versatile illustration for most common uses, like website heroes or blog post graphics.',
+            name: 'Standard', price: 7999, deliveryTimeMin: 5, deliveryTimeMax: 8, deliveryTimeUnit: 'days',
+            scope: ['1 custom illustration (e.g., character, small scene with Indian context)', 'Medium detail', '3 revision rounds', 'Source file (AI, PSD, or other)', 'Commercial use license'],
+            tierDescription: 'Versatile illustration for most common uses, like website heroes or blog post graphics, adaptable for Indian themes.',
             icon: Star,
         },
         {
-            name: 'Premium', price: 249, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks', 
-            scope: ['1 complex illustration (e.g., detailed scene, multiple characters)', 'High detail and complexity', '5 revision rounds', 'Source file & all formats', 'Enhanced commercial use license'],
-            tierDescription: 'For high-impact, detailed illustrative work requiring more complexity and refinement.',
+            name: 'Premium', price: 11999, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks', 
+            scope: ['1 complex illustration (e.g., detailed scene, multiple characters, Indian festival theme)', 'High detail and complexity', '5 revision rounds', 'Source file & all formats', 'Enhanced commercial use license'],
+            tierDescription: 'For high-impact, detailed illustrative work requiring more complexity and refinement, perfect for rich Indian cultural depictions.',
             icon: Zap,
         },
     ],
-    approvedDesigners: [],
+     approvedDesigners: designersData.filter(d => d.specialties.includes('Illustration') || d.specialties.includes('Digital Art')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.8, projectsCompleted: Math.floor(Math.random()*30)+10, imageHint: d.imageHint})),
   },
   '6': {
     id: '6',
-    name: 'Packaging Design Concept',
-    generalDescription: 'Creative packaging concept for your product.',
-    longDescription: 'Develop a unique and attractive packaging design concept that makes your product stand out. Includes mockups and initial dieline considerations to help visualize the final product. We consider your brand, target audience, and product characteristics to create a compelling packaging solution.',
+    name: 'Packaging Design Concept (Indian Products)',
+    generalDescription: 'Creative packaging concept for your product, designed for the Indian retail landscape.',
+    longDescription: 'Develop a unique and attractive packaging design concept that makes your product stand out on Indian shelves. Includes mockups and initial dieline considerations to help visualize the final product. We consider your brand, target audience, and product characteristics to create a compelling packaging solution suitable for India.',
     category: 'Packaging',
-    tags: ['product packaging', 'box design', 'label design'],
+    tags: ['product packaging india', 'box design india', 'label design', 'fmcg india'],
     imageUrl: 'https://placehold.co/800x500.png',
-    imageHint: 'luxury product box',
+    imageHint: 'indian spice packaging',
     tiers: [
         {
-            name: 'Standard', price: 299, deliveryTimeMin: 8, deliveryTimeMax: 12, deliveryTimeUnit: 'business_days',
-            scope: ['1 packaging concept (e.g., box, label)', '2D mockups', 'Basic dieline sketch', 'Color palette and typography suggestions', '2 revision rounds'],
-            tierDescription: 'Solid packaging concept to get you started with visualizing your product\'s look.',
+            name: 'Standard', price: 12999, deliveryTimeMin: 8, deliveryTimeMax: 12, deliveryTimeUnit: 'business_days',
+            scope: ['1 packaging concept (e.g., box for mithai, label for pickles)', '2D mockups', 'Basic dieline sketch', 'Color palette and typography suggestions', '2 revision rounds'],
+            tierDescription: 'Solid packaging concept to get you started with visualizing your product\'s look for the Indian market.',
             icon: Star,
         },
         {
-            name: 'Premium', price: 499, deliveryTimeMin: 12, deliveryTimeMax: 18, deliveryTimeUnit: 'business_days',
+            name: 'Premium', price: 19999, deliveryTimeMin: 12, deliveryTimeMax: 18, deliveryTimeUnit: 'business_days',
             scope: ['Up to 2 packaging concepts or 1 complex concept', '3D mockups', 'Detailed dieline sketch', 'Full branding elements integration', 'Print-ready file preparation advice', '3 revision rounds'],
-            tierDescription: 'Comprehensive packaging design for market-ready products, including 3D mockups and more concepts.',
+            tierDescription: 'Comprehensive packaging design for market-ready products in India, including 3D mockups and more concepts.',
             icon: Zap,
         },
     ],
-    approvedDesigners: [
-      { id: 'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', rating: 4.8, projectsCompleted: 95, imageHint: 'designer portrait' },
-    ],
+    approvedDesigners: designersData.filter(d => d.specialties.includes('Packaging Design')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.7, projectsCompleted: Math.floor(Math.random()*25)+5, imageHint: d.imageHint})),
   },
    '7': {
     id: '7',
-    name: 'Basic Logo Sketch',
-    generalDescription: 'Quick logo sketches for initial ideas.',
-    longDescription: 'Get 3-5 rough logo sketches to explore initial concepts and directions for your brand identity. This is a great starting point for brainstorming and refining your vision before committing to a full design. These are conceptual sketches, not finalized logos.',
+    name: 'Basic Logo Sketch (Indian Concepts)',
+    generalDescription: 'Quick logo sketches for initial ideas, with an option for Indian design elements.',
+    longDescription: 'Get 3-5 rough logo sketches to explore initial concepts and directions for your brand identity. This is a great starting point for brainstorming and refining your vision before committing to a full design. These are conceptual sketches, not finalized logos, and can incorporate Indian motifs if requested.',
     category: 'Logo Design',
-    tags: ['logo sketch', 'concept', 'ideation'],
+    tags: ['logo sketch india', 'concept design', 'ideation india', 'indian motifs'],
     imageUrl: 'https://placehold.co/800x500.png',
-    imageHint: 'pencil sketch logo',
+    imageHint: 'indian elephant logo sketch',
     tiers: [
         {
-            name: 'Basic', price: 49, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'days',
-            scope: ['3-5 rough logo sketches (digital)', 'Delivered as JPG/PNG', '1 round of feedback for minor sketch adjustments'],
-            tierDescription: 'Rapidly explore initial logo ideas with a set of quick digital sketches.',
+            name: 'Basic', price: 2499, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'days',
+            scope: ['3-5 rough logo sketches (digital, Indian elements optional)', 'Delivered as JPG/PNG', '1 round of feedback for minor sketch adjustments'],
+            tierDescription: 'Rapidly explore initial logo ideas with a set of quick digital sketches, adaptable for Indian concepts.',
             icon: Shield,
         },
     ],
@@ -401,7 +393,7 @@ export default function ServiceDetailPage() {
                       <CardHeader>
                         <CardTitle className="font-headline text-2xl flex items-center">
                           <tier.icon className="mr-3 h-7 w-7 text-primary" />
-                          {tier.name} Package - ₹{tier.price}
+                          {tier.name} Package - <IndianRupee className="inline-block h-6 w-6 ml-1" />{tier.price.toLocaleString('en-IN')}
                         </CardTitle>
                         <CardDescription className="flex items-center text-sm pt-1">
                           <Clock className="inline-block mr-1.5 h-4 w-4" />
@@ -494,7 +486,7 @@ export default function ServiceDetailPage() {
                        <selectedTierDetails.icon className="mr-2.5 h-6 w-6 text-primary" />
                       {selectedTierDetails.name} Tier Summary
                     </CardTitle>
-                     <CardDescription className="text-2xl font-bold text-primary pt-1">₹{selectedTierDetails.price}</CardDescription>
+                     <CardDescription className="text-2xl font-bold text-primary pt-1"><IndianRupee className="inline-block h-6 w-6 mr-0.5" />{selectedTierDetails.price.toLocaleString('en-IN')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm">
                      <p className="flex items-center text-muted-foreground">
@@ -523,13 +515,13 @@ export default function ServiceDetailPage() {
 
               <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle className="font-headline text-xl">Why Choose Us?</CardTitle>
+                  <CardTitle className="font-headline text-xl">Why Choose DesignFlow?</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-muted-foreground">
-                  <p className="flex items-start"><Check className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" /> Quality Assured Designers</p>
-                  <p className="flex items-start"><Check className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" /> Transparent Pricing & Scope</p>
+                  <p className="flex items-start"><Check className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" /> Expert Indian Designers</p>
+                  <p className="flex items-start"><Check className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" /> Transparent INR Pricing</p>
                   <p className="flex items-start"><Check className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" /> Streamlined Process</p>
-                  <p className="flex items-start"><Check className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" /> Secure Payments</p>
+                  <p className="flex items-start"><Check className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" /> Secure Payments via Razorpay</p>
                   <Button variant="outline" className="w-full mt-4">
                     <MessageSquare className="mr-2 h-5 w-5" /> Contact Us
                   </Button>

@@ -6,8 +6,8 @@ import Link from 'next/link';
 
 export default function ClientDashboardPage() {
   const activeOrders = [
-    { id: 'order1', serviceName: 'Modern Logo Design', status: 'In Progress', designer: 'Alice W.' },
-    { id: 'order2', serviceName: 'Social Media Pack', status: 'Pending Designer', designer: 'N/A' },
+    { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', status: 'In Progress', designer: 'Rohan K.' },
+    { id: 'ORD1038K', serviceName: 'Social Media Campaign Graphics', status: 'Pending Assignment', designer: 'N/A' },
   ];
 
   return (
@@ -57,13 +57,13 @@ export default function ClientDashboardPage() {
               <Briefcase className="mr-3 h-6 w-6 text-primary" />
               Discover Services
             </CardTitle>
-            <CardDescription>Find the perfect design solution for your needs.</CardDescription>
+            <CardDescription>Find the perfect design solution for your needs in India.</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-             <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-4" data-ai-hint="design inspiration">
+             <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-4" data-ai-hint="indian design inspiration">
                 <Briefcase className="w-16 h-16 text-muted-foreground opacity-50" />
              </div>
-            <p className="text-muted-foreground mb-4">Explore our curated list of design services with fixed scopes and prices.</p>
+            <p className="text-muted-foreground mb-4">Explore our curated list of design services with fixed scopes and prices, tailored for the Indian market.</p>
             <Button size="lg" asChild>
               <Link href="/services">
                 Browse Services <ArrowRight className="ml-2 h-4 w-4" />

@@ -27,28 +27,28 @@ interface CartItem {
 const initialMockCartItems: CartItem[] = [
   {
     id: '1',
-    name: 'Modern Logo Design',
+    name: 'Modern Logo Design (India)',
     tierName: 'Standard',
-    price: 199,
+    price: 9999,
     imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'logo design service',
+    imageHint: 'indian startup logo',
     quantity: 1,
   },
   {
     id: '2',
-    name: 'Social Media Post Pack',
+    name: 'Social Media Pack (Festive)',
     tierName: 'Basic',
-    price: 49,
+    price: 2499,
     imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'social media graphics',
+    imageHint: 'diwali social media graphics',
     quantity: 1,
   },
   {
     id: '4',
-    name: 'UI/UX Web Design Mockup',
-    price: 399, 
+    name: 'UI/UX Web Design (E-commerce)',
+    price: 15999, 
     imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'website mockup service',
+    imageHint: 'indian e-commerce website',
     quantity: 1,
   }
 ];
@@ -102,14 +102,14 @@ export default function CartPage() {
       return;
     }
 
-    const simulatedOrderId = `order_${Date.now()}`;
+    const simulatedOrderId = `ORD_DESIGNFLOW_${Date.now()}`;
 
     const options = {
       key: RAZORPAY_TEST_KEY_ID, 
       amount: totalAmountInPaise, 
       currency: "INR",
-      name: "DesignFlow",
-      description: "Test Transaction for Design Services",
+      name: "DesignFlow India",
+      description: "Design Services Order",
       image: "https://placehold.co/100x100.png?text=DF", 
       order_id: "", 
       handler: function (response: any) {
@@ -121,12 +121,12 @@ export default function CartPage() {
         setIsProcessing(false);
       },
       prefill: {
-        name: "Test User", 
-        email: "test.user@example.com",
-        contact: "9999999999"
+        name: "Test User India", 
+        email: "test.user@example.in",
+        contact: "9999988888"
       },
       notes: {
-        address: "DesignFlow Corporate Office"
+        address: "DesignFlow India Office, Bangalore"
       },
       theme: {
         color: "#2081F9" 
@@ -224,7 +224,7 @@ export default function CartPage() {
                       <div className="flex items-center justify-between mt-3 sm:mt-auto">
                         <p className="text-xl font-semibold text-primary">
                           <IndianRupee className="inline-block h-5 w-5 relative -top-0.5" />
-                          {item.price.toFixed(2)}
+                          {item.price.toLocaleString('en-IN')}
                         </p>
                         <Button
                           variant="ghost"
@@ -251,16 +251,16 @@ export default function CartPage() {
                 <CardContent className="space-y-3">
                   <div className="flex justify-between text-muted-foreground">
                     <span>Subtotal</span>
-                    <span><IndianRupee className="inline-block h-4 w-4 relative -top-px" />{subtotal.toFixed(2)}</span>
+                    <span><IndianRupee className="inline-block h-4 w-4 relative -top-px" />{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>Taxes (GST {TAX_RATE * 100}%)</span>
-                    <span><IndianRupee className="inline-block h-4 w-4 relative -top-px" />{taxes.toFixed(2)}</span>
+                    <span><IndianRupee className="inline-block h-4 w-4 relative -top-px" />{taxes.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                   <Separator className="my-3" />
                   <div className="flex justify-between font-bold text-xl">
                     <span>Total Amount</span>
-                    <span><IndianRupee className="inline-block h-5 w-5 relative -top-0.5" />{totalAmount.toFixed(2)}</span>
+                    <span><IndianRupee className="inline-block h-5 w-5 relative -top-0.5" />{totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-3 pt-4">

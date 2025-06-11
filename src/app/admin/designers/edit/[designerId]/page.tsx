@@ -28,12 +28,16 @@ interface Designer {
   portfolioLink?: string;
 }
 
-// Using the same initial data source for consistency
+// Using the same initial data source for consistency from admin designers list page
 const initialDesignersData: Designer[] = [
-  { id: 'des001', name: 'Alice Wonderland', email: 'alice.w@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman avatar', status: 'Active', joinDate: new Date(2023, 5, 15), servicesApproved: 5, portfolioLink: 'https://example.com/alice' },
-  { id: 'des002', name: 'Bob The Builder', email: 'bob.b@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'man avatar', status: 'Pending Approval', joinDate: new Date(2023, 8, 20), servicesApproved: 0, portfolioLink: 'https://example.com/bob' },
-  { id: 'des003', name: 'Carol Danvers', email: 'carol.d@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman avatar', status: 'Active', joinDate: new Date(2022, 11, 1), servicesApproved: 8 },
-  { id: 'des004', name: 'David Copperfield', email: 'david.c@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'man avatar', status: 'Suspended', joinDate: new Date(2023, 1, 10), servicesApproved: 2, portfolioLink: 'https://example.com/david' },
+  { id: 'des001', name: 'Priya Sharma', email: 'priya.sharma@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman designer', status: 'Active', joinDate: new Date(2023, 5, 15), servicesApproved: 7, portfolioLink: 'https://example.com/priyasharma' },
+  { id: 'des002', name: 'Rohan Kapoor', email: 'rohan.kapoor@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man architect', status: 'Pending Approval', joinDate: new Date(2023, 8, 20), servicesApproved: 0, portfolioLink: 'https://example.com/rohankapoor' },
+  { id: 'des003', name: 'Aisha Khan', email: 'aisha.khan@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman creative', status: 'Active', joinDate: new Date(2022, 11, 1), servicesApproved: 10 },
+  { id: 'des004', name: 'Vikram Singh', email: 'vikram.singh@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man artist', status: 'Suspended', joinDate: new Date(2023, 1, 10), servicesApproved: 3, portfolioLink: 'https://example.com/vikramsingh' },
+  { id: 'des005', name: 'Sunita Reddy', email: 'sunita.reddy@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman professional', status: 'Pending Approval', joinDate: new Date(2024, 0, 5), servicesApproved: 0 },
+  { id: 'des006', name: 'Arjun Mehta', email: 'arjun.mehta@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man photographer', status: 'Active', joinDate: new Date(2023, 3, 12), servicesApproved: 5, portfolioLink: 'https://example.com/arjunmehta' },
+  { id: 'des007', name: 'Neha Joshi', email: 'neha.joshi@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman fashion designer', status: 'Active', joinDate: new Date(2022, 7, 25), servicesApproved: 8 },
+  { id: 'des008', name: 'Karan Verma', email: 'karan.verma@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man developer', status: 'Pending Approval', joinDate: new Date(2024, 2, 1), servicesApproved: 0 },
 ];
 
 const designerStatuses: Designer['status'][] = ['Active', 'Pending Approval', 'Suspended'];

@@ -8,10 +8,13 @@ import { ServiceCard } from '@/components/shared/service-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, ListFilter, Search, ChevronLeft, ChevronRight, Film, Presentation } from 'lucide-react'; 
-import type { Icon } from 'lucide-react'; 
-import { useState, useRef, useEffect, useCallback } from 'react'; 
+import { Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, ListFilter, Search, ChevronLeft, ChevronRight, Film, Presentation, Tag, Check } from 'lucide-react'; 
+import type { Icon as LucideIconType } from 'lucide-react'; 
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'; 
 import { cn } from '@/lib/utils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface ServiceTier {
   name: 'Basic' | 'Standard' | 'Premium';
@@ -23,88 +26,103 @@ interface Service {
   name: string;
   description: string; 
   category: string;
+  categorySlug: string;
   imageUrl: string;
   imageHint: string;
   tiers: ServiceTier[];
+  tags?: string[];
 }
 
 const services: Service[] = [
   { 
     id: '1', name: 'Modern Logo Design', 
-    description: 'Get a unique and memorable logo for your brand. Includes multiple concepts and revisions.', 
-    category: 'Logo Design', 
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'abstract logo',
+    description: 'Unique logos for Indian brands, startups, and businesses.', 
+    category: 'Logo Design', categorySlug: 'logo-design',
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian startup logo',
+    tags: ['branding', 'startup india', 'vector logo', 'e-commerce logo'],
     tiers: [
-      { name: 'Basic', price: 99 },
-      { name: 'Standard', price: 199 },
-      { name: 'Premium', price: 299 },
+      { name: 'Basic', price: 4999 }, { name: 'Standard', price: 9999 }, { name: 'Premium', price: 14999 },
     ]
   },
   { 
-    id: '2', name: 'Social Media Post Pack', 
-    description: 'Engaging posts designed for your social media channels. Perfect for Instagram, Facebook, and Twitter.', 
-    category: 'Social Media', 
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media graphics',
+    id: '2', name: 'Social Media Pack (India Focus)', 
+    description: 'Engaging posts for Instagram, Facebook, optimized for Indian festivals and trends.', 
+    category: 'Social Media', categorySlug: 'social-media',
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'diwali social media graphics',
+    tags: ['instagram marketing', 'festival creatives', 'regional content', 'whatsapp status'],
     tiers: [
-      { name: 'Basic', price: 49 },
-      { name: 'Standard', price: 99 },
+      { name: 'Basic', price: 2499 }, { name: 'Standard', price: 4999 },
     ]
   },
   { 
-    id: '3', name: 'Professional Brochure Design', 
-    description: 'Stunning tri-fold or bi-fold brochures to showcase your business effectively.', 
-    category: 'Print Design', 
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'brochure layout',
+    id: '3', name: 'Professional Brochure (India)', 
+    description: 'Tri-fold or bi-fold brochures for Indian businesses and events.', 
+    category: 'Print Design', categorySlug: 'print-design',
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian company brochure',
+    tags: ['marketing material', 'event brochure', 'corporate profile', 'print ads india'],
     tiers: [
-      { name: 'Standard', price: 249 },
-      { name: 'Premium', price: 349 },
+      { name: 'Standard', price: 7999 }, { name: 'Premium', price: 12999 },
     ]
   },
   { 
-    id: '4', name: 'UI/UX Web Design Mockup', 
-    description: 'High-fidelity mockup for one key page of your website or app.', 
-    category: 'UI/UX Design', 
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website mockup',
+    id: '4', name: 'UI/UX Web Design (India)', 
+    description: 'High-fidelity mockups for websites targeting Indian users, considering local UI patterns.', 
+    category: 'UI/UX Design', categorySlug: 'ui-ux-design',
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design india',
+    tags: ['responsive design', 'mobile first india', 'figma design', 'e-commerce ui'],
     tiers: [
-      { name: 'Standard', price: 399 },
-      { name: 'Premium', price: 599 },
+      { name: 'Standard', price: 15999 }, { name: 'Premium', price: 23999 },
     ]
   },
   { 
-    id: '5', name: 'Custom Illustration', 
-    description: 'Unique vector or raster illustration based on your brief.', 
-    category: 'Illustration', 
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'character illustration',
+    id: '5', name: 'Custom Illustration (Indian Art)', 
+    description: 'Unique illustrations with options for Indian art styles like Madhubani, Warli, etc.', 
+    category: 'Illustration', categorySlug: 'illustration',
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'madhubani art digital',
+    tags: ['digital art india', 'character design', 'indian folk art', 'custom graphics'],
     tiers: [
-      { name: 'Basic', price: 79 },
-      { name: 'Standard', price: 149 },
-      { name: 'Premium', price: 249 },
+      { name: 'Basic', price: 3999 }, { name: 'Standard', price: 7999 }, { name: 'Premium', price: 11999 },
     ]
   },
   { 
-    id: '6', name: 'Packaging Design Concept', 
-    description: 'Creative packaging concept for your product.', 
-    category: 'Packaging', 
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product packaging',
+    id: '6', name: 'Packaging Design (Indian Products)', 
+    description: 'Creative packaging for Indian FMCG, sweets, or artisanal products.', 
+    category: 'Packaging', categorySlug: 'packaging',
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian sweet box packaging',
+    tags: ['product packaging', 'fmcg design', 'label design', 'sustainable packaging india'],
     tiers: [
-      { name: 'Standard', price: 299 },
-      { name: 'Premium', price: 499 },
+      { name: 'Standard', price: 12999 }, { name: 'Premium', price: 19999 },
     ]
   },
   { 
-    id: '7', name: 'Basic Logo Sketch', 
-    description: 'Quick logo sketches for initial ideas.', 
-    category: 'Logo Design', 
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo sketch',
-    tiers: [
-      { name: 'Basic', price: 49 },
-    ]
+    id: '7', name: 'Basic Logo Sketch (Indian Concepts)', 
+    description: 'Quick logo sketches exploring Indian motifs and modern design ideas.', 
+    category: 'Logo Design', categorySlug: 'logo-design',
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian elephant logo sketch',
+    tags: ['logo ideation', 'concept sketch', 'indian motifs', 'quick design'],
+    tiers: [ { name: 'Basic', price: 2499 }, ]
+  },
+  { 
+    id: '8', name: 'Animated Explainer Video (Hinglish)', 
+    description: 'Short animated videos to explain your product/service, with Hinglish voiceover option.', 
+    category: 'Motion Graphics', categorySlug: 'motion-graphics',
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'explainer video animation',
+    tags: ['2d animation', 'marketing video', 'product demo', 'hinglish content'],
+    tiers: [ { name: 'Standard', price: 19999 }, { name: 'Premium', price: 34999 } ]
+  },
+  { 
+    id: '9', name: 'Business Presentation (India Focus)', 
+    description: 'Professional presentations for Indian businesses, investors, and conferences.', 
+    category: 'Presentations', categorySlug: 'presentations',
+    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'business ppt slide india',
+    tags: ['pitch deck india', 'corporate presentation', 'powerpoint design', 'investor deck'],
+    tiers: [ { name: 'Standard', price: 8999 }, { name: 'Premium', price: 15999 } ]
   },
 ];
 
 interface CategoryFilterItem {
   name: string;
-  icon: Icon;
+  icon: LucideIconType;
   slug: string;
 }
 
@@ -123,70 +141,89 @@ const sortOptions = [
   { value: 'relevance', label: 'Relevance' },
   { value: 'price-asc', label: 'Price: Low to High' },
   { value: 'price-desc', label: 'Price: High to Low' },
-  { value: 'newest', label: 'Newest First' },
+  { value: 'newest', label: 'Newest First' }, // Needs actual date in data if implemented
 ];
+
+const uniqueTags = Array.from(new Set(services.flatMap(service => service.tags || []).map(tag => tag.toLowerCase()))).sort();
+const uniqueTierNames = Array.from(new Set(services.flatMap(service => service.tiers.map(tier => tier.name)))).sort();
+
 
 export default function ServicesPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [selectedTiers, setSelectedTiers] = useState<Set<string>>(new Set());
+  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<string>('relevance');
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
 
-  const displayedServices = services.filter(service => {
-    const categoryMatch = activeCategory ? service.category === activeCategory : true;
-    return categoryMatch;
-  });
-
-  const handleCategoryClick = (categoryName: string) => {
+  const handleCategoryClick = (categoryName: string | null) => {
     setActiveCategory(prev => prev === categoryName ? null : categoryName);
   };
 
-  const checkScrollability = useCallback(() => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      setCanScrollLeft(container.scrollLeft > 0);
-      setCanScrollRight(container.scrollLeft < container.scrollWidth - container.clientWidth -1); // -1 for precision
-    }
-  }, []);
+  const handleTagChange = (tag: string, checked: boolean) => {
+    setSelectedTags(prev => {
+      const newSet = new Set(prev);
+      if (checked) newSet.add(tag);
+      else newSet.delete(tag);
+      return newSet;
+    });
+  };
 
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      checkScrollability(); // Initial check
-      container.addEventListener('scroll', checkScrollability);
-      window.addEventListener('resize', checkScrollability); // Re-check on resize
-
-      // Ensure right arrow is visible if content overflows initially
-      if (container.scrollWidth > container.clientWidth) {
-        setCanScrollRight(true);
-      }
-
-      return () => {
-        container.removeEventListener('scroll', checkScrollability);
-        window.removeEventListener('resize', checkScrollability);
-      };
-    }
-  }, [checkScrollability]);
-
-
-  const handleScroll = (direction: 'left' | 'right') => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      const scrollAmount = 200; // Adjust as needed
-      container.scrollBy({ 
-        left: direction === 'left' ? -scrollAmount : scrollAmount, 
-        behavior: 'smooth' 
-      });
-    }
+  const handleTierChange = (tierName: string, checked: boolean) => {
+    setSelectedTiers(prev => {
+      const newSet = new Set(prev);
+      if (checked) newSet.add(tierName);
+      else newSet.delete(tierName);
+      return newSet;
+    });
   };
   
-  // CSS class to hide scrollbar (requires Tailwind JIT or a plugin for full cross-browser)
-  const scrollbarHideClass = "scrollbar-hide"; // This is a common utility class name
-                                             // For Webkit: [&::-webkit-scrollbar]:hidden
-                                             // For Firefox: scrollbar-width-none
-                                             // For IE/Edge: -ms-overflow-style-none
-                                             // We'll use a placeholder class and rely on global CSS if needed for full hiding.
+  const clearAllFilters = () => {
+    setActiveCategory(null);
+    setSelectedTags(new Set());
+    setSelectedTiers(new Set());
+    setSearchTerm('');
+  };
+
+
+  const displayedServices = useMemo(() => {
+    let filtered = [...services];
+
+    if (activeCategory) {
+      filtered = filtered.filter(service => service.category === activeCategory);
+    }
+
+    if (selectedTags.size > 0) {
+      filtered = filtered.filter(service => 
+        service.tags?.some(tag => selectedTags.has(tag.toLowerCase()))
+      );
+    }
+
+    if (selectedTiers.size > 0) {
+      filtered = filtered.filter(service => 
+        service.tiers.some(tier => selectedTiers.has(tier.name))
+      );
+    }
+    
+    if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      filtered = filtered.filter(service => 
+        service.name.toLowerCase().includes(lowerSearchTerm) ||
+        service.description.toLowerCase().includes(lowerSearchTerm) ||
+        service.category.toLowerCase().includes(lowerSearchTerm) ||
+        service.tags?.some(tag => tag.toLowerCase().includes(lowerSearchTerm))
+      );
+    }
+    
+    // Sorting logic
+    if (sortBy === 'price-asc') {
+      filtered.sort((a, b) => Math.min(...a.tiers.map(t => t.price)) - Math.min(...b.tiers.map(t => t.price)));
+    } else if (sortBy === 'price-desc') {
+      filtered.sort((a, b) => Math.min(...b.tiers.map(t => t.price)) - Math.min(...a.tiers.map(t => t.price)));
+    }
+    // Add 'newest' sort if date field is available
+
+    return filtered;
+  }, [activeCategory, selectedTags, selectedTiers, searchTerm, sortBy]);
 
 
   return (
@@ -196,110 +233,142 @@ export default function ServicesPage() {
       <main className="flex-grow container mx-auto py-12 px-5">
         <h1 className="text-4xl font-bold font-headline mb-8 text-center">Explore Our Design Services</h1>
         
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold font-headline mb-4 text-center md:text-left">Browse by Category</h2>
-          <div className="relative">
-            {canScrollLeft && (
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-12 w-8 rounded-full shadow-md bg-background/80 hover:bg-background"
-                onClick={() => handleScroll('left')}
-                aria-label="Scroll left"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-            )}
-            <div 
-              ref={scrollContainerRef}
-              className={cn(
-                "flex space-x-3 md:space-x-4 overflow-x-auto pb-4",
-                "scrollbar-hide" // Attempt to hide scrollbar; best effort without global CSS/plugin
-              )}
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
-            >
-               <style jsx global>{`
-                .scrollbar-hide::-webkit-scrollbar {
-                  display: none;
-                }
-              `}</style>
-              {categoryFilters.map(category => (
-                <Button
-                  key={category.slug}
-                  variant={activeCategory === category.name ? "default" : "outline"}
-                  onClick={() => handleCategoryClick(category.name)}
-                  className="flex flex-col items-center justify-center h-24 md:h-28 text-center p-2 md:p-3 shadow-sm hover:shadow-md transition-shadow shrink-0 w-32 md:w-36 whitespace-nowrap"
-                >
-                  <category.icon className="h-7 w-7 md:h-8 md:w-8 mb-1.5 md:mb-2 text-primary group-hover:text-primary-foreground" />
-                  <span className="text-xs sm:text-sm">{category.name}</span>
-                </Button>
-              ))}
-            </div>
-            {canScrollRight && (
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-12 w-8 rounded-full shadow-md bg-background/80 hover:bg-background"
-                onClick={() => handleScroll('right')}
-                aria-label="Scroll right"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
-        </div>
+        <div className="md:grid md:grid-cols-[300px_1fr] md:gap-8">
+          <aside className="mb-8 md:mb-0 md:sticky md:top-24 md:self-start md:h-[calc(100vh-8rem)] md:overflow-y-auto pr-2 pb-4">
+            <Card className="shadow-md">
+               <CardHeader className="flex flex-row items-center justify-between pb-3">
+                <CardTitle className="text-lg font-headline flex items-center"><ListFilter className="mr-2 h-5 w-5 text-primary" /> Filters</CardTitle>
+                {(activeCategory || selectedTags.size > 0 || selectedTiers.size > 0 || searchTerm) && (
+                  <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-xs">
+                    <Check className="mr-1 h-3 w-3" /> Clear All
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <section>
+                  <h3 className="text-md font-semibold mb-2 flex items-center"><Palette className="mr-2 h-4 w-4 text-muted-foreground" />Categories</h3>
+                  <ul className="space-y-1">
+                    <li>
+                      <Button
+                        variant={!activeCategory ? 'secondary' : 'ghost'}
+                        className="w-full justify-start text-sm h-8 px-2"
+                        onClick={() => handleCategoryClick(null)}
+                      >
+                        All Services
+                      </Button>
+                    </li>
+                    {categoryFilters.map(category => (
+                      <li key={category.slug}>
+                        <Button
+                          variant={activeCategory === category.name ? 'secondary' : 'ghost'}
+                          className="w-full justify-start text-sm h-8 px-2"
+                          onClick={() => handleCategoryClick(category.name)}
+                        >
+                          <category.icon className="mr-2 h-4 w-4 text-primary/80" />
+                          {category.name}
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
 
-        <div className="mb-8 p-4 bg-card border rounded-lg shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div>
-            <Button variant="outline" className="text-base py-3">
-              <ListFilter className="mr-2 h-5 w-5" />
-              Filters
-            </Button>
-          </div>
+                {uniqueTags.length > 0 && (
+                  <section>
+                    <h3 className="text-md font-semibold mb-2 flex items-center"><Tag className="mr-2 h-4 w-4 text-muted-foreground" />Tags</h3>
+                    <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                      {uniqueTags.map(tag => (
+                        <div key={tag} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`tag-${tag.replace(/\s+/g, '-')}`}
+                            checked={selectedTags.has(tag)}
+                            onCheckedChange={(checked) => handleTagChange(tag, !!checked)}
+                          />
+                          <Label htmlFor={`tag-${tag.replace(/\s+/g, '-')}`} className="text-sm font-normal capitalize cursor-pointer">
+                            {tag}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-            <div className="relative flex-grow w-full sm:w-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input placeholder="Search services..." className="pl-10 text-base py-3 w-full" />
+                {uniqueTierNames.length > 0 && (
+                  <section>
+                    <h3 className="text-md font-semibold mb-2 flex items-center"><PackageIcon className="mr-2 h-4 w-4 text-muted-foreground" />Tiers</h3>
+                    <div className="space-y-1.5">
+                      {uniqueTierNames.map(tierName => (
+                        <div key={tierName} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`tier-${tierName.replace(/\s+/g, '-')}`}
+                            checked={selectedTiers.has(tierName)}
+                            onCheckedChange={(checked) => handleTierChange(tierName, !!checked)}
+                          />
+                          <Label htmlFor={`tier-${tierName.replace(/\s+/g, '-')}`} className="text-sm font-normal cursor-pointer">
+                            {tierName}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </CardContent>
+            </Card>
+          </aside>
+
+          <div className="min-w-0">
+            <div className="mb-6 p-4 bg-card border rounded-lg shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+              <div className="relative flex-grow w-full md:w-auto">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input 
+                  placeholder="Search services, categories, tags..." 
+                  className="pl-10 text-base py-3 w-full" 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="text-base py-3 w-full md:w-[200px] shrink-0">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="text-base py-3 w-full sm:w-[200px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                {sortOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
+
+            {displayedServices.length > 0 ? (
+              <div className="grid sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
+                {displayedServices.map(service => (
+                  <ServiceCard 
+                    key={service.id} 
+                    id={service.id}
+                    name={service.name}
+                    description={service.description}
+                    category={service.category}
+                    imageUrl={service.imageUrl}
+                    imageHint={service.imageHint}
+                    tiers={service.tiers}
+                  />
                 ))}
-              </SelectContent>
-            </Select>
+              </div>
+            ) : (
+              <div className="text-center py-16 col-span-full flex flex-col items-center justify-center h-full">
+                <PackageSearch className="mx-auto h-24 w-24 text-muted-foreground opacity-50" />
+                <h2 className="mt-6 text-2xl font-semibold">No Services Found</h2>
+                <p className="mt-2 text-muted-foreground">
+                  Try adjusting your filters or search term.
+                </p>
+                <Button variant="link" onClick={clearAllFilters} className="mt-4">
+                  Clear All Filters
+                </Button>
+              </div>
+            )}
           </div>
         </div>
-
-        {displayedServices.length > 0 ? (
-           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayedServices.map(service => (
-              <ServiceCard 
-                key={service.id} 
-                id={service.id}
-                name={service.name}
-                description={service.description}
-                category={service.category}
-                imageUrl={service.imageUrl}
-                imageHint={service.imageHint}
-                tiers={service.tiers}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-10">
-            <p className="text-xl text-muted-foreground">No services match your current filters.</p>
-            <Button variant="link" onClick={() => { setActiveCategory(null); }} className="mt-2">
-              Clear all filters
-            </Button>
-          </div>
-        )}
       </main>
       <Footer />
     </div>

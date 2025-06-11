@@ -3,7 +3,7 @@
 
 export interface DesignerProfile {
   id: string; // e.g., 'des001'
-  slug: string; // e.g., 'alice-wonderland'
+  slug: string; // e.g., 'priya-sharma'
   name: string;
   avatarUrl: string;
   imageHint: string;
@@ -18,54 +18,97 @@ export interface DesignerProfile {
 export const designersData: DesignerProfile[] = [
   {
     id: 'des001',
-    slug: 'alice-wonderland',
-    name: 'Alice Wonderland',
+    slug: 'priya-sharma',
+    name: 'Priya Sharma',
     avatarUrl: 'https://placehold.co/150x150.png',
-    imageHint: 'woman avatar smiling',
-    bio: 'Alice is a creative visionary with over 7 years of experience specializing in brand identity, web UI/UX, and illustrative design. She believes in crafting designs that tell a story and connect deeply with the audience. Her approach is collaborative and client-focused, ensuring every project is a masterpiece.',
+    imageHint: 'indian woman designer smiling',
+    bio: 'Priya is a creative visionary from Mumbai with over 7 years of experience specializing in brand identity, web UI/UX, and illustrative design. She believes in crafting designs that tell a story and connect deeply with the audience, especially within the vibrant Indian market. Her approach is collaborative and client-focused.',
     specialties: ['Logo Design', 'Web UI/UX', 'Branding', 'Illustration', 'Icon Design'],
-    location: 'New York, USA',
+    location: 'Mumbai, India',
     memberSince: new Date(2022, 5, 10),
-    website: 'https://example.com/alice',
+    website: 'https://example.com/priyasharma',
     socialLinks: [
         { platform: 'Behance', url: '#' },
-        { platform: 'Dribbble', url: '#' },
+        { platform: 'Instagram', url: '#' },
     ]
   },
   {
     id: 'des002',
-    slug: 'bob-the-builder',
-    name: 'Bob The Builder',
+    slug: 'rohan-kapoor',
+    name: 'Rohan Kapoor',
     avatarUrl: 'https://placehold.co/150x150.png',
-    imageHint: 'man avatar professional',
-    bio: 'Bob is a meticulous and detail-oriented designer with a knack for creating intuitive app interfaces and sustainable packaging solutions. He enjoys tackling complex challenges and transforming them into elegant and functional designs. Bob is proficient in Figma, Adobe XD, and Cinema 4D.',
+    imageHint: 'indian man software developer',
+    bio: 'Rohan, based in Bangalore, is a meticulous and detail-oriented designer with a knack for creating intuitive app interfaces and sustainable packaging solutions. He enjoys tackling complex challenges and transforming them into elegant and functional designs for both Indian and international clients. Proficient in Figma, Adobe XD, and Cinema 4D.',
     specialties: ['App Design', 'Packaging Design', 'UI/UX', '3D Modeling', 'Print Design'],
-    location: 'London, UK',
+    location: 'Bangalore, India',
     memberSince: new Date(2021, 8, 15),
+    socialLinks: [
+        { platform: 'Dribbble', url: '#' },
+        { platform: 'LinkedIn', url: '#' },
+    ]
   },
   {
     id: 'des003',
-    slug: 'carol-danvers',
-    name: 'Carol Danvers',
+    slug: 'aisha-khan',
+    name: 'Aisha Khan',
     avatarUrl: 'https://placehold.co/150x150.png',
-    imageHint: 'woman avatar confident',
-    bio: 'Carol brings energy and innovation to every project, specializing in motion graphics, social media campaigns, and compelling brand narratives. She has a strong background in digital marketing and understands how to create visuals that convert. Her work is dynamic and always on-trend.',
+    imageHint: 'indian woman graphic artist',
+    bio: 'Aisha, from Delhi, brings energy and innovation to every project, specializing in motion graphics, social media campaigns, and compelling brand narratives for the Indian youth market. She has a strong background in digital marketing and understands how to create visuals that convert. Her work is dynamic and always on-trend.',
     specialties: ['Social Media Graphics', 'Motion Graphics', 'Video Editing', 'Branding', 'Content Creation'],
-    location: 'Los Angeles, USA',
+    location: 'Delhi, India',
     memberSince: new Date(2023, 1, 20),
     socialLinks: [
         { platform: 'Instagram', url: '#' },
+        { platform: 'YouTube', url: '#' },
     ]
   },
    {
     id: 'des004',
-    slug: 'david-copperfield',
-    name: 'David Copperfield',
+    slug: 'vikram-singh',
+    name: 'Vikram Singh',
     avatarUrl: 'https://placehold.co/150x150.png',
-    imageHint: 'man avatar creative',
-    bio: 'David is a master of print design and presentation aesthetics. With an eye for typography and layout, he creates impactful print materials and pitch decks that captivate audiences. He has worked with numerous corporate clients to elevate their visual communication.',
+    imageHint: 'indian man architect thinking',
+    bio: 'Vikram, working out of Jaipur, is a master of print design and presentation aesthetics. With an eye for typography and layout, he creates impactful print materials and pitch decks that captivate audiences. He has worked with numerous corporate clients to elevate their visual communication, blending modern design with Indian aesthetics.',
     specialties: ['Print Design', 'Presentation Design', 'Typography', 'Layout Design', 'Corporate Branding'],
-    location: 'Toronto, Canada',
+    location: 'Jaipur, India',
     memberSince: new Date(2020, 10, 5),
+    website: 'https://example.com/vikramdesign',
   },
+  {
+    id: 'des005',
+    slug: 'sunita-reddy',
+    name: 'Sunita Reddy',
+    avatarUrl: 'https://placehold.co/150x150.png',
+    imageHint: 'indian woman entrepreneur',
+    bio: 'Sunita is a Hyderabad-based UI/UX designer passionate about creating user-centered experiences for startups. She excels in translating complex requirements into simple and beautiful interfaces. Her portfolio includes work for various tech startups in the healthcare and education sectors.',
+    specialties: ['Web UI/UX', 'App Design', 'User Research', 'Prototyping', 'Figma'],
+    location: 'Hyderabad, India',
+    memberSince: new Date(2022, 2, 18),
+    socialLinks: [
+        { platform: 'LinkedIn', url: '#' },
+    ]
+  },
+  {
+    id: 'des006',
+    slug: 'arjun-mehta',
+    name: 'Arjun Mehta',
+    avatarUrl: 'https://placehold.co/150x150.png',
+    imageHint: 'indian man photographer',
+    bio: 'Arjun, from Pune, focuses on illustration and branding, with a special love for traditional Indian art forms adapted for modern brands. He creates unique visuals that tell compelling stories and evoke emotion. His work often features intricate details and vibrant colors.',
+    specialties: ['Illustration', 'Branding', 'Logo Design', 'Digital Art', 'Cultural Design'],
+    location: 'Pune, India',
+    memberSince: new Date(2021, 11, 30),
+    website: 'https://example.com/arjunmehtaart',
+  },
+  {
+    id: 'des007',
+    slug: 'neha-joshi',
+    name: 'Neha Joshi',
+    avatarUrl: 'https://placehold.co/150x150.png',
+    imageHint: 'indian woman fashion designer',
+    bio: 'Based in Chennai, Neha is an expert in packaging design and print materials, helping brands make a strong first impression. She has a keen understanding of materials and printing processes, ensuring designs are not only beautiful but also practical and sustainable.',
+    specialties: ['Packaging Design', 'Print Design', 'Brand Identity', 'Sustainable Design', 'Label Design'],
+    location: 'Chennai, India',
+    memberSince: new Date(2023, 4, 5),
+  }
 ];

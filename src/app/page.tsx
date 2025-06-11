@@ -11,130 +11,28 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react'; 
-import type { PortfolioItem } from '@/components/shared/portfolio-item-card'; // Ensure this path is correct
+import type { PortfolioItem } from '@/components/shared/portfolio-item-card'; 
 import { cn } from '@/lib/utils';
+import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page'; // Import the Indianized data
 
 const featuredServices = [
-  { id: '1', name: 'Modern Logo Design', description: 'Get a unique and memorable logo for your brand.', tiers: [{name: 'Standard', price: 199}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo design' },
-  { id: '2', name: 'Social Media Post Pack', description: 'Engaging posts designed for your social media channels.', tiers: [{name: 'Standard', price: 99}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media' },
-  { id: '3', name: 'Professional Brochure Design', description: 'Stunning brochures to showcase your business.', tiers: [{name: 'Standard', price: 249}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'brochure design' },
-  { id: '4', name: 'UI/UX Web Design Mockup', description: 'High-fidelity mockup for one key page of your website or app.', tiers: [{name: 'Standard', price: 399}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website mockup' },
-  { id: '5', name: 'Custom Illustration', description: 'Unique vector or raster illustration based on your brief.', tiers: [{name: 'Standard', price: 149}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'character art' },
-  { id: '6', name: 'Packaging Design Concept', description: 'Creative packaging concept for your product.', tiers: [{name: 'Standard', price: 299}], category: 'Packaging Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product box' },
+  { id: '1', name: 'Modern Logo Design', description: 'Unique logos for Indian brands and startups.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian startup logo' },
+  { id: '2', name: 'Social Media Pack (India)', description: 'Engaging posts for Indian festivals and social media.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'diwali social media' },
+  { id: '3', name: 'Brochure Design (India)', description: 'Professional brochures for Indian businesses.', tiers: [{name: 'Standard', price: 7999}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian business brochure' },
+  { id: '4', name: 'UI/UX Web Design (India)', description: 'User-friendly web mockups for the Indian market.', tiers: [{name: 'Standard', price: 15999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design india' },
+  { id: '5', name: 'Custom Illustration (Indian Art)', description: 'Illustrations with traditional or modern Indian styles.', tiers: [{name: 'Standard', price: 7999}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian folk art' },
+  { id: '6', name: 'Packaging Design (India)', description: 'Creative packaging for Indian products.', tiers: [{name: 'Standard', price: 12999}], category: 'Packaging Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian sweet box' },
 ];
 
 const clientBenefits = [
-  { icon: Award, title: 'Expert Designers', description: 'Connect with vetted, top-tier designers. Our curated network ensures your project is handled by skilled professionals who deliver excellence.' },
-  { icon: Tag, title: 'Transparent Pricing', description: 'Say goodbye to budget surprises. Our fixed-price service packages mean you know the cost upfront, ensuring clarity and control over your expenses.' },
-  { icon: Zap, title: 'Streamlined Process', description: 'From intuitive briefs to efficient delivery, our platform simplifies every step. Get your designs faster, with less hassle and more collaboration.' },
-  { icon: ShieldCheck, title: 'Quality Guaranteed', description: 'Your satisfaction is our success. We stand behind the quality of our designers\' work, offering revisions and support to ensure exceptional results.' },
+  { icon: Award, title: 'Expert Indian Designers', description: 'Connect with vetted, top-tier designers from across India. Our curated network ensures your project is handled by skilled professionals who understand local nuances.' },
+  { icon: Tag, title: 'Transparent INR Pricing', description: 'Say goodbye to budget surprises. Our fixed-price service packages in Indian Rupees mean you know the cost upfront, ensuring clarity and control.' },
+  { icon: Zap, title: 'Streamlined Process', description: 'From intuitive briefs to efficient delivery, our platform simplifies every step. Get your designs faster, with less hassle and more collaboration with designers who get the Indian context.' },
+  { icon: ShieldCheck, title: 'Quality Guaranteed', description: 'Your satisfaction is our success. We stand behind the quality of our designers\' work, offering revisions and support to ensure exceptional results that resonate with your audience.' },
 ];
 
-// Data structure from portfolio/page.tsx is richer, let's align
-export const portfolioItemsData: PortfolioItem[] = [
-  {
-    id: 'ecomm-reimagined-platform', 
-    title: 'E-commerce Reimagined Platform',
-    category: 'Web UI/UX',
-    categorySlug: 'web-ui-ux',
-    clientName: 'FutureRetail Inc.',
-    projectDate: 'July 2024',
-    coverImageUrl: 'https://placehold.co/600x450.png',
-    coverImageHint: 'modern website homepage',
-    projectDescription: 'A complete overhaul of a multi-vendor e-commerce platform, focusing on a streamlined user journey, enhanced product discovery, and a modern, clean aesthetic. The project involved extensive UX research, interactive prototyping, and a comprehensive UI style guide.',
-    galleryImages: [
-      { url: 'https://placehold.co/600x450.png', hint: 'modern website homepage', caption: 'Dashboard Overview' },
-      { url: 'https://placehold.co/1200x800.png', hint: 'dashboard analytics view', caption: 'Dashboard Overview' },
-      { url: 'https://placehold.co/1200x800.png', hint: 'product listing page', caption: 'Product Grid' },
-      { url: 'https://placehold.co/1200x800.png', hint: 'mobile app checkout', caption: 'Mobile Checkout Flow' },
-    ],
-    tags: ['e-commerce', 'ux design', 'ui design', 'web application', 'figma', 'responsive'],
-    designer: { id:'des001', slug: 'alice-wonderland', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
-  },
-  {
-    id: 'fintech-mobile-banking-app',
-    title: 'Fintech Mobile Banking App',
-    category: 'App Design',
-    categorySlug: 'app-design',
-    clientName: 'InnovateBank Corp.',
-    projectDate: 'May 2024',
-    coverImageUrl: 'https://placehold.co/600x450.png',
-    coverImageHint: 'finance app screen',
-    projectDescription: 'Sleek and secure mobile application design for a new-age digital bank. Features include intuitive navigation, personalized dashboards, and gamified savings goals. Designed for iOS and Android.',
-    galleryImages: [
-      { url: 'https://placehold.co/600x450.png', hint: 'finance app screen', caption: 'Secure Login' },
-      { url: 'https://placehold.co/1200x800.png', hint: 'app transaction history', caption: 'Transaction Details' },
-    ],
-    tags: ['mobile app', 'fintech', 'ios', 'android', 'ui/ux', 'security'],
-    designer: { id:'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
-  },
-  {
-    id: 'eco-startup-brand-identity',
-    title: 'Eco Startup Brand Identity',
-    category: 'Logo & Branding',
-    categorySlug: 'logo-branding',
-    clientName: 'GreenLeaf Goods',
-    projectDate: 'April 2024',
-    coverImageUrl: 'https://placehold.co/600x450.png',
-    coverImageHint: 'nature logo design',
-    projectDescription: 'Complete brand identity package for an eco-conscious startup, including logo, color palette, typography, and brand guidelines. The identity aims to convey sustainability and trustworthiness.',
-    galleryImages: [
-      { url: 'https://placehold.co/600x450.png', hint: 'nature logo design', caption: 'Brand Stationery Mockup' },
-      { url: 'https://placehold.co/1200x800.png', hint: 'brand style guide page', caption: 'Brand Guidelines Snippet' },
-    ],
-    tags: ['branding', 'logo design', 'sustainability', 'identity system', 'startup'],
-    designer: { id:'des003', slug: 'carol-danvers', name: 'Carol Danvers', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
-  },
-  {
-    id: 'artisanal-cafe-print-suite',
-    title: 'Artisanal Cafe Print Suite',
-    category: 'Print Design',
-    categorySlug: 'print-design',
-    clientName: 'The Daily Grind Cafe',
-    projectDate: 'March 2024',
-    coverImageUrl: 'https://placehold.co/600x450.png',
-    coverImageHint: 'coffee shop menu',
-    projectDescription: 'A cohesive set of print materials for a local artisanal cafe, including menus, loyalty cards, and promotional flyers, all reflecting a rustic yet modern brand aesthetic.',
-    galleryImages: [
-      { url: 'https://placehold.co/600x450.png', hint: 'coffee shop menu', caption: 'Loyalty Card Design' },
-    ],
-    tags: ['print design', 'menu design', 'cafe branding', 'local business', 'rustic'],
-    designer: { id:'des004', slug: 'david-copperfield', name: 'David Copperfield', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
-  },
-  {
-    id: 'whimsical-childrens-book-illustrations',
-    title: 'Whimsical Children\'s Book',
-    category: 'Illustration',
-    categorySlug: 'illustration',
-    clientName: 'Little Readers Publishing',
-    projectDate: 'June 2024',
-    coverImageUrl: 'https://placehold.co/600x450.png',
-    coverImageHint: 'storybook character art',
-    projectDescription: 'A series of enchanting illustrations for a children\'s storybook, featuring vibrant characters and imaginative scenes. The style is playful and engaging for young readers.',
-    galleryImages: [
-      { url: 'https://placehold.co/600x450.png', hint: 'storybook character art', caption: 'Sample Spread 1' },
-      { url: 'https://placehold.co/1200x800.png', hint: 'book spread illustration', caption: 'Character Development' },
-    ],
-    tags: ['illustration', 'childrens book', 'character design', 'digital art', 'vibrant'],
-    designer: { id:'des001', slug: 'alice-wonderland', name: 'Alice Wonderland', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'woman avatar' },
-  },
-  {
-    id: 'sustainable-cosmetics-packaging',
-    title: 'Sustainable Cosmetics Packaging',
-    category: 'Packaging Design',
-    categorySlug: 'packaging-design',
-    clientName: 'Aura Organics',
-    projectDate: 'February 2024',
-    coverImageUrl: 'https://placehold.co/600x450.png',
-    coverImageHint: 'cosmetic product packaging',
-    projectDescription: 'A line of eco-friendly and visually appealing packaging designs for an organic cosmetics brand. The design emphasizes natural ingredients and minimalist luxury.',
-    galleryImages: [
-      { url: 'https://placehold.co/600x450.png', hint: 'cosmetic product packaging', caption: 'Label Close-up' },
-    ],
-    tags: ['packaging design', 'cosmetics', 'sustainability', 'brand identity', 'minimalist'],
-    designer: { id:'des002', slug: 'bob-the-builder', name: 'Bob The Builder', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'man avatar' },
-  },
-];
+// Select a subset of the now Indianized globalPortfolioItems for the homepage
+const portfolioItemsData: PortfolioItem[] = globalPortfolioItems.slice(0, 6);
 
 
 interface PortfolioShowcaseCardProps {
@@ -143,7 +41,7 @@ interface PortfolioShowcaseCardProps {
 
 const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ item }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const imagesToShow = item.galleryImages && item.galleryImages.length > 0 ? item.galleryImages : [{ url: item.coverImageUrl, hint: item.coverImageHint }];
+  const imagesToShow = item.galleryImages && item.galleryImages.length > 0 ? item.galleryImages : [{ url: item.coverImageUrl, hint: item.coverImageHint || item.title, caption: item.title }];
 
   useEffect(() => {
     if (imagesToShow.length <= 1) return;
@@ -163,7 +61,6 @@ const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ item }) =
         </div>
         <CardContent className="p-4 bg-card flex-grow">
           <h3 className="font-headline text-lg font-semibold group-hover:text-primary transition-colors">{item.category}</h3>
-          <p className="text-sm text-muted-foreground mt-1">{item.title}</p>
            <p className="text-xs text-destructive mt-1">Image(s) missing</p>
         </CardContent>
       </Card>
@@ -177,7 +74,7 @@ const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ item }) =
                 <Image
                 key={imagesToShow[currentImageIndex].url} 
                 src={imagesToShow[currentImageIndex].url}
-                alt={`${item.title} - image ${currentImageIndex + 1}`}
+                alt={imagesToShow[currentImageIndex].caption || item.title}
                 fill
                 style={{ objectFit: 'cover' }}
                 className="transition-all duration-500 ease-in-out group-hover:scale-105"
@@ -198,7 +95,6 @@ const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ item }) =
              </h3>
           </a>
         </Link>
-        {/* Specific project title removed for simplicity on card view */}
         {item.designer && (
             <Link href={`/designers/${item.designer.slug}`} className="text-xs text-muted-foreground mt-1 hover:text-primary hover:underline block">
                 By {item.designer.name}
@@ -220,10 +116,10 @@ export default function HomePage() {
         <section className="py-20 md:py-32 bg-gradient-to-br from-secondary to-background">
           <div className="container mx-auto px-5 text-center">
             <h1 className="text-4xl md:text-6xl font-bold font-headline mb-6">
-              Transform Your Ideas into <span className="text-primary">Stunning Designs</span>
+              Transform Your Ideas into <span className="text-primary">Stunning Designs</span> for India
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-              DesignFlow is your ultimate marketplace for expert design services. Experience high-quality creative work, a hassle-free process, and upfront cost clarity, all in one place.
+              DesignFlow is your ultimate marketplace for expert design services in India. Experience high-quality creative work, hassle-free process, and upfront cost clarity, all in one place.
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Button size="lg" asChild className="w-full sm:w-auto">
@@ -248,7 +144,7 @@ export default function HomePage() {
               <div className="flex flex-col items-center text-center p-6 rounded-lg bg-background shadow-md">
                 <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">1</div>
                 <h3 className="font-headline text-xl font-semibold mb-2">Browse & Select</h3>
-                <p className="text-muted-foreground text-sm">Explore our wide array of fixed-scope design services. Find the perfect package with clearly defined deliverables and transparent, upfront pricing. No hidden fees, just straightforward value.</p>
+                <p className="text-muted-foreground text-sm">Explore our wide array of fixed-scope design services. Find the perfect package with clearly defined deliverables and transparent, upfront pricing in INR. No hidden fees, just straightforward value.</p>
               </div>
               <div className="flex flex-col items-center text-center p-6 rounded-lg bg-background shadow-md">
                 <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">2</div>
@@ -347,4 +243,3 @@ export default function HomePage() {
     </div>
   );
 }
-
