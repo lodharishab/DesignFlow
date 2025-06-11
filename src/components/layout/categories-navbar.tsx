@@ -8,43 +8,45 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, LayoutGrid, Briefcase, Palette, Laptop, Printer, Brush as BrushIconLucide, ArrowRight } from 'lucide-react';
+import { ChevronDown, LayoutGrid, Briefcase, Palette, Laptop, Printer, Brush as BrushIconLucide, ArrowRight, Film, Presentation, Share2, Package as PackageIcon } from 'lucide-react';
 
-// Mock data for categories and sub-categories (remains for Popover)
-const mockCategories = [
-  { id: 'cat001', name: 'Logo Design', slug: 'logo-design' },
-  { id: 'cat002', name: 'Web UI/UX', slug: 'web-ui-ux' },
-  { id: 'cat003', name: 'Print Materials', slug: 'print-materials' },
-  { id: 'cat004', name: 'Custom Illustrations', slug: 'custom-illustrations' },
-  { id: 'cat005', name: 'Social Media Graphics', slug: 'social-media-graphics' },
-  { id: 'cat006', name: 'Packaging Design', slug: 'packaging' },
-  { id: 'cat007', name: 'Motion Graphics', slug: 'motion-graphics' },
-  { id: 'cat008', name: 'Presentations', slug: 'presentations' },
+// Standardized category data, aligned with /services page filters
+const standardizedCategories = [
+  { id: 'cat001', name: 'Logo Design', slug: 'logo-design', icon: Palette },
+  { id: 'cat002', name: 'UI/UX Design', slug: 'ui-ux-design', icon: Laptop }, // Standardized name and slug
+  { id: 'cat003', name: 'Print Design', slug: 'print-design', icon: Printer }, // Standardized name and slug
+  { id: 'cat004', name: 'Illustration', slug: 'illustration', icon: BrushIconLucide }, // Standardized name and slug
+  { id: 'cat005', name: 'Social Media', slug: 'social-media', icon: Share2 }, // Standardized name and slug
+  { id: 'cat006', name: 'Packaging', slug: 'packaging', icon: PackageIcon }, // Standardized name and slug
+  { id: 'cat007', name: 'Motion Graphics', slug: 'motion-graphics', icon: Film },
+  { id: 'cat008', name: 'Presentations', slug: 'presentations', icon: Presentation },
+  // Note: 'Photography' is on services page filters but not in original navbar categories. Can be added if needed.
 ];
 
+// Subcategories based on the original structure, linked to standardized parent IDs
 const mockSubCategories = [
   { id: 'subcat001', name: 'Minimalist Logos', parentCategoryId: 'cat001', slug: 'minimalist-logos' },
   { id: 'subcat002', name: 'Vintage Logos', parentCategoryId: 'cat001', slug: 'vintage-logos' },
-  { id: 'subcat003', name: 'Mobile App UI', parentCategoryId: 'cat002', slug: 'mobile-app-ui' },
-  { id: 'subcat004', name: 'Landing Page UX', parentCategoryId: 'cat002', slug: 'landing-page-ux' },
-  { id: 'subcat005', name: 'Business Cards', parentCategoryId: 'cat003', slug: 'business-cards' },
-  { id: 'subcat006', name: 'Flyers & Posters', parentCategoryId: 'cat003', slug: 'flyers-posters' },
-  { id: 'subcat007', name: 'Character Design', parentCategoryId: 'cat004', slug: 'character-design' },
-  { id: 'subcat008', name: 'Instagram Stories', parentCategoryId: 'cat005', slug: 'instagram-stories' },
+  { id: 'subcat003', name: 'Mobile App UI', parentCategoryId: 'cat002', slug: 'mobile-app-ui' }, // Parent is now UI/UX Design
+  { id: 'subcat004', name: 'Landing Page UX', parentCategoryId: 'cat002', slug: 'landing-page-ux' }, // Parent is now UI/UX Design
+  { id: 'subcat005', name: 'Business Cards', parentCategoryId: 'cat003', slug: 'business-cards' }, // Parent is now Print Design
+  { id: 'subcat006', name: 'Flyers & Posters', parentCategoryId: 'cat003', slug: 'flyers-posters' }, // Parent is now Print Design
+  { id: 'subcat007', name: 'Character Design', parentCategoryId: 'cat004', slug: 'character-design' }, // Parent is now Illustration
+  { id: 'subcat008', name: 'Instagram Stories', parentCategoryId: 'cat005', slug: 'instagram-stories' }, // Parent is now Social Media
 ];
 
-const menuStructure = mockCategories.map(category => ({
+const menuStructure = standardizedCategories.map(category => ({
   ...category,
   subcategories: mockSubCategories.filter(sub => sub.parentCategoryId === category.id)
 }));
 
-// Key categories to feature directly in the navbar
+// Key categories to feature directly in the navbar, using standardized data
 const featuredCategoriesInNavbar = [
-  { name: 'Logo Design', slug: 'logo-design', icon: Palette },
-  { name: 'Web UI/UX', slug: 'web-ui-ux', icon: Laptop },
-  { name: 'Print Materials', slug: 'print-materials', icon: Printer },
-  { name: 'Illustrations', slug: 'illustration', icon: BrushIconLucide },
-];
+  standardizedCategories.find(c => c.slug === 'logo-design')!,
+  standardizedCategories.find(c => c.slug === 'ui-ux-design')!,
+  standardizedCategories.find(c => c.slug === 'print-design')!,
+  standardizedCategories.find(c => c.slug === 'illustration')!,
+].filter(Boolean); // Filter out undefined in case a slug isn't found (robustness)
 
 
 export function CategoriesNavbar() {
@@ -130,5 +132,3 @@ export function CategoriesNavbar() {
     </nav>
   );
 }
-
-    
