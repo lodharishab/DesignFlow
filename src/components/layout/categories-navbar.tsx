@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, LayoutGrid, Briefcase, Palette, Laptop, Printer, Brush as BrushIconLucide, ArrowRight, Film, Presentation, Share2, Package as PackageIcon } from 'lucide-react';
+import { ChevronDown, LayoutGrid, Briefcase, Palette, Laptop, Printer, Brush as BrushIconLucide, ArrowRight, Film, Presentation, Share2, Package as PackageIcon, Newspaper } from 'lucide-react';
 
 // Standardized category data, aligned with /services page filters
 const standardizedCategories = [
@@ -119,7 +119,14 @@ export function CategoriesNavbar() {
           ))}
         </div>
 
-        <div className="ml-auto flex items-center">
+        <div className="ml-auto flex items-center space-x-1">
+           <Button variant="ghost" asChild className="px-3 py-2 h-auto text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5">
+             <Link
+                href="/blog"
+              >
+                <Newspaper className="mr-1.5 h-4 w-4" /> Blog
+              </Link>
+           </Button>
            <Button variant="ghost" asChild className="px-3 py-2 h-auto text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5">
              <Link
                 href="/portfolio"

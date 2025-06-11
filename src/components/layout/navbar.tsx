@@ -32,12 +32,6 @@ export function Navbar() {
 
         {/* Desktop Menu Items */}
         <div className="hidden md:flex items-center space-x-2">
-           <Button variant="ghost" asChild>
-            <Link href="/blog">
-              <Newspaper className="mr-2 h-4 w-4" />
-              Blog
-            </Link>
-          </Button>
           <ModeToggle />
           <Button variant="ghost" asChild>
             <Link href="/login">
