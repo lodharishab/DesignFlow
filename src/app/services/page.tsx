@@ -10,11 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, ListFilter, Search, Check, Tag, Film, Presentation, Camera } from 'lucide-react'; 
 import type { Icon as LucideIconType } from 'lucide-react'; 
-import { useState, useMemo } from 'react'; 
+import { useState, useMemo, useEffect } from 'react'; 
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 
 interface ServiceTier {
   name: 'Basic' | 'Standard' | 'Premium';
@@ -166,7 +167,6 @@ const sortOptions = [
   { value: 'relevance', label: 'Relevance' },
   { value: 'price-asc', label: 'Price: Low to High' },
   { value: 'price-desc', label: 'Price: High to Low' },
-  // { value: 'newest', label: 'Newest First' }, // Needs actual date in data if implemented
 ];
 
 const uniqueTags = Array.from(new Set(services.flatMap(service => service.tags || []).map(tag => tag.toLowerCase()))).sort();
@@ -174,11 +174,23 @@ const uniqueTierNames = Array.from(new Set(services.flatMap(service => service.t
 
 
 export default function ServicesPage() {
+  const searchParams = useSearchParams(); // Get search params
+  const initialCategorySlug = searchParams.get('category');
+
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [selectedTiers, setSelectedTiers] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<string>('relevance');
+
+  useEffect(() => {
+    if (initialCategorySlug) {
+      const categoryFromUrl = categoryFilters.find(cat => cat.slug === initialCategorySlug);
+      if (categoryFromUrl) {
+        setActiveCategory(categoryFromUrl.name);
+      }
+    }
+  }, [initialCategorySlug]);
 
   const handleCategoryClick = (categoryName: string | null) => {
     setActiveCategory(prev => prev === categoryName ? null : categoryName);
@@ -207,6 +219,8 @@ export default function ServicesPage() {
     setSelectedTags(new Set());
     setSelectedTiers(new Set());
     setSearchTerm('');
+    // Optionally reset URL query params if desired, but might be better handled by navigation
+    // router.push('/services', { scroll: false });
   };
 
 
@@ -397,3 +411,4 @@ export default function ServicesPage() {
     </div>
   );
 }
+
