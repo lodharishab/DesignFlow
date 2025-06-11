@@ -83,11 +83,14 @@ export default function DesignServicesPage() {
       <CategoriesNavbar />
       <main className="flex-grow">
         {/* Hero Section with Category Carousel */}
-        <section className="py-16 md:py-20 bg-gradient-to-br from-secondary via-background to-background text-center">
+        <section className="py-16 md:py-20 bg-muted text-center">
           <div className="container mx-auto px-5">
-            <h1 className="text-4xl md:text-5xl font-bold font-headline mb-10">
-              Discover Our Design <span className="text-primary">Services</span>
+            <h1 className="text-4xl md:text-5xl font-bold font-headline mb-6">
+              Your Vision, <span className="text-primary">Expertly Designed</span>
             </h1>
+            <p className="text-lg text-muted-foreground mb-10 max-w-3xl mx-auto">
+              Explore a comprehensive range of creative services tailored to elevate your brand. From stunning logos to seamless web experiences, our expert Indian designers are here to bring your ideas to life.
+            </p>
             
             {/* Category Carousel */}
             <div className="flex space-x-4 overflow-x-auto pb-6 -mx-5 px-5 scrollbar-hide">
@@ -105,9 +108,6 @@ export default function DesignServicesPage() {
                 </Link>
               ))}
             </div>
-             <p className="text-sm text-muted-foreground mt-6 max-w-3xl mx-auto">
-              Explore our offerings and let&apos;s bring your vision to life for the Indian market.
-            </p>
           </div>
         </section>
 
