@@ -79,8 +79,8 @@ export const initialOrdersData: Order[] = [
     designerId: designersData.find(d => d.slug === 'rohan-kapoor')?.id,
     serviceName: 'E-commerce Website UI/UX', serviceId: 'SVC004IN', serviceTier: 'Premium',
     serviceScope: ['Up to 5 pages UI/UX design', 'Mobile, tablet, and desktop views', 'Interactive prototype', 'Full style guide'],
-    orderDate: new Date(2024, 6, 1, 10, 30),
-    dueDate: new Date(new Date().setDate(new Date().getDate() + 10)),
+    orderDate: new Date(2024, 6, 1, 10, 30), // July 1st, 2024
+    dueDate: new Date(2024, 6, 11, 10, 30), // Static: July 1st + 10 days
     status: 'In Progress',
     totalAmount: 24999, currency: 'INR',
     paymentMethod: 'Razorpay',
@@ -100,8 +100,8 @@ export const initialOrdersData: Order[] = [
     designerId: designersData.find(d => d.slug === 'aisha-khan')?.id,
     serviceName: 'Social Media Campaign Graphics', serviceId: 'SVC002IN', serviceTier: 'Standard',
     serviceScope: ['15 social media posts', 'Up to 3 platforms', '3 Rounds of revisions', 'Source files'],
-    orderDate: new Date(2024, 6, 5, 14, 0),
-    dueDate: new Date(new Date().setDate(new Date().getDate() + 3)),
+    orderDate: new Date(2024, 6, 5, 14, 0), // July 5th, 2024
+    dueDate: new Date(2024, 6, 8, 14, 0), // Static: July 5th + 3 days
     status: 'Pending Assignment',
     totalAmount: 7999, currency: 'INR',
     paymentMethod: 'PhonePe',
@@ -157,8 +157,8 @@ export const initialOrdersData: Order[] = [
     designerId: designersData.find(d => d.slug === 'vikram-singh')?.id,
     serviceName: 'Restaurant Menu Design', serviceId: 'SVC003IN', serviceTier: 'Standard',
     serviceScope: ['Custom menu design (up to 4 pages)', 'Stock imagery included (if needed)', '3 revision rounds', 'Print-ready PDF'],
-    orderDate: new Date(2024, 6, 10, 11, 20),
-    dueDate: new Date(new Date().setDate(new Date().getDate() + 5)),
+    orderDate: new Date(2024, 6, 10, 11, 20), // July 10th, 2024
+    dueDate: new Date(2024, 6, 15, 11, 20), // Static: July 10th + 5 days
     status: 'Awaiting Client Review',
     totalAmount: 6999, currency: 'INR',
     paymentMethod: 'PhonePe',
@@ -178,8 +178,8 @@ export const initialOrdersData: Order[] = [
     designerId: designersData.find(d => d.slug === 'sunita-reddy')?.id,
     serviceName: 'Mobile App Icon Set', serviceId: 'SVC006IN', serviceTier: 'Standard',
     serviceScope: ['Set of 10 custom icons', 'Consistent style', 'Multiple sizes (iOS & Android)', '2 revision rounds'],
-    orderDate: new Date(2024, 5, 25, 9, 0),
-    dueDate: new Date(new Date().setDate(new Date().getDate() + 7)),
+    orderDate: new Date(2024, 5, 25, 9, 0), // June 25th, 2024
+    dueDate: new Date(2024, 6, 2, 9, 0),   // Static: June 25th + 7 days = July 2nd
     status: 'In Progress',
     totalAmount: 4999, currency: 'INR',
     paymentMethod: 'Razorpay',
