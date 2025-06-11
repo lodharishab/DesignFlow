@@ -9,29 +9,10 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ServiceCard } from '@/components/shared/service-card';
-import { PortfolioShowcaseCard } from '@/app/page'; // Reusing the showcase card from homepage
+import { PortfolioShowcaseCard } from '@/app/page'; 
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
-import { Palette, Share2, Printer, Laptop, Brush as BrushIconLucide, Package as PackageIcon, Film, Presentation, Camera, ArrowRight, Sparkles, Eye } from 'lucide-react';
-import type { Icon as LucideIconType } from 'lucide-react';
+import { ArrowRight, Sparkles, Eye } from 'lucide-react';
 
-interface ServiceCategoryShowcase {
-  name: string;
-  slug: string;
-  icon: LucideIconType;
-  description: string;
-  imageHint: string;
-}
-
-const serviceCategoriesForShowcase: ServiceCategoryShowcase[] = [
-  { name: 'Logo Design', slug: 'logo-design', icon: Palette, description: 'Craft unique brand identities that resonate.', imageHint: 'modern logo design' },
-  { name: 'Web UI/UX', slug: 'web-ui-ux', icon: Laptop, description: 'Intuitive and engaging digital experiences.', imageHint: 'website user interface' },
-  { name: 'Print Materials', slug: 'print-materials', icon: Printer, description: 'Impactful designs for tangible marketing.', imageHint: 'brochure design layout' },
-  { name: 'Illustrations', slug: 'illustration', icon: BrushIconLucide, description: 'Custom artwork to tell your unique story.', imageHint: 'digital illustration art' },
-  { name: 'Social Media', slug: 'social-media', icon: Share2, description: 'Eye-catching graphics for online presence.', imageHint: 'social media graphics' },
-  { name: 'Packaging', slug: 'packaging', icon: PackageIcon, description: 'Product packaging that stands out on shelves.', imageHint: 'product packaging design' },
-  { name: 'Motion Graphics', slug: 'motion-graphics', icon: Film, description: 'Dynamic animations and video content.', imageHint: 'motion graphics video' },
-  { name: 'Presentations', slug: 'presentations', icon: Presentation, description: 'Compelling slides for effective communication.', imageHint: 'business presentation slide' },
-];
 
 const featuredServicesData = [
   { id: '1', name: 'Modern Logo Design', description: 'Unique logos for Indian brands and startups, capturing your brand essence.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'indian startup logo' },
@@ -39,7 +20,6 @@ const featuredServicesData = [
   { id: '2', name: 'Social Media Pack', description: 'Engaging posts for Indian festivals and social media campaigns. Boost your online presence.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'diwali social media' },
 ];
 
-// Re-defining a small subset for portfolio glance, similar to homepage logic for PortfolioShowcaseCard
 const portfolioGlanceItems: PortfolioItem[] = [
   {
     id: 'ecomm-reimagined-platform-india',
@@ -99,34 +79,12 @@ export default function DesignServicesPage() {
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
               From stunning logos to immersive web experiences, find the perfect creative solution tailored for the Indian market. Explore our offerings and let's bring your vision to life.
             </p>
-            {/* Button removed from here */}
+            {/* Button removed from here as per user request */}
           </div>
         </section>
 
-        {/* Service Categories Section */}
-        <section className="py-16 md:py-24 bg-card">
-          <div className="container mx-auto px-5">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">Explore Our Creative Categories</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-              {serviceCategoriesForShowcase.map((category) => (
-                <Link key={category.slug} href={`/services?category=${category.slug}`} passHref legacyBehavior>
-                  <a className="block group">
-                    <Card className="h-full shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col items-center text-center p-6 hover:border-primary">
-                        <div className="bg-primary/10 p-4 rounded-full mb-4 transition-transform duration-300 group-hover:scale-110">
-                            <category.icon className="h-10 w-10 text-primary" />
-                        </div>
-                        <h3 className="font-headline text-xl font-semibold mb-2 group-hover:text-primary">{category.name}</h3>
-                        <p className="text-sm text-muted-foreground flex-grow">{category.description}</p>
-                        <Button variant="link" size="sm" className="mt-4 text-primary group-hover:underline">
-                            View {category.name} Services <ArrowRight className="ml-1.5 h-4 w-4" />
-                        </Button>
-                    </Card>
-                  </a>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Service Categories Section REMOVED */}
+        {/* This section is now represented in the CategoriesNavbar */}
 
         {/* Popular Services Section */}
         <section className="py-16 md:py-24 bg-background">
@@ -146,7 +104,7 @@ export default function DesignServicesPage() {
             <div className="text-center mt-16">
               <Button size="lg" asChild variant="outline">
                 <Link href="/services">
-                  Explore All Service Packages <ArrowRight className="ml-2 h-4 w-4" />
+                  Explore Full Service Catalog <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
@@ -179,3 +137,5 @@ export default function DesignServicesPage() {
     </div>
   );
 }
+
+    

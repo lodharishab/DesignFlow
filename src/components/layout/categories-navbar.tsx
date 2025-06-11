@@ -8,15 +8,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, LayoutGrid, Sparkles, Briefcase } from 'lucide-react'; // Added Briefcase
+import { ChevronDown, LayoutGrid, Briefcase, Palette, Laptop, Printer, Brush as BrushIconLucide, ArrowRight } from 'lucide-react';
 
-// Mock data for categories and sub-categories
+// Mock data for categories and sub-categories (remains for Popover)
 const mockCategories = [
   { id: 'cat001', name: 'Logo Design', slug: 'logo-design' },
   { id: 'cat002', name: 'Web UI/UX', slug: 'web-ui-ux' },
   { id: 'cat003', name: 'Print Materials', slug: 'print-materials' },
   { id: 'cat004', name: 'Custom Illustrations', slug: 'custom-illustrations' },
   { id: 'cat005', name: 'Social Media Graphics', slug: 'social-media-graphics' },
+  { id: 'cat006', name: 'Packaging Design', slug: 'packaging' },
+  { id: 'cat007', name: 'Motion Graphics', slug: 'motion-graphics' },
+  { id: 'cat008', name: 'Presentations', slug: 'presentations' },
 ];
 
 const mockSubCategories = [
@@ -35,12 +38,13 @@ const menuStructure = mockCategories.map(category => ({
   subcategories: mockSubCategories.filter(sub => sub.parentCategoryId === category.id)
 }));
 
-// Selecting a few popular categories
-const popularCategories = [
-  mockCategories.find(cat => cat.slug === 'logo-design'),
-  mockCategories.find(cat => cat.slug === 'web-ui-ux'),
-  mockCategories.find(cat => cat.slug === 'social-media-graphics'),
-].filter(Boolean) as { id: string; name: string; slug: string }[];
+// Key categories to feature directly in the navbar
+const featuredCategoriesInNavbar = [
+  { name: 'Logo Design', slug: 'logo-design', icon: Palette },
+  { name: 'Web UI/UX', slug: 'web-ui-ux', icon: Laptop },
+  { name: 'Print Materials', slug: 'print-materials', icon: Printer },
+  { name: 'Illustrations', slug: 'illustration', icon: BrushIconLucide },
+];
 
 
 export function CategoriesNavbar() {
@@ -51,7 +55,7 @@ export function CategoriesNavbar() {
           <PopoverTrigger asChild>
             <Button 
               variant="ghost" 
-              className="text-md font-medium text-foreground hover:bg-primary hover:text-primary-foreground px-3"
+              className="text-md font-medium text-foreground hover:bg-primary hover:text-primary-foreground px-3 py-2 h-auto"
             >
               <LayoutGrid className="mr-2 h-5 w-5" />
               All Categories
@@ -67,7 +71,6 @@ export function CategoriesNavbar() {
                       href={`/services?category=${category.slug}`} 
                       className="hover:text-primary hover:underline flex items-center group"
                     >
-                      {/* Optional: Add an icon per category if desired */}
                       {category.name}
                       <span className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-primary">&rarr;</span>
                     </Link>
@@ -100,33 +103,32 @@ export function CategoriesNavbar() {
           </PopoverContent>
         </Popover>
         
-        {/* Popular Category Links - Hidden on small screens, flex on medium and up */}
-        {popularCategories.length > 0 && (
-          <div className="ml-6 flex items-center space-x-4"> 
-            <span className="text-sm font-medium text-muted-foreground flex items-center">
-              <Sparkles className="mr-2 h-4 w-4 text-primary/80" />
-              Popular:
-            </span>
-            {popularCategories.map(cat => (
+        {/* Featured Category Links */}
+        <div className="ml-6 flex items-center space-x-1"> 
+          {featuredCategoriesInNavbar.map(cat => (
+            <Button variant="ghost" asChild key={cat.slug} className="px-3 py-2 h-auto text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5">
               <Link
-                key={cat.id}
                 href={`/services?category=${cat.slug}`}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
               >
+                <cat.icon className="mr-1.5 h-4 w-4" />
                 {cat.name}
               </Link>
-            ))}
-          </div>
-        )}
+            </Button>
+          ))}
+        </div>
+
         <div className="ml-auto flex items-center">
-           <Link
-              href="/portfolio"
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center"
-            >
-              <Briefcase className="mr-2 h-4 w-4" /> Portfolio
-            </Link>
+           <Button variant="ghost" asChild className="px-3 py-2 h-auto text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5">
+             <Link
+                href="/portfolio"
+              >
+                <Briefcase className="mr-1.5 h-4 w-4" /> Portfolio
+              </Link>
+           </Button>
         </div>
       </div>
     </nav>
   );
 }
+
+    
