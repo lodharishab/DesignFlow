@@ -15,7 +15,8 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { useSearchParams } from 'next/navigation'; // Import useSearchParams
+import { useSearchParams } from 'next/navigation';
+import type { Metadata } from 'next';
 
 interface ServiceTier {
   name: 'Basic' | 'Standard' | 'Premium';
@@ -172,9 +173,18 @@ const sortOptions = [
 const uniqueTags = Array.from(new Set(services.flatMap(service => service.tags || []).map(tag => tag.toLowerCase()))).sort();
 const uniqueTierNames = Array.from(new Set(services.flatMap(service => service.tiers.map(tier => tier.name)))).sort();
 
+export const metadata: Metadata = {
+  title: 'All Design Services | DesignFlow India',
+  description: 'Browse all design services offered on DesignFlow. Find solutions for logo design, UI/UX, print, social media, and more, tailored for the Indian market.',
+  openGraph: {
+    title: 'All Design Services | DesignFlow India',
+    description: 'Explore our full catalog of creative design services. Connect with expert Indian designers today.',
+  },
+};
+
 
 export default function ServicesPage() {
-  const searchParams = useSearchParams(); // Get search params
+  const searchParams = useSearchParams(); 
   const initialCategorySlug = searchParams.get('category');
 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -394,7 +404,7 @@ export default function ServicesPage() {
               </div>
             ) : (
               <div className="text-center py-16 col-span-full flex flex-col items-center justify-center h-full">
-                <PackageSearch className="mx-auto h-24 w-24 text-muted-foreground opacity-50" />
+                <PackageIcon className="mx-auto h-24 w-24 text-muted-foreground opacity-50" />
                 <h2 className="mt-6 text-2xl font-semibold">No Services Found</h2>
                 <p className="mt-2 text-muted-foreground">
                   Try adjusting your filters or search term.
@@ -411,4 +421,3 @@ export default function ServicesPage() {
     </div>
   );
 }
-

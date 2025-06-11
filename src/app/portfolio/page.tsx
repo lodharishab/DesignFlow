@@ -1,5 +1,5 @@
 
-"use client";
+"use client"; // This line will be removed
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
 import { Navbar } from '@/components/layout/navbar';
@@ -13,7 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { designersData } from '@/lib/designer-data'; // Import for linking
+import { designersData } from '@/lib/designer-data'; 
+import type { Metadata } from 'next';
 
 // Enhanced Portfolio Data Structure - IMPORTANT: Keep this in sync with other uses
 export const allPortfolioItemsData: PortfolioItem[] = [
@@ -186,6 +187,15 @@ export const allPortfolioItemsData: PortfolioItem[] = [
     designer: designersData.find(d => d.slug === 'sunita-reddy'),
   }
 ];
+
+export const metadata: Metadata = {
+  title: 'Design Portfolio | DesignFlow India',
+  description: 'Explore a curated collection of stunning design projects by talented Indian designers on DesignFlow. Get inspired for your next creative endeavor.',
+  openGraph: {
+    title: 'Design Portfolio Showcase | DesignFlow India',
+    description: 'Discover exceptional design work across various categories, from branding to UI/UX, crafted by our expert designers.',
+  },
+};
 
 
 const PortfolioPageContent = () => {
@@ -397,3 +407,5 @@ export default function PortfolioPage() {
     </Suspense>
   );
 }
+
+    

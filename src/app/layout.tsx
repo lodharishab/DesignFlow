@@ -21,9 +21,56 @@ const onest = Onest({
   variable: '--font-onest',
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002'; // Fallback for local dev
+
 export const metadata: Metadata = {
-  title: 'DesignFlow - Creative Services Marketplace',
-  description: 'Your Vision, Our Expertise. Simplified.',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'DesignFlow - Creative Services Marketplace for India',
+    template: '%s | DesignFlow India',
+  },
+  description: 'Connect with expert Indian designers for logos, UI/UX, branding, and more. Transparent pricing and streamlined process on DesignFlow India.',
+  openGraph: {
+    title: 'DesignFlow - Creative Services Marketplace for India',
+    description: 'Your Vision, Our Expertise. Simplified for the Indian market.',
+    url: SITE_URL,
+    siteName: 'DesignFlow India',
+    images: [
+      {
+        url: `${SITE_URL}/og-image.png`, // Replace with your actual OG image URL
+        width: 1200,
+        height: 630,
+        alt: 'DesignFlow India - Creative Services Marketplace',
+      },
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'DesignFlow - Creative Services Marketplace for India',
+    description: 'Expert Indian designers for logos, UI/UX, branding, and more.',
+    // images: [`${SITE_URL}/twitter-image.png`], // Replace with your actual Twitter image URL
+    // creator: '@yourTwitterHandle', // Optional: Add your Twitter handle
+  },
+  robots: { // Basic robots meta tag
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  // Optional: Add icons, manifest, etc.
+  // icons: {
+  //   icon: '/favicon.ico',
+  //   shortcut: '/favicon-16x16.png',
+  //   apple: '/apple-touch-icon.png',
+  // },
+  // manifest: `${SITE_URL}/site.webmanifest`,
 };
 
 export default function RootLayout({

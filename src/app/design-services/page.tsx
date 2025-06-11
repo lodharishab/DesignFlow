@@ -14,6 +14,7 @@ import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { Palette, Share2, Printer, Laptop, Brush as BrushIconLucide, Package as PackageIcon, Film, Presentation, Camera, ArrowRight, Sparkles, Eye, Briefcase } from 'lucide-react';
 import type { Icon as LucideIconType } from 'lucide-react';
 import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page';
+import type { Metadata } from 'next';
 
 // Data for the Service Categories Carousel
 const serviceCategoriesData: Array<{ name: string; slug: string; icon: LucideIconType; description: string; shortDesc: string; }> = [
@@ -34,6 +35,26 @@ const featuredServicesData = [
 ];
 
 const portfolioGlanceItems: PortfolioItem[] = globalPortfolioItems.slice(0, 3);
+
+// Static metadata for this page
+// Note: `export const metadata` must be at the top level of the module
+// This requires moving the component definition or creating it in a separate file if it needs to access constants from here.
+// For simplicity, I'll define it here, assuming it's okay for this file structure.
+// If this was a Server Component, it would be simpler.
+// For Client Components, this metadata is typically handled in the nearest parent Server Component (e.g., layout.tsx or page.tsx that imports this as a child).
+// However, Next.js 13+ App Router allows metadata export from client components that are the main export of a route segment.
+
+// Since this IS a page.tsx, exporting metadata here is fine.
+export const metadata: Metadata = {
+  title: 'Discover Design Services in India',
+  description: 'Explore a wide range of creative design services tailored for the Indian market. Find expert designers for logos, UI/UX, branding, and more on DesignFlow.',
+  openGraph: {
+    title: 'Discover Design Services | DesignFlow India',
+    description: 'Browse our comprehensive catalog of design services, from logo creation to web UI/UX, perfect for Indian businesses and startups.',
+    // Add a specific OG image for this page if available
+    // images: ['/og-design-services.png'], 
+  },
+};
 
 
 export default function DesignServicesPage() {

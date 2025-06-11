@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Navbar } from '@/components/layout/navbar';
@@ -16,6 +16,60 @@ import { ArrowLeft, Briefcase, CalendarDays, Tag, UserCircle, PackageSearch, Lig
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { allPortfolioItemsData } from '@/app/portfolio/page'; // Import shared data
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Metadata, ResolvingMetadata } from 'next';
+
+interface Props {
+  params: { id: string };
+}
+
+// Simulating data fetching for generateMetadata
+async function getPortfolioItemData(id: string): Promise<PortfolioItem | null> {
+  // In a real app, fetch from your DB here
+  return allPortfolioItemsData.find(p => p.id === id) || null;
+}
+
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const id = params.id;
+  const item = await getPortfolioItemData(id);
+
+  if (!item) {
+    return {
+      title: 'Portfolio Item Not Found',
+    };
+  }
+
+  const previousImages = (await parent).openGraph?.images || [];
+
+  return {
+    title: `${item.title} - ${item.category} | DesignFlow Portfolio`,
+    description: item.projectDescription.substring(0, 160), // Use a snippet of the description
+    openGraph: {
+      title: `${item.title} | DesignFlow Portfolio`,
+      description: item.projectDescription.substring(0, 160),
+      images: [
+        {
+          url: item.coverImageUrl, // Use item-specific image
+          width: 600, // Adjust if your image dimensions are different
+          height: 450, // Adjust
+          alt: item.title,
+        },
+        ...previousImages,
+      ],
+      type: 'article', // 'article' can be suitable for portfolio items
+      tags: item.tags,
+      // authors: item.designer ? [item.designer.name] : undefined, // If designer info is available
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${item.title} | DesignFlow Portfolio`,
+      description: item.projectDescription.substring(0, 160),
+      // images: [item.coverImageUrl], 
+    },
+  };
+}
 
 function PortfolioDetailPageContent() {
   const params = useParams();
@@ -29,7 +83,11 @@ function PortfolioDetailPageContent() {
     if (itemId) {
       setIsLoading(true);
       const foundItem = allPortfolioItemsData.find(p => p.id === itemId);
-      setItem(foundItem || null);
+      if (!foundItem) {
+        notFound();
+        return;
+      }
+      setItem(foundItem);
       setIsLoading(false);
     }
   }, [itemId]);
@@ -39,15 +97,14 @@ function PortfolioDetailPageContent() {
   }
 
   if (!item) {
-    return (
+    // This should be caught by notFound() in useEffect, but as a fallback:
+     return (
       <div className="flex-grow container mx-auto py-12 px-5 text-center">
         <PackageSearch className="mx-auto h-24 w-24 text-muted-foreground opacity-50" />
         <h1 className="mt-6 text-3xl font-bold font-headline">Project Not Found</h1>
         <p className="mt-2 text-muted-foreground">The project you are looking for does not exist or has been moved.</p>
-        <Button asChild className="mt-8" size="lg">
-          <Link href="/portfolio">
-            <ArrowLeft className="mr-2 h-5 w-5" /> Back to Portfolio
-          </Link>
+        <Button asChild className="mt-8" size="lg" onClick={() => router.back()}>
+            <ArrowLeft className="mr-2 h-5 w-5" /> Back
         </Button>
       </div>
     );
@@ -183,4 +240,3 @@ export default function PortfolioItemPage() {
     </Suspense>
   );
 }
-

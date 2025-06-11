@@ -13,11 +13,12 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { useParams, useRouter } from 'next/navigation'; 
+import { useParams, useRouter, notFound } from 'next/navigation'; 
 import { useToast } from "@/hooks/use-toast";
 import { designersData } from '@/lib/designer-data';
+import type { Metadata, ResolvingMetadata } from 'next';
 
 interface ServiceTierDetail {
   name: 'Basic' | 'Standard' | 'Premium'; 
@@ -312,6 +313,58 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
   },
 };
 
+type Props = {
+  params: { serviceId: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+// Simulating data fetching for generateMetadata
+async function getServiceData(id: string): Promise<ServiceDetail | null> {
+  return serviceDetailsData[id] || null;
+}
+
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const id = params.serviceId;
+  const service = await getServiceData(id);
+
+  if (!service) {
+    return {
+      title: 'Service Not Found',
+    };
+  }
+
+  const previousImages = (await parent).openGraph?.images || [];
+
+  return {
+    title: `${service.name} - ${service.category}`,
+    description: service.generalDescription,
+    openGraph: {
+      title: `${service.name} | DesignFlow India`,
+      description: service.generalDescription,
+      images: [
+        {
+          url: service.imageUrl, // Use service-specific image
+          width: 800,
+          height: 500, // Adjust if your image dimensions are different
+          alt: service.name,
+        },
+        ...previousImages,
+      ],
+      type: 'product', // More specific type for a service/product
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${service.name} | DesignFlow India`,
+      description: service.generalDescription,
+      // images: [service.imageUrl], // Use service-specific image
+    },
+  };
+}
+
+
 function formatStructuredDeliveryTime(min: number, max: number, unit: ServiceTierDetail['deliveryTimeUnit']): string {
   const unitLabel = unit.replace('_', ' '); 
   if (min === max) {
@@ -334,7 +387,11 @@ export default function ServiceDetailPage() {
   useEffect(() => {
     if (serviceId) {
       const serviceData = serviceDetailsData[serviceId];
-      setService(serviceData || null);
+      if (!serviceData) {
+        notFound(); // Trigger 404 if service not found
+        return;
+      }
+      setService(serviceData);
       if (serviceData) {
         const defaultTier = serviceData.tiers.find(t => t.name === 'Standard')?.name || (serviceData.tiers.length > 0 ? serviceData.tiers[0].name : '');
         setSelectedTierName(defaultTier);
@@ -380,23 +437,6 @@ export default function ServiceDetailPage() {
       </div>
     );
   }
-
-  if (!service) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <CategoriesNavbar />
-        <main className="flex-grow container mx-auto py-12 px-5 text-center">
-          <h1 className="text-2xl font-semibold">Service Not Found</h1>
-          <p className="text-muted-foreground mt-2">The service you are looking for does not exist or has been moved.</p>
-          <Button asChild className="mt-6">
-            <Link href="/services">Browse All Services</Link>
-          </Button>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
   
   let tabsListGridColsClass = "grid-cols-3"; 
   if (service.tiers.length === 1) {
@@ -420,6 +460,7 @@ export default function ServiceDetailPage() {
                 fill={true}
                 style={{ objectFit: "cover" }}
                 data-ai-hint={service.imageHint}
+                priority
               />
             </div>
 
@@ -610,5 +651,3 @@ export default function ServiceDetailPage() {
     </div>
   );
 }
-
-    

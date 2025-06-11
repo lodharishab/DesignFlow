@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Navbar } from '@/components/layout/navbar';
@@ -14,10 +14,69 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Mail, Briefcase, MapPin, CalendarDays, ExternalLink, Star, Palette, Users, MessageSquare } from 'lucide-react';
 import { PortfolioItemCard, type PortfolioItem } from '@/components/shared/portfolio-item-card';
-import { allPortfolioItemsData } from '@/app/portfolio/page'; // Assuming this is exported from portfolio page
+import { allPortfolioItemsData } from '@/app/portfolio/page'; 
 import { designersData, type DesignerProfile } from '@/lib/designer-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
+import type { Metadata, ResolvingMetadata } from 'next';
+
+interface Props {
+  params: { designerSlug: string };
+}
+
+// Simulating data fetching for generateMetadata
+async function getDesignerData(slug: string): Promise<DesignerProfile | null> {
+  return designersData.find(d => d.slug === slug) || null;
+}
+
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const slug = params.designerSlug;
+  const designer = await getDesignerData(slug);
+
+  if (!designer) {
+    return {
+      title: 'Designer Not Found',
+    };
+  }
+
+  const previousImages = (await parent).openGraph?.images || [];
+  const description = designer.bio.substring(0, 160) + (designer.bio.length > 160 ? '...' : '');
+
+
+  return {
+    title: `${designer.name} - Creative Designer on DesignFlow`,
+    description: description,
+    openGraph: {
+      title: `${designer.name} | DesignFlow India`,
+      description: description,
+      images: [
+        {
+          url: designer.avatarUrl, 
+          width: 150, // Adjust to your avatar dimensions
+          height: 150,
+          alt: designer.name,
+        },
+        ...previousImages,
+      ],
+      type: 'profile',
+      profile: {
+        firstName: designer.name.split(' ')[0],
+        lastName: designer.name.split(' ').slice(1).join(' '),
+        username: designer.slug,
+        // gender: "male" // If available
+      },
+    },
+     twitter: {
+      card: 'summary', // Can be summary_large_image if avatar is large enough
+      title: `${designer.name} | DesignFlow India`,
+      description: description,
+      // images: [designer.avatarUrl],
+    },
+  };
+}
 
 function DesignerProfilePageContent() {
   const params = useParams();
@@ -32,7 +91,12 @@ function DesignerProfilePageContent() {
     if (designerSlug) {
       setIsLoading(true);
       const foundDesigner = designersData.find(d => d.slug === designerSlug);
-      setDesigner(foundDesigner || null);
+      
+      if (!foundDesigner) {
+        notFound(); // Trigger 404 if designer not found
+        return;
+      }
+      setDesigner(foundDesigner);
 
       if (foundDesigner) {
         const portfolio = allPortfolioItemsData.filter(item => item.designer?.id === foundDesigner.id);
@@ -49,6 +113,7 @@ function DesignerProfilePageContent() {
   }
 
   if (!designer) {
+    // This should be caught by notFound() in useEffect, but as a fallback:
     return (
       <div className="flex-grow container mx-auto py-12 px-5 text-center">
         <Users className="mx-auto h-24 w-24 text-muted-foreground opacity-50" />
