@@ -1,0 +1,84 @@
+
+# DesignFlow Project - Future Enhancements & Important TODOs
+
+## I. Foundational & Core Functionality:
+
+1.  **Real Authentication & Authorization:**
+    *   Implement a robust solution like NextAuth.js or Firebase Authentication.
+    *   Secure user accounts, role-based access control for client, designer, and admin areas.
+
+2.  **Full Database Integration (MongoDB):**
+    *   Define MongoDB schemas for all entities (users, services, orders, portfolio, blog, etc.).
+    *   Refactor all data fetching and mutation logic from mock data to use MongoDB (likely via Server Actions or API routes).
+    *   Ensure data persistence and dynamic content management.
+
+3.  **Core Business Logic Implementation:**
+    *   **Order Processing:** Implement actual order creation, payment processing workflows, and database status updates.
+    *   **Designer Assignment Logic:** Define and implement how designers are assigned to orders (manual admin, bidding, auto-assignment based on skills/availability).
+    *   **Full Payment Gateway Integration:** Complete Razorpay (or other chosen gateway) integration for real transactions, handle webhooks, and manage refunds/disputes.
+    *   **Payout System for Designers:** Develop a secure mechanism for designers to receive their earnings.
+
+## II. User Experience & Feature Enhancements:
+
+4.  **Refine/Complete Client-Designer Communication:**
+    *   Implement real-time or near real-time messaging if possible (e.g., using WebSockets or a service like Pusher/Ably, or polling for simpler setup).
+    *   Ensure message persistence in the database.
+    *   Add notifications for new messages.
+    *   File attachment capabilities within chat.
+
+5.  **Refined User Flows:**
+    *   **Client Order Flow:** More detailed brief submission forms, options for file attachments with briefs, clearer review and revision cycle management within the order page.
+    *   **Designer Project Management:** Tools for designers to formally accept/decline orders, update progress, request clarifications, manage deadlines, and submit deliverables more formally through the platform.
+
+6.  **Search & Advanced Filtering:**
+    *   Implement robust search functionality (e.g., for services, designers, portfolio items, blog posts).
+    *   Enhance filtering options on `/services`, `/portfolio`, and other listing pages (e.g., price range, delivery time, designer rating, specific skills/tags, location for designers).
+
+7.  **Reviews & Ratings System:**
+    *   Allow clients to rate and write reviews for completed services/designers.
+    *   Display average ratings and reviews on service pages and designer profiles.
+    *   Admin moderation for reviews.
+
+8.  **Notifications System:**
+    *   Implement email and/or in-app notifications for:
+        *   Order status updates (for client & designer).
+        *   New messages in order chat.
+        *   Project milestones & deadlines.
+        *   New service alerts (for subscribed designers).
+        *   Admin alerts (e.g., new designer applications).
+        *   Account-related events.
+
+## III. Technical & Operational Improvements:
+
+9.  **Genkit for AI Features (Beyond Setup):**
+    *   **Content Generation:** AI-assisted blog post drafting, service description generation, tagline suggestions.
+    *   **Image Moderation/Tagging:** For user-uploaded content like portfolio items or profile pictures.
+    *   **AI-Assisted Design Briefs:** Guide clients to create more effective briefs.
+    *   **Smart Designer Matching:** AI-powered suggestions for matching clients with suitable designers based on project requirements and designer skills/portfolio.
+    *   **AI Image Generation for Placeholders/Inspiration:** Allow users to generate placeholder images or mood board elements.
+
+10. **Comprehensive Testing:**
+    *   Implement unit tests (e.g., Jest/React Testing Library) for components and utility functions.
+    *   Add integration tests for key user flows (e.g., signup, order placement, message sending).
+    *   Consider end-to-end testing (e.g., Cypress, Playwright) for critical paths.
+
+11. **Enhanced Form Validation & Error Handling:**
+    *   Implement robust client-side and server-side validation for all forms (e.g., using Zod with React Hook Form).
+    *   Provide clear, user-friendly error messages.
+    *   Implement global error boundaries for better application stability.
+
+12. **Admin Panel Enhancements:**
+    *   **Detailed Analytics & Reporting:** Track platform usage, sales, designer performance, popular services, etc.
+    *   **Dispute Resolution System:** Tools for admins to mediate and resolve issues between clients and designers.
+    *   **Content Moderation Tools:** For portfolio items, blog comments (if added), user profiles.
+    *   More granular control over platform settings.
+
+## IV. Other Potential Features:
+
+*   **Designer Availability Management.**
+*   **Custom Offer/Quote System (for non-standard services).**
+*   **Affiliate/Referral Program.**
+*   **Multi-language Support (beyond just vernacular considerations).**
+*   **Advanced Portfolio Features for Designers (e.g., case studies, private projects).**
+*   **Integration with project management tools for designers.**
+*   **Community Forum or Q&A section.**
