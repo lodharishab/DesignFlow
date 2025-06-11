@@ -99,11 +99,7 @@ export default function DesignServicesPage() {
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
               From stunning logos to immersive web experiences, find the perfect creative solution tailored for the Indian market. Explore our offerings and let's bring your vision to life.
             </p>
-            <Button size="lg" asChild className="w-full sm:w-auto">
-              <Link href="/services">
-                <Eye className="mr-2 h-5 w-5" /> Explore Full Service Catalog
-              </Link>
-            </Button>
+            {/* Button removed from here */}
           </div>
         </section>
 
