@@ -9,21 +9,21 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ServiceCard } from '@/components/shared/service-card';
-import { PortfolioShowcaseCard } from '@/app/page'; 
+import { PortfolioShowcaseCard } from '@/app/page';
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { Palette, Share2, Printer, Laptop, Brush as BrushIconLucide, Package as PackageIcon, Film, Presentation, Camera, ArrowRight, Sparkles, Eye, Briefcase } from 'lucide-react';
 import type { Icon as LucideIconType } from 'lucide-react';
 
-// Data for the Service Categories Section
-const serviceCategoriesData: Array<{ name: string; slug: string; icon: LucideIconType; description: string }> = [
-  { name: 'Logo Design', slug: 'logo-design', icon: Palette, description: 'Craft unique brand identities that resonate with your audience and reflect your business values in India.' },
-  { name: 'Web UI/UX', slug: 'web-ui-ux', icon: Laptop, description: 'User-centric web and app interfaces designed for seamless experiences on all devices for the Indian market.' },
-  { name: 'Print Materials', slug: 'print-materials', icon: Printer, description: 'Eye-catching brochures, flyers, and business cards that make a lasting impression for your Indian business.' },
-  { name: 'Illustrations', slug: 'illustration', icon: BrushIconLucide, description: 'Custom illustrations and graphics, from digital art to traditional Indian styles, to bring your ideas to life.' },
-  { name: 'Social Media Graphics', slug: 'social-media-graphics', icon: Share2, description: 'Engaging visuals for Instagram, Facebook, and other platforms, tailored for Indian festivals and trends.' },
-  { name: 'Packaging Design', slug: 'packaging', icon: PackageIcon, description: 'Innovative packaging concepts that make your products stand out on Indian shelves.' },
-  { name: 'Motion Graphics', slug: 'motion-graphics', icon: Film, description: 'Dynamic animations and explainer videos to captivate your audience and tell your story.' },
-  { name: 'Presentations', slug: 'presentations', icon: Presentation, description: 'Professional pitch decks and presentations that convey your message with impact.' },
+// Data for the Service Categories Carousel
+const serviceCategoriesData: Array<{ name: string; slug: string; icon: LucideIconType; description: string; shortDesc: string; }> = [
+  { name: 'Logo Design', slug: 'logo-design', icon: Palette, description: 'Craft unique brand identities that resonate with your audience and reflect your business values in India.', shortDesc: 'Brand identities that resonate.' },
+  { name: 'Web UI/UX', slug: 'web-ui-ux', icon: Laptop, description: 'User-centric web and app interfaces designed for seamless experiences on all devices for the Indian market.', shortDesc: 'User-centric web & app UI/UX.' },
+  { name: 'Print Materials', slug: 'print-materials', icon: Printer, description: 'Eye-catching brochures, flyers, and business cards that make a lasting impression for your Indian business.', shortDesc: 'Brochures, flyers, cards.' },
+  { name: 'Illustrations', slug: 'illustration', icon: BrushIconLucide, description: 'Custom illustrations and graphics, from digital art to traditional Indian styles, to bring your ideas to life.', shortDesc: 'Custom digital art.' },
+  { name: 'Social Media Graphics', slug: 'social-media-graphics', icon: Share2, description: 'Engaging visuals for Instagram, Facebook, and other platforms, tailored for Indian festivals and trends.', shortDesc: 'Engaging social visuals.' },
+  { name: 'Packaging Design', slug: 'packaging', icon: PackageIcon, description: 'Innovative packaging concepts that make your products stand out on Indian shelves.', shortDesc: 'Product packaging concepts.' },
+  { name: 'Motion Graphics', slug: 'motion-graphics', icon: Film, description: 'Dynamic animations and explainer videos to captivate your audience and tell your story.', shortDesc: 'Animations & explainer videos.' },
+  { name: 'Presentations', slug: 'presentations', icon: Presentation, description: 'Professional pitch decks and presentations that convey your message with impact.', shortDesc: 'Impactful pitch decks.' },
 ];
 
 const featuredServicesData = [
@@ -82,46 +82,32 @@ export default function DesignServicesPage() {
       <Navbar />
       <CategoriesNavbar />
       <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="py-20 md:py-32 bg-gradient-to-br from-secondary to-background text-center">
+        {/* Hero Section with Category Carousel */}
+        <section className="py-16 md:py-20 bg-gradient-to-br from-secondary via-background to-background text-center">
           <div className="container mx-auto px-5">
-            <h1 className="text-4xl md:text-6xl font-bold font-headline mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold font-headline mb-10">
               Discover Our Design <span className="text-primary">Services</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-              From stunning logos to immersive web experiences, find the perfect creative solution tailored for the Indian market. Explore our offerings and let's bring your vision to life.
-            </p>
-            {/* Button was removed from here as per previous request */}
-          </div>
-        </section>
-
-        {/* Service Categories Section -- RESTORED */}
-        <section className="py-16 md:py-24 bg-card">
-          <div className="container mx-auto px-5">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-4">
-              Find Your Perfect Design Solution
-            </h2>
-            <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-              Browse through our comprehensive service categories to find exactly what you need.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+            
+            {/* Category Carousel */}
+            <div className="flex space-x-4 overflow-x-auto pb-6 -mx-5 px-5 scrollbar-hide">
               {serviceCategoriesData.map(category => (
                 <Link key={category.slug} href={`/services?category=${category.slug}`} passHref>
-                  <Card className="h-full shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col items-center text-center p-6 hover:border-primary cursor-pointer">
-                    <div className="p-4 bg-primary/10 rounded-full mb-4 inline-flex">
-                      <category.icon className="h-10 w-10 text-primary" />
+                  <Card className="min-w-[200px] md:min-w-[240px] max-w-[200px] md:max-w-[240px] h-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center p-4 hover:border-primary cursor-pointer bg-card">
+                    <div className="p-3 bg-primary/10 rounded-full mb-3 inline-flex">
+                      <category.icon className="h-8 w-8 md:h-10 md:w-10 text-primary" />
                     </div>
-                    <CardTitle className="font-headline text-xl mb-2">{category.name}</CardTitle>
-                    <CardDescription className="text-sm text-muted-foreground flex-grow mb-4">
-                      {category.description}
+                    <CardTitle className="font-headline text-md md:text-lg mb-1 leading-tight">{category.name}</CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground flex-grow line-clamp-2">
+                      {category.shortDesc}
                     </CardDescription>
-                    <Button variant="link" className="mt-auto text-primary hover:underline px-0">
-                      View {category.name} Services <ArrowRight className="ml-1.5 h-4 w-4" />
-                    </Button>
                   </Card>
                 </Link>
               ))}
             </div>
+             <p className="text-sm text-muted-foreground mt-6 max-w-3xl mx-auto">
+              Explore our offerings and let&apos;s bring your vision to life for the Indian market.
+            </p>
           </div>
         </section>
 
@@ -173,6 +159,16 @@ export default function DesignServicesPage() {
         </section>
       </main>
       <Footer />
+      {/* Add this style to hide scrollbars, if Tailwind utility isn't enough */}
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+      `}</style>
     </div>
   );
 }
