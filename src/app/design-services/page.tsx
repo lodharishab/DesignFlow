@@ -13,6 +13,7 @@ import { PortfolioShowcaseCard } from '@/app/page';
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { Palette, Share2, Printer, Laptop, Brush as BrushIconLucide, Package as PackageIcon, Film, Presentation, Camera, ArrowRight, Sparkles, Eye, Briefcase } from 'lucide-react';
 import type { Icon as LucideIconType } from 'lucide-react';
+import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page';
 
 // Data for the Service Categories Carousel
 const serviceCategoriesData: Array<{ name: string; slug: string; icon: LucideIconType; description: string; shortDesc: string; }> = [
@@ -32,48 +33,7 @@ const featuredServicesData = [
   { id: '2', name: 'Social Media Pack', description: 'Engaging posts for Indian festivals and social media campaigns. Boost your online presence.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'diwali social media' },
 ];
 
-const portfolioGlanceItems: PortfolioItem[] = [
-  {
-    id: 'ecomm-reimagined-platform-india',
-    title: 'E-commerce Reimagined',
-    category: 'Web UI/UX',
-    categorySlug: 'web-ui-ux',
-    coverImageUrl: 'https://placehold.co/600x450.png',
-    coverImageHint: 'e-commerce website design',
-    projectDescription: 'Complete overhaul of a multi-vendor e-commerce platform, focusing on vernacular support and enhanced product discovery.',
-    galleryImages: [
-      { url: 'https://placehold.co/1200x800.png', hint: 'website homepage india', caption: 'Homepage - Festive Offer' },
-      { url: 'https://placehold.co/1200x800.png', hint: 'product page indian dress', caption: 'Saree Product Detail' },
-    ],
-    designer: { id: 'des001', slug: 'priya-sharma', name: 'Priya Sharma', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'indian woman designer' },
-  },
-  {
-    id: 'eco-startup-brand-identity-india',
-    title: 'Sustainable Lifestyle Branding',
-    category: 'Logo & Branding',
-    categorySlug: 'logo-branding',
-    coverImageUrl: 'https://placehold.co/600x450.png',
-    coverImageHint: 'sustainable brand logo',
-    projectDescription: 'Complete brand identity package for an eco-conscious Indian lifestyle startup.',
-    galleryImages: [
-      { url: 'https://placehold.co/1200x800.png', hint: 'packaging design india', caption: 'Eco-friendly Product Packaging' },
-    ],
-    designer: { id: 'des003', slug: 'aisha-khan', name: 'Aisha Khan', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'indian woman graphic artist' },
-  },
-  {
-    id: 'childrens-book-indian-mythology',
-    title: 'Illustrations for "Tales of Krishna"',
-    category: 'Illustration',
-    categorySlug: 'illustration',
-    coverImageUrl: 'https://placehold.co/600x450.png',
-    coverImageHint: 'krishna illustration style',
-    projectDescription: 'A series of enchanting illustrations for a children\'s storybook based on Indian mythology.',
-    galleryImages: [
-      { url: 'https://placehold.co/1200x800.png', hint: 'indian mythology art children', caption: 'Krishna and Gopis' },
-    ],
-    designer: { id: 'des006', slug: 'arjun-mehta', name: 'Arjun Mehta', avatarUrl: 'https://placehold.co/40x40.png', imageHint: 'indian man photographer' },
-  },
-];
+const portfolioGlanceItems: PortfolioItem[] = globalPortfolioItems.slice(0, 3);
 
 
 export default function DesignServicesPage() {
@@ -93,20 +53,36 @@ export default function DesignServicesPage() {
             </p>
             
             {/* Category Carousel */}
-            <div className="flex space-x-4 overflow-x-auto pb-6 -mx-5 px-5 scrollbar-hide">
-              {serviceCategoriesData.map(category => (
-                <Link key={category.slug} href={`/services?category=${category.slug}`} passHref>
-                  <Card className="min-w-[200px] md:min-w-[240px] max-w-[200px] md:max-w-[240px] h-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center p-4 hover:border-primary cursor-pointer bg-card">
-                    <div className="p-3 bg-primary/10 rounded-full mb-3 inline-flex">
-                      <category.icon className="h-8 w-8 md:h-10 md:w-10 text-primary" />
-                    </div>
-                    <CardTitle className="font-headline text-md md:text-lg mb-1 leading-tight">{category.name}</CardTitle>
-                    <CardDescription className="text-xs text-muted-foreground flex-grow line-clamp-2">
-                      {category.shortDesc}
-                    </CardDescription>
-                  </Card>
-                </Link>
-              ))}
+            <div className="w-full overflow-hidden group">
+              <div className="flex animate-marquee group-hover:pause-animation">
+                {/* Render items twice for seamless loop */}
+                {serviceCategoriesData.map(category => (
+                  <Link key={`${category.slug}-1`} href={`/services?category=${category.slug}`} passHref className="flex-shrink-0 mx-2">
+                    <Card className="w-[200px] md:w-[240px] h-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center p-4 hover:border-primary cursor-pointer bg-card">
+                      <div className="p-3 bg-primary/10 rounded-full mb-3 inline-flex">
+                        <category.icon className="h-8 w-8 md:h-10 md:w-10 text-primary" />
+                      </div>
+                      <CardTitle className="font-headline text-md md:text-lg mb-1 leading-tight">{category.name}</CardTitle>
+                      <CardDescription className="text-xs text-muted-foreground flex-grow line-clamp-2">
+                        {category.shortDesc}
+                      </CardDescription>
+                    </Card>
+                  </Link>
+                ))}
+                {serviceCategoriesData.map(category => (
+                  <Link key={`${category.slug}-2`} href={`/services?category=${category.slug}`} passHref className="flex-shrink-0 mx-2" aria-hidden="true">
+                    <Card className="w-[200px] md:w-[240px] h-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center p-4 hover:border-primary cursor-pointer bg-card">
+                      <div className="p-3 bg-primary/10 rounded-full mb-3 inline-flex">
+                        <category.icon className="h-8 w-8 md:h-10 md:w-10 text-primary" />
+                      </div>
+                      <CardTitle className="font-headline text-md md:text-lg mb-1 leading-tight">{category.name}</CardTitle>
+                      <CardDescription className="text-xs text-muted-foreground flex-grow line-clamp-2">
+                        {category.shortDesc}
+                      </CardDescription>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -159,16 +135,6 @@ export default function DesignServicesPage() {
         </section>
       </main>
       <Footer />
-      {/* Add this style to hide scrollbars, if Tailwind utility isn't enough */}
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-        }
-      `}</style>
     </div>
   );
 }
