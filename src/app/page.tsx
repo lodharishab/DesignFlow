@@ -26,7 +26,7 @@ const featuredServices = [
 
 const clientBenefits = [
   { icon: Award, title: 'Expert Designers', description: 'Connect with vetted, top-tier designers. Our curated network ensures your project is handled by skilled professionals who understand your needs.' },
-  { icon: Tag, title: 'Transparent Pricing', description: 'Say goodbye to budget surprises. Our fixed-price service packages mean you know the cost upfront, ensuring clarity and control. (Prices often shown in INR for relevant markets)' },
+  { icon: Tag, title: 'Transparent Pricing', description: 'Say goodbye to budget surprises. Our fixed-price service packages mean you know the cost upfront, ensuring clarity and control.' },
   { icon: Zap, title: 'Streamlined Process', description: 'From intuitive briefs to efficient delivery, our platform simplifies every step. Get your designs faster, with less hassle and more collaboration.' },
   { icon: ShieldCheck, title: 'Quality Guaranteed', description: 'Your satisfaction is our success. We stand behind the quality of our designers\' work, offering revisions and support to ensure exceptional results.' },
 ];
@@ -164,8 +164,12 @@ export default function HomePage() {
               Getting your perfect design is straightforward with DesignFlow. Follow these simple steps to bring your vision to life with our expert designers.
             </p>
             <div className="grid md:grid-cols-3 gap-8 md:gap-10">
-              {howItWorksSteps.map((step) => (
-                <Card key={step.title} className="text-center shadow-lg hover:shadow-xl transition-shadow flex flex-col">
+              {howItWorksSteps.map((step, index) => (
+                <Card 
+                  key={step.title} 
+                  className="text-center shadow-lg hover:shadow-xl transition-shadow flex flex-col opacity-0 animate-in fade-in-0 duration-700 ease-out"
+                  style={{ animationDelay: `${index * 150}ms` }}
+                >
                   <CardHeader className="items-center pt-8">
                     <div className="bg-primary/10 p-5 rounded-full mb-5 inline-flex">
                       <step.icon className="h-10 w-10 text-primary" />
