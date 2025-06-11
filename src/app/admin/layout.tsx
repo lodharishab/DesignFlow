@@ -12,7 +12,7 @@ import {
   Settings,
   Brush,
   UsersRound,
-  Tags as TagsIcon, // Aliased for clarity, as 'Tags' icon from lucide
+  Tags as TagsIcon, 
   List,
   ChevronDown,
   Network,
@@ -21,7 +21,8 @@ import {
   Clock,
   Eye,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Newspaper // Added for Blog
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -79,6 +80,7 @@ const navItems = [
   },
   { href: '/admin/designers', icon: Users, label: 'Designers' },
   { href: '/admin/users', icon: UsersRound, label: 'Users' },
+  { href: '/admin/blog/posts', icon: Newspaper, label: 'Blog Posts' }, // Added Blog link
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
@@ -141,7 +143,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                     {isOpen && (
                       <SidebarMenuSub>
                         {item.children.map(child => {
-                          const isChildActive = pathname === child.href || (child.href !== '/admin/services' && pathname.startsWith(child.href) && child.href.split('/').length === pathname.split('/').length);
+                          // Adjusted isActive logic for child items
+                           const isChildActive = pathname === child.href || (child.href !== item.pathPrefix && pathname.startsWith(child.href) && child.href.split('/').length <= pathname.split('/').length);
 
                           return (
                             <SidebarMenuSubItem key={child.label}>
@@ -159,10 +162,11 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                   </SidebarMenuItem>
                 );
               } else {
+                // Adjusted isActive logic for top-level items
                 const isActive =
                   (item.href === '/admin/dashboard' && pathname === item.href) ||
-                  (item.href !== '/admin/dashboard' && item.href && pathname.startsWith(item.href));
-
+                  (item.href && item.href !== '/admin/dashboard' && pathname.startsWith(item.href));
+                
                 return (
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton

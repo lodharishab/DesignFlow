@@ -3,14 +3,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, LayoutGrid, Menu as MenuIcon, Briefcase } from 'lucide-react'; // Added Briefcase
+import { Home, LayoutGrid, Menu as MenuIcon, Briefcase, Newspaper } from 'lucide-react'; // Added Newspaper for Blog
 import { cn } from '@/lib/utils';
 import { useUI } from '@/contexts/ui-context';
 
 const navItems = [
   { href: '/client/dashboard', label: 'Home', icon: Home }, // Assuming client dashboard as home when logged in
   { href: '/services', label: 'Services', icon: LayoutGrid },
-  { href: '/portfolio', label: 'Portfolio', icon: Briefcase }, // Added Portfolio
+  { href: '/portfolio', label: 'Portfolio', icon: Briefcase },
+  { href: '/blog', label: 'Blog', icon: Newspaper }, // Added Blog
 ];
 
 export function MobileBottomNav() {
@@ -21,8 +22,18 @@ export function MobileBottomNav() {
   // Exclude the "More" button itself from this check.
   const isAnyMainNavItemActive = navItems.some(item => {
     let effectiveIsActive = pathname === item.href;
-    if (item.href !== '/' && item.href.length > 1) {
-      effectiveIsActive = effectiveIsActive || pathname.startsWith(item.href);
+    // For nested routes, make parent active
+    if (item.href !== '/' && item.href.length > 1) { 
+      if (item.href === '/services') {
+           effectiveIsActive = pathname === '/services' || pathname.startsWith('/services/');
+      } else if (item.href === '/portfolio') {
+          effectiveIsActive = pathname === '/portfolio' || pathname.startsWith('/portfolio/');
+      } else if (item.href === '/blog') { // Check for blog and its children
+          effectiveIsActive = pathname === '/blog' || pathname.startsWith('/blog/');
+      }
+       else {
+          effectiveIsActive = effectiveIsActive || pathname.startsWith(item.href);
+      }
     }
     return effectiveIsActive;
   });
@@ -34,11 +45,12 @@ export function MobileBottomNav() {
           let effectiveIsActive = pathname === item.href;
           // For nested routes, make parent active
           if (item.href !== '/' && item.href.length > 1) { 
-             // Exact match for /services but prefix match for /services/some-service
             if (item.href === '/services') {
                  effectiveIsActive = pathname === '/services' || pathname.startsWith('/services/');
             } else if (item.href === '/portfolio') {
                 effectiveIsActive = pathname === '/portfolio' || pathname.startsWith('/portfolio/');
+            } else if (item.href === '/blog') { // Check for blog and its children
+                effectiveIsActive = pathname === '/blog' || pathname.startsWith('/blog/');
             }
              else {
                 effectiveIsActive = effectiveIsActive || pathname.startsWith(item.href);

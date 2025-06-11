@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { LogIn, UserPlus, Brush, LayoutGrid, PanelLeftClose, Briefcase } from 'lucide-react'; // Added Briefcase
+import { LogIn, UserPlus, Brush, LayoutGrid, PanelLeftClose, Briefcase, Newspaper } from 'lucide-react'; // Added Newspaper for Blog
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/shared/mode-toggle';
 import { 
@@ -32,6 +32,12 @@ export function Navbar() {
 
         {/* Desktop Menu Items */}
         <div className="hidden md:flex items-center space-x-2">
+           <Button variant="ghost" asChild>
+            <Link href="/blog">
+              <Newspaper className="mr-2 h-4 w-4" />
+              Blog
+            </Link>
+          </Button>
           <ModeToggle />
           <Button variant="ghost" asChild>
             <Link href="/login">
@@ -70,6 +76,12 @@ export function Navbar() {
                  </SheetClose>
               </SheetHeader>
               <div className="flex flex-col space-y-3">
+                <Button variant="ghost" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link href="/blog">
+                    <Newspaper className="mr-3 h-5 w-5" />
+                    Blog
+                  </Link>
+                </Button>
                 <Button variant="ghost" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
                   <Link href="/portfolio">
                     <Briefcase className="mr-3 h-5 w-5" />
