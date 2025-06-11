@@ -8,7 +8,7 @@ import { ServiceCard } from '@/components/shared/service-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, ListFilter, Search, Check, Tag } from 'lucide-react'; 
+import { Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, ListFilter, Search, Check, Tag, Film, Presentation, Camera } from 'lucide-react'; 
 import type { Icon as LucideIconType } from 'lucide-react'; 
 import { useState, useMemo } from 'react'; 
 import { cn } from '@/lib/utils';
@@ -159,7 +159,7 @@ const categoryFilters: CategoryFilterItem[] = [
   { name: 'Packaging', icon: PackageIcon, slug: 'packaging' },
   { name: 'Motion Graphics', icon: Film, slug: 'motion-graphics' }, 
   { name: 'Presentations', icon: Presentation, slug: 'presentations' },
-  { name: 'Photography', icon: Camera, slug: 'photography' }, // Added Camera, assuming it exists
+  { name: 'Photography', icon: Camera, slug: 'photography' },
 ];
 
 const sortOptions = [
@@ -397,5 +397,3 @@ export default function ServicesPage() {
     </div>
   );
 }
-
-    
