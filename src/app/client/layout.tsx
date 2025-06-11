@@ -37,7 +37,7 @@ import {
 const navItems = [
   { href: '/client/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/client/orders', icon: ShoppingCart, label: 'My Orders' },
-  { href: '/services', icon: Briefcase, label: 'Browse Services' },
+  { href: '/design-services', icon: Briefcase, label: 'Browse Services' },
   { href: '/client/profile', icon: UserCircle, label: 'Profile' },
 ];
 

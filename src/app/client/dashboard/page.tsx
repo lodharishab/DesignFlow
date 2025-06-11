@@ -65,7 +65,7 @@ export default function ClientDashboardPage() {
              </div>
             <p className="text-muted-foreground mb-4">Explore our curated list of design services with fixed scopes and prices, tailored for the Indian market.</p>
             <Button size="lg" asChild>
-              <Link href="/services">
+              <Link href="/design-services">
                 Browse Services <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>

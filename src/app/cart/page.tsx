@@ -36,7 +36,7 @@ const initialMockCartItems: CartItem[] = [
   },
   {
     id: '2',
-    name: 'Social Media Pack (Festive)', // "Festive" is a good descriptor, not a generic "(India)"
+    name: 'Social Media Pack', 
     tierName: 'Basic',
     price: 2499,
     imageUrl: 'https://placehold.co/600x400.png',
@@ -45,7 +45,7 @@ const initialMockCartItems: CartItem[] = [
   },
   {
     id: '4',
-    name: 'UI/UX Web Design (E-commerce)', // "E-commerce" is a good descriptor
+    name: 'UI/UX Web Design Mockup', 
     price: 15999, 
     imageUrl: 'https://placehold.co/600x400.png',
     imageHint: 'indian e-commerce website',
@@ -193,7 +193,7 @@ export default function CartPage() {
               <h2 className="text-2xl font-semibold font-headline">Your cart is empty!</h2>
               <p className="text-muted-foreground">Looks like you haven't added any services yet.</p>
               <Button asChild size="lg" className="mt-4">
-                <Link href="/services">Browse Services</Link>
+                <Link href="/design-services">Browse Services</Link>
               </Button>
             </CardContent>
           </Card>
@@ -286,7 +286,7 @@ export default function CartPage() {
                     <Smartphone className="mr-2 h-5 w-5" /> Pay with PhonePe (Coming Soon)
                   </Button>
                   <Button variant="outline" className="w-full mt-2" asChild disabled={isProcessing}>
-                    <Link href="/services">Continue Shopping</Link>
+                    <Link href="/design-services">Continue Shopping</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -298,5 +298,3 @@ export default function CartPage() {
     </div>
   );
 }
-
-    

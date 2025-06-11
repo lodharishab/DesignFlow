@@ -122,7 +122,7 @@ export default function HomePage() {
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Button size="lg" asChild className="w-full sm:w-auto">
-                <Link href="/services">
+                <Link href="/design-services">
                   <PackageSearch className="mr-2 h-5 w-5" /> Browse All Services
                 </Link>
               </Button>
@@ -192,7 +192,7 @@ export default function HomePage() {
             </div>
             <div className="text-center mt-16">
               <Button size="lg" asChild>
-                <Link href="/services">
+                <Link href="/design-services">
                   <Briefcase className="mr-2 h-5 w-5" /> Explore All Services
                 </Link>
               </Button>
@@ -230,7 +230,7 @@ export default function HomePage() {
               Let our expert designers create something amazing for you. Start your project today and experience the DesignFlow difference!
             </p>
             <Button size="lg" variant="secondary" asChild className="bg-primary-foreground text-primary hover:bg-primary-foreground/90">
-              <Link href="/services">
+              <Link href="/design-services">
                 <Lightbulb className="mr-2 h-5 w-5" /> Get Started Now
               </Link>
             </Button>
@@ -242,5 +242,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
