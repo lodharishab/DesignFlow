@@ -43,12 +43,12 @@ export default function DesignServicesPage() {
       <CategoriesNavbar />
       <main className="flex-grow">
         {/* Hero Section with Category Carousel */}
-        <section className="py-16 md:py-20 bg-muted text-center">
+        <section className="py-20 md:py-24 bg-muted text-center">
           <div className="container mx-auto px-5">
             <h1 className="text-4xl md:text-5xl font-bold font-headline mb-6">
               Your Vision, <span className="text-primary">Expertly Designed</span>
             </h1>
-            <p className="text-lg text-muted-foreground mb-10 max-w-3xl mx-auto">
+            <p className="text-lg text-muted-foreground mb-12 max-w-3xl mx-auto">
               Explore a comprehensive range of creative services tailored to elevate your brand. From stunning logos to seamless web experiences, our expert Indian designers are here to bring your ideas to life.
             </p>
             
@@ -57,26 +57,26 @@ export default function DesignServicesPage() {
               <div className="flex animate-marquee group-hover:pause-animation">
                 {/* Render items twice for seamless loop */}
                 {serviceCategoriesData.map(category => (
-                  <Link key={`${category.slug}-1`} href={`/services?category=${category.slug}`} passHref className="flex-shrink-0 mx-2">
-                    <Card className="w-[200px] md:w-[240px] h-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center p-4 hover:border-primary cursor-pointer bg-card">
-                      <div className="p-3 bg-primary/10 rounded-full mb-3 inline-flex">
-                        <category.icon className="h-8 w-8 md:h-10 md:w-10 text-primary" />
+                  <Link key={`${category.slug}-1`} href={`/services?category=${category.slug}`} passHref className="flex-shrink-0 mx-3">
+                    <Card className="w-[220px] md:w-[260px] h-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center p-6 hover:border-primary cursor-pointer bg-card">
+                      <div className="p-4 bg-primary/10 rounded-full mb-4 inline-flex">
+                        <category.icon className="h-10 w-10 md:h-12 md:w-12 text-primary" />
                       </div>
-                      <CardTitle className="font-headline text-md md:text-lg mb-1 leading-tight">{category.name}</CardTitle>
-                      <CardDescription className="text-xs text-muted-foreground flex-grow line-clamp-2">
+                      <CardTitle className="font-headline text-lg md:text-xl mb-2 leading-tight">{category.name}</CardTitle>
+                      <CardDescription className="text-sm text-muted-foreground flex-grow line-clamp-2">
                         {category.shortDesc}
                       </CardDescription>
                     </Card>
                   </Link>
                 ))}
                 {serviceCategoriesData.map(category => (
-                  <Link key={`${category.slug}-2`} href={`/services?category=${category.slug}`} passHref className="flex-shrink-0 mx-2" aria-hidden="true">
-                    <Card className="w-[200px] md:w-[240px] h-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center p-4 hover:border-primary cursor-pointer bg-card">
-                      <div className="p-3 bg-primary/10 rounded-full mb-3 inline-flex">
-                        <category.icon className="h-8 w-8 md:h-10 md:w-10 text-primary" />
+                  <Link key={`${category.slug}-2`} href={`/services?category=${category.slug}`} passHref className="flex-shrink-0 mx-3" aria-hidden="true">
+                     <Card className="w-[220px] md:w-[260px] h-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center p-6 hover:border-primary cursor-pointer bg-card">
+                      <div className="p-4 bg-primary/10 rounded-full mb-4 inline-flex">
+                        <category.icon className="h-10 w-10 md:h-12 md:w-12 text-primary" />
                       </div>
-                      <CardTitle className="font-headline text-md md:text-lg mb-1 leading-tight">{category.name}</CardTitle>
-                      <CardDescription className="text-xs text-muted-foreground flex-grow line-clamp-2">
+                      <CardTitle className="font-headline text-lg md:text-xl mb-2 leading-tight">{category.name}</CardTitle>
+                      <CardDescription className="text-sm text-muted-foreground flex-grow line-clamp-2">
                         {category.shortDesc}
                       </CardDescription>
                     </Card>
