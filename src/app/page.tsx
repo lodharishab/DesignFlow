@@ -1,4 +1,3 @@
-
 "use client"; 
 
 import { Navbar } from '@/components/layout/navbar';
@@ -6,10 +5,10 @@ import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { ServiceCard } from '@/components/shared/service-card';
-import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, Lightbulb, PackageSearch, MessageSquare, ExternalLink, Camera, Film, Presentation } from 'lucide-react';
+import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, Lightbulb, PackageSearch, MessageSquare, ExternalLink, Camera, Film, Presentation, Search, FileText, ThumbsUp } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react'; 
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card'; 
 import { cn } from '@/lib/utils';
@@ -106,6 +105,27 @@ export const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ it
 
 
 export default function HomePage() {
+  const howItWorksSteps = [
+    {
+      icon: PackageSearch,
+      step: "Step 1",
+      title: "Discover & Choose",
+      description: "Explore a wide array of fixed-scope design services. Find the perfect package with clearly defined deliverables and transparent, upfront pricing in INR. No hidden fees, just straightforward value.",
+    },
+    {
+      icon: FileText,
+      step: "Step 2",
+      title: "Submit Your Brief",
+      description: "Clearly articulate your vision using our intuitive brief submission process. We guide you to provide all necessary details, ensuring designers understand your needs for a successful project launch.",
+    },
+    {
+      icon: ThumbsUp,
+      step: "Step 3",
+      title: "Collaborate & Approve",
+      description: "Engage directly with your chosen expert designer through our platform. Provide feedback, track progress, and approve your final design with confidence and ease. We ensure a smooth collaboration.",
+    },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -138,23 +158,25 @@ export default function HomePage() {
         {/* How It Works (Client Perspective) Section */}
         <section className="py-16 md:py-24 bg-card">
           <div className="container mx-auto px-5">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">Getting Your Design is Easy</h2>
-            <div className="grid md:grid-cols-3 gap-10">
-              <div className="flex flex-col items-center text-center p-6 rounded-lg bg-background shadow-md">
-                <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">1</div>
-                <h3 className="font-headline text-xl font-semibold mb-2">Browse & Select</h3>
-                <p className="text-muted-foreground text-sm">Explore our wide array of fixed-scope design services. Find the perfect package with clearly defined deliverables and transparent, upfront pricing in INR. No hidden fees, just straightforward value.</p>
-              </div>
-              <div className="flex flex-col items-center text-center p-6 rounded-lg bg-background shadow-md">
-                <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">2</div>
-                <h3 className="font-headline text-xl font-semibold mb-2">Submit Your Brief</h3>
-                <p className="text-muted-foreground text-sm">Clearly articulate your vision using our intuitive brief submission process. We guide you to provide all necessary details, ensuring designers understand your needs for a successful project launch.</p>
-              </div>
-              <div className="flex flex-col items-center text-center p-6 rounded-lg bg-background shadow-md">
-                <div className="bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center text-2xl font-bold mb-4">3</div>
-                <h3 className="font-headline text-xl font-semibold mb-2">Collaborate & Approve</h3>
-                <p className="text-muted-foreground text-sm">Engage directly with your chosen expert designer through our platform. Provide feedback, track progress, and approve your final design with confidence and ease. We ensure a smooth collaboration.</p>
-              </div>
+            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-4">Your Creative Journey, Simplified</h2>
+            <p className="text-lg text-muted-foreground text-center mb-16 max-w-2xl mx-auto">
+              Getting your perfect design is straightforward with DesignFlow. Follow these simple steps to bring your vision to life with our expert Indian designers.
+            </p>
+            <div className="grid md:grid-cols-3 gap-8 md:gap-10">
+              {howItWorksSteps.map((step) => (
+                <Card key={step.title} className="text-center shadow-lg hover:shadow-xl transition-shadow flex flex-col">
+                  <CardHeader className="items-center pt-8">
+                    <div className="bg-primary/10 p-5 rounded-full mb-5 inline-flex">
+                      <step.icon className="h-10 w-10 text-primary" />
+                    </div>
+                    <p className="text-sm font-semibold text-primary">{step.step.toUpperCase()}</p>
+                    <CardTitle className="font-headline text-xl">{step.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <p className="text-muted-foreground text-sm leading-relaxed">{step.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </section>
@@ -162,17 +184,20 @@ export default function HomePage() {
         {/* The DesignFlow Advantage Section */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-5">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-16">The DesignFlow Advantage: Simple, Reliable, Quality.</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-4">The DesignFlow Advantage</h2>
+            <p className="text-lg text-muted-foreground text-center mb-16 max-w-2xl mx-auto">
+             Simple, Reliable, Quality – Tailored for the Indian Market.
+            </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {clientBenefits.map((benefit) => (
-                <Card key={benefit.title} className="text-center shadow-lg hover:shadow-xl transition-shadow p-2">
-                  <CardHeader className="items-center">
-                    <div className="bg-primary/10 p-4 rounded-full mb-4 inline-flex">
-                      <benefit.icon className="h-10 w-10 text-primary" />
+                <Card key={benefit.title} className="text-center shadow-lg hover:shadow-xl transition-shadow p-6">
+                  <CardHeader className="items-center p-0 pb-4">
+                    <div className="bg-primary/10 p-5 rounded-full mb-5 inline-flex">
+                      <benefit.icon className="h-12 w-12 text-primary" />
                     </div>
                     <h3 className="font-headline text-xl font-semibold leading-none tracking-tight">{benefit.title}</h3>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-0">
                     <p className="text-muted-foreground text-sm">{benefit.description}</p>
                   </CardContent>
                 </Card>
@@ -184,7 +209,10 @@ export default function HomePage() {
         {/* Featured Services Section */}
         <section className="py-16 md:py-24 bg-secondary/30">
           <div className="container mx-auto px-5">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">Popular Design Services</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-4">Popular Design Services</h2>
+            <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+              Discover our most sought-after creative solutions, designed by top Indian talent to meet your specific needs.
+            </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredServices.map(service => (
                 <ServiceCard key={service.id} {...service} />
@@ -205,7 +233,7 @@ export default function HomePage() {
           <div className="container mx-auto px-5">
             <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-4">Explore Our Portfolio Highlights</h2>
              <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-              Get inspired by the quality and creativity our designers bring to every project.
+              Get inspired by the quality and creativity our designers bring to every project, showcasing expertise relevant to the Indian market.
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {portfolioItemsData.map(item => (
