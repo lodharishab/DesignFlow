@@ -167,8 +167,7 @@ export default function HomePage() {
               {howItWorksSteps.map((step, index) => (
                 <Card 
                   key={step.title} 
-                  className="text-center shadow-lg hover:shadow-xl transition-shadow flex flex-col opacity-0 animate-in fade-in slide-in-from-bottom-5 duration-1000 ease-out"
-                  style={{ animationDelay: `${index * 200}ms` }} // Increased stagger delay slightly
+                  className="text-center shadow-lg hover:shadow-xl transition-shadow flex flex-col"
                 >
                   <CardHeader className="items-center pt-8">
                     <div className="bg-primary/10 p-5 rounded-full mb-5 inline-flex">
@@ -275,4 +274,3 @@ export default function HomePage() {
     </div>
   );
 }
-
