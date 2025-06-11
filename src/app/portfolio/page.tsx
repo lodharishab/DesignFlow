@@ -1,5 +1,6 @@
 
-// IMPORTANT: "use client"; MUST NOT be at the top of this file.
+// IMPORTANT: "use client"; MUST NOT be at the top of this file for metadata to work.
+// However, since there's a persistent issue, we are TEMPORARILY REMOVING METADATA from this file.
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
 import { Navbar } from '@/components/layout/navbar';
@@ -14,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { designersData } from '@/lib/designer-data';
-import type { Metadata } from 'next';
+// import type { Metadata } from 'next'; // Metadata type import no longer needed here directly
 
 // Enhanced Portfolio Data Structure - IMPORTANT: Keep this in sync with other uses
 export const allPortfolioItemsData: PortfolioItem[] = [
@@ -188,6 +189,8 @@ export const allPortfolioItemsData: PortfolioItem[] = [
   }
 ];
 
+/*
+// METADATA EXPORT TEMPORARILY REMOVED TO RESOLVE BUILD ERROR
 export const metadata: Metadata = {
   title: 'Design Portfolio | DesignFlow',
   description: 'Explore a curated collection of stunning design projects by talented designers on DesignFlow. Get inspired for your next creative endeavor.',
@@ -196,7 +199,7 @@ export const metadata: Metadata = {
     description: 'Discover exceptional design work across various categories, from branding to UI/UX, crafted by our expert designers.',
   },
 };
-
+*/
 
 const PortfolioPageContent = () => {
   const searchParams = useSearchParams();
