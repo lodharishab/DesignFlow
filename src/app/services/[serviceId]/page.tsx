@@ -1,39 +1,30 @@
 
-"use client";
-
 import Image from 'next/image';
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock, Package, Tag, Icon as LucideIcon, Tags, IndianRupee, Camera, Film, Presentation } from 'lucide-react'; 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Link from 'next/link';
-import { useState, useEffect, useRef, type ReactNode } from 'react';
-import { cn } from '@/lib/utils';
-import { useParams, useRouter, notFound } from 'next/navigation'; 
-import { useToast } from "@/hooks/use-toast";
 import { designersData } from '@/lib/designer-data';
 import type { Metadata, ResolvingMetadata } from 'next';
+import { notFound } from 'next/navigation';
+import type { Icon as LucideIconType } from 'lucide-react';
+import { ServiceDetailClientContent } from './service-detail-client';
+import { Suspense } from 'react';
 
-interface ServiceTierDetail {
-  name: 'Basic' | 'Standard' | 'Premium'; 
+// Keep interfaces and data needed for server-side fetching and metadata
+export interface ServiceTierData {
+  name: 'Basic' | 'Standard' | 'Premium';
   price: number;
   deliveryTimeMin: number;
   deliveryTimeMax: number;
   deliveryTimeUnit: 'days' | 'business_days' | 'weeks';
   scope: string[];
   tierDescription?: string;
-  icon: LucideIconType; 
+  iconName: string; // Store icon name as string for serialization
 }
 
-interface ApprovedDesigner {
-  id: string; 
-  slug: string; 
+export interface ApprovedDesignerData {
+  id: string;
+  slug: string;
   name: string;
   avatarUrl: string;
   rating: number;
@@ -41,7 +32,7 @@ interface ApprovedDesigner {
   imageHint: string;
 }
 
-interface ServiceDetail {
+export interface ServiceDetailData {
   id: string;
   name: string;
   generalDescription: string;
@@ -50,11 +41,12 @@ interface ServiceDetail {
   tags?: string[];
   imageUrl: string;
   imageHint: string;
-  tiers: ServiceTierDetail[];
-  approvedDesigners: ApprovedDesigner[];
+  tiers: ServiceTierData[];
+  approvedDesigners: ApprovedDesignerData[];
 }
 
-const serviceDetailsData: { [key: string]: ServiceDetail } = {
+// MOCK DATA - In a real app, this would be fetched from a database
+const serviceDetailsData: { [key: string]: ServiceDetailData } = {
   '1': {
     id: '1',
     name: 'Modern Logo Design',
@@ -69,19 +61,19 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
         name: 'Basic', price: 4999, deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days',
         scope: ['1 Initial concept (culturally adapted)', '2 Rounds of revisions', 'Basic vector files (SVG, PNG)'],
         tierDescription: 'A great starting point for new brands or simple logo needs. Get a foundational logo quickly and efficiently.',
-        icon: Shield,
+        iconName: 'Shield',
       },
       {
         name: 'Standard', price: 9999, deliveryTimeMin: 5, deliveryTimeMax: 7, deliveryTimeUnit: 'days',
         scope: ['3 Initial concepts (aesthetic options)', '3 Rounds of revisions', 'Full vector files (AI, EPS, SVG, PNG, JPG)', 'Basic brand guide (colors, fonts)'],
         tierDescription: 'Our most popular option, offering a comprehensive logo package with more choices and branding elements.',
-        icon: Star,
+        iconName: 'Star',
       },
       {
         name: 'Premium', price: 14999, deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'days',
         scope: ['5 Initial concepts (diverse styles)', 'Unlimited revisions', 'Full vector & source files', 'Detailed brand guidelines', 'Social media kit'],
         tierDescription: 'For businesses needing an extensive branding solution, maximum flexibility, and additional assets.',
-        icon: Zap,
+        iconName: 'Zap',
       },
     ],
     approvedDesigners: designersData.filter(d => d.specialties.includes('Logo Design') || d.specialties.includes('Branding')).slice(0,2).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.8, projectsCompleted: Math.floor(Math.random()*50)+20, imageHint: d.imageHint})),
@@ -100,13 +92,13 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
         name: 'Basic', price: 2499, deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'days',
         scope: ['5 social media posts (e.g., for a specific festival/campaign)', '1 Platform choice', '1 Round of revisions', 'Optimized JPG/PNG'],
         tierDescription: 'Perfect for a quick boost or testing new content on a single platform.',
-        icon: Shield,
+        iconName: 'Shield',
       },
       {
         name: 'Standard', price: 4999, deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days',
         scope: ['10 social media posts', 'Up to 2 platforms', '2 Rounds of revisions', 'Source files (PSD or Figma)'],
         tierDescription: 'A balanced pack for consistent social media engagement across multiple platforms.',
-        icon: Star,
+        iconName: 'Star',
       },
     ],
      approvedDesigners: designersData.filter(d => d.specialties.includes('Social Media Graphics') || d.specialties.includes('Content Creation')).slice(0,2).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.9, projectsCompleted: Math.floor(Math.random()*80)+30, imageHint: d.imageHint})),
@@ -125,13 +117,13 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
             name: 'Standard', price: 7999, deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'business_days',
             scope: ['Custom brochure design (up to 6 panels)', 'Stock imagery included (up to 3 images)', '3 revision rounds', 'Print-ready PDF'],
             tierDescription: 'High-quality brochure design for marketing and events, covering common formats suitable for businesses.',
-            icon: Star,
+            iconName: 'Star',
         },
         {
-            name: 'Premium', price: 12999, deliveryTimeMin: 2, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks', 
+            name: 'Premium', price: 12999, deliveryTimeMin: 2, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks',
             scope: ['Custom brochure design (up to 12 panels)', 'Premium stock imagery (up to 5 images)', '5 revision rounds', 'Print-ready PDF & source files', 'Copywriting suggestions (up to 200 words)'],
             tierDescription: 'Comprehensive brochure package with more content, panels, and added features like copywriting support.',
-            icon: Zap,
+            iconName: 'Zap',
         },
     ],
     approvedDesigners: designersData.filter(d => d.specialties.includes('Print Design')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.7, projectsCompleted: Math.floor(Math.random()*40)+15, imageHint: d.imageHint})),
@@ -150,13 +142,13 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
             name: 'Standard', price: 15999, deliveryTimeMin: 10, deliveryTimeMax: 14, deliveryTimeUnit: 'days',
             scope: ['1 page UI/UX design (e.g., Homepage or Product Page)', 'Mobile and desktop views', '2 revision rounds', 'Figma/XD source file'],
             tierDescription: 'Essential page design to visualize your web project for one key screen.',
-            icon: Star,
+            iconName: 'Star',
         },
         {
             name: 'Premium', price: 23999, deliveryTimeMin: 14, deliveryTimeMax: 21, deliveryTimeUnit: 'days',
             scope: ['Up to 3 key pages UI/UX design', 'Mobile, tablet, and desktop views', 'Interactive prototype (clickable)', '3 revision rounds', 'Component style guide', 'Figma/XD source files'],
             tierDescription: 'A more complete UI/UX package for core application flow, including multiple screens and an interactive prototype.',
-            icon: Zap,
+            iconName: 'Zap',
         },
     ],
     approvedDesigners: designersData.filter(d => d.specialties.includes('Web UI/UX') || d.specialties.includes('App Design')).slice(0,2).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.9, projectsCompleted: Math.floor(Math.random()*60)+25, imageHint: d.imageHint})),
@@ -175,19 +167,19 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
             name: 'Basic', price: 3999, deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days',
             scope: ['1 simple icon or spot illustration', 'Limited detail', '2 revision rounds', 'PNG/JPG output'],
             tierDescription: 'For small, simple illustration needs like icons or minor graphic elements.',
-            icon: Shield,
+            iconName: 'Shield',
         },
         {
             name: 'Standard', price: 7999, deliveryTimeMin: 5, deliveryTimeMax: 8, deliveryTimeUnit: 'days',
             scope: ['1 custom illustration (e.g., character, small scene)', 'Medium detail', '3 revision rounds', 'Source file (AI, PSD, or other)', 'Commercial use license'],
             tierDescription: 'Versatile illustration for most common uses, like website heroes or blog post graphics.',
-            icon: Star,
+            iconName: 'Star',
         },
         {
-            name: 'Premium', price: 11999, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks', 
+            name: 'Premium', price: 11999, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'weeks',
             scope: ['1 complex illustration (e.g., detailed scene, multiple characters)', 'High detail and complexity', '5 revision rounds', 'Source file & all formats', 'Enhanced commercial use license'],
             tierDescription: 'For high-impact, detailed illustrative work requiring more complexity and refinement.',
-            icon: Zap,
+            iconName: 'Zap',
         },
     ],
      approvedDesigners: designersData.filter(d => d.specialties.includes('Illustration') || d.specialties.includes('Digital Art')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.8, projectsCompleted: Math.floor(Math.random()*30)+10, imageHint: d.imageHint})),
@@ -206,13 +198,13 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
             name: 'Standard', price: 12999, deliveryTimeMin: 8, deliveryTimeMax: 12, deliveryTimeUnit: 'business_days',
             scope: ['1 packaging concept (e.g., box, label)', '2D mockups', 'Basic dieline sketch', 'Color palette and typography suggestions', '2 revision rounds'],
             tierDescription: 'Solid packaging concept to get you started with visualizing your product\'s look.',
-            icon: Star,
+            iconName: 'Star',
         },
         {
             name: 'Premium', price: 19999, deliveryTimeMin: 12, deliveryTimeMax: 18, deliveryTimeUnit: 'business_days',
             scope: ['Up to 2 packaging concepts or 1 complex concept', '3D mockups', 'Detailed dieline sketch', 'Full branding elements integration', 'Print-ready file preparation advice', '3 revision rounds'],
             tierDescription: 'Comprehensive packaging design for market-ready products, including 3D mockups and more concepts.',
-            icon: Zap,
+            iconName: 'Zap',
         },
     ],
     approvedDesigners: designersData.filter(d => d.specialties.includes('Packaging Design')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.7, projectsCompleted: Math.floor(Math.random()*25)+5, imageHint: d.imageHint})),
@@ -231,7 +223,7 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
             name: 'Basic', price: 2499, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'days',
             scope: ['3-5 rough logo sketches (digital)', 'Delivered as JPG/PNG', '1 round of feedback for minor sketch adjustments'],
             tierDescription: 'Rapidly explore initial logo ideas with a set of quick digital sketches.',
-            icon: Shield,
+            iconName: 'Shield',
         },
     ],
     approvedDesigners: [],
@@ -246,8 +238,8 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'explainer video animation',
     tiers: [
-      { name: 'Standard', price: 19999, deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'weeks', scope: ['Up to 30 seconds animation', 'Custom graphics', 'Background music', 'English voiceover'], tierDescription: 'A short and impactful animated video.', icon: Star },
-      { name: 'Premium', price: 34999, deliveryTimeMin: 3, deliveryTimeMax: 4, deliveryTimeUnit: 'weeks', scope: ['Up to 60 seconds animation', 'Custom graphics & characters', 'Background music & sound effects', 'Voiceover (various languages)', 'Script assistance'], tierDescription: 'A more comprehensive video with enhanced features.', icon: Zap },
+      { name: 'Standard', price: 19999, deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'weeks', scope: ['Up to 30 seconds animation', 'Custom graphics', 'Background music', 'English voiceover'], tierDescription: 'A short and impactful animated video.', iconName: 'Star' },
+      { name: 'Premium', price: 34999, deliveryTimeMin: 3, deliveryTimeMax: 4, deliveryTimeUnit: 'weeks', scope: ['Up to 60 seconds animation', 'Custom graphics & characters', 'Background music & sound effects', 'Voiceover (various languages)', 'Script assistance'], tierDescription: 'A more comprehensive video with enhanced features.', iconName: 'Zap' },
     ],
     approvedDesigners: designersData.filter(d => d.specialties.includes('Motion Graphics') || d.specialties.includes('Video Editing')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.9, projectsCompleted: Math.floor(Math.random()*15)+5, imageHint: d.imageHint})),
   },
@@ -261,8 +253,8 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'business presentation slide',
     tiers: [
-      { name: 'Standard', price: 8999, deliveryTimeMin: 4, deliveryTimeMax: 6, deliveryTimeUnit: 'days', scope: ['Up to 15 slides custom design', 'Data visualization (charts/graphs)', 'Stock images included'], tierDescription: 'Professional design for standard presentations.', icon: Star },
-      { name: 'Premium', price: 15999, deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'days', scope: ['Up to 30 slides custom design', 'Advanced data visualization', 'Custom graphics & icons', 'Editable template provided'], tierDescription: 'Comprehensive design for critical presentations.', icon: Zap },
+      { name: 'Standard', price: 8999, deliveryTimeMin: 4, deliveryTimeMax: 6, deliveryTimeUnit: 'days', scope: ['Up to 15 slides custom design', 'Data visualization (charts/graphs)', 'Stock images included'], tierDescription: 'Professional design for standard presentations.', iconName: 'Star' },
+      { name: 'Premium', price: 15999, deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'days', scope: ['Up to 30 slides custom design', 'Advanced data visualization', 'Custom graphics & icons', 'Editable template provided'], tierDescription: 'Comprehensive design for critical presentations.', iconName: 'Zap' },
     ],
     approvedDesigners: designersData.filter(d => d.specialties.includes('Presentation Design') || d.specialties.includes('Corporate Branding')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.7, projectsCompleted: Math.floor(Math.random()*40)+10, imageHint: d.imageHint})),
   },
@@ -276,8 +268,8 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'mobile app icon design',
     tiers: [
-      { name: 'Standard', price: 3999, deliveryTimeMin: 2, deliveryTimeMax: 4, deliveryTimeUnit: 'days', scope: ['2 App icon concepts', 'Vector source file (SVG)', 'Required app store sizes'], tierDescription: 'Professional app icon design with multiple concepts.', icon: Star },
-      { name: 'Premium', price: 6999, deliveryTimeMin: 4, deliveryTimeMax: 6, deliveryTimeUnit: 'days', scope: ['4 App icon concepts', 'Full icon set (e.g., notification, settings)', 'Vector source files (SVG, AI)', 'App store preview mockups'], tierDescription: 'Comprehensive icon design package with additional assets.', icon: Zap },
+      { name: 'Standard', price: 3999, deliveryTimeMin: 2, deliveryTimeMax: 4, deliveryTimeUnit: 'days', scope: ['2 App icon concepts', 'Vector source file (SVG)', 'Required app store sizes'], tierDescription: 'Professional app icon design with multiple concepts.', iconName: 'Star' },
+      { name: 'Premium', price: 6999, deliveryTimeMin: 4, deliveryTimeMax: 6, deliveryTimeUnit: 'days', scope: ['4 App icon concepts', 'Full icon set (e.g., notification, settings)', 'Vector source files (SVG, AI)', 'App store preview mockups'], tierDescription: 'Comprehensive icon design package with additional assets.', iconName: 'Zap' },
     ],
     approvedDesigners: designersData.filter(d => d.specialties.includes('Icon Design') || d.specialties.includes('App Design')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.8, projectsCompleted: Math.floor(Math.random()*35)+12, imageHint: d.imageHint})),
   },
@@ -291,8 +283,8 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'fashion product photo editing',
     tiers: [
-      { name: 'Basic', price: 1999, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'days', scope: ['Up to 10 images', 'Background removal/replacement', 'Basic color correction'], tierDescription: 'Essential editing for clean product photos.', icon: Shield },
-      { name: 'Standard', price: 4999, deliveryTimeMin: 2, deliveryTimeMax: 4, deliveryTimeUnit: 'days', scope: ['Up to 25 images', 'Advanced retouching', 'Color correction & enhancement', 'Shadow creation'], tierDescription: 'Comprehensive editing for high-quality e-commerce listings.', icon: Star },
+      { name: 'Basic', price: 1999, deliveryTimeMin: 1, deliveryTimeMax: 2, deliveryTimeUnit: 'days', scope: ['Up to 10 images', 'Background removal/replacement', 'Basic color correction'], tierDescription: 'Essential editing for clean product photos.', iconName: 'Shield' },
+      { name: 'Standard', price: 4999, deliveryTimeMin: 2, deliveryTimeMax: 4, deliveryTimeUnit: 'days', scope: ['Up to 25 images', 'Advanced retouching', 'Color correction & enhancement', 'Shadow creation'], tierDescription: 'Comprehensive editing for high-quality e-commerce listings.', iconName: 'Star' },
     ],
      approvedDesigners: designersData.filter(d => d.specialties.includes('Photography') || d.specialties.includes('Photo Editing')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.6, projectsCompleted: Math.floor(Math.random()*100)+40, imageHint: d.imageHint})),
   },
@@ -306,24 +298,28 @@ const serviceDetailsData: { [key: string]: ServiceDetail } = {
     imageUrl: 'https://placehold.co/800x500.png',
     imageHint: 'data infographic design',
     tiers: [
-      { name: 'Standard', price: 6999, deliveryTimeMin: 4, deliveryTimeMax: 6, deliveryTimeUnit: 'days', scope: ['1 Infographic (up to 5 data points)', 'Custom design', 'Source file (AI/EPS)'], tierDescription: 'Professionally designed infographic for clear data presentation.', icon: Star },
-      { name: 'Premium', price: 11999, deliveryTimeMin: 6, deliveryTimeMax: 9, deliveryTimeUnit: 'days', scope: ['1 Detailed Infographic (up to 10 data points)', 'Custom illustration & icons', 'Multiple formats (web & print)', 'Source file & commercial use'], tierDescription: 'Highly detailed and custom-illustrated infographic for maximum impact.', icon: Zap },
+      { name: 'Standard', price: 6999, deliveryTimeMin: 4, deliveryTimeMax: 6, deliveryTimeUnit: 'days', scope: ['1 Infographic (up to 5 data points)', 'Custom design', 'Source file (AI/EPS)'], tierDescription: 'Professionally designed infographic for clear data presentation.', iconName: 'Star' },
+      { name: 'Premium', price: 11999, deliveryTimeMin: 6, deliveryTimeMax: 9, deliveryTimeUnit: 'days', scope: ['1 Detailed Infographic (up to 10 data points)', 'Custom illustration & icons', 'Multiple formats (web & print)', 'Source file & commercial use'], tierDescription: 'Highly detailed and custom-illustrated infographic for maximum impact.', iconName: 'Zap' },
     ],
      approvedDesigners: designersData.filter(d => d.specialties.includes('Illustration') || d.specialties.includes('Data Visualization')).slice(0,1).map(d => ({id: d.id, slug: d.slug, name: d.name, avatarUrl: d.avatarUrl, rating: 4.7, projectsCompleted: Math.floor(Math.random()*20)+8, imageHint: d.imageHint})),
   },
 };
 
-type Props = {
+interface PageProps {
   params: { serviceId: string };
   searchParams: { [key: string]: string | string[] | undefined };
-};
+}
 
-async function getServiceData(id: string): Promise<ServiceDetail | null> {
+// Server-side data fetching function
+async function getServiceData(id: string): Promise<ServiceDetailData | null> {
+  // In a real app, this would fetch from your DB.
+  // For this mock setup, we simulate an async operation.
+  await new Promise(resolve => setTimeout(resolve, 0));
   return serviceDetailsData[id] || null;
 }
 
 export async function generateMetadata(
-  { params }: Props,
+  { params }: PageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const id = params.serviceId;
@@ -345,14 +341,14 @@ export async function generateMetadata(
       description: service.generalDescription,
       images: [
         {
-          url: service.imageUrl, 
+          url: service.imageUrl,
           width: 800,
-          height: 500, 
+          height: 500,
           alt: service.name,
         },
         ...previousImages,
       ],
-      type: 'product', 
+      type: 'product',
     },
     twitter: {
       card: 'summary_large_image',
@@ -362,290 +358,23 @@ export async function generateMetadata(
   };
 }
 
+export default async function ServicePage({ params }: PageProps) {
+  const service = await getServiceData(params.serviceId);
 
-function formatStructuredDeliveryTime(min: number, max: number, unit: ServiceTierDetail['deliveryTimeUnit']): string {
-  const unitLabel = unit.replace('_', ' '); 
-  if (min === max) {
-    return `${min} ${unitLabel}${min > 1 && unit !== 'weeks' ? 's' : ''}`; 
+  if (!service) {
+    notFound();
   }
-  return `${min}-${max} ${unitLabel}${max > 1 && unit !== 'weeks' ? 's' : ''}`; 
-}
-
-
-export default function ServiceDetailPage() {
-  const routeParams = useParams<{ serviceId: string }>(); 
-  const serviceId = routeParams?.serviceId;
-  const router = useRouter();
-  const { toast } = useToast(); 
-
-  const [service, setService] = useState<ServiceDetail | null | undefined>(undefined); 
-  const [selectedTierName, setSelectedTierName] = useState<string>('');
-  const tabsRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (serviceId) {
-      const serviceData = serviceDetailsData[serviceId];
-      if (!serviceData) {
-        notFound(); 
-        return;
-      }
-      setService(serviceData);
-      if (serviceData) {
-        const defaultTier = serviceData.tiers.find(t => t.name === 'Standard')?.name || (serviceData.tiers.length > 0 ? serviceData.tiers[0].name : '');
-        setSelectedTierName(defaultTier);
-      } else {
-        setSelectedTierName('');
-      }
-    } else {
-      setService(undefined); 
-      setSelectedTierName('');
-    }
-  }, [serviceId]);
-
-
-  const selectedTierDetails = service?.tiers.find(t => t.name === selectedTierName);
-
-  const handleScrollToTabs = () => {
-    tabsRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleTierChange = (value: string) => {
-    setSelectedTierName(value);
-  };
-
-  const handleOrderTier = (tier: ServiceTierDetail) => {
-    if (!service) return;
-    console.log("Ordering tier:", tier.name, "for service:", service.name);
-    toast({
-      title: "Added to Cart (Simulated)",
-      description: `${service.name} - ${tier.name} tier added to your cart.`,
-    });
-    router.push('/cart');
-  };
-
-  if (service === undefined) {
-     return (
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <CategoriesNavbar />
-        <main className="flex-grow container mx-auto py-12 px-5 text-center">
-          <h1 className="text-2xl font-semibold">Loading service details...</h1>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-  
-  let tabsListGridColsClass = "grid-cols-3"; 
-  if (service.tiers.length === 1) {
-    tabsListGridColsClass = "grid-cols-1";
-  } else if (service.tiers.length === 2) {
-    tabsListGridColsClass = "grid-cols-2";
-  }
-
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <CategoriesNavbar />
-      <main className="flex-grow container mx-auto py-12 px-5">
-        <div className="grid lg:grid-cols-3 gap-8 md:gap-12">
-          <div className="lg:col-span-2 space-y-8">
-            <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-lg">
-              <Image
-                src={service.imageUrl}
-                alt={service.name}
-                fill={true}
-                style={{ objectFit: "cover" }}
-                data-ai-hint={service.imageHint}
-                priority
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <Badge variant="outline" className="text-xs py-0.5 px-2 mb-2">
-                  <Tag className="mr-1.5 h-3 w-3" />{service.category}
-                </Badge>
-                <h1 className="text-3xl md:text-4xl font-bold font-headline mb-1">{service.name}</h1>
-              </div>
-            </div>
-            <p className="text-muted-foreground text-lg">{service.generalDescription}</p>
-
-            {service.tags && service.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 items-center">
-                <Tags className="h-4 w-4 text-muted-foreground" />
-                {service.tags.map(tag => (
-                  <Badge key={tag} variant="secondary">{tag}</Badge>
-                ))}
-              </div>
-            )}
-
-
-            <Separator />
-
-            <div ref={tabsRef}>
-              <Tabs value={selectedTierName} className="w-full" onValueChange={handleTierChange}>
-                <TabsList className={cn("grid w-full mb-6 gap-2", tabsListGridColsClass)}>
-                  {service.tiers.map(tier => (
-                    <TabsTrigger
-                      key={tier.name}
-                      value={tier.name}
-                      className="py-2.5 text-sm data-[state=active]:shadow-md data-[state=active]:ring-1 data-[state=active]:ring-primary/50 whitespace-normal overflow-hidden min-w-0"
-                    >
-                      <tier.icon className="mr-2 h-5 w-5" />
-                      {tier.name}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                {service.tiers.map(tier => (
-                  <TabsContent
-                    key={tier.name} 
-                    value={tier.name}
-                  >
-                    <Card className="shadow-md border">
-                      <CardHeader>
-                        <CardTitle className="font-headline text-2xl flex items-center">
-                          <tier.icon className="mr-3 h-7 w-7 text-primary" />
-                          {tier.name} Package - <IndianRupee className="inline-block h-6 w-6 ml-1" />{tier.price.toLocaleString('en-IN')}
-                        </CardTitle>
-                        <CardDescription className="flex items-center text-sm pt-1">
-                          <Clock className="inline-block mr-1.5 h-4 w-4" />
-                          Estimated Delivery: {formatStructuredDeliveryTime(tier.deliveryTimeMin, tier.deliveryTimeMax, tier.deliveryTimeUnit)}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {tier.tierDescription && (
-                          <p className="text-foreground leading-relaxed">{tier.tierDescription}</p>
-                        )}
-                        <div>
-                          <h3 className="text-lg font-semibold mb-2 text-foreground">What&apos;s Included:</h3>
-                          <ul className="space-y-2 pl-1">
-                            {tier.scope.map((item, index) => (
-                              <li key={index} className="flex items-start">
-                                <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 shrink-0" />
-                                <span className="text-muted-foreground">{item}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                         <Button 
-                            size="lg" 
-                            className="w-full mt-4"
-                            onClick={() => handleOrderTier(tier)}
-                          >
-                           <ShoppingCart className="mr-2 h-5 w-5" /> Order {tier.name} Tier
-                         </Button>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </div>
-
-            <Separator />
-
-            <div>
-              <h2 className="text-2xl font-semibold font-headline mb-3">About This Service</h2>
-              <p className="text-foreground leading-relaxed whitespace-pre-line">{service.longDescription}</p>
-            </div>
-
-            {service.approvedDesigners && service.approvedDesigners.length > 0 && (
-              <>
-                <Separator />
-                <Card className="shadow-none border-none bg-transparent">
-                  <CardHeader className="px-0">
-                    <CardTitle className="font-headline text-2xl flex items-center">
-                      <Users className="mr-3 h-7 w-7 text-primary" />
-                      Approved Designers for this Service
-                    </CardTitle>
-                    <CardDescription>
-                      Our skilled designers ready to work on your "{service.name}" project.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="px-0 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {service.approvedDesigners.map(designer => (
-                      <Card key={designer.id} className="p-4 bg-secondary/30 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center space-x-4">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={designer.avatarUrl} alt={designer.name} data-ai-hint={designer.imageHint} />
-                            <AvatarFallback>{designer.name.substring(0, 1)}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <Link href={`/designers/${designer.slug}`} className="text-lg font-semibold hover:text-primary hover:underline">
-                                {designer.name}
-                            </Link>
-                            <div className="flex items-center text-sm text-muted-foreground">
-                              <Star className="h-4 w-4 mr-1 text-yellow-400 fill-current" /> {designer.rating} ({designer.projectsCompleted} projects)
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </CardContent>
-                  <CardFooter className="px-0 pt-2">
-                    <p className="text-xs text-muted-foreground">You can often choose a preferred designer during checkout, or let our system assign the best fit.</p>
-                  </CardFooter>
-                </Card>
-              </>
-            )}
-          </div>
-
-          <div className="lg:col-span-1 space-y-6">
-            <div className="sticky top-24 space-y-6">
-              {selectedTierDetails && (
-                 <Card className="shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="font-headline text-xl flex items-center">
-                       <selectedTierDetails.icon className="mr-2.5 h-6 w-6 text-primary" />
-                      {selectedTierDetails.name} Tier Summary
-                    </CardTitle>
-                     <CardDescription className="text-2xl font-bold text-primary pt-1"><IndianRupee className="inline-block h-6 w-6 mr-0.5" />{selectedTierDetails.price.toLocaleString('en-IN')}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                     <p className="flex items-center text-muted-foreground">
-                        <Clock className="inline-block mr-2 h-4 w-4" /> {formatStructuredDeliveryTime(selectedTierDetails.deliveryTimeMin, selectedTierDetails.deliveryTimeMax, selectedTierDetails.deliveryTimeUnit)}
-                     </p>
-                      {selectedTierDetails.scope.slice(0, 2).map((item, idx) => (
-                        <p key={idx} className="flex items-start text-muted-foreground">
-                           <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 shrink-0" />
-                           <span>{item}</span>
-                         </p>
-                      ))}
-                      {selectedTierDetails.scope.length > 2 && (
-                         <p className="flex items-start text-muted-foreground">
-                           <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 shrink-0" />
-                           <span>And more...</span>
-                         </p>
-                      )}
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full" onClick={handleScrollToTabs}>
-                       Compare All Tiers
-                    </Button>
-                  </CardFooter>
-                </Card>
-              )}
-
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="font-headline text-xl">Why Choose DesignFlow?</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm text-muted-foreground">
-                  <p className="flex items-start"><Check className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" /> Expert Designers</p>
-                  <p className="flex items-start"><Check className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" /> Transparent Pricing</p>
-                  <p className="flex items-start"><Check className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" /> Streamlined Process</p>
-                  <p className="flex items-start"><Check className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" /> Secure Payments</p>
-                  <Button variant="outline" className="w-full mt-4">
-                    <MessageSquare className="mr-2 h-5 w-5" /> Contact Us
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </main>
+      <Suspense fallback={<div className="flex-grow container mx-auto py-12 px-5 text-center">Loading service details...</div>}>
+        <ServiceDetailClientContent service={service} />
+      </Suspense>
       <Footer />
     </div>
   );
 }
+
+    
