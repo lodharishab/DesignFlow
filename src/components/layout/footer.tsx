@@ -63,7 +63,7 @@ export function Footer() {
         </div>
         <div className="mt-10 pt-8 border-t text-center text-xs text-muted-foreground">
           <p>
-            Built with <span role="img" aria-label="love">❤️</span> by Your Creative Team
+            Built with <span role="img" aria-label="love">❤️</span> by RISHAB LODHA
           </p>
         </div>
       </div>
