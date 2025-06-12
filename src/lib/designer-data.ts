@@ -1,6 +1,4 @@
 
-"use client";
-
 export interface DesignerProfile {
   id: string; // e.g., 'des001'
   slug: string; // e.g., 'priya-sharma'
