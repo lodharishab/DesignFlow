@@ -29,17 +29,16 @@ function SubmitButton() {
 const initialState: BlogActionResult = {
   success: false,
   message: '',
+  errors: {},
 };
 
 export default function AdminEditBlogPostPage() {
   const params = useParams();
-  const postId = params.postId as string; // This is the slug
+  const postId = params.postId as string; 
   
   const [currentPost, setCurrentPost] = useState<BlogPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // useFormState expects the action to potentially take an ID.
-  // We bind the postId to the action.
   const updateBlogPostActionWithId = updateBlogPostAction.bind(null, postId);
   const [state, formAction] = useFormState(updateBlogPostActionWithId, initialState);
   
@@ -64,15 +63,17 @@ export default function AdminEditBlogPostPage() {
   }, [postId, router, toast]);
 
   useEffect(() => {
-    if (state.message) {
-      toast({
+    if (state.message && !state.success && state.errors && Object.keys(state.errors).length > 0) {
+      // Handled by per-field error display
+    } else if (state.message) {
+       toast({
         title: state.success ? 'Success!' : 'Error',
         description: state.message,
         variant: state.success ? 'default' : 'destructive',
       });
-      if (state.success) {
-        router.push('/admin/blog/posts');
-      }
+    }
+    if (state.success) {
+      router.push('/admin/blog/posts');
     }
   }, [state, toast, router]);
 
@@ -89,9 +90,7 @@ export default function AdminEditBlogPostPage() {
     return <p>Blog post not found. It may have been deleted.</p>;
   }
   
-  // Format date for input field
   const formattedPublishDate = currentPost.publishDate ? format(new Date(currentPost.publishDate), 'yyyy-MM-dd') : '';
-
 
   return (
     <div className="space-y-8">
@@ -109,10 +108,12 @@ export default function AdminEditBlogPostPage() {
             <CardDescription>Modify the details for this blog post.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {state.errors?.general && <p className="text-sm text-destructive">{state.errors.general}</p>}
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Post Title*</Label>
-                <Input id="title" name="title" defaultValue={currentPost.title} required />
+                <Input id="title" name="title" defaultValue={currentPost.title} required aria-describedby="title-error"/>
+                {state.errors?.title && <p id="title-error" className="text-sm text-destructive">{state.errors.title}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="slug">Post Slug (URL)</Label>
@@ -123,38 +124,45 @@ export default function AdminEditBlogPostPage() {
 
             <div className="space-y-2">
               <Label htmlFor="excerpt">Excerpt / Short Summary*</Label>
-              <Textarea id="excerpt" name="excerpt" rows={3} defaultValue={currentPost.excerpt} required />
+              <Textarea id="excerpt" name="excerpt" rows={3} defaultValue={currentPost.excerpt} required aria-describedby="excerpt-error"/>
+              {state.errors?.excerpt && <p id="excerpt-error" className="text-sm text-destructive">{state.errors.excerpt}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="content">Main Content (HTML or Markdown)*</Label>
-              <Textarea id="content" name="content" rows={10} defaultValue={currentPost.content} required />
+              <Textarea id="content" name="content" rows={10} defaultValue={currentPost.content} required aria-describedby="content-error"/>
+              {state.errors?.content && <p id="content-error" className="text-sm text-destructive">{state.errors.content}</p>}
             </div>
             
             <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="featuredImageUrl"><ImageIcon className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Featured Image URL*</Label>
-                    <Input id="featuredImageUrl" name="featuredImageUrl" type="url" defaultValue={currentPost.featuredImageUrl} required/>
+                    <Input id="featuredImageUrl" name="featuredImageUrl" type="url" defaultValue={currentPost.featuredImageUrl} required aria-describedby="imageUrl-error"/>
+                    {state.errors?.featuredImageUrl && <p id="imageUrl-error" className="text-sm text-destructive">{state.errors.featuredImageUrl}</p>}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="featuredImageHint"><ImageIcon className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Featured Image AI Hint</Label>
-                    <Input id="featuredImageHint" name="featuredImageHint" defaultValue={currentPost.featuredImageHint} />
+                    <Input id="featuredImageHint" name="featuredImageHint" defaultValue={currentPost.featuredImageHint} aria-describedby="imageHint-error"/>
+                    {state.errors?.featuredImageHint && <p id="imageHint-error" className="text-sm text-destructive">{state.errors.featuredImageHint}</p>}
                 </div>
             </div>
             
             <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="category"><Tag className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Category</Label>
-                    <Input id="category" name="category" defaultValue={currentPost.category || ''} placeholder="e.g., Design Trends, Tutorials"/>
+                    <Input id="category" name="category" defaultValue={currentPost.category || ''} placeholder="e.g., Design Trends, Tutorials" aria-describedby="category-error"/>
+                    {state.errors?.category && <p id="category-error" className="text-sm text-destructive">{state.errors.category}</p>}
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="tags"><ExternalLink className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Tags (comma-separated)</Label>
-                    <Input id="tags" name="tags" defaultValue={currentPost.tags?.join(', ') || ''} placeholder="e.g., branding, ui, figma"/>
+                    <Label htmlFor="tags"><ExternalLink className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Tags (comma-separated, max 5)</Label>
+                    <Input id="tags" name="tags" defaultValue={currentPost.tags?.join(', ') || ''} placeholder="e.g., branding, ui, figma" aria-describedby="tags-error"/>
+                    {state.errors?.tags && <p id="tags-error" className="text-sm text-destructive">{state.errors.tags}</p>}
                 </div>
             </div>
              <div className="space-y-2">
                 <Label htmlFor="publishDate"><CalendarDays className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Publish Date (YYYY-MM-DD)</Label>
-                <Input id="publishDate" name="publishDate" type="date" defaultValue={formattedPublishDate} />
+                <Input id="publishDate" name="publishDate" type="date" defaultValue={formattedPublishDate} aria-describedby="publishDate-error"/>
+                 {state.errors?.publishDateString && <p id="publishDate-error" className="text-sm text-destructive">{state.errors.publishDateString}</p>}
             </div>
           </CardContent>
           <CardFooter className="flex justify-end space-x-3">
