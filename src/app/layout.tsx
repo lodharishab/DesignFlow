@@ -83,7 +83,7 @@ export default function RootLayout({
       <head>
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </head>
-      <body className="antialiased min-h-screen flex flex-col pb-16 md:pb-0">
+      <body className="antialiased min-h-screen flex flex-col pb-16 md:pb-0" suppressHydrationWarning>
         <UIProvider>
           {children}
           <ClientOnly><MobileBottomNav /></ClientOnly>
