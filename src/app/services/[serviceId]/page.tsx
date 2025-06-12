@@ -348,7 +348,7 @@ export async function generateMetadata(
         },
         ...previousImages,
       ],
-      type: 'product',
+      type: 'article', // Changed from 'product' to 'article'
     },
     twitter: {
       card: 'summary_large_image',
@@ -376,5 +376,3 @@ export default async function ServicePage({ params }: PageProps) {
     </div>
   );
 }
-
-    
