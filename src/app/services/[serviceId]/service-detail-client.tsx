@@ -1,39 +1,39 @@
 
 "use client";
 
+import * as React from 'react'; // Ensuring React is imported
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect, useRef, type ReactNode } from 'react';
-import { useParams, useRouter } from 'next/navigation'; // Removed notFound as it's handled by server component
+import { useState, useEffect, useRef, type ReactNode } from 'react'; // these are also from react
+import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap, Clock, Package, Tag, Icon as LucideIcon, Tags, IndianRupee, Camera, Film, Presentation, Palette, UserCircle } from 'lucide-react'; 
+import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap as ZapIcon, Clock, Package, Tag, Icon as LucideIconType, Tags, IndianRupee, Camera, Film, Presentation, Palette, UserCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
-import type { ServiceDetailData, ServiceTierData, ApprovedDesignerData } from './page'; // Import types from server component
+import type { ServiceDetailData, ServiceTierData, ApprovedDesignerData } from './page';
 
 // Helper function to map icon names to Lucide components
 const iconMap: Record<string, LucideIconType> = {
   Shield,
   Star,
-  Zap,
+  Zap: ZapIcon, // Corrected: Use the imported alias if original name conflicts
   Palette,
   Camera,
   Film,
   Presentation,
-  // Add other icons used in serviceDetailsData tiers if any
 };
 
 function formatStructuredDeliveryTime(min: number, max: number, unit: ServiceTierData['deliveryTimeUnit']): string {
-  const unitLabel = unit.replace('_', ' '); 
+  const unitLabel = unit.replace('_', ' ');
   if (min === max) {
-    return `${min} ${unitLabel}${min > 1 && unit !== 'weeks' ? 's' : ''}`; 
+    return `${min} ${unitLabel}${min > 1 && unit !== 'weeks' ? 's' : ''}`;
   }
-  return `${min}-${max} ${unitLabel}${max > 1 && unit !== 'weeks' ? 's' : ''}`; 
+  return `${min}-${max} ${unitLabel}${max > 1 && unit !== 'weeks' ? 's' : ''}`;
 }
 
 interface ServiceDetailClientContentProps {
@@ -42,7 +42,7 @@ interface ServiceDetailClientContentProps {
 
 export function ServiceDetailClientContent({ service }: ServiceDetailClientContentProps) {
   const router = useRouter();
-  const { toast } = useToast(); 
+  const { toast } = useToast();
 
   const [selectedTierName, setSelectedTierName] = useState<string>('');
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -73,13 +73,12 @@ export function ServiceDetailClientContent({ service }: ServiceDetailClientConte
     });
     router.push('/cart');
   };
-  
+
   if (!service) {
-     // This case should ideally be handled by the server component before rendering this client component
      return <div className="flex-grow container mx-auto py-12 px-5 text-center"><h1 className="text-2xl font-semibold">Service data not available.</h1></div>;
   }
 
-  let tabsListGridColsClass = "grid-cols-3"; 
+  let tabsListGridColsClass = "grid-cols-3";
   if (service.tiers.length === 1) {
     tabsListGridColsClass = "grid-cols-1";
   } else if (service.tiers.length === 2) {
@@ -126,7 +125,7 @@ export function ServiceDetailClientContent({ service }: ServiceDetailClientConte
             <Tabs value={selectedTierName} className="w-full" onValueChange={handleTierChange}>
               <TabsList className={cn("grid w-full mb-6 gap-2", tabsListGridColsClass)}>
                 {service.tiers.map(tier => {
-                  const IconComponent = iconMap[tier.iconName] || Shield; // Default to Shield if icon not found
+                  const IconComponent = iconMap[tier.iconName] || Shield;
                   return (
                     <TabsTrigger
                       key={tier.name}
@@ -143,7 +142,7 @@ export function ServiceDetailClientContent({ service }: ServiceDetailClientConte
                  const IconComponent = iconMap[tier.iconName] || Shield;
                  return (
                     <TabsContent
-                        key={tier.name} 
+                        key={tier.name}
                         value={tier.name}
                     >
                         <Card className="shadow-md border">
@@ -172,8 +171,8 @@ export function ServiceDetailClientContent({ service }: ServiceDetailClientConte
                                 ))}
                             </ul>
                             </div>
-                            <Button 
-                                size="lg" 
+                            <Button
+                                size="lg"
                                 className="w-full mt-4"
                                 onClick={() => handleOrderTier(tier)}
                             >
