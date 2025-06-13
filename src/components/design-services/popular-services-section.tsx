@@ -44,10 +44,18 @@ export function PopularServicesSection({ initialServices, allServices }: Popular
     
     setTimeout(() => {
       const newLoadedCount = Math.min(loadedCount + ITEMS_PER_LOAD, allServices.length);
-      const nextServices = allServices.slice(loadedCount, newLoadedCount);
-      setDisplayedServices(prevServices => [...prevServices, ...nextServices]);
+      const nextServicesToLoad = allServices.slice(loadedCount, newLoadedCount);
+      
+      setDisplayedServices(prevServices => {
+        const existingIds = new Set(prevServices.map(s => s.id));
+        const uniqueNextServices = nextServicesToLoad.filter(s => !existingIds.has(s.id));
+        return [...prevServices, ...uniqueNextServices];
+      });
+
       setLoadedCount(newLoadedCount);
-      setScrollLoadsCount(prevCount => prevCount + 1); // Increment scroll load counter
+      if (nextServicesToLoad.length > 0) { // Only increment if new items were actually attempted to be loaded
+        setScrollLoadsCount(prevCount => prevCount + 1); 
+      }
       setIsLoadingMore(false);
     }, 500); 
   }, [allServices, canLoadMoreItems, isLoadingMore, loadedCount]);
@@ -58,7 +66,7 @@ export function PopularServicesSection({ initialServices, allServices }: Popular
       if (
         window.innerHeight + window.scrollY >= document.documentElement.offsetHeight - buffer &&
         canLoadMoreItems &&
-        canAutoLoadOnScroll && // Check if we haven't reached the scroll load limit
+        canAutoLoadOnScroll && 
         !isLoadingMore
       ) {
         handleLoadMore();
@@ -93,11 +101,6 @@ export function PopularServicesSection({ initialServices, allServices }: Popular
           <p className="text-muted-foreground">You've reached the end of our popular services!</p>
         </div>
       )}
-      {/* Optional: Message if scroll limit is reached but more items are available. 
-          Currently, it will just stop auto-loading without a specific message.
-          If you want a message like "Scroll limit reached, click 'Explore Full Catalog' for more",
-          we can add it here.
-      */}
     </>
   );
 }
