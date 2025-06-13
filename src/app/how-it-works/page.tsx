@@ -4,7 +4,7 @@ import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PackageSearch, FileText, Users, Award, Briefcase, IndianRupee, Lightbulb, Wand2 } from 'lucide-react';
+import { PackageSearch, FileText, Users, Award, Briefcase, IndianRupee, Lightbulb, Wand2, Bell as BellIcon, UserPlus as UserPlusIcon } from 'lucide-react'; // Import actual icons
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -45,14 +45,19 @@ const clientSteps = [
   },
 ];
 
+// Define UserPlus and Bell before they are used in designerSteps
+// Ensure these are actual Lucide icons or your custom components
+const UserPlus = UserPlusIcon; 
+const Bell = BellIcon;
+
 const designerSteps = [
   {
-    icon: UserPlus, // Corrected
+    icon: UserPlus, 
     title: "1. Apply & Get Approved",
     description: "Showcase your skills by applying to join DesignFlow. Our team reviews your portfolio and experience to ensure quality for our clients.",
   },
   {
-    icon: Bell, // Corrected
+    icon: Bell, 
     title: "2. Get Notified of Projects",
     description: "Once approved for specific service categories, you'll receive notifications for new client projects that match your expertise and preferences.",
   },
@@ -62,20 +67,16 @@ const designerSteps = [
     description: "Review project briefs, accept orders you're confident in, and deliver high-quality design work within the agreed timelines. Communicate with clients for clarifications.",
   },
   {
-    icon: IndianRupee, // Corrected
+    icon: IndianRupee, 
     title: "4. Get Paid Securely",
     description: "Upon successful project completion and client approval, receive your payment securely through our platform, minus standard platform fees.",
   },
   {
-    icon: Wand2, // Wand2 is available in lucide-react
+    icon: Wand2, 
     title: "5. Build Your Reputation",
     description: "Deliver great work consistently to receive positive reviews, enhance your portfolio, and get access to more exciting projects.",
   },
 ];
-
-// Placeholder for UserPlus and Bell if they are not directly in lucide-react
-const UserPlus = Briefcase; 
-const Bell = Briefcase;
 
 
 export default function HowItWorksPage() {
