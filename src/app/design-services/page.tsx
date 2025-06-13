@@ -7,6 +7,7 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { PortfolioShowcaseCard } from '@/app/page'; 
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'; // Added this import
 import { Palette, Share2, Printer, Laptop, Brush as BrushIconLucide, Package as PackageIcon, Film, Presentation, Camera, ArrowRight, Sparkles, Eye, Briefcase } from 'lucide-react';
 import type { Icon as LucideIconType } from 'lucide-react';
 import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page'; 
