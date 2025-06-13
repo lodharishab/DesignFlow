@@ -84,26 +84,34 @@ export default function DesignServicesPage() {
                 {serviceCategoriesData.map(category => (
                   <Link key={`${category.slug}-1`} href={`/services?category=${category.slug}`} passHref className="flex-shrink-0 mx-3">
                     <Card className="w-[220px] md:w-[260px] h-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center p-6 hover:border-primary cursor-pointer bg-card">
-                      <div className="p-4 bg-primary/10 rounded-full mb-4 inline-flex">
-                        <category.icon className="h-10 w-10 md:h-12 md:w-12 text-primary" />
-                      </div>
-                      <CardTitle className="font-headline text-lg md:text-xl mb-2 leading-tight">{category.name}</CardTitle>
-                      <CardDescription className="text-sm text-muted-foreground flex-grow line-clamp-2">
-                        {category.shortDesc}
-                      </CardDescription>
+                      <CardHeader className="p-0 items-center">
+                        <div className="p-4 bg-primary/10 rounded-full mb-4 inline-flex">
+                          <category.icon className="h-10 w-10 md:h-12 md:w-12 text-primary" />
+                        </div>
+                        <CardTitle className="font-headline text-lg md:text-xl mb-2 leading-tight">{category.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0 flex-grow">
+                        <CardDescription className="text-sm text-muted-foreground line-clamp-2">
+                          {category.shortDesc}
+                        </CardDescription>
+                      </CardContent>
                     </Card>
                   </Link>
                 ))}
                 {serviceCategoriesData.map(category => (
                   <Link key={`${category.slug}-2`} href={`/services?category=${category.slug}`} passHref className="flex-shrink-0 mx-3" aria-hidden="true">
                      <Card className="w-[220px] md:w-[260px] h-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center p-6 hover:border-primary cursor-pointer bg-card">
-                      <div className="p-4 bg-primary/10 rounded-full mb-4 inline-flex">
-                        <category.icon className="h-10 w-10 md:h-12 md:w-12 text-primary" />
-                      </div>
-                      <CardTitle className="font-headline text-lg md:text-xl mb-2 leading-tight">{category.name}</CardTitle>
-                      <CardDescription className="text-sm text-muted-foreground flex-grow line-clamp-2">
-                        {category.shortDesc}
-                      </CardDescription>
+                      <CardHeader className="p-0 items-center">
+                        <div className="p-4 bg-primary/10 rounded-full mb-4 inline-flex">
+                          <category.icon className="h-10 w-10 md:h-12 md:w-12 text-primary" />
+                        </div>
+                        <CardTitle className="font-headline text-lg md:text-xl mb-2 leading-tight">{category.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0 flex-grow">
+                        <CardDescription className="text-sm text-muted-foreground line-clamp-2">
+                          {category.shortDesc}
+                        </CardDescription>
+                      </CardContent>
                     </Card>
                   </Link>
                 ))}
@@ -162,3 +170,5 @@ export default function DesignServicesPage() {
     </div>
   );
 }
+
+    
