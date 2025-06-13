@@ -5,14 +5,13 @@ import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ServiceCard } from '@/components/shared/service-card';
-import { PortfolioShowcaseCard } from '@/app/page';
+import { PortfolioShowcaseCard } from '@/app/page'; 
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { Palette, Share2, Printer, Laptop, Brush as BrushIconLucide, Package as PackageIcon, Film, Presentation, Camera, ArrowRight, Sparkles, Eye, Briefcase } from 'lucide-react';
 import type { Icon as LucideIconType } from 'lucide-react';
 import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page'; 
 import type { Metadata } from 'next';
+import { PopularServicesSection, type ServiceData } from '@/components/design-services/popular-services-section';
 
 // Data for the Service Categories Carousel
 const serviceCategoriesData: Array<{ name: string; slug: string; icon: LucideIconType; description: string; shortDesc: string; }> = [
@@ -26,16 +25,35 @@ const serviceCategoriesData: Array<{ name: string; slug: string; icon: LucideIco
   { name: 'Presentations', slug: 'presentations', icon: Presentation, description: 'Professional pitch decks and presentations that convey your message with impact.', shortDesc: 'Impactful pitch decks.' },
 ];
 
-const featuredServicesData = [
-  { id: '1', name: 'Modern Logo Design', description: 'Unique logos for brands and startups, capturing your brand essence.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'startup logo' },
-  { id: '4', name: 'UI/UX Web Design Mockup', description: 'User-friendly web mockups, focusing on great user experience.', tiers: [{name: 'Standard', price: 15999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design' },
-  { id: '2', name: 'Social Media Pack', description: 'Engaging posts for social media campaigns. Boost your online presence.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media marketing' },
+// MOCK A LARGER SET OF POPULAR SERVICES
+const mockAllPopularServices: ServiceData[] = [
+  { id: 'pop1', name: 'Modern Logo Design', description: 'Unique logos for brands.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'startup logo' },
+  { id: 'pop2', name: 'UI/UX Web Design Mockup', description: 'User-friendly web mockups.', tiers: [{name: 'Standard', price: 15999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design' },
+  { id: 'pop3', name: 'Social Media Pack', description: 'Engaging posts for campaigns.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media marketing' },
+  { id: 'pop4', name: 'Brochure Design', description: 'Professional business brochures.', tiers: [{name: 'Standard', price: 7999}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'business brochure' },
+  { id: 'pop5', name: 'Custom Illustration Set', description: 'Unique illustrations for your brand.', tiers: [{name: 'Standard', price: 6999}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'digital art' },
+  { id: 'pop6', name: 'Packaging Concept Design', description: 'Creative product packaging.', tiers: [{name: 'Standard', price: 11999}], category: 'Packaging', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product packaging' },
+  { id: 'pop7', name: 'Animated Logo Intro', description: 'Dynamic logo animations.', tiers: [{name: 'Standard', price: 8999}], category: 'Motion Graphics', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo animation' },
+  { id: 'pop8', name: 'Investor Pitch Deck', description: 'Compelling presentation designs.', tiers: [{name: 'Standard', price: 12999}], category: 'Presentations', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'pitch deck' },
+  { id: 'pop9', name: 'App Icon Set', description: 'Modern app icons for iOS/Android.', tiers: [{name: 'Standard', price: 3999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'app icon' },
+  { id: 'pop10', name: 'Product Photography Retouching', description: 'E-commerce photo editing.', tiers: [{name: 'Standard', price: 2999}], category: 'Photography', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'photo editing' },
+  { id: 'pop11', name: 'Infographic Design Service', description: 'Data visualization infographics.', tiers: [{name: 'Standard', price: 5999}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'infographic' },
+  { id: 'pop12', name: 'Brand Style Guide', description: 'Comprehensive brand guidelines.', tiers: [{name: 'Standard', price: 14999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'brand guide' },
+  { id: 'pop13', name: 'Website Landing Page UI', description: 'High-converting landing pages.', tiers: [{name: 'Standard', price: 9999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'landing page' },
+  { id: 'pop14', name: 'Short Social Video Ad', description: 'Engaging video ads for socials.', tiers: [{name: 'Standard', price: 7500}], category: 'Motion Graphics', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'video ad' },
+  { id: 'pop15', name: 'Book Cover Design', description: 'Captivating book cover art.', tiers: [{name: 'Standard', price: 6500}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'book cover' },
+  { id: 'pop16', name: 'Vector Character Mascot', description: 'Custom mascot design.', tiers: [{name: 'Standard', price: 9000}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'mascot design' },
+  { id: 'pop17', name: 'Food Menu Design', description: 'Appetizing restaurant menus.', tiers: [{name: 'Standard', price: 5500}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'menu design' },
+  { id: 'pop18', name: 'Email Newsletter Template', description: 'Branded email templates.', tiers: [{name: 'Standard', price: 4500}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'email template' }
 ];
+
+const ITEMS_PER_PAGE = 6;
+const initialPopularServices = mockAllPopularServices.slice(0, ITEMS_PER_PAGE);
 
 const portfolioGlanceItems: PortfolioItem[] = globalPortfolioItems.slice(0, 3);
 
 export const metadata: Metadata = {
-  title: 'Discover Design Services',
+  title: 'Discover Design Services | DesignFlow',
   description: 'Explore a wide range of creative design services. Find expert designers for logos, UI/UX, branding, and more on DesignFlow.',
   openGraph: {
     title: 'Discover Design Services | DesignFlow',
@@ -60,10 +78,8 @@ export default function DesignServicesPage() {
               Explore a comprehensive range of creative services tailored to elevate your brand. From stunning logos to seamless web experiences, our expert designers are here to bring your ideas to life.
             </p>
             
-            {/* Category Carousel */}
             <div className="w-full overflow-hidden group">
               <div className="flex animate-marquee group-hover:pause-animation">
-                {/* Render items twice for seamless loop */}
                 {serviceCategoriesData.map(category => (
                   <Link key={`${category.slug}-1`} href={`/services?category=${category.slug}`} passHref className="flex-shrink-0 mx-3">
                     <Card className="w-[220px] md:w-[260px] h-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center p-6 hover:border-primary cursor-pointer bg-card">
@@ -105,11 +121,10 @@ export default function DesignServicesPage() {
             <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
               Check out some of our most sought-after services, crafted by expert designers.
             </p>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {featuredServicesData.map(service => (
-                <ServiceCard key={service.id} {...service} />
-              ))}
-            </div>
+            <PopularServicesSection 
+              initialServices={initialPopularServices} 
+              allServices={mockAllPopularServices} 
+            />
             <div className="text-center mt-16">
               <Button size="lg" asChild variant="outline">
                 <Link href="/services">
