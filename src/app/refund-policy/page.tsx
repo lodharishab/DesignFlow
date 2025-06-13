@@ -3,8 +3,9 @@ import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileShield } from 'lucide-react'; // Using FileShield for policy
+import { Shield } from 'lucide-react'; // Changed from FileShield to Shield
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Refund Policy | DesignFlow',
@@ -24,7 +25,7 @@ export default function RefundPolicyPage() {
         <Card className="shadow-lg">
           <CardHeader>
             <div className="flex items-center mb-4">
-                <FileShield className="h-10 w-10 mr-3 text-primary" />
+                <Shield className="h-10 w-10 mr-3 text-primary" />
                 <CardTitle className="text-3xl md:text-4xl font-bold font-headline">Refund Policy</CardTitle>
             </div>
             <CardDescription>Last Updated: {new Date().toLocaleDateString()}</CardDescription>
