@@ -7,7 +7,7 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { PortfolioShowcaseCard } from '@/app/page'; 
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'; // Added this import
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Palette, Share2, Printer, Laptop, Brush as BrushIconLucide, Package as PackageIcon, Film, Presentation, Camera, ArrowRight, Sparkles, Eye, Briefcase } from 'lucide-react';
 import type { Icon as LucideIconType } from 'lucide-react';
 import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page'; 
@@ -26,26 +26,26 @@ const serviceCategoriesData: Array<{ name: string; slug: string; icon: LucideIco
   { name: 'Presentations', slug: 'presentations', icon: Presentation, description: 'Professional pitch decks and presentations that convey your message with impact.', shortDesc: 'Impactful pitch decks.' },
 ];
 
-// MOCK A LARGER SET OF POPULAR SERVICES
+// MOCK A LARGER SET OF POPULAR SERVICES WITH GUARANTEED UNIQUE IDs
 const mockAllPopularServices: ServiceData[] = [
-  { id: 'pop1', name: 'Modern Logo Design', description: 'Unique logos for brands.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'startup logo' },
-  { id: 'pop2', name: 'UI/UX Web Design Mockup', description: 'User-friendly web mockups.', tiers: [{name: 'Standard', price: 15999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design' },
-  { id: 'pop3', name: 'Social Media Pack', description: 'Engaging posts for campaigns.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media marketing' },
-  { id: 'pop4', name: 'Brochure Design', description: 'Professional business brochures.', tiers: [{name: 'Standard', price: 7999}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'business brochure' },
-  { id: 'pop5', name: 'Custom Illustration Set', description: 'Unique illustrations for your brand.', tiers: [{name: 'Standard', price: 6999}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'digital art' },
-  { id: 'pop6', name: 'Packaging Concept Design', description: 'Creative product packaging.', tiers: [{name: 'Standard', price: 11999}], category: 'Packaging', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product packaging' },
-  { id: 'pop7', name: 'Animated Logo Intro', description: 'Dynamic logo animations.', tiers: [{name: 'Standard', price: 8999}], category: 'Motion Graphics', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo animation' },
-  { id: 'pop8', name: 'Investor Pitch Deck', description: 'Compelling presentation designs.', tiers: [{name: 'Standard', price: 12999}], category: 'Presentations', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'pitch deck' },
-  { id: 'pop9', name: 'App Icon Set', description: 'Modern app icons for iOS/Android.', tiers: [{name: 'Standard', price: 3999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'app icon' },
-  { id: 'pop10', name: 'Product Photography Retouching', description: 'E-commerce photo editing.', tiers: [{name: 'Standard', price: 2999}], category: 'Photography', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'photo editing' },
-  { id: 'pop11', name: 'Infographic Design Service', description: 'Data visualization infographics.', tiers: [{name: 'Standard', price: 5999}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'infographic' },
-  { id: 'pop12', name: 'Brand Style Guide', description: 'Comprehensive brand guidelines.', tiers: [{name: 'Standard', price: 14999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'brand guide' },
-  { id: 'pop13', name: 'Website Landing Page UI', description: 'High-converting landing pages.', tiers: [{name: 'Standard', price: 9999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'landing page' },
-  { id: 'pop14', name: 'Short Social Video Ad', description: 'Engaging video ads for socials.', tiers: [{name: 'Standard', price: 7500}], category: 'Motion Graphics', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'video ad' },
-  { id: 'pop15', name: 'Book Cover Design', description: 'Captivating book cover art.', tiers: [{name: 'Standard', price: 6500}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'book cover' },
-  { id: 'pop16', name: 'Vector Character Mascot', description: 'Custom mascot design.', tiers: [{name: 'Standard', price: 9000}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'mascot design' },
-  { id: 'pop17', name: 'Food Menu Design', description: 'Appetizing restaurant menus.', tiers: [{name: 'Standard', price: 5500}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'menu design' },
-  { id: 'pop18', name: 'Email Newsletter Template', description: 'Branded email templates.', tiers: [{name: 'Standard', price: 4500}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'email template' }
+  { id: 'pop-item-1', name: 'Modern Logo Design', description: 'Unique logos for brands.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'startup logo' },
+  { id: 'pop-item-2', name: 'UI/UX Web Design Mockup', description: 'User-friendly web mockups.', tiers: [{name: 'Standard', price: 15999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design' },
+  { id: 'pop-item-3', name: 'Social Media Pack', description: 'Engaging posts for campaigns.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media marketing' },
+  { id: 'pop-item-4', name: 'Brochure Design', description: 'Professional business brochures.', tiers: [{name: 'Standard', price: 7999}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'business brochure' },
+  { id: 'pop-item-5', name: 'Custom Illustration Set', description: 'Unique illustrations for your brand.', tiers: [{name: 'Standard', price: 6999}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'digital art' },
+  { id: 'pop-item-6', name: 'Packaging Concept Design', description: 'Creative product packaging.', tiers: [{name: 'Standard', price: 11999}], category: 'Packaging', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product packaging' },
+  { id: 'pop-item-7', name: 'Animated Logo Intro', description: 'Dynamic logo animations.', tiers: [{name: 'Standard', price: 8999}], category: 'Motion Graphics', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo animation' },
+  { id: 'pop-item-8', name: 'Investor Pitch Deck', description: 'Compelling presentation designs.', tiers: [{name: 'Standard', price: 12999}], category: 'Presentations', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'pitch deck' },
+  { id: 'pop-item-9', name: 'App Icon Set', description: 'Modern app icons for iOS/Android.', tiers: [{name: 'Standard', price: 3999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'app icon' },
+  { id: 'pop-item-10', name: 'Product Photography Retouching', description: 'E-commerce photo editing.', tiers: [{name: 'Standard', price: 2999}], category: 'Photography', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'photo editing' },
+  { id: 'pop-item-11', name: 'Infographic Design Service', description: 'Data visualization infographics.', tiers: [{name: 'Standard', price: 5999}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'infographic' },
+  { id: 'pop-item-12', name: 'Brand Style Guide', description: 'Comprehensive brand guidelines.', tiers: [{name: 'Standard', price: 14999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'brand guide' },
+  { id: 'pop-item-13', name: 'Website Landing Page UI', description: 'High-converting landing pages.', tiers: [{name: 'Standard', price: 9999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'landing page' },
+  { id: 'pop-item-14', name: 'Short Social Video Ad', description: 'Engaging video ads for socials.', tiers: [{name: 'Standard', price: 7500}], category: 'Motion Graphics', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'video ad' },
+  { id: 'pop-item-15', name: 'Book Cover Design', description: 'Captivating book cover art.', tiers: [{name: 'Standard', price: 6500}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'book cover' },
+  { id: 'pop-item-16', name: 'Vector Character Mascot', description: 'Custom mascot design.', tiers: [{name: 'Standard', price: 9000}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'mascot design' },
+  { id: 'pop-item-17', name: 'Food Menu Design', description: 'Appetizing restaurant menus.', tiers: [{name: 'Standard', price: 5500}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'menu design' },
+  { id: 'pop-item-18', name: 'Email Newsletter Template', description: 'Branded email templates.', tiers: [{name: 'Standard', price: 4500}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'email template' }
 ];
 
 const ITEMS_PER_PAGE = 6;
