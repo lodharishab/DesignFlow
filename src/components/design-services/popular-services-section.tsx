@@ -26,7 +26,7 @@ interface PopularServicesSectionProps {
 }
 
 const ITEMS_PER_LOAD = 6;
-const MAX_SCROLL_LOADS = 3; // Updated from 2 to 3
+const MAX_SCROLL_LOADS = 3;
 
 export function PopularServicesSection({ initialServices, allServices }: PopularServicesSectionProps) {
   const [displayedServices, setDisplayedServices] = useState<ServiceData[]>(initialServices);
@@ -38,7 +38,7 @@ export function PopularServicesSection({ initialServices, allServices }: Popular
   const canAutoLoadOnScroll = scrollLoadsCount < MAX_SCROLL_LOADS;
 
   const handleLoadMore = useCallback(() => {
-    if (!canLoadMoreItems || isLoadingMore) return;
+    if (!canLoadMoreItems || isLoadingMore || !canAutoLoadOnScroll) return;
 
     setIsLoadingMore(true);
     
@@ -46,19 +46,18 @@ export function PopularServicesSection({ initialServices, allServices }: Popular
       const newLoadedCount = Math.min(loadedCount + ITEMS_PER_LOAD, allServices.length);
       const nextServicesToLoad = allServices.slice(loadedCount, newLoadedCount);
       
-      setDisplayedServices(prevServices => {
-        const existingIds = new Set(prevServices.map(s => s.id));
-        const uniqueNextServices = nextServicesToLoad.filter(s => !existingIds.has(s.id));
-        return [...prevServices, ...uniqueNextServices];
-      });
-
-      setLoadedCount(newLoadedCount);
-      if (nextServicesToLoad.length > 0) { 
+      if (nextServicesToLoad.length > 0) {
+        setDisplayedServices(prevServices => {
+          const existingIds = new Set(prevServices.map(s => s.id));
+          const uniqueNextServices = nextServicesToLoad.filter(s => !existingIds.has(s.id));
+          return [...prevServices, ...uniqueNextServices];
+        });
+        setLoadedCount(newLoadedCount);
         setScrollLoadsCount(prevCount => prevCount + 1); 
       }
       setIsLoadingMore(false);
     }, 500); 
-  }, [allServices, canLoadMoreItems, isLoadingMore, loadedCount]);
+  }, [allServices, canLoadMoreItems, isLoadingMore, loadedCount, canAutoLoadOnScroll]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -90,25 +89,26 @@ export function PopularServicesSection({ initialServices, allServices }: Popular
           <ServiceCard key={service.id} {...service} />
         ))}
       </div>
-      {isLoadingMore && (
+      
+      {isLoadingMore ? (
         <div className="text-center mt-12 py-6 flex justify-center items-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mr-3" />
           <p className="text-muted-foreground">Loading more services...</p>
         </div>
-      )}
-      {/* Message for when all services are loaded OR max scroll loads reached and no more items to load */}
-      {!isLoadingMore && !canLoadMoreItems && displayedServices.length > initialServices.length && (
-         <div className="text-center mt-12 py-6">
-          <p className="text-muted-foreground">You've reached the end of our popular services!</p>
-        </div>
-      )}
-      {/* Message for when max scroll loads reached but there might be more items (if we weren't strictly limiting) */}
-      {/* This might not be needed if "keep it at that only" means hard stop */}
-       {!isLoadingMore && !canAutoLoadOnScroll && canLoadMoreItems && (
-         <div className="text-center mt-12 py-6">
+      ) : !canLoadMoreItems ? ( 
+        // This condition means all items from allServices are loaded
+        // Only show if we've actually loaded more than the initial set to avoid showing it on initial load with few items
+        initialServices.length < allServices.length || displayedServices.length > initialServices.length ? (
+          <div className="text-center mt-12 py-6">
+            <p className="text-muted-foreground">You've reached the end of our popular services!</p>
+          </div>
+        ) : null
+      ) : !canAutoLoadOnScroll ? ( 
+        // This condition means scroll limit reached, but more items might exist in allServices
+        <div className="text-center mt-12 py-6">
           <p className="text-muted-foreground">Further services can be found in the full catalog.</p>
         </div>
-       )}
+      ) : null}
     </>
   );
 }
