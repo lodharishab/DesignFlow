@@ -26,13 +26,13 @@ interface PopularServicesSectionProps {
 }
 
 const ITEMS_PER_LOAD = 6;
-const MAX_SCROLL_LOADS = 3;
+const MAX_SCROLL_LOADS = 3; // Allow up to 3 automatic loads after initial display
 
 export function PopularServicesSection({ initialServices, allServices }: PopularServicesSectionProps) {
   const [displayedServices, setDisplayedServices] = useState<ServiceData[]>(initialServices);
   const [loadedCount, setLoadedCount] = useState<number>(initialServices.length);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
-  const [scrollLoadsCount, setScrollLoadsCount] = useState<number>(0);
+  const [scrollLoadsCount, setScrollLoadsCount] = useState<number>(0); 
 
   const canLoadMoreItems = loadedCount < allServices.length;
   const canAutoLoadOnScroll = scrollLoadsCount < MAX_SCROLL_LOADS;
@@ -53,7 +53,7 @@ export function PopularServicesSection({ initialServices, allServices }: Popular
           return [...prevServices, ...uniqueNextServices];
         });
         setLoadedCount(newLoadedCount);
-        setScrollLoadsCount(prevCount => prevCount + 1); 
+        setScrollLoadsCount(prevCount => prevCount + 1);
       }
       setIsLoadingMore(false);
     }, 500); 
@@ -96,17 +96,20 @@ export function PopularServicesSection({ initialServices, allServices }: Popular
           <p className="text-muted-foreground">Loading more services...</p>
         </div>
       ) : !canLoadMoreItems ? ( 
-        // This condition means all items from allServices are loaded
-        // Only show if we've actually loaded more than the initial set to avoid showing it on initial load with few items
-        initialServices.length < allServices.length || displayedServices.length > initialServices.length ? (
+        // All items from allServices are loaded
+        (initialServices.length < allServices.length || displayedServices.length > initialServices.length) ? (
           <div className="text-center mt-12 py-6">
-            <p className="text-muted-foreground">You've reached the end of our popular services!</p>
+            <p className="text-muted-foreground">
+              You've seen all our popular highlights! For even more options, explore our full service catalog using the button below on this page.
+            </p>
           </div>
         ) : null
       ) : !canAutoLoadOnScroll ? ( 
-        // This condition means scroll limit reached, but more items might exist in allServices
+        // Scroll limit reached, but more items might exist in allServices
         <div className="text-center mt-12 py-6">
-          <p className="text-muted-foreground">Further services can be found in the full catalog.</p>
+          <p className="text-muted-foreground">
+            You've seen our initial popular services. For more, explore our full service catalog using the button below on this page.
+          </p>
         </div>
       ) : null}
     </>
