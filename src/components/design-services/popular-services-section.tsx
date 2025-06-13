@@ -3,8 +3,7 @@
 
 import { useState, useEffect, useCallback }  from 'react';
 import { ServiceCard } from '@/components/shared/service-card';
-// Removed Button and ArrowDown import as they are no longer used.
-import { Loader2 } from 'lucide-react'; // For a subtle loading indicator
+import { Loader2 } from 'lucide-react'; 
 
 interface ServiceTierInfo {
   name: 'Basic' | 'Standard' | 'Premium'; 
@@ -27,40 +26,39 @@ interface PopularServicesSectionProps {
 }
 
 const ITEMS_PER_LOAD = 6;
+const MAX_SCROLL_LOADS = 2; // Maximum number of times to auto-load on scroll
 
 export function PopularServicesSection({ initialServices, allServices }: PopularServicesSectionProps) {
   const [displayedServices, setDisplayedServices] = useState<ServiceData[]>(initialServices);
   const [loadedCount, setLoadedCount] = useState<number>(initialServices.length);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+  const [scrollLoadsCount, setScrollLoadsCount] = useState<number>(0);
 
-  const canLoadMore = loadedCount < allServices.length;
+  const canLoadMoreItems = loadedCount < allServices.length;
+  const canAutoLoadOnScroll = scrollLoadsCount < MAX_SCROLL_LOADS;
 
   const handleLoadMore = useCallback(() => {
-    if (!canLoadMore || isLoadingMore) return;
+    if (!canLoadMoreItems || isLoadingMore) return;
 
     setIsLoadingMore(true);
     
-    // Simulate network delay for loading
     setTimeout(() => {
-      const newLoadedCount = loadedCount + ITEMS_PER_LOAD;
+      const newLoadedCount = Math.min(loadedCount + ITEMS_PER_LOAD, allServices.length);
       const nextServices = allServices.slice(loadedCount, newLoadedCount);
       setDisplayedServices(prevServices => [...prevServices, ...nextServices]);
       setLoadedCount(newLoadedCount);
+      setScrollLoadsCount(prevCount => prevCount + 1); // Increment scroll load counter
       setIsLoadingMore(false);
-    }, 500); // Adjust delay as needed
-  }, [allServices, canLoadMore, isLoadingMore, loadedCount]);
+    }, 500); 
+  }, [allServices, canLoadMoreItems, isLoadingMore, loadedCount]);
 
   useEffect(() => {
     const handleScroll = () => {
-      // Check if user is near the bottom of the page
-      // window.innerHeight: The height of the browser window's viewport.
-      // window.scrollY: The number of pixels that the document is currently scrolled vertically.
-      // document.documentElement.offsetHeight: The height of the entire HTML document.
-      // Buffer: Load a bit before reaching the absolute bottom
       const buffer = 200; 
       if (
         window.innerHeight + window.scrollY >= document.documentElement.offsetHeight - buffer &&
-        canLoadMore &&
+        canLoadMoreItems &&
+        canAutoLoadOnScroll && // Check if we haven't reached the scroll load limit
         !isLoadingMore
       ) {
         handleLoadMore();
@@ -68,13 +66,13 @@ export function PopularServicesSection({ initialServices, allServices }: Popular
     };
 
     window.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', handleScroll); // Also check on resize
+    window.addEventListener('resize', handleScroll); 
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleScroll);
     };
-  }, [canLoadMore, isLoadingMore, handleLoadMore]);
+  }, [canLoadMoreItems, canAutoLoadOnScroll, isLoadingMore, handleLoadMore]);
 
 
   return (
@@ -90,12 +88,16 @@ export function PopularServicesSection({ initialServices, allServices }: Popular
           <p className="text-muted-foreground">Loading more services...</p>
         </div>
       )}
-      {!isLoadingMore && !canLoadMore && displayedServices.length > initialServices.length && (
+      {!isLoadingMore && !canLoadMoreItems && displayedServices.length > initialServices.length && (
          <div className="text-center mt-12 py-6">
           <p className="text-muted-foreground">You've reached the end of our popular services!</p>
         </div>
       )}
+      {/* Optional: Message if scroll limit is reached but more items are available. 
+          Currently, it will just stop auto-loading without a specific message.
+          If you want a message like "Scroll limit reached, click 'Explore Full Catalog' for more",
+          we can add it here.
+      */}
     </>
   );
 }
-
