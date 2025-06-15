@@ -22,7 +22,8 @@ import {
   Eye,
   CheckCircle2,
   XCircle,
-  Newspaper // Added for Blog
+  Newspaper,
+  PlusCircle // For Add New Post
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -80,7 +81,16 @@ const navItems = [
   },
   { href: '/admin/designers', icon: Users, label: 'Designers' },
   { href: '/admin/users', icon: UsersRound, label: 'Users' },
-  { href: '/admin/blog/posts', icon: Newspaper, label: 'Blog Posts' }, // Added Blog link
+  {
+    label: 'Blog', // Changed from "Blog Posts"
+    icon: Newspaper,
+    pathPrefix: '/admin/blog', // Path prefix for the parent
+    children: [
+      { href: '/admin/blog/posts', icon: List, label: 'All Posts' },
+      { href: '/admin/blog/posts/new', icon: PlusCircle, label: 'Add New Post' },
+      // Future: { href: '/admin/blog/categories', icon: TagsIcon, label: 'Blog Categories' },
+    ]
+  },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
@@ -143,7 +153,6 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                     {isOpen && (
                       <SidebarMenuSub>
                         {item.children.map(child => {
-                          // Adjusted isActive logic for child items
                            const isChildActive = pathname === child.href || (child.href !== item.pathPrefix && pathname.startsWith(child.href) && child.href.split('/').length <= pathname.split('/').length);
 
                           return (
@@ -162,7 +171,6 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                   </SidebarMenuItem>
                 );
               } else {
-                // Adjusted isActive logic for top-level items
                 const isActive =
                   (item.href === '/admin/dashboard' && pathname === item.href) ||
                   (item.href && item.href !== '/admin/dashboard' && pathname.startsWith(item.href));
