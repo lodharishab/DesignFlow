@@ -5,13 +5,16 @@ import { useState, useEffect, type ReactElement } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users, Mail, Link as LinkIconLucide, CalendarDays, Activity, Loader2, Edit3, ArrowLeft, Image as ImageIcon, Camera } from 'lucide-react';
+import { Users, Mail, Link as LinkIconLucide, CalendarDays, Activity, Loader2, Edit3, ArrowLeft, Image as ImageIcon, Camera, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from "@/components/ui/progress";
+import { Label } from '@/components/ui/label';
+
 
 interface Designer {
   id: string;
@@ -23,18 +26,19 @@ interface Designer {
   joinDate: Date;
   servicesApproved: number;
   portfolioLink?: string;
+  profileCompletenessScore: number; // Added field
 }
 
 // Using the same initial data source for consistency from admin designers list page
 const initialDesignersData: Designer[] = [
-  { id: 'des001', name: 'Priya Sharma', email: 'priya.sharma@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman designer', status: 'Active', joinDate: new Date(2023, 5, 15), servicesApproved: 7, portfolioLink: 'https://example.com/priyasharma' },
-  { id: 'des002', name: 'Rohan Kapoor', email: 'rohan.kapoor@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man architect', status: 'Pending Approval', joinDate: new Date(2023, 8, 20), servicesApproved: 0, portfolioLink: 'https://example.com/rohankapoor' },
-  { id: 'des003', name: 'Aisha Khan', email: 'aisha.khan@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman creative', status: 'Active', joinDate: new Date(2022, 11, 1), servicesApproved: 10 },
-  { id: 'des004', name: 'Vikram Singh', email: 'vikram.singh@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man artist', status: 'Suspended', joinDate: new Date(2023, 1, 10), servicesApproved: 3, portfolioLink: 'https://example.com/vikramsingh' },
-  { id: 'des005', name: 'Sunita Reddy', email: 'sunita.reddy@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman professional', status: 'Pending Approval', joinDate: new Date(2024, 0, 5), servicesApproved: 0 },
-  { id: 'des006', name: 'Arjun Mehta', email: 'arjun.mehta@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man photographer', status: 'Active', joinDate: new Date(2023, 3, 12), servicesApproved: 5, portfolioLink: 'https://example.com/arjunmehta' },
-  { id: 'des007', name: 'Neha Joshi', email: 'neha.joshi@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman fashion designer', status: 'Active', joinDate: new Date(2022, 7, 25), servicesApproved: 8 },
-  { id: 'des008', name: 'Karan Verma', email: 'karan.verma@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man developer', status: 'Pending Approval', joinDate: new Date(2024, 2, 1), servicesApproved: 0 },
+  { id: 'des001', name: 'Priya Sharma', email: 'priya.sharma@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman designer', status: 'Active', joinDate: new Date(2023, 5, 15), servicesApproved: 7, portfolioLink: 'https://example.com/priyasharma', profileCompletenessScore: 95 },
+  { id: 'des002', name: 'Rohan Kapoor', email: 'rohan.kapoor@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man architect', status: 'Pending Approval', joinDate: new Date(2023, 8, 20), servicesApproved: 0, portfolioLink: 'https://example.com/rohankapoor', profileCompletenessScore: 60 },
+  { id: 'des003', name: 'Aisha Khan', email: 'aisha.khan@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman creative', status: 'Active', joinDate: new Date(2022, 11, 1), servicesApproved: 10, profileCompletenessScore: 88 },
+  { id: 'des004', name: 'Vikram Singh', email: 'vikram.singh@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man artist', status: 'Suspended', joinDate: new Date(2023, 1, 10), servicesApproved: 3, portfolioLink: 'https://example.com/vikramsingh', profileCompletenessScore: 70 },
+  { id: 'des005', name: 'Sunita Reddy', email: 'sunita.reddy@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman professional', status: 'Pending Approval', joinDate: new Date(2024, 0, 5), servicesApproved: 0, profileCompletenessScore: 45 },
+  { id: 'des006', name: 'Arjun Mehta', email: 'arjun.mehta@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man photographer', status: 'Active', joinDate: new Date(2023, 3, 12), servicesApproved: 5, portfolioLink: 'https://example.com/arjunmehta', profileCompletenessScore: 92 },
+  { id: 'des007', name: 'Neha Joshi', email: 'neha.joshi@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman fashion designer', status: 'Active', joinDate: new Date(2022, 7, 25), servicesApproved: 8, profileCompletenessScore: 75 },
+  { id: 'des008', name: 'Karan Verma', email: 'karan.verma@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man developer', status: 'Pending Approval', joinDate: new Date(2024, 2, 1), servicesApproved: 0, profileCompletenessScore: 30 },
 ];
 
 
@@ -161,7 +165,7 @@ export default function AdminViewDesignerPage(): ReactElement {
 
           <Separator className="my-6" />
           
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             <div>
                 <p className="text-muted-foreground flex items-center mb-1"><CalendarDays className="inline-block mr-2 h-4 w-4" />Join Date</p>
                 <p className="font-medium text-base">{format(designer.joinDate, 'PPpp')}</p>
@@ -169,6 +173,11 @@ export default function AdminViewDesignerPage(): ReactElement {
             <div>
                 <p className="text-muted-foreground flex items-center mb-1"><Activity className="inline-block mr-2 h-4 w-4" />Services Approved</p>
                  <p className="font-medium text-base">{designer.servicesApproved}</p>
+            </div>
+             <div className="space-y-1">
+              <Label htmlFor="completeness" className="flex items-center text-muted-foreground"><TrendingUp className="inline-block mr-2 h-4 w-4" />Profile Completeness</Label>
+              <Progress value={designer.profileCompletenessScore} className="w-full h-3 mt-1" id="completeness" />
+              <p className="text-xs text-muted-foreground text-right mt-0.5">{designer.profileCompletenessScore}% Complete</p>
             </div>
           </div>
 
@@ -185,3 +194,4 @@ export default function AdminViewDesignerPage(): ReactElement {
     </div>
   );
 }
+

@@ -23,14 +23,15 @@ import {
     Trash2, 
     CheckCircle, 
     XCircle, 
-    Link as LinkIconLucide, // Renamed to avoid conflict
+    Link as LinkIconLucide, 
     CalendarDays, 
     Mail, 
     Filter, 
     ChevronDown,
     CheckCircle2,
     AlertOctagon,
-    Clock3
+    Clock3,
+    TrendingUp // For Profile Readiness
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
@@ -46,6 +47,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"; 
+import { Progress } from "@/components/ui/progress"; // Import Progress component
 
 interface Designer {
   id: string;
@@ -57,17 +59,18 @@ interface Designer {
   joinDate: Date;
   servicesApproved: number;
   portfolioLink?: string;
+  profileCompletenessScore: number; // Added field
 }
 
 const initialDesignersData: Designer[] = [
-  { id: 'des001', name: 'Priya Sharma', email: 'priya.sharma@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman designer', status: 'Active', joinDate: new Date(2023, 5, 15), servicesApproved: 7, portfolioLink: 'https://example.com/priyasharma' },
-  { id: 'des002', name: 'Rohan Kapoor', email: 'rohan.kapoor@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man architect', status: 'Pending Approval', joinDate: new Date(2023, 8, 20), servicesApproved: 0, portfolioLink: 'https://example.com/rohankapoor' },
-  { id: 'des003', name: 'Aisha Khan', email: 'aisha.khan@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman creative', status: 'Active', joinDate: new Date(2022, 11, 1), servicesApproved: 10 },
-  { id: 'des004', name: 'Vikram Singh', email: 'vikram.singh@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man artist', status: 'Suspended', joinDate: new Date(2023, 1, 10), servicesApproved: 3, portfolioLink: 'https://example.com/vikramsingh' },
-  { id: 'des005', name: 'Sunita Reddy', email: 'sunita.reddy@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman professional', status: 'Pending Approval', joinDate: new Date(2024, 0, 5), servicesApproved: 0 },
-  { id: 'des006', name: 'Arjun Mehta', email: 'arjun.mehta@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man photographer', status: 'Active', joinDate: new Date(2023, 3, 12), servicesApproved: 5, portfolioLink: 'https://example.com/arjunmehta' },
-  { id: 'des007', name: 'Neha Joshi', email: 'neha.joshi@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman fashion designer', status: 'Active', joinDate: new Date(2022, 7, 25), servicesApproved: 8 },
-  { id: 'des008', name: 'Karan Verma', email: 'karan.verma@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man developer', status: 'Pending Approval', joinDate: new Date(2024, 2, 1), servicesApproved: 0 },
+  { id: 'des001', name: 'Priya Sharma', email: 'priya.sharma@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman designer', status: 'Active', joinDate: new Date(2023, 5, 15), servicesApproved: 7, portfolioLink: 'https://example.com/priyasharma', profileCompletenessScore: 95 },
+  { id: 'des002', name: 'Rohan Kapoor', email: 'rohan.kapoor@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man architect', status: 'Pending Approval', joinDate: new Date(2023, 8, 20), servicesApproved: 0, portfolioLink: 'https://example.com/rohankapoor', profileCompletenessScore: 60 },
+  { id: 'des003', name: 'Aisha Khan', email: 'aisha.khan@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman creative', status: 'Active', joinDate: new Date(2022, 11, 1), servicesApproved: 10, profileCompletenessScore: 88 },
+  { id: 'des004', name: 'Vikram Singh', email: 'vikram.singh@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man artist', status: 'Suspended', joinDate: new Date(2023, 1, 10), servicesApproved: 3, portfolioLink: 'https://example.com/vikramsingh', profileCompletenessScore: 70 },
+  { id: 'des005', name: 'Sunita Reddy', email: 'sunita.reddy@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman professional', status: 'Pending Approval', joinDate: new Date(2024, 0, 5), servicesApproved: 0, profileCompletenessScore: 45 },
+  { id: 'des006', name: 'Arjun Mehta', email: 'arjun.mehta@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man photographer', status: 'Active', joinDate: new Date(2023, 3, 12), servicesApproved: 5, portfolioLink: 'https://example.com/arjunmehta', profileCompletenessScore: 92 },
+  { id: 'des007', name: 'Neha Joshi', email: 'neha.joshi@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman fashion designer', status: 'Active', joinDate: new Date(2022, 7, 25), servicesApproved: 8, profileCompletenessScore: 75 },
+  { id: 'des008', name: 'Karan Verma', email: 'karan.verma@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man developer', status: 'Pending Approval', joinDate: new Date(2024, 2, 1), servicesApproved: 0, profileCompletenessScore: 30 },
 ];
 
 type StatusFilter = Designer['status'] | 'All';
@@ -270,6 +273,7 @@ export default function AdminDesignersPage(): ReactElement {
                 <TableHead><Mail className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Email</TableHead>
                 <TableHead className="w-[150px]"><CalendarDays className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Join Date</TableHead>
                 <TableHead className="w-[120px] text-center">Services</TableHead>
+                <TableHead className="w-[180px]"><TrendingUp className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Profile Readiness</TableHead>
                 <TableHead className="w-[150px]">Status</TableHead>
                 <TableHead className="text-right w-[200px]">Actions</TableHead>
               </TableRow>
@@ -277,7 +281,7 @@ export default function AdminDesignersPage(): ReactElement {
             <TableBody>
               {displayedDesigners.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center h-24">
+                  <TableCell colSpan={9} className="text-center h-24">
                     No designers match the current filter.
                   </TableCell>
                 </TableRow>
@@ -304,6 +308,12 @@ export default function AdminDesignersPage(): ReactElement {
                   <TableCell className="text-muted-foreground">{designer.email}</TableCell>
                   <TableCell>{format(designer.joinDate, 'MMM d, yyyy')}</TableCell>
                   <TableCell className="text-center">{designer.servicesApproved}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Progress value={designer.profileCompletenessScore} className="w-20 h-2" aria-label={`${designer.profileCompletenessScore}% complete`} />
+                      <span className="text-xs text-muted-foreground">{designer.profileCompletenessScore}%</span>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(designer.status)}>{designer.status}</Badge>
                   </TableCell>
@@ -345,3 +355,4 @@ export default function AdminDesignersPage(): ReactElement {
     </div>
   );
 }
+
