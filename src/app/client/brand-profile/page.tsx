@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, MessageCircle, FileText, Loader2, Info } from 'lucide-react';
+import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, MessageCircle, FileText, Loader2, Info, UploadCloud, Link as LinkIcon } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 
@@ -27,6 +27,9 @@ interface BrandProfileData {
   communicationPreference: string;
   feedbackStyle: string;
   notesForDesigners: string;
+  logoAsset: File | null; // For simulated upload
+  brandGuidelinesLink: string;
+  existingAssetsLink: string;
 }
 
 const industryOptions = ["Technology", "Retail/E-commerce", "Healthcare", "Education", "Hospitality/Travel", "Real Estate", "Finance", "Manufacturing", "Non-profit", "Creative Arts", "Other"];
@@ -51,11 +54,22 @@ export default function BrandProfilePage() {
     communicationPreference: "Platform Chat",
     feedbackStyle: "",
     notesForDesigners: "",
+    logoAsset: null,
+    brandGuidelinesLink: "",
+    existingAssetsLink: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFormData(prev => ({ ...prev, logoAsset: e.target.files![0] }));
+    } else {
+      setFormData(prev => ({ ...prev, logoAsset: null }));
+    }
   };
 
   const handleSelectChange = (id: keyof BrandProfileData, value: string) => {
@@ -70,7 +84,10 @@ export default function BrandProfilePage() {
     e.preventDefault();
     setIsSaving(true);
     // Simulate API call
-    console.log("Saving brand profile:", formData);
+    console.log("Saving brand profile:", {
+      ...formData,
+      logoAssetName: formData.logoAsset?.name // Log file name for simulation
+    });
     setTimeout(() => {
       toast({
         title: "Brand Profile Saved (Simulated)",
@@ -159,6 +176,30 @@ export default function BrandProfilePage() {
                 </div>
               </div>
             </section>
+            
+            <Separator />
+
+            <section>
+              <h2 className="text-xl font-semibold font-headline mb-4 flex items-center"><UploadCloud className="mr-2 h-5 w-5 text-primary" />Brand Assets</h2>
+              <div className="grid md:grid-cols-1 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="logoAsset">Logo File (Optional)</Label>
+                  <Input id="logoAsset" type="file" onChange={handleFileChange} accept=".png, .jpg, .jpeg, .svg, .ai, .eps" />
+                  {formData.logoAsset && <p className="text-xs text-muted-foreground">Selected: {formData.logoAsset.name}</p>}
+                  <p className="text-xs text-muted-foreground">Upload your main logo file. Vector formats (SVG, AI, EPS) are preferred.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="brandGuidelinesLink">Brand Guidelines Link (Optional)</Label>
+                  <Input id="brandGuidelinesLink" type="url" value={formData.brandGuidelinesLink} onChange={handleChange} placeholder="https://example.com/brand-guidelines.pdf" />
+                  <p className="text-xs text-muted-foreground">Link to your existing brand guidelines document if you have one.</p>
+                </div>
+                 <div className="space-y-2">
+                  <Label htmlFor="existingAssetsLink">Existing Assets Folder Link (Optional)</Label>
+                  <Input id="existingAssetsLink" type="url" value={formData.existingAssetsLink} onChange={handleChange} placeholder="e.g., Google Drive, Dropbox link" />
+                  <p className="text-xs text-muted-foreground">Link to a cloud folder with other relevant assets (fonts, images, past designs).</p>
+                </div>
+              </div>
+            </section>
 
             <Separator />
 
@@ -202,3 +243,4 @@ export default function BrandProfilePage() {
     </div>
   );
 }
+
