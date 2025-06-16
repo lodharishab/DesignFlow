@@ -29,21 +29,20 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, isPast } from 'date-fns';
-import { initialOrdersData as allOrders, type Order, type OrderStatus, type OrderEvent } from '@/components/admin/orders/orders-table-view'; // Reusing admin types and data
+import { initialOrdersData, type Order, type OrderStatus, type OrderEvent } from '@/components/admin/orders/orders-table-view'; 
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
-// Mock designer ID for prototype - should come from auth
-const MOCK_DESIGNER_ID = 'des002'; 
+const MOCK_DESIGNER_ID = 'des002'; // Bob The Builder from initialOrdersData example
 
 const getStatusBadgeVariant = (status: OrderStatus) => {
   switch (status) {
     case 'Completed': return 'default';
     case 'In Progress': return 'secondary';
     case 'Awaiting Client Review': return 'outline';
-    case 'Revision Requested': return 'secondary';
+    case 'Revision Requested': return 'secondary'; // Could be a different color like warning/orange
     case 'Cancelled': return 'destructive';
     default: return 'secondary';
   }
@@ -53,7 +52,7 @@ const getStatusIcon = (status: OrderStatus) => {
     switch (status) {
       case 'In Progress': return <Clock className="mr-1.5 h-4 w-4" />;
       case 'Awaiting Client Review': return <Eye className="mr-1.5 h-4 w-4" />;
-      case 'Revision Requested': return <AlertTriangle className="mr-1.5 h-4 w-4" />;
+      case 'Revision Requested': return <AlertTriangle className="mr-1.5 h-4 w-4 text-orange-500" />; // Example color
       case 'Completed': return <CheckCircle2 className="mr-1.5 h-4 w-4 text-green-500" />;
       default: return <Info className="mr-1.5 h-4 w-4" />;
     }
@@ -79,10 +78,10 @@ function DesignerOrderDetailPageContent(): ReactElement {
   useEffect(() => {
     if (orderId) {
       setIsLoading(true);
-      // Simulate fetching order details
-      const foundOrder = allOrders.find(o => o.id === orderId && o.designerId === MOCK_DESIGNER_ID);
+      const foundOrder = initialOrdersData.find(o => o.id === orderId && o.designerId === MOCK_DESIGNER_ID);
       if (foundOrder) {
-        setOrder(foundOrder);
+        // Ensure orderEvents are sorted chronologically (newest first for display)
+        setOrder({...foundOrder, orderEvents: [...foundOrder.orderEvents].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime())});
       } else {
         toast({
           title: "Error",
@@ -99,14 +98,12 @@ function DesignerOrderDetailPageContent(): ReactElement {
   const handleSendMessage = () => {
     if (!newMessage.trim() || !order) return;
     setIsSendingMessage(true);
-    // Simulate sending message
     const newEvent: OrderEvent = {
         timestamp: new Date(),
         event: `Message from Designer: ${newMessage}`,
         actor: order.designerName || 'Designer',
     };
-    // In a real app, this would update the backend
-    setOrder(prevOrder => prevOrder ? ({ ...prevOrder, orderEvents: [...prevOrder.orderEvents, newEvent].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()) }) : null);
+    setOrder(prevOrder => prevOrder ? ({ ...prevOrder, orderEvents: [newEvent, ...prevOrder.orderEvents] }) : null);
     
     setTimeout(() => {
         setNewMessage('');
@@ -127,29 +124,31 @@ function DesignerOrderDetailPageContent(): ReactElement {
       return;
     }
     setIsSubmittingDeliverable(true);
-    // Simulate deliverable submission
     const newDeliverable = {
         name: fileToUpload.name,
-        url: '#', // Placeholder URL
+        url: '#', 
         submittedAt: new Date(),
     };
-     const newEvent: OrderEvent = {
+    const submissionType = order.status === 'Revision Requested' ? 'Revisions' : 'Deliverable';
+    const newEvent: OrderEvent = {
         timestamp: new Date(),
-        event: `Deliverable submitted: ${fileToUpload.name} (${deliverableDescription})`,
+        event: `${submissionType} submitted: ${fileToUpload.name} (${deliverableDescription})`,
         actor: order.designerName || 'Designer',
     };
-    // In a real app, this would update the backend
+    
     setOrder(prevOrder => prevOrder ? ({ 
         ...prevOrder, 
         deliverables: [...(prevOrder.deliverables || []), newDeliverable],
-        orderEvents: [...prevOrder.orderEvents, newEvent].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),
-        status: 'Awaiting Client Review' // Example status change
+        orderEvents: [newEvent, ...prevOrder.orderEvents],
+        status: 'Awaiting Client Review',
+        revisionNotes: order.status === 'Revision Requested' ? undefined : prevOrder.revisionNotes, // Clear revision notes after submitting revisions
+        revisionRequestDate: order.status === 'Revision Requested' ? undefined : prevOrder.revisionRequestDate,
     }) : null);
 
     setTimeout(() => {
         setFileToUpload(null);
         setDeliverableDescription('');
-        toast({ title: "Deliverable Submitted (Simulated)", description: `${fileToUpload.name} has been sent to the client for review.`});
+        toast({ title: `${submissionType} Submitted (Simulated)`, description: `${fileToUpload.name} has been sent to the client for review.`});
         setIsSubmittingDeliverable(false);
     }, 1500);
   };
@@ -166,6 +165,8 @@ function DesignerOrderDetailPageContent(): ReactElement {
   if (!order) {
     return <p>Order not found or not accessible.</p>;
   }
+  
+  const canSubmitDeliverables = order.status === 'In Progress' || order.status === 'Revision Requested';
 
   return (
     <div className="space-y-8">
@@ -232,59 +233,82 @@ function DesignerOrderDetailPageContent(): ReactElement {
               </div>
             </>
           )}
+           {order.status === 'Revision Requested' && order.revisionNotes && (
+            <>
+              <Separator />
+              <Card className="bg-destructive/10 border-destructive/50">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-headline flex items-center text-destructive">
+                    <AlertTriangle className="mr-2 h-5 w-5" /> Client Revision Request
+                  </CardTitle>
+                  {order.revisionRequestDate && (
+                    <CardDescription className="text-xs text-destructive/80">
+                        Requested on: {format(order.revisionRequestDate, 'PPp')}
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <p className="whitespace-pre-line text-destructive/90">{order.revisionNotes}</p>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </CardContent>
       </Card>
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Submit Deliverables Section */}
         <Card className="shadow-lg">
             <CardHeader>
-                <CardTitle className="font-headline text-xl flex items-center"><Upload className="mr-2 h-5 w-5 text-primary"/>Submit/Manage Deliverables</CardTitle>
+                <CardTitle className="font-headline text-xl flex items-center"><Upload className="mr-2 h-5 w-5 text-primary"/>
+                {order.status === 'Revision Requested' ? 'Submit Revisions' : 'Submit Deliverables'}
+                </CardTitle>
+                {order.status === 'Awaiting Client Review' && <CardDescription className="text-green-600">Deliverable(s) submitted. Waiting for client review.</CardDescription>}
+                {(order.status === 'Completed' || order.status === 'Cancelled') && <CardDescription className="text-muted-foreground">This order is {order.status.toLowerCase()} and no further submissions are possible.</CardDescription>}
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="deliverableFile">Upload File</Label>
-                    <Input id="deliverableFile" type="file" onChange={handleFileChange} disabled={isSubmittingDeliverable}/>
-                    {fileToUpload && <p className="text-xs text-muted-foreground">Selected: {fileToUpload.name}</p>}
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="deliverableDescription">Description/Notes for Client</Label>
-                    <Textarea 
-                        id="deliverableDescription" 
-                        value={deliverableDescription}
-                        onChange={(e) => setDeliverableDescription(e.target.value)}
-                        placeholder="e.g., First draft of logo concepts, Version 2 with color variations..."
-                        rows={3}
-                        disabled={isSubmittingDeliverable}
-                    />
-                </div>
-                <Button 
-                    onClick={handleSubmitDeliverable} 
-                    disabled={isSubmittingDeliverable || !fileToUpload || !deliverableDescription.trim()}
-                    className="w-full"
-                >
-                    {isSubmittingDeliverable ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Paperclip className="mr-2 h-4 w-4" />}
-                    {isSubmittingDeliverable ? 'Submitting...' : 'Submit Deliverable to Client'}
-                </Button>
-
-                {order.deliverables && order.deliverables.length > 0 && (
-                    <>
-                        <Separator className="my-4" />
-                        <h5 className="text-sm font-medium text-muted-foreground">Previously Submitted:</h5>
-                        <ul className="space-y-2 text-xs">
-                            {order.deliverables.map((file, idx) => (
-                            <li key={idx} className="p-2 border rounded-md bg-secondary/50 flex justify-between items-center">
-                                <span>{file.name} ({format(file.submittedAt, 'PPp')})</span>
-                                <Button variant="ghost" size="sm" asChild><Link href={file.url} target="_blank">Download</Link></Button>
-                            </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-            </CardContent>
+            {canSubmitDeliverables && (
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="deliverableFile">Upload File</Label>
+                        <Input id="deliverableFile" type="file" onChange={handleFileChange} disabled={isSubmittingDeliverable}/>
+                        {fileToUpload && <p className="text-xs text-muted-foreground">Selected: {fileToUpload.name}</p>}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="deliverableDescription">Description/Notes for Client</Label>
+                        <Textarea 
+                            id="deliverableDescription" 
+                            value={deliverableDescription}
+                            onChange={(e) => setDeliverableDescription(e.target.value)}
+                            placeholder="e.g., First draft of logo concepts, Version 2 with color variations..."
+                            rows={3}
+                            disabled={isSubmittingDeliverable}
+                        />
+                    </div>
+                    <Button 
+                        onClick={handleSubmitDeliverable} 
+                        disabled={isSubmittingDeliverable || !fileToUpload || !deliverableDescription.trim()}
+                        className="w-full"
+                    >
+                        {isSubmittingDeliverable ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Paperclip className="mr-2 h-4 w-4" />}
+                        {isSubmittingDeliverable ? 'Submitting...' : 'Submit to Client'}
+                    </Button>
+                </CardContent>
+            )}
+            {order.deliverables && order.deliverables.length > 0 && (
+                <CardContent className={canSubmitDeliverables ? "pt-4" : ""}>
+                    <Separator className={canSubmitDeliverables ? "mb-4" : "hidden"} />
+                    <h5 className="text-sm font-medium text-muted-foreground mb-2">Submission History:</h5>
+                    <ul className="space-y-2 text-xs max-h-40 overflow-y-auto">
+                        {order.deliverables.map((file, idx) => (
+                        <li key={idx} className="p-2 border rounded-md bg-secondary/50 flex justify-between items-center">
+                            <span>{file.name} ({format(file.submittedAt, 'PPp')})</span>
+                            <Button variant="ghost" size="xs" asChild><Link href={file.url} target="_blank">Download</Link></Button>
+                        </li>
+                        ))}
+                    </ul>
+                </CardContent>
+            )}
         </Card>
 
-        {/* Communication Section */}
         <Card className="shadow-lg">
             <CardHeader>
                 <CardTitle className="font-headline text-xl flex items-center"><MessageSquare className="mr-2 h-5 w-5 text-primary"/>Communication Log</CardTitle>
@@ -298,21 +322,21 @@ function DesignerOrderDetailPageContent(): ReactElement {
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type your message here..."
                         rows={3}
-                        disabled={isSendingMessage}
+                        disabled={isSendingMessage || order.status === 'Completed' || order.status === 'Cancelled'}
                     />
                 </div>
-                <Button onClick={handleSendMessage} disabled={isSendingMessage || !newMessage.trim()} className="w-full">
+                <Button onClick={handleSendMessage} disabled={isSendingMessage || !newMessage.trim() || order.status === 'Completed' || order.status === 'Cancelled'} className="w-full">
                     {isSendingMessage ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                     {isSendingMessage ? 'Sending...' : 'Send Message'}
                 </Button>
                 
                 <Separator className="my-4" />
-                <h5 className="text-sm font-medium text-muted-foreground">Message History:</h5>
+                <h5 className="text-sm font-medium text-muted-foreground mb-2">Message History:</h5>
                 <div className="max-h-60 overflow-y-auto space-y-3 pr-2">
                     {order.orderEvents.length > 0 ? (
                         order.orderEvents.map((event, index) => (
                         <div key={index} className={cn(
-                            "p-2.5 rounded-lg text-xs",
+                            "p-2.5 rounded-lg text-xs break-words",
                             event.actor === (order.designerName || 'Designer') ? "bg-primary/10 text-primary-foreground ml-auto max-w-[85%]" : "bg-muted text-muted-foreground mr-auto max-w-[85%]",
                              (event.actor === (order.designerName || 'Designer') ? "self-end text-right" : "self-start text-left")
                         )}>
@@ -322,6 +346,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
                             <p className="text-xs opacity-80 mt-0.5">
                             {event.actor || 'System'} - {format(event.timestamp, 'MMM d, HH:mm')} ({formatDistanceToNow(event.timestamp, { addSuffix: true })})
                             </p>
+                             {event.notes && <p className="text-xs mt-1 italic">Note: {event.notes}</p>}
                         </div>
                         ))
                     ) : (
@@ -342,3 +367,4 @@ export default function DesignerOrderDetailWrapper(): ReactElement {
         </Suspense>
     )
 }
+
