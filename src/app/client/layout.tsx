@@ -9,7 +9,7 @@ import {
   ShoppingCart, 
   UserCircle,
   Brush,
-  PanelLeft
+  Sparkles // Added for Brand Profile
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -38,7 +38,8 @@ const navItems = [
   { href: '/client/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/client/orders', icon: ShoppingCart, label: 'My Orders' },
   { href: '/design-services', icon: Briefcase, label: 'Browse Services' },
-  { href: '/client/profile', icon: UserCircle, label: 'Profile' },
+  { href: '/client/brand-profile', icon: Sparkles, label: 'Brand Profile' },
+  { href: '/client/profile', icon: UserCircle, label: 'Account Settings' },
 ];
 
 export default function ClientLayout({
@@ -104,9 +105,8 @@ export default function ClientLayout({
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                  <DropdownMenuItem>Settings</DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild><Link href="/client/profile">Account Settings</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/client/brand-profile">Brand Profile</Link></DropdownMenuItem>
                   <DropdownMenuItem>Log out</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
