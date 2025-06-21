@@ -81,6 +81,139 @@ This is a Next.js project for DesignFlow, a marketplace connecting clients with 
 *   [✓] MongoDB Setup: Basic connection file (`mongodb.ts`) in place.
 *   [✓] Genkit Setup: Basic Genkit configuration (`genkit.ts`) in place.
 
+## VIII. Deploying to a Virtual Private Server (VPS)
+
+This guide provides instructions for deploying the Next.js application to a standard Linux VPS (e.g., Ubuntu) using Nginx as a reverse proxy and PM2 as a process manager.
+
+### Prerequisites
+
+Before you begin, ensure your VPS has the following installed:
+*   **Node.js** (version 20.x or later recommended)
+*   **npm** or **yarn**
+*   **PM2**: A process manager for Node.js. Install globally with `npm install pm2 -g`.
+*   **Nginx**: A web server to act as a reverse proxy. Install with `sudo apt update && sudo apt install nginx`.
+
+### Step 1: Set Up Project on VPS
+
+1.  SSH into your VPS.
+2.  Clone your project repository:
+    ```bash
+    git clone [your-repository-url]
+    ```
+3.  Navigate into the project directory:
+    ```bash
+    cd [your-project-directory]
+    ```
+4.  Install project dependencies:
+    ```bash
+    npm install
+    ```
+
+### Step 2: Configure Environment Variables
+
+1.  Create a `.env.local` file in the root of your project. This file will hold your production environment variables and is ignored by Git.
+    ```bash
+    nano .env.local
+    ```
+2.  Add the necessary variables. **It is critical to set these for your production environment.**
+    ```env
+    # Example .env.local
+    MONGODB_URI=your_production_mongodb_connection_string
+    NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+    # Add other secret keys or variables required by your application
+    ```
+
+### Step 3: Build the Application
+
+Run the build script to compile your Next.js application for production:
+```bash
+npm run build
+```
+
+### Step 4: Run with PM2
+
+PM2 will start your application and ensure it restarts automatically if it crashes or the server reboots.
+
+1.  Start the application using the `npm start` script (which runs `next start -p 9091`):
+    ```bash
+    pm2 start npm --name "designflow" -- run start
+    ```
+    *   `--name "designflow"` gives your process a memorable name.
+    *   `-- run start` tells PM2 to use the `start` script from `package.json`.
+
+2.  To ensure PM2 starts on server reboot, run:
+    ```bash
+    pm2 startup
+    ```
+    (It will provide a command you need to copy and paste to complete the setup).
+
+3.  Save the current process list:
+    ```bash
+    pm2 save
+    ```
+
+Your app is now running on `http://localhost:9091`, but it's not accessible from the outside world yet.
+
+### Step 5: Configure Nginx as a Reverse Proxy
+
+Nginx will listen for public traffic on port 80 (HTTP) and forward it to your Next.js application running on port 9091.
+
+1.  Create a new Nginx configuration file for your site:
+    ```bash
+    sudo nano /etc/nginx/sites-available/designflow
+    ```
+
+2.  Paste the following configuration into the file. **Replace `yourdomain.com` with your actual domain name.**
+    ```nginx
+    server {
+        listen 80;
+        server_name yourdomain.com www.yourdomain.com;
+
+        location / {
+            proxy_pass http://localhost:9091;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+    ```
+
+3.  Enable this configuration by creating a symbolic link to the `sites-enabled` directory:
+    ```bash
+    sudo ln -s /etc/nginx/sites-available/designflow /etc/nginx/sites-enabled/
+    ```
+
+4.  Test your Nginx configuration for syntax errors:
+    ```bash
+    sudo nginx -t
+    ```
+
+5.  If the test is successful, restart Nginx to apply the changes:
+    ```bash
+    sudo systemctl restart nginx
+    ```
+
+### Step 6: Securing with SSL (Recommended)
+
+For a production site, HTTPS is essential. You can get a free SSL certificate from Let's Encrypt using Certbot.
+
+1.  Install Certbot:
+    ```bash
+    sudo apt install certbot python3-certbot-nginx
+    ```
+2.  Run Certbot to automatically configure SSL for your domain:
+    ```bash
+    sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+    ```
+    Follow the on-screen prompts. Certbot will automatically update your Nginx configuration and set up auto-renewal.
+
+Your application should now be live and accessible at `https://yourdomain.com`.
+
 ## Key Next Steps & Architectural Considerations:
 
 1.  **Real Authentication & Authorization:** Implement a robust auth solution (e.g., NextAuth.js, Firebase Auth).

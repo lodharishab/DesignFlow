@@ -10,8 +10,7 @@
     "build": "next build",
     "start": "next start -p 9091",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
-    "deploy": "firebase deploy --only apphosting"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.8.0",
