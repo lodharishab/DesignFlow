@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save, XCircle, Users, Mail, Link as LinkIcon Lucide, Activity, PlusCircle, Loader2, Camera, Image as ImageIcon } from 'lucide-react';
+import { Save, XCircle, Users, Mail, Link as LinkIconLucide, Activity, PlusCircle, Loader2, Camera, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
