@@ -1,0 +1,100 @@
+# DesignFlow - Project Overview, Pages, and Features
+
+This document provides a comprehensive summary of the DesignFlow Creative Services Marketplace project, detailing its structure, pages, and key features as currently implemented in the prototype.
+
+## I. Core Structure & Public Pages
+
+These pages are accessible to all visitors and form the public-facing part of the platform.
+
+*   **Homepage (`/`)**: The main landing page featuring a hero section, a "How It Works" overview, featured services, a glance at the portfolio, and clear calls-to-action (CTAs).
+*   **Services Landing Page (`/design-services`)**: A dedicated page to discover services, featuring a hero with an auto-scrolling category carousel, a list of popular services, and another portfolio glance.
+*   **All Services Page (`/services`)**: A filterable and sortable catalog of all available design service packages. Can be pre-filtered by linking from other pages (e.g., the header).
+*   **Individual Service Detail Page (`/services/[serviceId]`)**: A detailed view of a specific service, including its description, pricing tiers, scope, and a list of designers approved to work on it.
+*   **Portfolio Listing Page (`/portfolio`)**: A filterable gallery showcasing completed projects from various designers on the platform.
+*   **Individual Portfolio Item Page (`/portfolio/[id]`)**: A detailed view of a single portfolio project, including a description, image gallery, and information about the designer.
+*   **Designer Public Profile Page (`/designers/[designerSlug]`)**: A public profile for each approved designer, showcasing their bio, specialties, social links, and their portfolio of work done on the platform.
+*   **Blog Feature**:
+    *   **Blog Listing Page (`/blog`)**: Displays a grid of all published blog posts.
+    *   **Individual Blog Post Page (`/blog/[slug]`)**: Displays a single blog post with its full content, author details, and tags.
+*   **Static & Informational Pages**:
+    *   About Us (`/about`): Our story, mission, and team.
+    *   How It Works (`/how-it-works`): Step-by-step guides for clients and designers.
+    *   FAQ (`/faq`): Frequently Asked Questions.
+    *   Contact Support (`/contact-support`): A form for users to send inquiries.
+    *   Legal Pages (`/terms-of-service`, `/privacy-policy`, `/refund-policy`): Placeholders for legal documents.
+*   **Layout Components**:
+    *   **Navbar**: Main navigation with login/signup links.
+    *   **CategoriesNavbar**: A secondary navigation bar with links to major service categories.
+    *   **Footer**: Contains site links and copyright information.
+    *   **Mobile Bottom Navigation**: Provides easy access to key pages on mobile devices.
+
+## II. Authentication & User Roles
+
+The platform supports multiple user roles with distinct signup and login flows.
+
+*   **Login (`/login`)**: A single login page that (currently) simulates role-based redirection based on the user's email (e.g., to admin, client, or designer dashboards).
+*   **Client Signup (`/signup`)**: A streamlined, single-step form for clients to create an account, collecting only essential information (name, email, password).
+*   **Designer Signup (`/signup/designer`)**: A separate form for designers to apply, collecting details about their skills.
+*   **Designer Pending Approval Page (`/designer/pending-approval`)**: A waiting page shown to designers after they sign up, while their application is under review.
+
+## III. Client Area (`/client/...`)
+
+A dedicated, authenticated portal for clients to manage their activities.
+
+*   **Client Layout**: Features a consistent sidebar navigation for the client portal.
+*   **Client Dashboard (`/client/dashboard`)**: The main landing page for logged-in clients, showing quick stats, active orders, and CTAs to browse services.
+*   **My Orders (`/client/orders`)**: A paginated and sortable table view of all past and present orders.
+*   **Order Detail (`/client/orders/[orderId]`)**: A detailed view of a specific order, including status, deliverables, and a communication log (simulated).
+*   **Brand Profile (`/client/brand-profile`)**: A form for clients to provide detailed information about their brand, target audience, style preferences, and brand assets to help designers.
+*   **Account Settings (`/client/profile`)**: A page for clients to manage their basic profile information (name, password, etc.).
+
+## IV. Designer Area (`/designer/...`)
+
+A dedicated, authenticated portal for designers.
+
+*   **Designer Layout**: Features a consistent sidebar navigation for the designer portal.
+*   **Designer Dashboard (`/designer/dashboard`)**: The main landing page for logged-in designers, showing assigned orders and links to manage their portfolio and profile.
+*   **Portfolio Management (`/designer/portfolio`)**: A view of the designer's own portfolio items, with options to add new projects.
+    *   **Add New Project (`/designer/portfolio/new`)**: A form (using a Server Action) to add a new item to their portfolio.
+    *   **Edit Project (`/designer/portfolio/edit/[itemId]`)**: A placeholder page for editing an existing portfolio item.
+*   **Profile & Settings (`/designer/profile`)**: A page for designers to edit their public-facing bio, location, website, and social links.
+*   **Service Alerts (`/designer/services-notifications`)**: A page where designers can subscribe/unsubscribe to notifications for new projects in different service categories.
+*   **My Orders (`/designer/orders`)**: A sortable table view of orders assigned to the designer.
+*   **Order Detail (`/designer/orders/[orderId]`)**: A detailed view for managing an assigned order, including submitting deliverables and communicating with the client (simulated).
+
+## V. Admin Area (`/admin/...`)
+
+An extensive, authenticated portal for platform administrators.
+
+*   **Admin Layout**: Features a comprehensive sidebar with collapsible menus.
+*   **Admin Dashboard (`/admin/dashboard`)**: Provides high-level statistics (e.g., pending orders, pending applications) and quick links to all management sections.
+*   **User Management (`/admin/users`)**: A full-featured list of all users (clients, designers, admins) with filtering, sorting, and actions to add, edit, or delete users.
+*   **Designer Management (`/admin/designers`)**: A list of all designers with advanced filtering (e.g., by status), bulk actions, and a "Profile Readiness" metric to aid in the review process.
+    *   Includes separate pages for adding and editing designer profiles.
+    *   A placeholder page (`/admin/designers/applications`) links to the filtered "Pending Approval" view.
+*   **Service Management**:
+    *   **All Services (`/admin/services`)**: An expandable table view of all services and their pricing tiers.
+    *   **Service Categories (`/admin/services/categories`)**: CRUD interface for managing main service categories.
+    *   **Service Sub-categories (`/admin/services/sub-categories`)**: CRUD interface for managing service sub-categories.
+    *   **Service Tags (`/admin/services/tags`)**: A page that shows all unique tags used across services.
+*   **Order Management**:
+    *   **All Orders (`/admin/orders`)**: A comprehensive, filterable, and sortable table of all orders on the platform.
+    *   **Status-Specific Views**: Separate pages that show pre-filtered lists of orders (e.g., In Progress, Completed, Cancelled).
+    *   **Order Detail (`/admin/orders/details/[orderId]`)**: A detailed view of any order.
+*   **Blog Post Management (`/admin/blog`)**: Full CRUD functionality for blog posts using Server Actions.
+*   **Platform Settings (`/admin/settings`)**: A page with forms to manage various platform-wide settings (e.g., registration toggles, membership plans - simulated).
+
+## VI. E-commerce & Support
+
+*   **Cart Page (`/cart`)**: Displays items added by the client, calculates totals, and integrates with a simulated Razorpay payment gateway.
+*   **Order Success Page (`/order-success`)**: A confirmation page shown after a successful payment.
+*   **Order Failed Page (`/order-failed`)**: A page shown after a failed or cancelled payment.
+*   **Contact Support Page (`/contact-support`)**: A simple form for users to contact support, with a simulated "send" action.
+
+## VII. Technical Aspects
+
+*   **Tech Stack**: Next.js (App Router), React, TypeScript, ShadCN UI Components, Tailwind CSS.
+*   **Data Handling**: Currently uses mock data defined in TypeScript files. Server Actions are used for forms in the admin (blog, portfolio).
+*   **Database Setup**: A basic MongoDB connection file (`src/lib/mongodb.ts`) and a sample database library (`src/lib/blog-db.ts`) are in place, ready for full integration.
+*   **AI Integration**: A Genkit setup file (`src/ai/genkit.ts`) is configured, ready for implementing AI features.
+*   **Deployment**: Configured for easy deployment using Firebase App Hosting.
