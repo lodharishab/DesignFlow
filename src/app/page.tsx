@@ -6,14 +6,15 @@ import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { ServiceCard } from '@/components/shared/service-card';
-import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, Lightbulb, PackageSearch, MessageSquare, ExternalLink, Camera, Film, Presentation, Search, FileText, ThumbsUp } from 'lucide-react';
+import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, Lightbulb, PackageSearch, MessageSquare, ExternalLink, Camera, Film, Presentation, Search, FileText, ThumbsUp, Star } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react'; 
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card'; 
 import { cn } from '@/lib/utils';
 import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page'; 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const featuredServices = [
   { id: '1', name: 'Modern Logo Design', description: 'Unique logos for brands, startups, and businesses. Get a memorable identity that resonates with your target audience.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'startup logo' },
@@ -32,6 +33,34 @@ const clientBenefits = [
 ];
 
 const portfolioItemsData: PortfolioItem[] = globalPortfolioItems.slice(0, 6);
+
+
+const testimonials = [
+  {
+    name: 'Rohan Sharma',
+    title: 'Founder, Edutech Startup',
+    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarHint: 'indian man startup founder',
+    rating: 5,
+    review: 'DesignFlow made finding a top-tier designer in India incredibly easy. The quality of work for our branding was exceptional and the process was seamless. Highly recommended!',
+  },
+  {
+    name: 'Priya Patel',
+    title: 'Marketing Head, FMCG Brand',
+    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarHint: 'indian woman marketing professional',
+    rating: 5,
+    review: 'The designer we worked with for our social media campaign was fantastic. They understood the cultural nuances perfectly. The platform is user-friendly and transparent.',
+  },
+  {
+    name: 'Anil Kumar',
+    title: 'Cafe Owner, Jaipur',
+    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarHint: 'indian man small business owner',
+    rating: 4,
+    review: 'I needed a new menu and some flyers for my cafe. DesignFlow provided a very professional and affordable solution. The final print designs looked amazing!',
+  },
+];
 
 
 interface PortfolioShowcaseCardProps {
@@ -253,6 +282,45 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Testimonials Section */}
+        <section className="py-16 md:py-24 bg-secondary/30">
+          <div className="container mx-auto px-5">
+            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-4">What Our Clients Say</h2>
+            <p className="text-lg text-muted-foreground text-center mb-16 max-w-2xl mx-auto">
+              Discover why businesses across India trust DesignFlow for their creative needs.
+            </p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <Card key={index} className="shadow-lg flex flex-col">
+                  <CardContent className="p-6 flex-grow">
+                    <div className="flex items-center mb-4">
+                      <Avatar className="h-12 w-12 mr-4">
+                        <AvatarImage src={testimonial.avatarUrl} alt={testimonial.name} data-ai-hint={testimonial.avatarHint} />
+                        <AvatarFallback>{testimonial.name.substring(0,1)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-semibold text-foreground">{testimonial.name}</p>
+                        <p className="text-xs text-muted-foreground">{testimonial.title}</p>
+                      </div>
+                    </div>
+                    <blockquote className="text-muted-foreground border-l-2 border-primary pl-4 italic">
+                      {testimonial.review}
+                    </blockquote>
+                  </CardContent>
+                  <CardFooter className="p-6 pt-0">
+                    <div className="flex items-center">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className={cn("h-5 w-5", i < testimonial.rating ? 'text-yellow-400 fill-current' : 'text-muted-foreground/30')} />
+                      ))}
+                    </div>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
 
         {/* Final Call to Action Section */}
         <section className="py-20 md:py-28 bg-primary text-primary-foreground">
