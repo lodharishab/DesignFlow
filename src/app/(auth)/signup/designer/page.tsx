@@ -7,20 +7,25 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { Phone, KeyRound, User, Palette, Laptop, Printer, Sparkles, Check } from "lucide-react";
+import { Phone, KeyRound, User, Palette, Laptop, Printer, Sparkles, Check, UploadCloud, Link as LinkIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
-type Step = "details" | "services" | "otp";
+type Step = "details" | "services" | "portfolio" | "otp";
 
+interface PortfolioLink {
+  platform: 'Behance' | 'Dribbble' | 'Personal';
+  url: string;
+}
 interface DesignerFormData {
   name: string;
   phoneNumber: string;
   password: string;
   services: string[];
+  portfolioLinks: PortfolioLink[];
+  portfolioFiles: File[];
 }
 
 interface DesignerFormErrors {
@@ -28,6 +33,8 @@ interface DesignerFormErrors {
   phoneNumber?: string;
   password?: string;
   services?: string;
+  portfolioLinks?: string;
+  portfolioFiles?: string;
   otp?: string;
 }
 
@@ -47,6 +54,12 @@ export default function DesignerSignupPage() {
     phoneNumber: "",
     password: "",
     services: [],
+    portfolioLinks: [
+      { platform: 'Behance', url: '' },
+      { platform: 'Dribbble', url: '' },
+      { platform: 'Personal', url: '' },
+    ],
+    portfolioFiles: [],
   });
   const [otp, setOtp] = useState("");
   const [errors, setErrors] = useState<DesignerFormErrors>({});
@@ -69,6 +82,20 @@ export default function DesignerSignupPage() {
     });
      if (errors.services) {
       setErrors(prev => ({ ...prev, services: undefined }));
+    }
+  };
+
+  const handlePortfolioLinkChange = (index: number, url: string) => {
+    setFormData(prev => {
+        const newLinks = [...prev.portfolioLinks];
+        newLinks[index].url = url;
+        return { ...prev, portfolioLinks: newLinks };
+    });
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFormData(prev => ({ ...prev, portfolioFiles: Array.from(e.target.files || []) }));
     }
   };
 
@@ -96,14 +123,25 @@ export default function DesignerSignupPage() {
         toast({ title: "Validation Error", description: "You must select at least one service to continue.", variant: "destructive" });
         return;
     }
+    setErrors({});
+    setStep("portfolio");
+  };
 
+  const handlePortfolioSubmit = () => {
+    // Basic validation: at least one link or one file
+    const hasLinks = formData.portfolioLinks.some(link => link.url.trim() !== '');
+    const hasFiles = formData.portfolioFiles.length > 0;
+    if (!hasLinks && !hasFiles) {
+        toast({ title: "Portfolio Required", description: "Please provide at least one portfolio link or upload a file.", variant: "destructive" });
+        return;
+    }
     setErrors({});
     toast({
         title: "OTP Sent (Simulated)",
         description: `An OTP has been sent to ${formData.phoneNumber}. (Hint: Use any 6 digits)`,
     });
     setStep("otp");
-  };
+  }
 
   const handleOtpSubmit = () => {
     if (!validateOtp(otp)) {
@@ -122,7 +160,7 @@ export default function DesignerSignupPage() {
   };
 
   const renderProgress = () => (
-    <div className="flex items-center justify-center w-full max-w-xs mx-auto mb-6">
+    <div className="flex items-center justify-center w-full max-w-sm mx-auto mb-6">
         <div className="flex flex-col items-center">
             <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold", step === 'details' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
                 {step !== 'details' ? <Check className="w-4 h-4"/> : '1'}
@@ -131,15 +169,22 @@ export default function DesignerSignupPage() {
         </div>
         <div className="flex-1 h-px bg-border mx-2"></div>
         <div className="flex flex-col items-center">
-            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold", step === 'services' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
-                 {step === 'otp' ? <Check className="w-4 h-4"/> : '2'}
+            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold", step === 'services' ? 'bg-primary text-primary-foreground' : (step === 'portfolio' || step === 'otp' ? 'bg-muted text-muted-foreground' : 'bg-muted text-muted-foreground'))}>
+                 {step === 'portfolio' || step === 'otp' ? <Check className="w-4 h-4"/> : '2'}
             </div>
              <p className="text-xs mt-1">Services</p>
+        </div>
+         <div className="flex-1 h-px bg-border mx-2"></div>
+         <div className="flex flex-col items-center">
+            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold", step === 'portfolio' ? 'bg-primary text-primary-foreground' : (step === 'otp' ? 'bg-muted text-muted-foreground' : 'bg-muted text-muted-foreground'))}>
+                 {step === 'otp' ? <Check className="w-4 h-4"/> : '3'}
+            </div>
+             <p className="text-xs mt-1">Portfolio</p>
         </div>
         <div className="flex-1 h-px bg-border mx-2"></div>
          <div className="flex flex-col items-center">
             <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold", step === 'otp' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
-                3
+                4
             </div>
              <p className="text-xs mt-1">Verify</p>
         </div>
@@ -152,11 +197,13 @@ export default function DesignerSignupPage() {
         <CardTitle className="font-headline text-2xl">
             {step === 'details' && 'Join as a Designer'}
             {step === 'services' && 'Select Your Services'}
+            {step === 'portfolio' && 'Showcase Your Work'}
             {step === 'otp' && `Verify ${formData.phoneNumber}`}
         </CardTitle>
         <CardDescription>
             {step === 'details' && "Offer your design services and skills on the DesignFlow platform."}
             {step === 'services' && 'Choose the categories you specialize in.'}
+            {step === 'portfolio' && 'Add links to your portfolio or upload your best work.'}
             {step === 'otp' && "Enter the 6-digit OTP sent to your phone to complete signup."}
         </CardDescription>
       </CardHeader>
@@ -221,6 +268,46 @@ export default function DesignerSignupPage() {
             </div>
         )}
 
+        {step === "portfolio" && (
+            <div className="space-y-6">
+                <div>
+                    <Label className="text-base font-semibold">Portfolio Links</Label>
+                    <p className="text-sm text-muted-foreground mb-3">Add links to your work on other platforms.</p>
+                    <div className="space-y-3">
+                    {formData.portfolioLinks.map((link, index) => (
+                         <div key={index} className="relative">
+                            <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                                type="url" 
+                                placeholder={`Your ${link.platform} URL`}
+                                className="pl-10" 
+                                value={link.url}
+                                onChange={(e) => handlePortfolioLinkChange(index, e.target.value)}
+                            />
+                        </div>
+                    ))}
+                    </div>
+                </div>
+
+                 <div>
+                    <Label className="text-base font-semibold">Upload Your Work</Label>
+                     <p className="text-sm text-muted-foreground mb-3">Upload files directly (e.g., PDF, JPG, PNG). Max 5 files.</p>
+                    <div className="relative p-4 border-2 border-dashed rounded-lg text-center cursor-pointer hover:border-primary">
+                        <UploadCloud className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                        <Label htmlFor="portfolio-upload" className="cursor-pointer text-primary font-medium hover:underline">
+                           Click to upload files
+                        </Label>
+                        <Input id="portfolio-upload" type="file" multiple className="sr-only" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" />
+                    </div>
+                     {formData.portfolioFiles.length > 0 && (
+                        <div className="mt-2 text-xs text-muted-foreground">
+                            Selected: {formData.portfolioFiles.map(f => f.name).join(', ')}
+                        </div>
+                    )}
+                </div>
+            </div>
+        )}
+
         {step === "otp" && (
             <div className="space-y-4">
             <div className="space-y-1">
@@ -253,6 +340,7 @@ export default function DesignerSignupPage() {
       <CardFooter className="flex flex-col space-y-4 pt-6">
         {step === "details" && <Button className="w-full" onClick={handleDetailsSubmit}>Continue</Button>}
         {step === "services" && <Button className="w-full" onClick={handleServicesSubmit}>Continue</Button>}
+        {step === "portfolio" && <Button className="w-full" onClick={handlePortfolioSubmit}>Continue</Button>}
         {step === "otp" && <Button className="w-full" onClick={handleOtpSubmit}>Verify & Complete Signup</Button>}
         
         <p className="text-sm text-muted-foreground">
