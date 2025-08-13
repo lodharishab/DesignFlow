@@ -198,12 +198,22 @@ export default function DesignerSignupPage() {
             <div className="space-y-4">
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {availableServices.map(service => (
-                        <div key={service.id} onClick={() => handleServiceToggle(service.id)} className={cn("p-4 border rounded-lg cursor-pointer flex items-start space-x-3 transition-all", formData.services.includes(service.id) ? 'border-primary bg-primary/5' : 'bg-muted/50 hover:border-primary/50')}>
-                           <Checkbox checked={formData.services.includes(service.id)} className="mt-1" aria-label={service.label} />
-                           <div className="flex flex-col">
-                            <Label className="font-semibold cursor-pointer">{service.label}</Label>
-                            <p className="text-xs text-muted-foreground">{service.label} services.</p>
-                           </div>
+                        <div 
+                           key={service.id} 
+                           onClick={() => handleServiceToggle(service.id)} 
+                           className={cn(
+                             "p-4 border rounded-lg cursor-pointer flex flex-col justify-center items-center text-center transition-all relative", 
+                             formData.services.includes(service.id) ? 'border-primary bg-primary/10 shadow-lg' : 'bg-muted/50 hover:border-primary/50'
+                           )}
+                        >
+                           {formData.services.includes(service.id) && (
+                                <div className="absolute top-2 right-2 p-1 bg-primary text-primary-foreground rounded-full">
+                                    <Check className="w-3 h-3" />
+                                </div>
+                           )}
+                           <service.icon className={cn("h-8 w-8 mb-2", formData.services.includes(service.id) ? 'text-primary' : 'text-muted-foreground')} />
+                           <Label className="font-semibold cursor-pointer">{service.label}</Label>
+                           <p className="text-xs text-muted-foreground">{service.label} services.</p>
                         </div>
                     ))}
                  </div>
