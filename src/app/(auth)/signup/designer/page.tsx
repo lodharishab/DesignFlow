@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { Phone, KeyRound, User, Palette, Laptop, Printer, Sparkles, Check, UploadCloud, Link as LinkIcon } from "lucide-react";
+import { Phone, KeyRound, User, Palette, Laptop, Printer, Sparkles, Check, UploadCloud, Link as LinkIcon, PlusCircle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,6 @@ import { Separator } from "@/components/ui/separator";
 type Step = "details" | "services" | "portfolio" | "otp";
 
 interface PortfolioLink {
-  platform: 'Behance' | 'Dribbble' | 'Personal';
   url: string;
 }
 interface DesignerFormData {
@@ -54,11 +53,7 @@ export default function DesignerSignupPage() {
     phoneNumber: "",
     password: "",
     services: [],
-    portfolioLinks: [
-      { platform: 'Behance', url: '' },
-      { platform: 'Dribbble', url: '' },
-      { platform: 'Personal', url: '' },
-    ],
+    portfolioLinks: [{ url: '' }],
     portfolioFiles: [],
   });
   const [otp, setOtp] = useState("");
@@ -86,13 +81,31 @@ export default function DesignerSignupPage() {
   };
 
   const handlePortfolioLinkChange = (index: number, url: string) => {
-    setFormData(prev => {
-        const newLinks = [...prev.portfolioLinks];
-        newLinks[index].url = url;
-        return { ...prev, portfolioLinks: newLinks };
-    });
+    const newLinks = [...formData.portfolioLinks];
+    newLinks[index].url = url;
+
+    // If the last input is being typed in, add a new empty one
+    if (index === formData.portfolioLinks.length - 1 && url.trim() !== '') {
+      newLinks.push({ url: '' });
+    }
+
+    setFormData(prev => ({ ...prev, portfolioLinks: newLinks }));
   };
   
+  const removePortfolioLink = (index: number) => {
+    // Prevent removing the last empty input field if it's the only one
+    if (formData.portfolioLinks.length === 1 && formData.portfolioLinks[0].url === '') {
+      return;
+    }
+    const newLinks = formData.portfolioLinks.filter((_, i) => i !== index);
+    // Ensure there's always at least one (potentially empty) input
+    if (newLinks.length === 0 || newLinks[newLinks.length-1].url !== '') {
+      newLinks.push({ url: '' });
+    }
+    setFormData(prev => ({ ...prev, portfolioLinks: newLinks }));
+  };
+
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setFormData(prev => ({ ...prev, portfolioFiles: Array.from(e.target.files || []) }));
@@ -100,6 +113,15 @@ export default function DesignerSignupPage() {
   };
 
   const validatePhoneNumber = (phone: string) => /^[6-9]\d{9}$/.test(phone);
+  const validateUrl = (url: string) => {
+    if (!url) return true; // Empty is fine
+    try {
+        new URL(url);
+        return true;
+    } catch (e) {
+        return false;
+    }
+  }
   const validateOtp = (otpValue: string) => /^\d{6}$/.test(otpValue);
 
   const handleDetailsSubmit = () => {
@@ -128,13 +150,22 @@ export default function DesignerSignupPage() {
   };
 
   const handlePortfolioSubmit = () => {
-    // Basic validation: at least one link or one file
-    const hasLinks = formData.portfolioLinks.some(link => link.url.trim() !== '');
+    // Filter out empty URLs before validation
+    const filledLinks = formData.portfolioLinks.filter(link => link.url.trim() !== '');
+
+    // Validate URLs
+    if (filledLinks.some(link => !validateUrl(link.url))) {
+        toast({ title: "Invalid URL", description: "Please ensure all portfolio links are valid URLs.", variant: "destructive" });
+        return;
+    }
+
+    const hasLinks = filledLinks.length > 0;
     const hasFiles = formData.portfolioFiles.length > 0;
     if (!hasLinks && !hasFiles) {
         toast({ title: "Portfolio Required", description: "Please provide at least one portfolio link or upload a file.", variant: "destructive" });
         return;
     }
+
     setErrors({});
     toast({
         title: "OTP Sent (Simulated)",
@@ -272,20 +303,34 @@ export default function DesignerSignupPage() {
             <div className="space-y-6">
                 <div>
                     <Label className="text-base font-semibold">Portfolio Links</Label>
-                    <p className="text-sm text-muted-foreground mb-3">Add links to your work on other platforms.</p>
+                    <p className="text-sm text-muted-foreground mb-3">Add links to your work on other platforms like Behance, Dribbble, or your personal site.</p>
                     <div className="space-y-3">
-                    {formData.portfolioLinks.map((link, index) => (
-                         <div key={index} className="relative">
-                            <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                                type="url" 
-                                placeholder={`Your ${link.platform} URL`}
-                                className="pl-10" 
-                                value={link.url}
-                                onChange={(e) => handlePortfolioLinkChange(index, e.target.value)}
-                            />
-                        </div>
-                    ))}
+                        {formData.portfolioLinks.map((link, index) => (
+                             <div key={index} className="flex items-center gap-2">
+                                <div className="relative flex-grow">
+                                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input 
+                                        type="url" 
+                                        placeholder="e.g., https://behance.net/your-profile"
+                                        className="pl-10" 
+                                        value={link.url}
+                                        onChange={(e) => handlePortfolioLinkChange(index, e.target.value)}
+                                    />
+                                </div>
+                                {formData.portfolioLinks.length > 1 && (
+                                    <Button 
+                                        type="button" 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => removePortfolioLink(index)}
+                                        className="text-destructive hover:bg-destructive/10"
+                                        aria-label="Remove link"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
 
