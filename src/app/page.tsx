@@ -6,7 +6,7 @@ import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { ServiceCard } from '@/components/shared/service-card';
-import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, Lightbulb, PackageSearch, MessageSquare, ExternalLink, Camera, Film, Presentation, Search, FileText, ThumbsUp, Star } from 'lucide-react';
+import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, Lightbulb, PackageSearch, MessageSquare, ExternalLink, Camera, Film, Presentation, Search, FileText, ThumbsUp, Star, Palette, IndianRupee } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -15,6 +15,8 @@ import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { cn } from '@/lib/utils';
 import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page'; 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const featuredServices = [
   { id: '1', name: 'Modern Logo Design', description: 'Unique logos for brands, startups, and businesses. Get a memorable identity that resonates with your target audience.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'startup logo' },
@@ -135,26 +137,45 @@ export const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ it
 
 
 export default function HomePage() {
-  const howItWorksSteps = [
+  const [userType, setUserType] = useState<'client' | 'designer'>('client');
+
+  const clientJourney = [
     {
       icon: PackageSearch,
-      step: "Step 1",
-      title: "Discover & Choose",
-      description: "Explore a wide array of fixed-scope design services. Find the perfect package with clearly defined deliverables and transparent, upfront pricing. No hidden fees, just straightforward value.",
+      title: "Fixed-Price Services",
+      description: "Browse a catalog of services with clear scope and upfront pricing. No surprises, no hidden costs.",
     },
     {
       icon: FileText,
-      step: "Step 2",
-      title: "Submit Your Brief",
-      description: "Clearly articulate your vision using our intuitive brief submission process. We guide you to provide all necessary details, ensuring designers understand your needs for a successful project launch.",
+      title: "Simple, Guided Briefs",
+      description: "Our guided process makes it easy to provide all the necessary details for your project to start smoothly.",
     },
     {
-      icon: ThumbsUp,
-      step: "Step 3",
-      title: "Collaborate & Approve",
-      description: "Engage directly with your chosen expert designer through our platform. Provide feedback, track progress, and approve your final design with confidence and ease. We ensure a smooth collaboration.",
+      icon: Users,
+      title: "Direct Collaboration",
+      description: "Communicate directly with your assigned designer to track progress and give feedback effectively.",
     },
   ];
+  
+  const designerJourney = [
+    {
+      icon: Briefcase,
+      title: "Curated Projects",
+      description: "Get matched with high-quality projects that fit your skills, without the hassle of constant bidding.",
+    },
+    {
+      icon: IndianRupee,
+      title: "Secure & Timely Payments",
+      description: "Focus on your craft. We handle secure payments and ensure you're paid on time for your approved work.",
+    },
+    {
+      icon: Palette,
+      title: "Build Your Brand",
+      description: "Showcase your best work in a professional portfolio and build a strong reputation on our platform.",
+    },
+  ];
+
+  const journeySteps = userType === 'client' ? clientJourney : designerJourney;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -185,15 +206,30 @@ export default function HomePage() {
           </div>
         </section>
         
-        {/* How It Works (Client Perspective) Section */}
+        {/* How It Works (Client & Designer Perspective) Section */}
         <section className="py-16 md:py-24 bg-card">
           <div className="container mx-auto px-5">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-4">Your Creative Journey, Simplified</h2>
-            <p className="text-lg text-muted-foreground text-center mb-16 max-w-2xl mx-auto">
-              Getting your perfect design is straightforward with DesignFlow. Follow these simple steps to bring your vision to life with our expert designers.
+            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-4">A Platform Built For You</h2>
+            <p className="text-lg text-muted-foreground text-center mb-10 max-w-2xl mx-auto">
+              Whether you're looking for great design or offering your creative expertise, our process is designed for clarity and success.
             </p>
+            <div className="flex justify-center items-center space-x-4 mb-12">
+              <Label htmlFor="user-type-toggle" className={cn("font-semibold text-lg", userType === 'client' ? 'text-primary' : 'text-muted-foreground')}>
+                For Clients
+              </Label>
+              <Switch
+                id="user-type-toggle"
+                checked={userType === 'designer'}
+                onCheckedChange={(checked) => setUserType(checked ? 'designer' : 'client')}
+                aria-label="Toggle between client and designer view"
+              />
+              <Label htmlFor="user-type-toggle" className={cn("font-semibold text-lg", userType === 'designer' ? 'text-primary' : 'text-muted-foreground')}>
+                For Designers
+              </Label>
+            </div>
+
             <div className="grid md:grid-cols-3 gap-8 md:gap-10">
-              {howItWorksSteps.map((step, index) => (
+              {journeySteps.map((step, index) => (
                 <Card 
                   key={step.title} 
                   className="text-center shadow-lg hover:shadow-xl transition-shadow flex flex-col"
@@ -202,7 +238,6 @@ export default function HomePage() {
                     <div className="bg-primary/10 p-5 rounded-full mb-5 inline-flex">
                       <step.icon className="h-10 w-10 text-primary" />
                     </div>
-                    <p className="text-sm font-semibold text-primary">{step.step.toUpperCase()}</p>
                     <CardTitle className="font-headline text-xl">{step.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-grow">
