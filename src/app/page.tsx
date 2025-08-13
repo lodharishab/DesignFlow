@@ -6,7 +6,7 @@ import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { ServiceCard } from '@/components/shared/service-card';
-import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, Lightbulb, PackageSearch, MessageSquare, ExternalLink, Camera, Film, Presentation, Search, FileText, ThumbsUp, Star, Palette, IndianRupee } from 'lucide-react';
+import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, Lightbulb, PackageSearch, MessageSquare, ExternalLink, Camera, Film, Presentation, Search, FileText, ThumbsUp, Star, Palette, IndianRupee, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -248,6 +248,23 @@ export default function HomePage() {
                 </Card>
               ))}
             </div>
+
+            <div className="text-center mt-12">
+              {userType === 'client' ? (
+                <Button size="lg" asChild>
+                  <Link href="/design-services">
+                    Start Your Project Now <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              ) : (
+                <Button size="lg" asChild variant="outline">
+                  <Link href="/signup/designer">
+                    Join as a Designer <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
+            </div>
+
           </div>
         </section>
 
