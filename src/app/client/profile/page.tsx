@@ -18,13 +18,13 @@ const mockClientData = {
   avatarUrl: "https://placehold.co/100x100.png",
   avatarHint: "indian woman client",
   companyName: "BharatRetail Solutions",
-  mobile: "9820098200",
+  mobile: "9876543210",
 };
 
 export default function ClientProfilePage() {
   const { toast } = useToast();
   const [name, setName] = useState(mockClientData.name);
-  const [email, setEmail] = useState(mockClientData.email); // Usually not editable directly here
+  const [email, setEmail] = useState(mockClientData.email); 
   const [companyName, setCompanyName] = useState(mockClientData.companyName);
   const [mobile, setMobile] = useState(mockClientData.mobile);
   const [isSaving, setIsSaving] = useState(false);
@@ -73,7 +73,7 @@ export default function ClientProfilePage() {
               <div className="space-y-2">
                 <Label htmlFor="email" className="flex items-center"><Mail className="mr-2 h-4 w-4 text-muted-foreground"/>Email Address</Label>
                 <Input id="email" type="email" value={email} disabled />
-                <p className="text-xs text-muted-foreground">Email cannot be changed here.</p>
+                <p className="text-xs text-muted-foreground">Email is not editable. Contact support to change.</p>
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
@@ -83,7 +83,8 @@ export default function ClientProfilePage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="mobile" className="flex items-center"><Phone className="mr-2 h-4 w-4 text-muted-foreground"/>Mobile Number</Label>
-                <Input id="mobile" value={mobile} onChange={(e) => setMobile(e.target.value)} disabled={isSaving}/>
+                <Input id="mobile" value={mobile} onChange={(e) => setMobile(e.target.value)} disabled/>
+                 <p className="text-xs text-muted-foreground">Phone number is your primary login and cannot be changed here.</p>
               </div>
             </div>
              <div className="space-y-2">

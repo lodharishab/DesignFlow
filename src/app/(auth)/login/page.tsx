@@ -7,34 +7,30 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { Mail, KeyRound } from "lucide-react";
+import { Phone, KeyRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 
 interface LoginFormErrors {
-  email?: string;
-  password?: string;
+  phoneNumber?: string;
   general?: string;
 }
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState(''); // State for password
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const { toast } = useToast();
 
-  const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePhoneNumber = (phone: string) => {
+    // Simple validation for 10-digit Indian mobile numbers
+    return /^[6-9]\d{9}$/.test(phone);
   };
 
   const validateForm = (): boolean => {
     const newErrors: LoginFormErrors = {};
-    if (!email.trim()) newErrors.email = "Email is required.";
-    else if (!validateEmail(email)) newErrors.email = "Please enter a valid email address.";
-
-    if (!password) newErrors.password = "Password is required.";
-    // No length check for login, but you could add one if desired
+    if (!phoneNumber.trim()) newErrors.phoneNumber = "Phone number is required.";
+    else if (!validatePhoneNumber(phoneNumber)) newErrors.phoneNumber = "Please enter a valid 10-digit Indian mobile number.";
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -44,19 +40,16 @@ export default function LoginPage() {
     if (!validateForm()) {
       toast({
             title: "Validation Error",
-            description: "Please correct the errors before logging in.",
+            description: "Please enter a valid phone number.",
             variant: "destructive"
         })
       return;
     }
-
-    const lowerEmail = email.toLowerCase();
-
-    if (lowerEmail.includes('admin')) {
+    
+    // For prototype, we'll use specific numbers for roles
+    if (phoneNumber.includes('111')) {
       router.push('/admin/dashboard');
-    } else if (lowerEmail.includes('client')) {
-      router.push('/client/dashboard');
-    } else if (lowerEmail.includes('designer')) {
+    } else if (phoneNumber.includes('222')) {
       router.push('/designer/pending-approval');
     } else {
       router.push('/client/dashboard'); 
@@ -67,61 +60,35 @@ export default function LoginPage() {
     <Card className="shadow-xl">
       <CardHeader>
         <CardTitle className="font-headline text-2xl">Welcome Back!</CardTitle>
-        <CardDescription>Log in to your DesignFlow account.</CardDescription>
+        <CardDescription>Enter your phone number to log in or sign up.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-1">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="phoneNumber">Phone Number</Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
-              id="email" 
-              type="email" 
-              placeholder="you@example.com (try admin@example.com)" 
+              id="phoneNumber" 
+              type="tel" 
+              placeholder="e.g., 9876543210 (try ending in 111 for admin)" 
               className="pl-10" 
-              value={email} 
-              onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors(prev => ({...prev, email: undefined})) }}
-              aria-invalid={!!errors.email}
-              aria-describedby="email-error"
+              value={phoneNumber} 
+              onChange={(e) => { setPhoneNumber(e.target.value); if (errors.phoneNumber) setErrors(prev => ({...prev, phoneNumber: undefined})) }}
+              aria-invalid={!!errors.phoneNumber}
+              aria-describedby="phoneNumber-error"
+              maxLength={10}
             />
           </div>
-          {errors.email && <p id="email-error" className="text-sm text-destructive pt-1">{errors.email}</p>}
-        </div>
-        <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link href="#" className="text-sm text-primary hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-          <div className="relative">
-            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              id="password" 
-              type="password" 
-              placeholder="••••••••" 
-              className="pl-10" 
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors(prev => ({...prev, password: undefined})) }}
-              aria-invalid={!!errors.password}
-              aria-describedby="password-error"
-            />
-          </div>
-          {errors.password && <p id="password-error" className="text-sm text-destructive pt-1">{errors.password}</p>}
+          {errors.phoneNumber && <p id="phoneNumber-error" className="text-sm text-destructive pt-1">{errors.phoneNumber}</p>}
         </div>
         {errors.general && <p className="text-sm text-destructive pt-1">{errors.general}</p>}
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
-        <Button className="w-full" onClick={handleLogin}>Log In</Button>
-        <p className="text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-medium text-primary hover:underline">
-            Sign Up
-          </Link>
+        <Button className="w-full" onClick={handleLogin}>Continue</Button>
+        <p className="text-xs text-muted-foreground text-center">
+          By continuing, you agree to our Terms of Service and Privacy Policy. An SMS may be sent to verify your number.
         </p>
       </CardFooter>
     </Card>
   );
 }
-
-    

@@ -211,10 +211,10 @@ export default function UserManagementPage(): ReactElement {
   };
 
   const handleAddUser = () => {
-    if (!newUserData.name || !newUserData.email || !newUserData.mobileNumber || newUserData.roles.length === 0) {
+    if (!newUserData.name || !newUserData.mobileNumber || newUserData.roles.length === 0) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields and select at least one role.",
+        description: "Please fill in Name, Mobile Number, and select at least one role.",
         variant: "destructive",
         duration: 3000,
       });
@@ -224,7 +224,7 @@ export default function UserManagementPage(): ReactElement {
     if (!validateIndianMobileNumber(newUserData.mobileNumber)) {
       toast({
         title: "Invalid Mobile Number",
-        description: "Please enter a valid Indian mobile number (10 digits starting with 6, 7, 8, or 9, optionally prefixed with +91 or 0).",
+        description: "Please enter a valid Indian mobile number.",
         variant: "destructive",
         duration: 4000,
       });
@@ -234,7 +234,7 @@ export default function UserManagementPage(): ReactElement {
     const newUser: User = {
       id: `usr${Date.now().toString().slice(-3)}`,
       name: newUserData.name,
-      email: newUserData.email,
+      email: newUserData.email || `${newUserData.mobileNumber}@designflow.local`, // Fallback email
       mobileNumber: newUserData.mobileNumber,
       roles: newUserData.roles,
       avatarUrl: 'https://placehold.co/40x40.png',
@@ -378,17 +378,17 @@ export default function UserManagementPage(): ReactElement {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email*</Label>
+                <Label htmlFor="mobileNumber">Mobile Number*</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="email" type="email" value={newUserData.email} onChange={handleNewUserInputChange} className="pl-10" placeholder="user@example.com" />
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input id="mobileNumber" value={newUserData.mobileNumber} onChange={handleNewUserInputChange} className="pl-10" placeholder="e.g., 9876543210" />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="mobileNumber">Mobile*</Label>
+                <Label htmlFor="email">Email (Optional)</Label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="mobileNumber" value={newUserData.mobileNumber} onChange={handleNewUserInputChange} className="pl-10" placeholder="e.g., 9876543210 or +919876543210" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input id="email" type="email" value={newUserData.email} onChange={handleNewUserInputChange} className="pl-10" placeholder="user@example.com" />
                 </div>
               </div>
               <div className="space-y-2">
@@ -671,4 +671,3 @@ export default function UserManagementPage(): ReactElement {
     </div>
   );
 }
-    

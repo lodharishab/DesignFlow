@@ -47,11 +47,11 @@ interface User {
 type UserStatus = 'Active' | 'Suspended';
 
 const initialUsersData: User[] = [ // Using a different name to avoid conflict if imported
-  { id: '1', name: 'Alice Johnson', email: 'alice@example.com', mobileNumber: '9876543210', roles: ['Client'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman avatar', joinDate: new Date(2023, 0, 15), lastLogin: new Date(2024, 5, 1), status: 'Active' },
-  { id: '2', name: 'Bob Smith', email: 'bob@example.com', mobileNumber: '8765432109', roles: ['Designer'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'man avatar', joinDate: new Date(2022, 11, 5), lastLogin: new Date(2024, 5, 3), status: 'Active' },
-  { id: '3', name: 'Charlie Brown', email: 'charlie@example.com', mobileNumber: '7654321098', roles: ['Client', 'Designer'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'person avatar', joinDate: new Date(2023, 2, 20), lastLogin: new Date(2024, 4, 28), status: 'Suspended' },
-  { id: '4', name: 'Diana Prince', email: 'diana@example.com', mobileNumber: '6543210987', roles: ['Admin'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman avatar', joinDate: new Date(2022, 5, 10), lastLogin: new Date(2024, 5, 4), status: 'Active' },
-  { id: '5', name: 'Edward Scissorhands', email: 'edward@example.com', mobileNumber: '9988776655', roles: ['Guest'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'man silhouette', joinDate: new Date(2024, 0, 1), lastLogin: null, status: 'Active' },
+  { id: 'usr001', name: 'Priya Sharma', email: 'priya.sharma@example.in', mobileNumber: '9876543210', roles: ['Client'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman avatar', joinDate: new Date(2023, 0, 15), lastLogin: new Date(2024, 5, 1), status: 'Active' },
+  { id: 'usr002', name: 'Bob Smith', email: 'bob@example.com', mobileNumber: '8765432109', roles: ['Designer'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'man avatar', joinDate: new Date(2022, 11, 5), lastLogin: new Date(2024, 5, 3), status: 'Active' },
+  { id: 'usr003', name: 'Charlie Brown', email: 'charlie@example.com', mobileNumber: '7654321098', roles: ['Client', 'Designer'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'person avatar', joinDate: new Date(2023, 2, 20), lastLogin: new Date(2024, 4, 28), status: 'Suspended' },
+  { id: 'usr004', name: 'Diana Prince', email: 'diana@example.com', mobileNumber: '6543210987', roles: ['Admin'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman avatar', joinDate: new Date(2022, 5, 10), lastLogin: new Date(2024, 5, 4), status: 'Active' },
+  { id: 'usr005', name: 'Edward Scissorhands', email: 'edward@example.com', mobileNumber: '9988776655', roles: ['Guest'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'man silhouette', joinDate: new Date(2024, 0, 1), lastLogin: null, status: 'Active' },
 ];
 
 const availableRoles = ['Client', 'Designer', 'Admin', 'Guest'];
@@ -102,7 +102,7 @@ export default function AdminEditUserPage(): ReactElement {
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    if (id === 'mobileNumber') setMobileNumber(value);
+    if (id === 'email') setEmail(value);
   };
 
   const handleStatusChange = (value: UserStatus) => {
@@ -121,24 +121,11 @@ export default function AdminEditUserPage(): ReactElement {
     });
   };
 
-  const validateIndianMobileNumber = (mobile: string): boolean => {
-    const indianMobileRegex = /^(?:\+91|0)?[6789]\d{9}$/;
-    return indianMobileRegex.test(mobile);
-  };
-
   const handleSaveChanges = () => {
-    if (!mobileNumber.trim() || selectedRoles.length === 0) {
+    if (selectedRoles.length === 0) {
       toast({
         title: "Missing Information",
-        description: "Mobile number and at least one role are required.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (!validateIndianMobileNumber(mobileNumber)) {
-      toast({
-        title: "Invalid Mobile Number",
-        description: "Please enter a valid Indian mobile number.",
+        description: "User must have at least one role.",
         variant: "destructive",
       });
       return;
@@ -153,7 +140,7 @@ export default function AdminEditUserPage(): ReactElement {
     if (userIndex !== -1) {
       initialUsersData[userIndex] = {
         ...initialUsersData[userIndex],
-        mobileNumber,
+        email,
         roles: selectedRoles,
         status,
       };
@@ -208,7 +195,7 @@ export default function AdminEditUserPage(): ReactElement {
             </Avatar>
             <div>
                 <CardTitle className="font-headline text-2xl">{user.name}</CardTitle>
-                <CardDescription>User ID: {user.id} &bull; Email: {user.email}</CardDescription>
+                <CardDescription>User ID: {user.id} &bull; Mobile: {user.mobileNumber}</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -218,23 +205,29 @@ export default function AdminEditUserPage(): ReactElement {
             <div className="space-y-2">
               <Label htmlFor="name"><UserCircle2 className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Full Name</Label>
               <Input id="name" value={name} disabled />
-              <p className="text-xs text-muted-foreground">Name and email are typically managed via user's own profile settings or identity provider.</p>
+              <p className="text-xs text-muted-foreground">Name is typically managed via user's own profile settings.</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email"><Mail className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Email Address</Label>
-              <Input id="email" type="email" value={email} disabled />
+              <Label htmlFor="mobileNumber"><Phone className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Mobile Number</Label>
+              <Input 
+                id="mobileNumber" 
+                value={mobileNumber}
+                disabled
+              />
+               <p className="text-xs text-muted-foreground">Mobile number is the primary login and cannot be changed.</p>
             </div>
           </div>
           
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="mobileNumber"><Phone className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Mobile Number*</Label>
+              <Label htmlFor="email"><Mail className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Email Address (Optional)</Label>
               <Input 
-                id="mobileNumber" 
-                value={mobileNumber}
+                id="email" 
+                type="email" 
+                value={email}
                 onChange={handleInputChange}
                 disabled={isSaving}
-                placeholder="e.g., 9876543210"
+                placeholder="user@example.com"
               />
             </div>
              <div className="space-y-2">
@@ -315,5 +308,3 @@ export default function AdminEditUserPage(): ReactElement {
     </div>
   );
 }
-
-    

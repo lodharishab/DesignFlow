@@ -7,30 +7,27 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { Mail, KeyRound, User } from "lucide-react";
+import { Phone, KeyRound, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface DesignerFormData {
   name: string;
-  email: string;
+  phoneNumber: string;
   password: string;
-  // portfolioLink: string; // Example future field
 }
 
 interface DesignerFormErrors {
   name?: string;
-  email?: string;
+  phoneNumber?: string;
   password?: string;
-  // portfolioLink?: string;
   general?: string;
 }
 
 export default function DesignerSignupPage() {
   const [formData, setFormData] = useState<DesignerFormData>({
     name: "",
-    email: "",
+    phoneNumber: "",
     password: "",
-    // portfolioLink: "",
   });
   const [errors, setErrors] = useState<DesignerFormErrors>({});
   const { toast } = useToast();
@@ -43,8 +40,8 @@ export default function DesignerSignupPage() {
     }
   };
 
-  const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePhoneNumber = (phone: string) => {
+    return /^[6-9]\d{9}$/.test(phone);
   };
 
   const validateForm = (): boolean => {
@@ -52,16 +49,12 @@ export default function DesignerSignupPage() {
     if (!formData.name.trim()) newErrors.name = "Full name is required.";
     else if (formData.name.trim().length < 3) newErrors.name = "Full name must be at least 3 characters.";
 
-    if (!formData.email.trim()) newErrors.email = "Email is required.";
-    else if (!validateEmail(formData.email)) newErrors.email = "Please enter a valid email address.";
+    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Phone number is required.";
+    else if (!validatePhoneNumber(formData.phoneNumber)) newErrors.phoneNumber = "Please enter a valid 10-digit Indian mobile number.";
 
     if (!formData.password) newErrors.password = "Password is required.";
     else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters.";
     
-    // Example for a future field:
-    // if (!formData.portfolioLink.trim()) newErrors.portfolioLink = "Portfolio link is required.";
-    // else if (!formData.portfolioLink.startsWith('http')) newErrors.portfolioLink = "Please enter a valid URL.";
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -101,12 +94,12 @@ export default function DesignerSignupPage() {
            {errors.name && <p id="name-error" className="text-sm text-destructive pt-1">{errors.name}</p>}
         </div>
         <div className="space-y-1">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="phoneNumber">Phone Number</Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input id="email" type="email" placeholder="you@example.com" className="pl-10" value={formData.email} onChange={handleChange} aria-invalid={!!errors.email} aria-describedby="email-error"/>
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input id="phoneNumber" type="tel" placeholder="e.g., 9876543210" className="pl-10" value={formData.phoneNumber} onChange={handleChange} aria-invalid={!!errors.phoneNumber} aria-describedby="phoneNumber-error"/>
           </div>
-          {errors.email && <p id="email-error" className="text-sm text-destructive pt-1">{errors.email}</p>}
+          {errors.phoneNumber && <p id="phoneNumber-error" className="text-sm text-destructive pt-1">{errors.phoneNumber}</p>}
         </div>
         <div className="space-y-1">
           <Label htmlFor="password">Password</Label>
@@ -146,5 +139,3 @@ export default function DesignerSignupPage() {
     </Card>
   );
 }
-
-    
