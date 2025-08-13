@@ -213,26 +213,28 @@ export default function HomePage() {
             <p className="text-lg text-muted-foreground text-center mb-10 max-w-2xl mx-auto">
               Whether you're looking for great design or offering your creative expertise, our process is designed for clarity and success.
             </p>
-            <div className="flex justify-center items-center space-x-4 mb-12">
-              <Label htmlFor="user-type-toggle" className={cn("font-semibold text-lg", userType === 'client' ? 'text-primary' : 'text-muted-foreground')}>
-                For Clients
-              </Label>
-              <Switch
-                id="user-type-toggle"
-                checked={userType === 'designer'}
-                onCheckedChange={(checked) => setUserType(checked ? 'designer' : 'client')}
-                aria-label="Toggle between client and designer view"
-              />
-              <Label htmlFor="user-type-toggle" className={cn("font-semibold text-lg", userType === 'designer' ? 'text-primary' : 'text-muted-foreground')}>
-                For Designers
-              </Label>
+            <div className="flex justify-center items-center space-x-2 mb-12 p-1 bg-muted rounded-lg w-fit mx-auto">
+                <Button 
+                    variant={userType === 'client' ? 'default' : 'ghost'} 
+                    onClick={() => setUserType('client')}
+                    className="flex-1 justify-center px-6"
+                >
+                    For Clients
+                </Button>
+                <Button 
+                    variant={userType === 'designer' ? 'default' : 'ghost'} 
+                    onClick={() => setUserType('designer')}
+                    className="flex-1 justify-center px-6"
+                >
+                    For Designers
+                </Button>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 md:gap-10">
               {journeySteps.map((step, index) => (
                 <Card 
                   key={step.title} 
-                  className="text-center shadow-lg hover:shadow-xl transition-shadow flex flex-col"
+                  className="text-center shadow-lg hover:shadow-xl transition-shadow flex flex-col bg-background/50 border-border"
                 >
                   <CardHeader className="items-center pt-8">
                     <div className="bg-primary/10 p-5 rounded-full mb-5 inline-flex">
