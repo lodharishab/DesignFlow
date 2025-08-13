@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 type Step = "details" | "services" | "otp";
 
