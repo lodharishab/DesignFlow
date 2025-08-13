@@ -10,7 +10,6 @@ import Link from "next/link";
 import { Phone, KeyRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface LoginFormErrors {
   phoneNumber?: string;
@@ -21,10 +20,11 @@ interface LoginFormErrors {
 
 export default function LoginPage() {
   const router = useRouter();
+  const [loginMethod, setLoginMethod] = useState<'otp' | 'password'>('otp');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
-  const [step, setStep] = useState<'enter-phone' | 'enter-otp'>('enter-phone');
+  const [isOtpStep, setIsOtpStep] = useState(false);
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const { toast } = useToast();
 
@@ -51,7 +51,6 @@ export default function LoginPage() {
     }
   }
 
-  // --- OTP Flow Handlers ---
   const handleContinueWithOtp = () => {
     const newErrors: LoginFormErrors = {};
     if (!phoneNumber.trim() || !validatePhoneNumber(phoneNumber)) {
@@ -65,7 +64,7 @@ export default function LoginPage() {
         title: "OTP Sent (Simulated)",
         description: "An OTP has been sent to your mobile number. (Hint: Use any 6 digits)",
       });
-      setStep('enter-otp');
+      setIsOtpStep(true);
     } else {
         toast({ title: "Validation Error", description: newErrors.phoneNumber, variant: "destructive" });
     }
@@ -88,12 +87,11 @@ export default function LoginPage() {
   };
   
   const resetToPhoneStep = () => {
-    setStep('enter-phone');
+    setIsOtpStep(false);
     setOtp('');
     setErrors({});
   }
 
-  // --- Password Flow Handler ---
   const handleLoginWithPassword = () => {
     const newErrors: LoginFormErrors = {};
     if (!phoneNumber.trim() || !validatePhoneNumber(phoneNumber)) {
@@ -110,122 +108,95 @@ export default function LoginPage() {
         return;
     }
 
-    // Simulate login check
     console.log("Simulating login with password for:", phoneNumber);
     handleLoginSuccess();
   };
 
+  const toggleLoginMethod = () => {
+    setLoginMethod(prev => prev === 'otp' ? 'password' : 'otp');
+    setErrors({});
+    setPassword('');
+    setOtp('');
+    setIsOtpStep(false);
+  }
+
+  const renderOtpForm = () => (
+    <>
+      <CardContent className="space-y-4 pt-6">
+        {!isOtpStep ? (
+          <div className="space-y-1">
+            <Label htmlFor="phoneNumberOtp">Phone Number</Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input id="phoneNumberOtp" type="tel" placeholder="e.g., 9876543210" className="pl-10" value={phoneNumber} onChange={(e) => { setPhoneNumber(e.target.value); if (errors.phoneNumber) setErrors(prev => ({...prev, phoneNumber: undefined})) }} aria-invalid={!!errors.phoneNumber} maxLength={10}/>
+            </div>
+            {errors.phoneNumber && <p className="text-sm text-destructive pt-1">{errors.phoneNumber}</p>}
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <Label htmlFor="otp">One-Time Password (OTP)</Label>
+            <div className="relative">
+              <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input id="otp" type="tel" placeholder="Enter 6-digit OTP" className="pl-10 tracking-widest text-center" value={otp} onChange={(e) => { setOtp(e.target.value); if (errors.otp) setErrors(prev => ({...prev, otp: undefined})) }} aria-invalid={!!errors.otp} maxLength={6}/>
+            </div>
+            {errors.otp && <p className="text-sm text-destructive pt-1">{errors.otp}</p>}
+            <div className="text-right pt-1">
+              <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={resetToPhoneStep}>Change Number</Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="flex-col gap-4">
+        {!isOtpStep ? (
+          <Button className="w-full" onClick={handleContinueWithOtp}>Continue with OTP</Button>
+        ) : (
+          <Button className="w-full" onClick={handleVerifyOtp}>Verify OTP & Log In</Button>
+        )}
+        <Button variant="link" size="sm" onClick={toggleLoginMethod}>Or Log In with Password</Button>
+      </CardFooter>
+    </>
+  );
+
+  const renderPasswordForm = () => (
+    <>
+      <CardContent className="space-y-4 pt-6">
+        <div className="space-y-1">
+          <Label htmlFor="phoneNumberPassword">Phone Number</Label>
+          <div className="relative">
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input id="phoneNumberPassword" type="tel" placeholder="e.g., 9876543210 (try ending in 111)" className="pl-10" value={phoneNumber} onChange={(e) => { setPhoneNumber(e.target.value); if (errors.phoneNumber) setErrors(prev => ({...prev, phoneNumber: undefined})) }} aria-invalid={!!errors.phoneNumber} maxLength={10}/>
+          </div>
+          {errors.phoneNumber && <p className="text-sm text-destructive pt-1">{errors.phoneNumber}</p>}
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="password">Password</Label>
+          <div className="relative">
+            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input id="password" type="password" placeholder="••••••••" className="pl-10" value={password} onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors(prev => ({...prev, password: undefined})) }} aria-invalid={!!errors.password}/>
+          </div>
+          {errors.password && <p className="text-sm text-destructive pt-1">{errors.password}</p>}
+        </div>
+      </CardContent>
+      <CardFooter className="flex-col gap-4">
+        <Button className="w-full" onClick={handleLoginWithPassword}>Log In</Button>
+        <Button variant="link" size="sm" onClick={toggleLoginMethod}>Or Log In with OTP</Button>
+      </CardFooter>
+    </>
+  );
+
   return (
     <Card className="shadow-xl">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">
-          Welcome Back!
-        </CardTitle>
+        <CardTitle className="font-headline text-2xl">Welcome Back!</CardTitle>
         <CardDescription>
-          Choose your preferred method to log in to your account.
+          {loginMethod === 'otp' ? 'Enter your phone number to receive a secure OTP.' : 'Enter your credentials to access your account.'}
         </CardDescription>
       </CardHeader>
-      <Tabs defaultValue="otp" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="otp">Login with OTP</TabsTrigger>
-            <TabsTrigger value="password">Login with Password</TabsTrigger>
-        </TabsList>
-        <TabsContent value="otp">
-            <CardContent className="space-y-4 pt-6">
-                {step === 'enter-phone' ? (
-                <div className="space-y-1">
-                    <Label htmlFor="phoneNumberOtp">Phone Number</Label>
-                    <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                        id="phoneNumberOtp" 
-                        type="tel" 
-                        placeholder="e.g., 9876543210" 
-                        className="pl-10" 
-                        value={phoneNumber} 
-                        onChange={(e) => { setPhoneNumber(e.target.value); if (errors.phoneNumber) setErrors(prev => ({...prev, phoneNumber: undefined})) }}
-                        aria-invalid={!!errors.phoneNumber}
-                        maxLength={10}
-                    />
-                    </div>
-                    {errors.phoneNumber && <p className="text-sm text-destructive pt-1">{errors.phoneNumber}</p>}
-                </div>
-                ) : (
-                <div className="space-y-1">
-                    <Label htmlFor="otp">One-Time Password (OTP)</Label>
-                    <div className="relative">
-                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                        id="otp" 
-                        type="tel" 
-                        placeholder="Enter 6-digit OTP" 
-                        className="pl-10 tracking-widest text-center" 
-                        value={otp} 
-                        onChange={(e) => { setOtp(e.target.value); if (errors.otp) setErrors(prev => ({...prev, otp: undefined})) }}
-                        aria-invalid={!!errors.otp}
-                        maxLength={6}
-                    />
-                    </div>
-                    {errors.otp && <p className="text-sm text-destructive pt-1">{errors.otp}</p>}
-                    <div className="text-right pt-1">
-                        <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={resetToPhoneStep}>
-                            Change Number
-                        </Button>
-                    </div>
-                </div>
-                )}
-            </CardContent>
-            <CardFooter>
-                 {step === 'enter-phone' ? (
-                    <Button className="w-full" onClick={handleContinueWithOtp}>Continue</Button>
-                    ) : (
-                    <Button className="w-full" onClick={handleVerifyOtp}>Verify OTP</Button>
-                )}
-            </CardFooter>
-        </TabsContent>
-        <TabsContent value="password">
-             <CardContent className="space-y-4 pt-6">
-                 <div className="space-y-1">
-                    <Label htmlFor="phoneNumberPassword">Phone Number</Label>
-                    <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                        id="phoneNumberPassword" 
-                        type="tel" 
-                        placeholder="e.g., 9876543210 (try ending in 111)" 
-                        className="pl-10" 
-                        value={phoneNumber} 
-                        onChange={(e) => { setPhoneNumber(e.target.value); if (errors.phoneNumber) setErrors(prev => ({...prev, phoneNumber: undefined})) }}
-                        aria-invalid={!!errors.phoneNumber}
-                        maxLength={10}
-                    />
-                    </div>
-                    {errors.phoneNumber && <p className="text-sm text-destructive pt-1">{errors.phoneNumber}</p>}
-                </div>
-                 <div className="space-y-1">
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                        id="password" 
-                        type="password" 
-                        placeholder="••••••••" 
-                        className="pl-10" 
-                        value={password}
-                        onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors(prev => ({...prev, password: undefined})) }}
-                        aria-invalid={!!errors.password}
-                    />
-                    </div>
-                    {errors.password && <p className="text-sm text-destructive pt-1">{errors.password}</p>}
-                </div>
-             </CardContent>
-              <CardFooter>
-                <Button className="w-full" onClick={handleLoginWithPassword}>Log In</Button>
-              </CardFooter>
-        </TabsContent>
-      </Tabs>
-       <CardFooter className="flex flex-col space-y-4 pt-0">
-         <p className="text-xs text-muted-foreground text-center">
+      
+      {loginMethod === 'otp' ? renderOtpForm() : renderPasswordForm()}
+      
+      <CardFooter className="flex flex-col space-y-4 pt-0 -mt-2">
+        <p className="text-xs text-muted-foreground text-center px-6">
           By continuing, you agree to our <Link href="/terms-of-service" className="underline hover:text-primary">Terms of Service</Link> and <Link href="/privacy-policy" className="underline hover:text-primary">Privacy Policy</Link>.
         </p>
       </CardFooter>
