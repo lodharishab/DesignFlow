@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Phone, KeyRound, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type Step = 'details' | 'otp';
 
@@ -18,6 +19,7 @@ interface FormData {
   phoneNumber: string;
   password: string;
   confirmPassword: string;
+  agreedToTerms: boolean;
 }
 
 interface FormErrors {
@@ -26,6 +28,7 @@ interface FormErrors {
   password?: string;
   confirmPassword?: string;
   otp?: string;
+  agreedToTerms?: string;
 }
 
 export default function ClientSignupPage() {
@@ -36,6 +39,7 @@ export default function ClientSignupPage() {
     phoneNumber: "",
     password: "",
     confirmPassword: "",
+    agreedToTerms: false,
   });
   const [otp, setOtp] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
@@ -58,6 +62,7 @@ export default function ClientSignupPage() {
     if (!formData.phoneNumber.trim() || !validatePhoneNumber(formData.phoneNumber)) newErrors.phoneNumber = "Please enter a valid 10-digit Indian mobile number.";
     if (!formData.password || formData.password.length < 6) newErrors.password = "Password must be at least 6 characters.";
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match.";
+    if (!formData.agreedToTerms) newErrors.agreedToTerms = "You must agree to the terms and conditions.";
     
     setErrors(newErrors);
     
@@ -68,7 +73,8 @@ export default function ClientSignupPage() {
       });
       setStep("otp");
     } else {
-        toast({ title: "Validation Error", description: "Please correct the errors before submitting.", variant: "destructive" });
+        const errorDesc = Object.values(newErrors).join(' ');
+        toast({ title: "Validation Error", description: errorDesc, variant: "destructive" });
     }
   };
   
@@ -134,6 +140,15 @@ export default function ClientSignupPage() {
                 <Input id="confirmPassword" type="password" placeholder="••••••••" className="pl-10" value={formData.confirmPassword} onChange={handleChange} aria-invalid={!!errors.confirmPassword} />
             </div>
             {errors.confirmPassword && <p className="text-sm text-destructive pt-1">{errors.confirmPassword}</p>}
+            </div>
+             <div className="flex items-start space-x-2 pt-2">
+                <Checkbox id="terms" checked={formData.agreedToTerms} onCheckedChange={(checked) => setFormData(prev => ({ ...prev, agreedToTerms: !!checked }))} aria-invalid={!!errors.agreedToTerms} />
+                <div className="grid gap-1.5 leading-none">
+                <label htmlFor="terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    I agree to the <Link href="/terms-of-service" className="underline hover:text-primary">Terms of Service</Link> and <Link href="/privacy-policy" className="underline hover:text-primary">Privacy Policy</Link>.
+                </label>
+                 {errors.agreedToTerms && <p className="text-sm text-destructive">{errors.agreedToTerms}</p>}
+                </div>
             </div>
         </CardContent>
       ) : (

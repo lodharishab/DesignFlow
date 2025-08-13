@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type Step = "details" | "services" | "portfolio" | "otp";
 
@@ -25,6 +26,7 @@ interface DesignerFormData {
   services: string[];
   portfolioLinks: PortfolioLink[];
   portfolioFiles: File[];
+  agreedToTerms: boolean;
 }
 
 interface DesignerFormErrors {
@@ -35,6 +37,7 @@ interface DesignerFormErrors {
   portfolioLinks?: string;
   portfolioFiles?: string;
   otp?: string;
+  agreedToTerms?: string;
 }
 
 const availableServices = [
@@ -55,6 +58,7 @@ export default function DesignerSignupPage() {
     services: [],
     portfolioLinks: [{ url: '' }],
     portfolioFiles: [],
+    agreedToTerms: false,
   });
   const [otp, setOtp] = useState("");
   const [errors, setErrors] = useState<DesignerFormErrors>({});
@@ -175,13 +179,21 @@ export default function DesignerSignupPage() {
   }
 
   const handleOtpSubmit = () => {
+    const newErrors: DesignerFormErrors = {};
     if (!validateOtp(otp)) {
-      setErrors({ otp: "Please enter a valid 6-digit OTP." });
-      toast({ title: "Validation Error", description: "Please enter a valid 6-digit OTP.", variant: "destructive" });
+      newErrors.otp = "Please enter a valid 6-digit OTP.";
+    }
+    if (!formData.agreedToTerms) {
+        newErrors.agreedToTerms = "You must agree to the terms and conditions.";
+    }
+    setErrors(newErrors);
+    
+    if (Object.keys(newErrors).length > 0) {
+      const errorDesc = Object.values(newErrors).join(' ');
+      toast({ title: "Validation Error", description: errorDesc, variant: "destructive" });
       return;
     }
     
-    setErrors({});
     console.log("Simulated OTP verification successful. Submitting application:", formData);
     toast({
         title: "Application Submitted! (Simulated)",
@@ -375,6 +387,15 @@ export default function DesignerSignupPage() {
                 <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setStep("details")}>
                     Start Over
                 </Button>
+                </div>
+            </div>
+             <div className="flex items-start space-x-2 pt-2">
+                <Checkbox id="terms" checked={formData.agreedToTerms} onCheckedChange={(checked) => { setFormData(prev => ({ ...prev, agreedToTerms: !!checked })); if (errors.agreedToTerms) setErrors(prev => ({...prev, agreedToTerms: undefined})) }} aria-invalid={!!errors.agreedToTerms} />
+                <div className="grid gap-1.5 leading-none">
+                <label htmlFor="terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    I agree to the <Link href="/terms-of-service" className="underline hover:text-primary">Terms of Service</Link> and <Link href="/privacy-policy" className="underline hover:text-primary">Privacy Policy</Link>.
+                </label>
+                 {errors.agreedToTerms && <p className="text-sm text-destructive">{errors.agreedToTerms}</p>}
                 </div>
             </div>
             </div>
