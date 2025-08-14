@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import { Send, Sparkles, Bot, User, Loader2, Mic, Paperclip } from "lucide-react";
+import { Send, Sparkles, Bot, User, Loader2, Mic, Paperclip, History, RefreshCcw } from "lucide-react";
 import { useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -55,15 +55,29 @@ export function AiChatSidebar() {
       setIsLoading(false);
     }, 1500);
   };
+  
+  const handleRefresh = () => {
+    setMessages([]);
+  }
 
   return (
     <Sheet open={isAiChatOpen} onOpenChange={setIsAiChatOpen}>
       <SheetContent className="w-[400px] sm:w-[540px] flex flex-col p-0">
-        <SheetHeader className="p-6 border-b">
+        <SheetHeader className="p-4 border-b flex flex-row items-center justify-between">
           <SheetTitle className="flex items-center text-xl font-headline">
             <Sparkles className="mr-3 h-6 w-6 text-primary" />
-            Kira - Your AI Design Assistant
+            Kira
           </SheetTitle>
+          <div className="flex items-center gap-1">
+             <Button variant="ghost" size="icon" disabled>
+                <History className="h-5 w-5" />
+                <span className="sr-only">Chat History</span>
+             </Button>
+             <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isLoading}>
+                <RefreshCcw className="h-5 w-5" />
+                <span className="sr-only">New Chat</span>
+             </Button>
+          </div>
         </SheetHeader>
         <ScrollArea className="flex-grow p-6">
           <div className="space-y-6">
