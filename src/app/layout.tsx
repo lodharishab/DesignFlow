@@ -8,6 +8,7 @@ import { UIProvider } from '@/contexts/ui-context';
 import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
 import Script from 'next/script';
 import { ClientOnly } from '@/components/shared/client-only';
+import { FloatingKiraButton } from '@/components/shared/floating-kira-button';
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -87,6 +88,7 @@ export default function RootLayout({
         <UIProvider>
           {children}
           <ClientOnly><MobileBottomNav /></ClientOnly>
+          <ClientOnly><FloatingKiraButton /></ClientOnly>
         </UIProvider>
         <ClientOnly><Toaster /></ClientOnly>
       </body>
