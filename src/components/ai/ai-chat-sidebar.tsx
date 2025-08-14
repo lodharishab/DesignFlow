@@ -64,9 +64,6 @@ export function AiChatSidebar() {
             <Sparkles className="mr-3 h-6 w-6 text-primary" />
             Kira - Your AI Design Assistant
           </SheetTitle>
-          <SheetDescription>
-            Ask me anything about design services, project briefs, or finding the right talent.
-          </SheetDescription>
         </SheetHeader>
         <ScrollArea className="flex-grow p-6">
           <div className="space-y-6">
