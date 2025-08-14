@@ -13,10 +13,11 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import { Send, Sparkles, Bot, User, Loader2, Mic, Paperclip, History, RefreshCcw } from "lucide-react";
+import { Send, Sparkles, Bot, User, Loader2, Mic, Paperclip, History, RefreshCcw, Pencil, Check, X } from "lucide-react";
 import { useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { cn } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -29,6 +30,8 @@ export function AiChatSidebar() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +61,31 @@ export function AiChatSidebar() {
   
   const handleRefresh = () => {
     setMessages([]);
+    setEditingMessageId(null);
   }
+
+  const handleStartEdit = (message: Message) => {
+    if (message.role !== 'user') return;
+    setEditingMessageId(message.id);
+    setEditingText(message.content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditingText('');
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingMessageId || !editingText.trim()) return;
+    
+    setMessages(prevMessages => 
+      prevMessages.map(msg => 
+        msg.id === editingMessageId ? { ...msg, content: editingText } : msg
+      )
+    );
+    // Here you could also re-trigger the AI response if needed
+    handleCancelEdit();
+  };
 
   return (
     <Sheet open={isAiChatOpen} onOpenChange={setIsAiChatOpen}>
@@ -87,16 +114,51 @@ export function AiChatSidebar() {
               </div>
             )}
             {messages.map(message => (
-              <div key={message.id} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
+              <div key={message.id} className={cn('flex items-start gap-3 group', message.role === 'user' ? 'justify-end' : '')}>
                 {message.role === 'assistant' && (
                   <Avatar className="h-8 w-8">
                      <AvatarFallback className="bg-primary text-primary-foreground"><Bot className="h-5 w-5" /></AvatarFallback>
                   </Avatar>
                 )}
-                <div className={`rounded-lg px-4 py-3 max-w-[80%] text-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                  {message.content}
-                </div>
-                 {message.role === 'user' && (
+                
+                {editingMessageId === message.id ? (
+                  <div className="flex-grow space-y-2">
+                    <Textarea 
+                      value={editingText}
+                      onChange={(e) => setEditingText(e.target.value)}
+                      className="text-sm"
+                      autoFocus
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={handleCancelEdit}>
+                        <X className="h-4 w-4 mr-1"/> Cancel
+                      </Button>
+                       <Button size="sm" onClick={handleSaveEdit}>
+                        <Check className="h-4 w-4 mr-1"/> Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                  {message.role === 'user' && (
+                     <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleStartEdit(message)}
+                        disabled={isLoading || !!editingMessageId}
+                     >
+                       <Pencil className="h-4 w-4" />
+                       <span className="sr-only">Edit message</span>
+                     </Button>
+                  )}
+                  <div className={`rounded-lg px-4 py-3 max-w-[80%] text-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                    {message.content}
+                  </div>
+                  </>
+                )}
+                
+                 {message.role === 'user' && editingMessageId !== message.id && (
                   <Avatar className="h-8 w-8">
                     <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
                   </Avatar>
@@ -129,17 +191,17 @@ export function AiChatSidebar() {
                   handleSendMessage(e);
                 }
               }}
-              disabled={isLoading}
+              disabled={isLoading || !!editingMessageId}
             />
-             <Button type="button" variant="ghost" size="icon" disabled={isLoading}>
+             <Button type="button" variant="ghost" size="icon" disabled={isLoading || !!editingMessageId}>
               <Mic className="h-5 w-5" />
               <span className="sr-only">Use Voice</span>
             </Button>
-             <Button type="button" variant="ghost" size="icon" disabled={isLoading}>
+             <Button type="button" variant="ghost" size="icon" disabled={isLoading || !!editingMessageId}>
               <Paperclip className="h-5 w-5" />
               <span className="sr-only">Upload Image</span>
             </Button>
-            <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+            <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !!editingMessageId}>
               <Send className="h-5 w-5" />
               <span className="sr-only">Send</span>
             </Button>
