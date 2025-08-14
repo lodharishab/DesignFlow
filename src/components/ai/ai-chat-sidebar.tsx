@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import { Send, Sparkles, Bot, User, Loader2 } from "lucide-react";
+import { Send, Sparkles, Bot, User, Loader2, Mic, Paperclip } from "lucide-react";
 import { useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -102,15 +102,29 @@ export function AiChatSidebar() {
           </div>
         </ScrollArea>
         <SheetFooter className="p-4 border-t">
-          <form onSubmit={handleSendMessage} className="flex gap-2 w-full">
+          <form onSubmit={handleSendMessage} className="flex items-end gap-2 w-full">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="e.g., 'Help me find a logo designer for a tech startup'"
+              placeholder="Ask Kira anything..."
               className="flex-grow resize-none"
-              rows={2}
+              rows={1}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage(e);
+                }
+              }}
               disabled={isLoading}
             />
+             <Button type="button" variant="ghost" size="icon" disabled={isLoading}>
+              <Mic className="h-5 w-5" />
+              <span className="sr-only">Use Voice</span>
+            </Button>
+             <Button type="button" variant="ghost" size="icon" disabled={isLoading}>
+              <Paperclip className="h-5 w-5" />
+              <span className="sr-only">Upload Image</span>
+            </Button>
             <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
               <Send className="h-5 w-5" />
               <span className="sr-only">Send</span>
