@@ -18,6 +18,7 @@ import { useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { cn } from "@/lib/utils";
+import { askKiraAction } from "./actions";
 
 interface Message {
   id: string;
@@ -33,30 +34,40 @@ export function AiChatSidebar() {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent, messageContent?: string) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    const currentMessage = messageContent || input;
+    if (!currentMessage.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input,
+      content: currentMessage,
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: "This is a simulated response from Kira. The actual AI logic is not yet implemented. I can't process your request for: '" + input + "' right now.",
-      };
-      setMessages(prev => [...prev, aiResponse]);
-      setIsLoading(false);
-    }, 1500);
+    try {
+        const aiResponseText = await askKiraAction(currentMessage);
+        const aiResponse: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: aiResponseText,
+        };
+        setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+        console.error("Error asking Kira:", error);
+        const errorResponse: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: "Sorry, I encountered an error trying to respond. Please try again.",
+        };
+        setMessages(prev => [...prev, errorResponse]);
+    } finally {
+        setIsLoading(false);
+    }
   };
   
   const handleRefresh = () => {
@@ -75,16 +86,19 @@ export function AiChatSidebar() {
     setEditingText('');
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = (e: React.FormEvent) => {
     if (!editingMessageId || !editingText.trim()) return;
     
-    setMessages(prevMessages => 
-      prevMessages.map(msg => 
-        msg.id === editingMessageId ? { ...msg, content: editingText } : msg
-      )
-    );
-    // Here you could also re-trigger the AI response if needed
+    // Create a new array of messages up to the one being edited
+    const originalMessageIndex = messages.findIndex(msg => msg.id === editingMessageId);
+    if (originalMessageIndex === -1) return;
+    const messagesToKeep = messages.slice(0, originalMessageIndex);
+    
+    setMessages(messagesToKeep);
     handleCancelEdit();
+    
+    // Resend the edited message as a new message
+    handleSendMessage(e, editingText);
   };
 
   return (
@@ -134,7 +148,7 @@ export function AiChatSidebar() {
                         <X className="h-4 w-4 mr-1"/> Cancel
                       </Button>
                        <Button size="sm" onClick={handleSaveEdit}>
-                        <Check className="h-4 w-4 mr-1"/> Save
+                        <Check className="h-4 w-4 mr-1"/> Save & Resend
                       </Button>
                     </div>
                   </div>
@@ -178,7 +192,7 @@ export function AiChatSidebar() {
           </div>
         </ScrollArea>
         <SheetFooter className="p-4 border-t">
-          <form onSubmit={handleSendMessage} className="flex items-end gap-2 w-full">
+          <form onSubmit={(e) => handleSendMessage(e, input)} className="flex items-end gap-2 w-full">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -188,7 +202,7 @@ export function AiChatSidebar() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  handleSendMessage(e);
+                  handleSendMessage(e, input);
                 }
               }}
               disabled={isLoading || !!editingMessageId}
