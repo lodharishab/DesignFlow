@@ -9,6 +9,7 @@ import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
 import Script from 'next/script';
 import { ClientOnly } from '@/components/shared/client-only';
 import { FloatingKiraButton } from '@/components/shared/floating-kira-button';
+import { AiChatSidebar } from '@/components/ai/ai-chat-sidebar';
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -89,6 +90,7 @@ export default function RootLayout({
           {children}
           <ClientOnly><MobileBottomNav /></ClientOnly>
           <ClientOnly><FloatingKiraButton /></ClientOnly>
+          <ClientOnly><AiChatSidebar /></ClientOnly>
         </UIProvider>
         <ClientOnly><Toaster /></ClientOnly>
       </body>

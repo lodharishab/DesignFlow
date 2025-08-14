@@ -17,7 +17,7 @@ import * as React from 'react';
 import { useUI } from '@/contexts/ui-context';
 
 export function Navbar() {
-  const { isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu } = useUI();
+  const { isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu, toggleAiChat } = useUI();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -32,11 +32,9 @@ export function Navbar() {
 
         {/* Desktop Menu Items */}
         <div className="hidden md:flex items-center space-x-2">
-          <Button variant="ghost" asChild>
-            <Link href="/ai-assistant">
-              <Sparkles className="mr-2 h-4 w-4" />
-              Kira
-            </Link>
+          <Button variant="ghost" onClick={toggleAiChat}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            Kira
           </Button>
           <ModeToggle />
           <Button variant="ghost" asChild>
@@ -76,11 +74,9 @@ export function Navbar() {
                  </SheetClose>
               </SheetHeader>
               <div className="flex flex-col space-y-3">
-                <Button variant="ghost" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
-                  <Link href="/ai-assistant">
-                    <Sparkles className="mr-3 h-5 w-5" />
-                    Ask Kira
-                  </Link>
+                <Button variant="ghost" className="w-full justify-start py-6 text-base" onClick={() => { toggleAiChat(); setIsMobileMenuOpen(false); }}>
+                  <Sparkles className="mr-3 h-5 w-5" />
+                  Ask Kira
                 </Button>
                 <Button variant="ghost" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
                   <Link href="/blog">

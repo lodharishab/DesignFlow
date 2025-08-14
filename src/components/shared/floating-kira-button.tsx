@@ -1,7 +1,6 @@
 
 "use client";
 
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sparkles } from 'lucide-react';
 import {
@@ -10,22 +9,23 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useUI } from '@/contexts/ui-context';
 
 export function FloatingKiraButton() {
+  const { toggleAiChat } = useUI();
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            asChild
+            onClick={toggleAiChat}
             variant="default"
             size="icon"
             className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 flex items-center justify-center animate-pulse"
           >
-            <Link href="/ai-assistant">
-              <Sparkles className="h-7 w-7" />
-              <span className="sr-only">Ask Kira AI</span>
-            </Link>
+            <Sparkles className="h-7 w-7" />
+            <span className="sr-only">Ask Kira AI</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="left" className="mb-1">
