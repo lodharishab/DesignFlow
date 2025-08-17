@@ -194,26 +194,31 @@ export default function AdminPaymentsPage(): ReactElement {
                   <TableCell><div className="text-xs space-y-0.5"><p className="flex items-center"><User className="mr-1.5 h-3 w-3"/>Client: {txn.clientName}</p>{txn.designerName && <p className="flex items-center text-muted-foreground"><User className="mr-1.5 h-3 w-3"/>Designer: {txn.designerName}</p>}</div></TableCell>
                   <TableCell className={`text-right font-medium ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>{txn.amount > 0 ? '+' : ''}₹{Math.abs(txn.amount).toLocaleString('en-IN')}</TableCell>
                   <TableCell className="text-right">
-                    {txn.type === 'Sale' && (txn.status === 'On Hold' || txn.status === 'Completed') && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <span className="sr-only">Open menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Escrow Actions</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleReleasePayout(txn)} disabled={txn.status !== 'On Hold'}>
-                                    <Send className="mr-2 h-4 w-4 text-green-500" /> Release Payout to Designer
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleRefundClient(txn)} className="text-destructive focus:text-destructive">
-                                    <AlertTriangle className="mr-2 h-4 w-4" /> Refund to Client
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => handleReleasePayout(txn)} 
+                              disabled={txn.type !== 'Sale' || (txn.status !== 'On Hold' && txn.status !== 'Completed')}
+                            >
+                                <Send className="mr-2 h-4 w-4 text-green-500" /> Release Payout
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleRefundClient(txn)} 
+                              className="text-destructive focus:text-destructive"
+                              disabled={txn.type !== 'Sale' || (txn.status !== 'On Hold' && txn.status !== 'Completed')}
+                            >
+                                <AlertTriangle className="mr-2 h-4 w-4" /> Refund to Client
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
