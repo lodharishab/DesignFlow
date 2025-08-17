@@ -24,7 +24,7 @@ import {
   XCircle,
   Newspaper,
   PlusCircle, // For Add New Post
-  IndianRupee // For Payments
+  BarChart3 // Changed from IndianRupee for Payments
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -69,7 +69,7 @@ const navItems = [
       { href: '/admin/orders/cancelled', icon: XCircle, label: 'Cancelled Orders' },
     ]
   },
-  { href: '/admin/payments', icon: IndianRupee, label: 'Payments & Revenue' },
+  { href: '/admin/payments', icon: BarChart3, label: 'Payments & Revenue' },
   {
     label: 'Services',
     icon: Briefcase,
@@ -262,3 +262,5 @@ export default function AdminLayout({
     </SidebarProvider>
   );
 }
+
+    

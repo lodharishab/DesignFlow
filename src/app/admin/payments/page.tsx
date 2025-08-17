@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { IndianRupee, ArrowDown, ArrowUp, Link as LinkIcon, User, Search, CalendarDays } from "lucide-react";
+import { IndianRupee, ArrowDown, ArrowUp, Link as LinkIcon, User, Search, CalendarDays, BarChart3, Banknote } from "lucide-react";
 import { format } from 'date-fns';
 import Link from 'next/link';
 
@@ -32,7 +32,7 @@ const mockTransactions: Transaction[] = [
   { id: 'txn_Olcftg87sHjkl', orderId: 'ORD7361P', date: new Date(2024, 6, 1), type: 'Sale', status: 'Completed', amount: 24999, paymentMethod: 'Razorpay', clientName: 'Priya Sharma', designerName: 'Rohan Kapoor' },
   { id: 'txn_HghtrDEWAq789', orderId: 'ORD1038K', date: new Date(2024, 6, 5), type: 'Sale', status: 'Completed', amount: 7999, paymentMethod: 'PhonePe', clientName: 'Rajesh Kumar' },
   { id: 'txn_Nnbvcxz87Uyt', orderId: 'ORD2945S', date: new Date(2024, 5, 20), type: 'Sale', status: 'Completed', amount: 19999, paymentMethod: 'Razorpay', clientName: 'Sunita Rao', designerName: 'Priya Sharma' },
-  { id: 'txn_ payout_ps01', orderId: 'ORD2945S', date: new Date(2024, 6, 14), type: 'Payout', status: 'Completed', amount: -17999.10, paymentMethod: 'Bank Transfer', clientName: 'Sunita Rao', designerName: 'Priya Sharma' },
+  { id: 'txn_payout_ps01', orderId: 'ORD2945S', date: new Date(2024, 6, 14), type: 'Payout', status: 'Completed', amount: -17999.10, paymentMethod: 'Bank Transfer', clientName: 'Sunita Rao', designerName: 'Priya Sharma' },
   { id: 'txn_fee_ps01', orderId: 'ORD2945S', date: new Date(2024, 6, 14), type: 'Fee', status: 'Completed', amount: -1999.90, clientName: 'Sunita Rao', designerName: 'Priya Sharma' },
   { id: 'txn_Kkjhgf56Qwe', orderId: 'ORD8872V', date: new Date(2024, 6, 8), type: 'Sale', status: 'Failed', amount: 2499, paymentMethod: 'Razorpay', clientName: 'Vikram Mehta' },
   { id: 'txn_Qoiuyt09Mnb', orderId: 'ORD6531A', date: new Date(2024, 6, 10), type: 'Sale', status: 'Completed', amount: 6999, paymentMethod: 'PhonePe', clientName: 'Anjali Iyer', designerName: 'Vikram Singh' },
@@ -86,7 +86,7 @@ export default function AdminPaymentsPage(): ReactElement {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold font-headline flex items-center">
-          <IndianRupee className="mr-3 h-8 w-8 text-primary" />
+          <BarChart3 className="mr-3 h-8 w-8 text-primary" />
           Payments & Revenue
         </h1>
       </div>
@@ -94,7 +94,7 @@ export default function AdminPaymentsPage(): ReactElement {
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="shadow-md">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                <CardTitle className="text-sm font-medium">Total Gross Revenue</CardTitle>
                 <IndianRupee className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -105,7 +105,7 @@ export default function AdminPaymentsPage(): ReactElement {
          <Card className="shadow-md">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Platform Fees Collected</CardTitle>
-                <IndianRupee className="h-4 w-4 text-muted-foreground" />
+                <Banknote className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">₹{platformFees.toLocaleString('en-IN')}</div>
@@ -126,8 +126,8 @@ export default function AdminPaymentsPage(): ReactElement {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
-          <CardDescription>A log of all financial transactions on the platform.</CardDescription>
+          <CardTitle>All Transactions</CardTitle>
+          <CardDescription>A detailed log of all financial transactions on the platform.</CardDescription>
         </CardHeader>
         <CardContent>
            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 border rounded-lg bg-card">
@@ -175,7 +175,7 @@ export default function AdminPaymentsPage(): ReactElement {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Transaction ID</TableHead>
+                <TableHead>Transaction Details</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
@@ -217,3 +217,5 @@ export default function AdminPaymentsPage(): ReactElement {
     </div>
   );
 }
+
+    
