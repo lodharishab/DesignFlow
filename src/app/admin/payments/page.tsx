@@ -196,12 +196,21 @@ export default function AdminPaymentsPage(): ReactElement {
                   <TableCell className="text-right">
                     {txn.type === 'Sale' && (txn.status === 'On Hold' || txn.status === 'Completed') && (
                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild><Button variant="outline" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Escrow Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleReleasePayout(txn)} disabled={txn.status !== 'On Hold'}><Send className="mr-2 h-4 w-4 text-green-500" /> Release Payout to Designer</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleRefundClient(txn)} className="text-destructive focus:text-destructive"><AlertTriangle className="mr-2 h-4 w-4" /> Refund to Client</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleReleasePayout(txn)} disabled={txn.status !== 'On Hold'}>
+                                    <Send className="mr-2 h-4 w-4 text-green-500" /> Release Payout to Designer
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleRefundClient(txn)} className="text-destructive focus:text-destructive">
+                                    <AlertTriangle className="mr-2 h-4 w-4" /> Refund to Client
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     )}
