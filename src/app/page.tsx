@@ -213,18 +213,26 @@ export default function HomePage() {
             <p className="text-lg text-muted-foreground text-center mb-10 max-w-2xl mx-auto">
               Whether you're looking for great design or offering your creative expertise, our process is designed for clarity and success.
             </p>
-            <div className="flex justify-center items-center space-x-2 mb-12 p-1 bg-muted rounded-lg w-fit mx-auto">
+            <div className="flex justify-center items-center space-x-2 mb-12 p-1 bg-muted rounded-full w-fit mx-auto shadow-inner">
                 <Button 
-                    variant={userType === 'client' ? 'default' : 'ghost'} 
                     onClick={() => setUserType('client')}
-                    className="flex-1 justify-center px-6"
+                    className={cn(
+                        "rounded-full px-6 py-2.5 text-base transition-all duration-300",
+                        userType === 'client' 
+                            ? 'bg-background shadow text-primary font-semibold' 
+                            : 'bg-transparent text-muted-foreground font-normal'
+                    )}
                 >
                     For Clients
                 </Button>
                 <Button 
-                    variant={userType === 'designer' ? 'default' : 'ghost'} 
                     onClick={() => setUserType('designer')}
-                    className="flex-1 justify-center px-6"
+                    className={cn(
+                        "rounded-full px-6 py-2.5 text-base transition-all duration-300",
+                        userType === 'designer' 
+                            ? 'bg-background shadow text-primary font-semibold' 
+                            : 'bg-transparent text-muted-foreground font-normal'
+                    )}
                 >
                     For Designers
                 </Button>
