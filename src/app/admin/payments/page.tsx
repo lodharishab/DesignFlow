@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, type ReactElement, useMemo, ChangeEvent } from 'react';
@@ -9,15 +10,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
-    DropdownMenu, 
-    DropdownMenuContent, 
-    DropdownMenuItem, 
-    DropdownMenuLabel, 
-    DropdownMenuSeparator, 
-    DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { IndianRupee, ArrowDown, ArrowUp, Link as LinkIcon, User, Search, CalendarDays, BarChart3, Banknote, ArrowUpDown, ChevronUp, ChevronDown, MoreHorizontal, AlertTriangle, Send } from "lucide-react";
+    IndianRupee, 
+    ArrowDown, 
+    ArrowUp, 
+    Link as LinkIcon, 
+    User, 
+    Search, 
+    CalendarDays, 
+    BarChart3, 
+    Banknote, 
+    ArrowUpDown, 
+    ChevronUp, 
+    ChevronDown, 
+    AlertTriangle, 
+    Send 
+} from "lucide-react";
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
@@ -148,6 +157,7 @@ export default function AdminPaymentsPage(): ReactElement {
    const payouts = mockTransactions.filter(t => t.type === 'Payout' && t.status === 'Completed').reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
   return (
+    <TooltipProvider>
     <div className="space-y-8">
       <h1 className="text-3xl font-bold font-headline flex items-center">
         <BarChart3 className="mr-3 h-8 w-8 text-primary" />
@@ -194,31 +204,32 @@ export default function AdminPaymentsPage(): ReactElement {
                   <TableCell><div className="text-xs space-y-0.5"><p className="flex items-center"><User className="mr-1.5 h-3 w-3"/>Client: {txn.clientName}</p>{txn.designerName && <p className="flex items-center text-muted-foreground"><User className="mr-1.5 h-3 w-3"/>Designer: {txn.designerName}</p>}</div></TableCell>
                   <TableCell className={`text-right font-medium ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>{txn.amount > 0 ? '+' : ''}₹{Math.abs(txn.amount).toLocaleString('en-IN')}</TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => handleReleasePayout(txn)} 
-                              disabled={txn.type !== 'Sale' || (txn.status !== 'On Hold' && txn.status !== 'Completed')}
-                            >
-                                <Send className="mr-2 h-4 w-4 text-green-500" /> Release Payout
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleRefundClient(txn)} 
-                              className="text-destructive focus:text-destructive"
-                              disabled={txn.type !== 'Sale' || (txn.status !== 'On Hold' && txn.status !== 'Completed')}
-                            >
-                                <AlertTriangle className="mr-2 h-4 w-4" /> Refund to Client
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex justify-end items-center gap-1">
+                      {(txn.type === 'Sale' && (txn.status === 'On Hold' || txn.status === 'Completed')) && (
+                        <>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:text-green-700" onClick={() => handleReleasePayout(txn)}>
+                                <Send className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Release Payout to Designer</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleRefundClient(txn)}>
+                                <AlertTriangle className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Refund to Client</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -227,5 +238,6 @@ export default function AdminPaymentsPage(): ReactElement {
         </CardContent>
       </Card>
     </div>
+    </TooltipProvider>
   );
 }
