@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
         type: 'article',
         publishedTime: post.publishDate.toISOString(),
         authors: [post.authorName],
-        tags: post.tags,
+        tags: [post.tags],
     },
   };
 }
@@ -75,10 +75,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 </Link>
               </Button>
               {post.category && (
-                 <Link href={`/blog?category=${post.categorySlug}`} passHref legacyBehavior>
-                    <a className="inline-block">
-                        <Badge variant="default" className="mb-2 text-sm">{post.category}</Badge>
-                    </a>
+                 <Link href={`/blog?category=${post.categorySlug}`} className="inline-block">
+                    <Badge variant="default" className="mb-2 text-sm">{post.category}</Badge>
                 </Link>
               )}
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-headline mb-4 text-foreground">
@@ -125,8 +123,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 <h3 className="text-sm font-semibold text-muted-foreground mb-2">TAGS:</h3>
                 <div className="flex flex-wrap gap-2">
                   {post.tags.map(tag => (
-                    <Link key={tag} href={`/blog?tag=${encodeURIComponent(tag)}`} passHref legacyBehavior>
-                        <a><Badge variant="secondary" className="capitalize">{tag}</Badge></a>
+                    <Link key={tag} href={`/blog?tag=${encodeURIComponent(tag)}`}>
+                        <Badge variant="secondary" className="capitalize">{tag}</Badge>
                     </Link>
                   ))}
                 </div>

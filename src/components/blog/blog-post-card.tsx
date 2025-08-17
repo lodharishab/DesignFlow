@@ -14,8 +14,7 @@ interface BlogPostCardProps {
 export function BlogPostCard({ post }: BlogPostCardProps) {
   return (
     <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-shadow duration-300 group overflow-hidden">
-      <Link href={`/blog/${post.id}`} passHref legacyBehavior>
-        <a className="block relative aspect-[16/9] w-full overflow-hidden rounded-t-lg">
+      <Link href={`/blog/${post.id}`} className="block relative aspect-[16/9] w-full overflow-hidden rounded-t-lg">
           <Image
             src={post.featuredImageUrl}
             alt={post.title}
@@ -25,14 +24,11 @@ export function BlogPostCard({ post }: BlogPostCardProps) {
             data-ai-hint={post.featuredImageHint}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
-        </a>
       </Link>
       <CardHeader className="pb-3">
         {post.category && (
-          <Link href={`/blog?category=${post.categorySlug}`} passHref legacyBehavior>
-            <a className="inline-block mb-1">
+          <Link href={`/blog?category=${post.categorySlug}`} className="inline-block mb-1">
               <Badge variant="secondary">{post.category}</Badge>
-            </a>
           </Link>
         )}
         <CardTitle className="text-xl font-headline leading-tight group-hover:text-primary transition-colors">

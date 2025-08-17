@@ -99,31 +99,27 @@ export const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ it
 
   return (
     <Card className="overflow-hidden shadow-lg h-full flex flex-col group">
-        <Link href={`/portfolio/${item.id}`} passHref legacyBehavior>
-            <a className="block relative aspect-[4/3] w-full">
-                <Image
-                key={imagesToShow[currentImageIndex].url} 
-                src={imagesToShow[currentImageIndex].url}
-                alt={imagesToShow[currentImageIndex].caption || item.title}
-                fill
-                style={{ objectFit: 'cover' }}
-                className="transition-all duration-500 ease-in-out group-hover:scale-105"
-                data-ai-hint={imagesToShow[currentImageIndex].hint} 
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                priority={currentImageIndex === 0} 
-                />
-                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-                     <ExternalLink className="h-5 w-5 text-white/80" />
-                </div>
-            </a>
+        <Link href={`/portfolio/${item.id}`} className="block relative aspect-[4/3] w-full">
+            <Image
+            key={imagesToShow[currentImageIndex].url} 
+            src={imagesToShow[currentImageIndex].url}
+            alt={imagesToShow[currentImageIndex].caption || item.title}
+            fill
+            style={{ objectFit: 'cover' }}
+            className="transition-all duration-500 ease-in-out group-hover:scale-105"
+            data-ai-hint={imagesToShow[currentImageIndex].hint} 
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority={currentImageIndex === 0} 
+            />
+             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                 <ExternalLink className="h-5 w-5 text-white/80" />
+            </div>
         </Link>
       <CardContent className="p-4 bg-card flex-grow">
-        <Link href={`/services?category=${item.categorySlug}`} passHref legacyBehavior>
-          <a className="inline-block">
-             <h3 className="font-headline text-xl text-foreground group-hover:text-primary transition-colors leading-tight">
-                {item.category}
-             </h3>
-          </a>
+        <Link href={`/services?category=${item.categorySlug}`} className="inline-block">
+           <h3 className="font-headline text-xl text-foreground group-hover:text-primary transition-colors leading-tight">
+              {item.category}
+           </h3>
         </Link>
         {item.designer && (
             <Link href={`/designers/${item.designer.slug}`} className="text-xs text-muted-foreground mt-1 hover:text-primary hover:underline block">

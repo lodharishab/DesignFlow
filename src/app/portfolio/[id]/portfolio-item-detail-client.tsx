@@ -134,12 +134,10 @@ export function PortfolioItemDetailClientContent({ initialItem }: PortfolioItemD
                 </Card>
               )}
                {/* Link to related category */}
-               <Link href={`/portfolio?category=${item.categorySlug}`} passHref legacyBehavior>
-                <a className="block">
+               <Link href={`/portfolio?category=${item.categorySlug}`} className="block">
                   <Badge variant="outline" className="text-sm py-1 px-3 mb-2 hover:bg-accent">
                       <Tag className="mr-2 h-4 w-4" /> Related: {item.category}
                   </Badge>
-                </a>
               </Link>
               {/* CTA Card */}
               <Card className="bg-primary/10 p-5 text-center">
