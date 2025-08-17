@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { IndianRupee, ArrowDown, ArrowUp, Link as LinkIcon, User, Search, CalendarDays, BarChart3, Banknote } from "lucide-react";
+import { IndianRupee, ArrowDown, ArrowUp, Link as LinkIcon, User, Search, CalendarDays, BarChart3, Banknote, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
 import { format } from 'date-fns';
 import Link from 'next/link';
 
@@ -40,6 +40,8 @@ const mockTransactions: Transaction[] = [
   { id: 'txn_BT_WEDINV_RIYA01', orderId: 'ORD9274R', date: new Date(2024, 4, 15), type: 'Sale', status: 'Completed', amount: 9999, paymentMethod: 'Bank Transfer', clientName: 'Riya Sen', designerName: 'Arjun Mehta' },
 ];
 
+type SortableKeys = 'id' | 'date' | 'type' | 'status' | 'clientName' | 'amount';
+
 export default function AdminPaymentsPage(): ReactElement {
   
   const [filters, setFilters] = useState({
@@ -48,16 +50,58 @@ export default function AdminPaymentsPage(): ReactElement {
     status: 'All',
     type: 'All',
   });
+  const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' }>({
+    key: 'date',
+    direction: 'descending',
+  });
+
+  const requestSort = (key: SortableKeys) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const getSortIndicator = (key: SortableKeys) => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown className="ml-2 h-3 w-3 text-muted-foreground/50" />;
+    }
+    return sortConfig.direction === 'ascending' ?
+      <ChevronUp className="ml-1 h-4 w-4" /> :
+      <ChevronDown className="ml-1 h-4 w-4" />;
+  };
 
   const displayedTransactions = useMemo(() => {
-    return mockTransactions.filter(txn => {
+    let sortableItems = [...mockTransactions];
+
+    // Filtering logic
+    sortableItems = sortableItems.filter(txn => {
       const idMatch = !filters.transactionId || txn.id.toLowerCase().includes(filters.transactionId.toLowerCase());
       const orderIdMatch = !filters.orderId || txn.orderId.toLowerCase().includes(filters.orderId.toLowerCase());
       const statusMatch = filters.status === 'All' || txn.status === filters.status;
       const typeMatch = filters.type === 'All' || txn.type === filters.type;
       return idMatch && orderIdMatch && statusMatch && typeMatch;
-    }).sort((a, b) => b.date.getTime() - a.date.getTime());
-  }, [filters]);
+    });
+
+    // Sorting logic
+    sortableItems.sort((a, b) => {
+      const valA = a[sortConfig.key];
+      const valB = b[sortConfig.key];
+
+      let comparison = 0;
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        comparison = valA - valB;
+      } else if (valA instanceof Date && valB instanceof Date) {
+        comparison = valA.getTime() - valB.getTime();
+      } else {
+        comparison = String(valA).toLowerCase().localeCompare(String(valB).toLowerCase());
+      }
+      return sortConfig.direction === 'ascending' ? comparison : comparison * -1;
+    });
+
+    return sortableItems;
+  }, [filters, sortConfig]);
 
   const handleFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -175,12 +219,36 @@ export default function AdminPaymentsPage(): ReactElement {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Transaction Details</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>User(s)</TableHead>
-                <TableHead className="text-right">Amount (INR)</TableHead>
+                <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('id')} className="px-1 text-xs sm:text-sm -ml-2">
+                        Transaction Details {getSortIndicator('id')}
+                    </Button>
+                </TableHead>
+                <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('date')} className="px-1 text-xs sm:text-sm -ml-2">
+                        Date {getSortIndicator('date')}
+                    </Button>
+                </TableHead>
+                <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('type')} className="px-1 text-xs sm:text-sm -ml-2">
+                        Type {getSortIndicator('type')}
+                    </Button>
+                </TableHead>
+                 <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('status')} className="px-1 text-xs sm:text-sm -ml-2">
+                        Status {getSortIndicator('status')}
+                    </Button>
+                </TableHead>
+                <TableHead>
+                     <Button variant="ghost" onClick={() => requestSort('clientName')} className="px-1 text-xs sm:text-sm -ml-2">
+                        User(s) {getSortIndicator('clientName')}
+                    </Button>
+                </TableHead>
+                <TableHead className="text-right">
+                    <Button variant="ghost" onClick={() => requestSort('amount')} className="px-1 text-xs sm:text-sm -ml-2">
+                        Amount (INR) {getSortIndicator('amount')}
+                    </Button>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -217,5 +285,3 @@ export default function AdminPaymentsPage(): ReactElement {
     </div>
   );
 }
-
-    
