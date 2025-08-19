@@ -70,30 +70,40 @@ export default function ClientDashboardPage() {
                         <Bell className="h-5 w-5" />
                         <span className="sr-only">Notifications</span>
                     </Button>
-                    <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                        {mockNotifications.length}
-                    </Badge>
+                    {mockNotifications.length > 0 && (
+                        <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                            {mockNotifications.length}
+                        </Badge>
+                    )}
                 </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-80" align="end">
                 <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {mockNotifications.map(notification => (
-                    <DropdownMenuItem key={notification.id} asChild className="p-3 cursor-pointer">
-                        <Link href={notification.href}>
-                            <notification.icon className="h-5 w-5 mr-3 text-primary" />
-                            <div className="flex-grow">
-                                <p className="font-semibold text-sm">{notification.title}</p>
-                                <p className="text-xs text-muted-foreground">{notification.description}</p>
-                                <p className="text-xs text-muted-foreground/70 mt-1">{notification.time}</p>
-                            </div>
-                        </Link>
-                    </DropdownMenuItem>
-                ))}
-                 <DropdownMenuSeparator />
-                 <DropdownMenuItem className="justify-center text-xs text-muted-foreground py-2 cursor-pointer">
-                    View All Notifications
-                </DropdownMenuItem>
+                {mockNotifications.length > 0 ? (
+                    <>
+                        {mockNotifications.map(notification => (
+                            <DropdownMenuItem key={notification.id} asChild className="p-3 cursor-pointer">
+                                <Link href={notification.href}>
+                                    <notification.icon className="h-5 w-5 mr-3 text-primary shrink-0" />
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-sm">{notification.title}</p>
+                                        <p className="text-xs text-muted-foreground">{notification.description}</p>
+                                        <p className="text-xs text-muted-foreground/70 mt-1">{notification.time}</p>
+                                    </div>
+                                </Link>
+                            </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="justify-center text-xs text-muted-foreground py-2 cursor-pointer">
+                            View All Notifications
+                        </DropdownMenuItem>
+                    </>
+                ) : (
+                    <div className="text-center text-sm text-muted-foreground p-4">
+                        No new notifications
+                    </div>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -195,3 +205,5 @@ export default function ClientDashboardPage() {
     </div>
   );
 }
+
+    
