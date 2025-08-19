@@ -3,10 +3,20 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingCart, MessageSquare, Briefcase, ArrowRight, BarChart3, Sparkles, CheckCircle2, Bell } from 'lucide-react';
+import { ShoppingCart, MessageSquare, Briefcase, ArrowRight, BarChart3, Sparkles, CheckCircle2, Bell, Package } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Separator } from '@/components/ui/separator';
+
 
 // Mock data for active orders - consistent with /client/orders page
 const activeOrdersMock = [
@@ -20,19 +30,72 @@ const clientStats = [
     { title: "Total Spent", value: "₹55,000", icon: BarChart3, color: "text-purple-500" }, // Example static value
 ];
 
+const mockNotifications = [
+    {
+        id: 'notif1',
+        icon: Package,
+        title: "Deliverable Submitted",
+        description: "Your first draft for 'E-commerce Website UI/UX' is ready for review.",
+        time: "15m ago",
+        href: "/client/orders/ORD7361P",
+    },
+    {
+        id: 'notif2',
+        icon: MessageSquare,
+        title: "New Message",
+        description: "You have a new message from designer Rohan K. regarding your project.",
+        time: "1h ago",
+        href: "/client/orders/ORD7361P",
+    },
+    {
+        id: 'notif3',
+        icon: CheckCircle2,
+        title: "Order Completed",
+        description: "Your order 'Startup Logo & Brand Identity' has been marked as complete.",
+        time: "2 days ago",
+        href: "/client/orders/ORD2945S",
+    },
+];
+
 
 export default function ClientDashboardPage() {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold font-headline">Welcome Back, Client!</h1>
-        <div className="relative">
-          <Button variant="outline" size="icon">
-            <Bell className="h-5 w-5" />
-            <span className="sr-only">Notifications</span>
-          </Button>
-           <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">3</Badge>
-        </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <div className="relative">
+                    <Button variant="outline" size="icon">
+                        <Bell className="h-5 w-5" />
+                        <span className="sr-only">Notifications</span>
+                    </Button>
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                        {mockNotifications.length}
+                    </Badge>
+                </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-80" align="end">
+                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {mockNotifications.map(notification => (
+                    <DropdownMenuItem key={notification.id} asChild className="p-3 cursor-pointer">
+                        <Link href={notification.href}>
+                            <notification.icon className="h-5 w-5 mr-3 text-primary" />
+                            <div className="flex-grow">
+                                <p className="font-semibold text-sm">{notification.title}</p>
+                                <p className="text-xs text-muted-foreground">{notification.description}</p>
+                                <p className="text-xs text-muted-foreground/70 mt-1">{notification.time}</p>
+                            </div>
+                        </Link>
+                    </DropdownMenuItem>
+                ))}
+                 <DropdownMenuSeparator />
+                 <DropdownMenuItem className="justify-center text-xs text-muted-foreground py-2 cursor-pointer">
+                    View All Notifications
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       
       {/* Quick Stats Section */}
