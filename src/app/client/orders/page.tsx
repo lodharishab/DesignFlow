@@ -6,11 +6,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, PackageSearch, ArrowRight, FileText, CalendarDays, Info, IndianRupee } from 'lucide-react';
+import { ShoppingCart, PackageSearch, ArrowRight, Info, CalendarDays, FileText, IndianRupee, Clock, CheckCircle2, ListFilter, AlertTriangle, Eye, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
+import { useState, useMemo, type ReactElement } from 'react';
 
-// Mock data for client orders - replace with actual data fetching
-const mockClientOrders = [
+type OrderStatus = 'In Progress' | 'Pending Assignment' | 'Completed' | 'Awaiting Client Review' | 'Cancelled';
+type SortableOrderKeys = 'id' | 'serviceName' | 'orderDate' | 'status' | 'total';
+
+interface ClientOrder {
+  id: string;
+  serviceName: string;
+  status: OrderStatus;
+  orderDate: Date;
+  total: number;
+}
+
+const mockClientOrders: ClientOrder[] = [
   { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', status: 'In Progress', orderDate: new Date(2024, 6, 1), total: 24999.00 },
   { id: 'ORD1038K', serviceName: 'Social Media Campaign Graphics', status: 'Pending Assignment', orderDate: new Date(2024, 6, 5), total: 7999.00 },
   { id: 'ORD2945S', serviceName: 'Startup Logo & Brand Identity', status: 'Completed', orderDate: new Date(2024, 5, 20), total: 19999.00 },
@@ -18,19 +29,77 @@ const mockClientOrders = [
   { id: 'ORD0112C', serviceName: 'Festival Banner Design', status: 'Cancelled', orderDate: new Date(2024, 6, 12), total: 2499.00 },
 ];
 
-const getStatusBadgeVariant = (status: string) => {
-  switch (status) {
-    case 'Completed': return 'default'; // Greenish or primary
-    case 'In Progress': return 'secondary'; // Blueish or yellowish
-    case 'Pending Assignment': return 'outline'; // Neutral
-    case 'Awaiting Client Review': return 'outline';
-    case 'Cancelled': return 'destructive';
-    default: return 'secondary';
-  }
-};
+const statusFilters: { label: string; value: OrderStatus | 'All'; icon?: React.ElementType }[] = [
+  { label: 'All', value: 'All', icon: ListFilter },
+  { label: 'In Progress', value: 'In Progress', icon: Clock },
+  { label: 'Awaiting Review', value: 'Awaiting Client Review', icon: Eye },
+  { label: 'Completed', value: 'Completed', icon: CheckCircle2 },
+];
 
 
-export default function ClientOrdersPage() {
+export default function ClientOrdersPage(): ReactElement {
+  const [orders, setOrders] = useState<ClientOrder[]>(mockClientOrders);
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
+  const [sortConfig, setSortConfig] = useState<{ key: SortableOrderKeys | null; direction: 'ascending' | 'descending' }>({
+    key: 'orderDate',
+    direction: 'descending',
+  });
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'Completed': return 'default';
+      case 'In Progress': return 'secondary';
+      case 'Pending Assignment': return 'outline';
+      case 'Awaiting Client Review': return 'outline';
+      case 'Cancelled': return 'destructive';
+      default: return 'secondary';
+    }
+  };
+  
+  const requestSort = (key: SortableOrderKeys) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const getSortIndicator = (key: SortableOrderKeys) => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown className="ml-2 h-3 w-3 text-muted-foreground/50" />;
+    }
+    return sortConfig.direction === 'ascending' ?
+      <ChevronUp className="ml-1 h-4 w-4" /> :
+      <ChevronDown className="ml-1 h-4 w-4" />;
+  };
+
+  const displayedOrders = useMemo(() => {
+    let sortableItems = [...orders];
+
+    if (statusFilter !== 'All') {
+      sortableItems = sortableItems.filter(order => order.status === statusFilter);
+    }
+    
+    if (sortConfig.key !== null) {
+      sortableItems.sort((a, b) => {
+        const valA = a[sortConfig.key!];
+        const valB = b[sortConfig.key!];
+
+        let comparison = 0;
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          comparison = valA - valB;
+        } else if (valA instanceof Date && valB instanceof Date) {
+          comparison = valA.getTime() - valB.getTime();
+        } else {
+          comparison = String(valA).toLowerCase().localeCompare(String(valB).toLowerCase());
+        }
+        return sortConfig.direction === 'ascending' ? comparison : comparison * -1;
+      });
+    }
+    
+    return sortableItems;
+  }, [orders, statusFilter, sortConfig]);
+
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold font-headline flex items-center">
@@ -57,21 +126,54 @@ export default function ClientOrdersPage() {
           <CardHeader>
             <CardTitle className="font-headline">Order History</CardTitle>
             <CardDescription>Track your current and past design orders.</CardDescription>
+            <div className="pt-4 flex flex-wrap gap-2">
+              {statusFilters.map(filter => (
+                <Button
+                  key={filter.value}
+                  variant={statusFilter === filter.value ? 'default' : 'outline'}
+                  onClick={() => setStatusFilter(filter.value)}
+                  size="sm"
+                >
+                  {filter.icon && <filter.icon className="mr-2 h-4 w-4" />}
+                  {filter.label}
+                </Button>
+              ))}
+            </div>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[120px]">Order ID</TableHead>
-                  <TableHead><FileText className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Service Name</TableHead>
-                  <TableHead><CalendarDays className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Order Date</TableHead>
-                  <TableHead><Info className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Status</TableHead>
-                  <TableHead className="text-right"><IndianRupee className="inline-block mr-1 h-4 w-4 text-muted-foreground" />Total</TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('id')} className="px-1 text-xs sm:text-sm -ml-2">
+                      Order ID {getSortIndicator('id')}
+                    </Button>
+                  </TableHead>
+                   <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('serviceName')} className="px-1 text-xs sm:text-sm -ml-2">
+                       <FileText className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />Service Name {getSortIndicator('serviceName')}
+                    </Button>
+                  </TableHead>
+                   <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('orderDate')} className="px-1 text-xs sm:text-sm -ml-2">
+                       <CalendarDays className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />Order Date {getSortIndicator('orderDate')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('status')} className="px-1 text-xs sm:text-sm -ml-2">
+                      <Info className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />Status {getSortIndicator('status')}
+                    </Button>
+                  </TableHead>
+                   <TableHead className="text-right">
+                    <Button variant="ghost" onClick={() => requestSort('total')} className="px-1 text-xs sm:text-sm -ml-2">
+                       <IndianRupee className="inline-block mr-1 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />Total {getSortIndicator('total')}
+                    </Button>
+                  </TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockClientOrders.map((order) => (
+                {displayedOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium text-primary hover:underline">
                       <Link href={`/client/orders/${order.id}`}>
