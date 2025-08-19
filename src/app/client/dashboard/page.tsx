@@ -3,9 +3,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingCart, MessageSquare, Briefcase, ArrowRight, BarChart3, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ShoppingCart, MessageSquare, Briefcase, ArrowRight, BarChart3, Sparkles, CheckCircle2, Bell } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Badge } from '@/components/ui/badge';
 
 // Mock data for active orders - consistent with /client/orders page
 const activeOrdersMock = [
@@ -23,7 +24,16 @@ const clientStats = [
 export default function ClientDashboardPage() {
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold font-headline">Welcome Back, Client!</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold font-headline">Welcome Back, Client!</h1>
+        <div className="relative">
+          <Button variant="outline" size="icon">
+            <Bell className="h-5 w-5" />
+            <span className="sr-only">Notifications</span>
+          </Button>
+           <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">3</Badge>
+        </div>
+      </div>
       
       {/* Quick Stats Section */}
       <div className="grid gap-6 md:grid-cols-3">
