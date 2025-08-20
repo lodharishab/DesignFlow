@@ -1,14 +1,14 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Phone, KeyRound } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 
 interface LoginFormErrors {
@@ -18,8 +18,11 @@ interface LoginFormErrors {
   general?: string;
 }
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect') || '';
+
   const [loginMethod, setLoginMethod] = useState<'otp' | 'password'>('otp');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
@@ -41,6 +44,11 @@ export default function LoginPage() {
         title: "Login Successful!",
         description: "You have been successfully logged in."
     });
+
+    if (redirectUrl) {
+        router.push(redirectUrl);
+        return;
+    }
 
     if (phoneNumber.includes('111')) {
       router.push('/admin/dashboard');
@@ -119,6 +127,10 @@ export default function LoginPage() {
     setOtp('');
     setIsOtpStep(false);
   }
+  
+  const signupHref = `/signup${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`;
+  const designerSignupHref = `/signup/designer${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`;
+
 
   const renderOtpForm = () => (
     <>
@@ -195,11 +207,25 @@ export default function LoginPage() {
       
       {loginMethod === 'otp' ? renderOtpForm() : renderPasswordForm()}
       
-      <CardFooter className="flex flex-col space-y-4 pt-0 -mt-2">
-        <p className="text-xs text-muted-foreground text-center px-6">
+      <CardFooter className="flex flex-col space-y-2 pt-0 -mt-2">
+         <p className="text-sm text-muted-foreground">
+          Don't have an account?{" "}
+          <Link href={signupHref} className="font-medium text-primary hover:underline">
+            Sign Up
+          </Link>
+        </p>
+        <p className="text-xs text-muted-foreground text-center px-6 pt-2">
           By continuing, you agree to our <Link href="/terms-of-service" className="underline hover:text-primary">Terms of Service</Link> and <Link href="/privacy-policy" className="underline hover:text-primary">Privacy Policy</Link>.
         </p>
       </CardFooter>
     </Card>
   );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
+  )
 }

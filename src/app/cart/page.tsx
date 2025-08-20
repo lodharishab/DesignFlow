@@ -86,23 +86,13 @@ export default function CartPage() {
   const totalAmount = subtotal + taxes;
   const totalAmountInPaise = Math.round(totalAmount * 100); 
 
-  const handlePaymentOrLogin = () => {
-    if (!isLoggedIn) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to proceed with your order.",
-        variant: "destructive",
-      });
-      router.push('/login');
-      return;
-    }
-
+  const handleSimulatedPayment = () => {
     setIsProcessing(true);
     toast({
       title: "Processing Payment...",
       description: "Please wait while we confirm your order.",
     });
-
+    
     // Use a valid, existing Order ID from mock data for invoice page to find
     const simulatedOrderId = 'ORD7361P'; 
     const simulatedPaymentId = `pay_SIMULATED_${Date.now()}`;
@@ -114,6 +104,21 @@ export default function CartPage() {
       });
       router.push(`/order-success?orderId=${simulatedOrderId}&paymentId=${simulatedPaymentId}`);
     }, 1500);
+  };
+  
+  const handleCheckoutAction = () => {
+    if (!isLoggedIn) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to proceed with your order.",
+        variant: "destructive",
+      });
+      // Redirect to login page with a parameter to return to cart
+      router.push('/login?redirect=/cart');
+      return;
+    }
+    
+    handleSimulatedPayment();
   };
 
   return (
@@ -231,7 +236,7 @@ export default function CartPage() {
                   <Button 
                     size="lg" 
                     className="w-full" 
-                    onClick={handlePaymentOrLogin}
+                    onClick={handleCheckoutAction}
                     disabled={isProcessing || totalAmountInPaise <= 0}
                   >
                     {isProcessing ? (

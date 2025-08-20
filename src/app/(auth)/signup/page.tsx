@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Phone, KeyRound, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 
 type Step = 'details' | 'otp';
@@ -31,8 +31,11 @@ interface FormErrors {
   agreedToTerms?: string;
 }
 
-export default function ClientSignupPage() {
+function ClientSignupPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect');
+
   const [step, setStep] = useState<Step>('details');
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
@@ -91,8 +94,13 @@ export default function ClientSignupPage() {
         title: "Account Created! (Simulated)",
         description: "Your account has been created. Redirecting to login..."
     });
-    router.push('/login');
+
+    const loginUrl = `/login${redirectUrl ? `?redirect=${redirectUrl}` : ''}`;
+    router.push(loginUrl);
   };
+  
+  const loginHref = `/login${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`;
+  const designerSignupHref = `/signup/designer${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`;
 
   return (
     <Card className="shadow-xl w-full max-w-md">
@@ -187,17 +195,26 @@ export default function ClientSignupPage() {
         
         <p className="text-sm text-muted-foreground pt-2">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-primary hover:underline">
+          <Link href={loginHref} className="font-medium text-primary hover:underline">
             Log In
           </Link>
         </p>
         <p className="text-sm text-muted-foreground">
           Are you a designer?{" "}
-          <Link href="/signup/designer" className="font-medium text-primary hover:underline">
+          <Link href={designerSignupHref} className="font-medium text-primary hover:underline">
             Sign Up as a Designer
           </Link>
         </p>
       </CardFooter>
     </Card>
   );
+}
+
+
+export default function ClientSignupPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ClientSignupPageContent />
+    </Suspense>
+  )
 }
