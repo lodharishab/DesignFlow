@@ -62,7 +62,7 @@ export default function CartPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // New state for auth simulation
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Default to logged out
 
   useEffect(() => {
     setCartItems(initialMockCartItems);
@@ -131,30 +131,6 @@ export default function CartPage() {
           <h1 className="text-3xl md:text-4xl font-bold font-headline">Your Shopping Cart</h1>
         </div>
         
-        {/* Login Simulation Toggle */}
-        <Card className="mb-6 shadow-md bg-secondary/30">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center">
-              <AlertCircle className="mr-3 h-5 w-5 text-muted-foreground" />
-              <div>
-                <Label htmlFor="login-switch" className="font-semibold">Login Simulation</Label>
-                <p className="text-xs text-muted-foreground">Toggle this to simulate being logged in or out.</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Label htmlFor="login-switch" className={isLoggedIn ? "text-primary font-medium" : ""}>
-                {isLoggedIn ? 'Logged In' : 'Logged Out'}
-              </Label>
-              <Switch
-                id="login-switch"
-                checked={isLoggedIn}
-                onCheckedChange={setIsLoggedIn}
-                aria-label="Toggle login status"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
         {cartItems.length === 0 ? (
           <Card className="text-center py-16 shadow-lg">
             <CardContent className="space-y-4">
