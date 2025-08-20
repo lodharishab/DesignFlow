@@ -10,7 +10,7 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Smartphone, Loader2, LogIn, LogOut, UserPlus, ArrowRight } from 'lucide-react';
+import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Smartphone, Loader2, LogIn, UserPlus, ArrowRight } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
 import { Switch } from '@/components/ui/switch';
@@ -124,25 +124,17 @@ export default function CartPage() {
       );
     }
 
-    // New, clearer actions for logged-out users
+    // Single "Continue" button for logged-out users
     return (
-      <div className="w-full space-y-3">
-        <Button
-          size="lg"
-          className="w-full"
-          asChild
-        >
-          <Link href="/signup?redirect=/cart">
-            <UserPlus className="mr-2 h-5 w-5" /> Sign Up to Continue
-          </Link>
-        </Button>
-        <div className="text-center text-sm text-muted-foreground">
-          Already have an account?{' '}
-          <Link href="/login?redirect=/cart" className="font-medium text-primary hover:underline">
-            Log In
-          </Link>
-        </div>
-      </div>
+      <Button
+        size="lg"
+        className="w-full"
+        asChild
+      >
+        <Link href="/login?redirect=/cart">
+          Continue
+        </Link>
+      </Button>
     );
   };
 
@@ -156,11 +148,7 @@ export default function CartPage() {
                 <ShoppingCart className="h-8 w-8 mr-3 text-primary" />
                 <h1 className="text-3xl md:text-4xl font-bold font-headline">Your Shopping Cart</h1>
             </div>
-            {/* Login simulation toggle for development */}
-            <div className="flex items-center space-x-2">
-                <Switch id="login-simulation" checked={isLoggedIn} onCheckedChange={setIsLoggedIn} />
-                <Label htmlFor="login-simulation" className="text-xs text-muted-foreground">{isLoggedIn ? 'Logged In' : 'Logged Out'}</Label>
-            </div>
+            {/* Login simulation toggle for development is now removed */}
         </div>
         
         {cartItems.length === 0 ? (

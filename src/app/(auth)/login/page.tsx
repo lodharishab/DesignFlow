@@ -129,8 +129,6 @@ function LoginPageContent() {
   }
   
   const signupHref = `/signup${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`;
-  const designerSignupHref = `/signup/designer${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`;
-
 
   const renderOtpForm = () => (
     <>
@@ -143,6 +141,9 @@ function LoginPageContent() {
               <Input id="phoneNumberOtp" type="tel" placeholder="e.g., 9876543210" className="pl-10" value={phoneNumber} onChange={(e) => { setPhoneNumber(e.target.value); if (errors.phoneNumber) setErrors(prev => ({...prev, phoneNumber: undefined})) }} aria-invalid={!!errors.phoneNumber} maxLength={10}/>
             </div>
             {errors.phoneNumber && <p className="text-sm text-destructive pt-1">{errors.phoneNumber}</p>}
+             <p className="text-xs text-muted-foreground pt-1">
+              If you're new, we'll guide you through creating an account.
+            </p>
           </div>
         ) : (
           <div className="space-y-1">
@@ -160,11 +161,11 @@ function LoginPageContent() {
       </CardContent>
       <CardFooter className="flex-col gap-4">
         {!isOtpStep ? (
-          <Button className="w-full" onClick={handleContinueWithOtp}>Continue with OTP</Button>
+          <Button className="w-full" onClick={handleContinueWithOtp}>Continue</Button>
         ) : (
           <Button className="w-full" onClick={handleVerifyOtp}>Verify OTP & Log In</Button>
         )}
-        <Button variant="link" size="sm" onClick={toggleLoginMethod}>Or Log In with Password</Button>
+        <Button variant="link" size="sm" onClick={toggleLoginMethod}>Or use Password</Button>
       </CardFooter>
     </>
   );
@@ -199,9 +200,9 @@ function LoginPageContent() {
   return (
     <Card className="shadow-xl">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Welcome Back!</CardTitle>
+        <CardTitle className="font-headline text-2xl">Log In or Sign Up</CardTitle>
         <CardDescription>
-          {loginMethod === 'otp' ? 'Enter your phone number to receive a secure OTP.' : 'Enter your credentials to access your account.'}
+          {loginMethod === 'otp' ? 'Enter your phone number to continue.' : 'Enter your credentials to access your account.'}
         </CardDescription>
       </CardHeader>
       
@@ -209,9 +210,9 @@ function LoginPageContent() {
       
       <CardFooter className="flex flex-col space-y-2 pt-0 -mt-2">
          <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          New to DesignFlow?{" "}
           <Link href={signupHref} className="font-medium text-primary hover:underline">
-            Sign Up
+            Create an account
           </Link>
         </p>
         <p className="text-xs text-muted-foreground text-center px-6 pt-2">
