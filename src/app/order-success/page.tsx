@@ -8,7 +8,7 @@ import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, ShoppingBag, LayoutDashboard, FileText } from 'lucide-react';
 
 function OrderSuccessContent() {
