@@ -9,7 +9,7 @@ import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, ShoppingBag, LayoutDashboard } from 'lucide-react';
+import { CheckCircle, ShoppingBag, LayoutDashboard, FileText } from 'lucide-react';
 
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
@@ -44,15 +44,17 @@ function OrderSuccessContent() {
           )}
           <p className="text-muted-foreground">
             You will receive an email confirmation shortly with your order details.
-            Our team will get in touch if any further information is required.
+            You can view your invoice and manage your order from your dashboard.
           </p>
         </CardContent>
         <CardFooter className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
-          <Button asChild size="lg">
-            <Link href="/client/orders"> 
-              <ShoppingBag className="mr-2 h-5 w-5" /> View My Orders
-            </Link>
-          </Button>
+          {orderId && (
+             <Button asChild size="lg">
+                <Link href={`/invoice/${orderId}`}> 
+                  <FileText className="mr-2 h-5 w-5" /> View Your Invoice
+                </Link>
+              </Button>
+          )}
           <Button variant="outline" asChild size="lg">
             <Link href="/client/dashboard">
               <LayoutDashboard className="mr-2 h-5 w-5" /> Go to Dashboard

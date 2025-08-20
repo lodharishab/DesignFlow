@@ -103,9 +103,19 @@ export default function ClientOrderDetailPage() {
 
   return (
     <div className="space-y-8">
-      <Button variant="outline" onClick={() => router.back()} className="mb-4">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to My Orders
-      </Button>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <Button variant="outline" onClick={() => router.back()} className="">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to My Orders
+        </Button>
+        <div className="flex items-center gap-2">
+            <Button variant="secondary" asChild>
+                <Link href={`/invoice/${order.id}`}>
+                    <FileText className="mr-2 h-4 w-4" /> View Invoice
+                </Link>
+            </Button>
+             <Button variant="destructive" disabled>Cancel Order</Button>
+        </div>
+      </div>
 
       <Card className="shadow-lg">
         <CardHeader>
