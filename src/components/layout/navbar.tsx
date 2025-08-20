@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { LogIn, UserPlus, Brush, LayoutGrid, PanelLeftClose, Briefcase, Newspaper, Sparkles } from 'lucide-react'; // Added Sparkles for Kira
+import { LogIn, UserPlus, Brush, LayoutGrid, PanelLeftClose, Briefcase, Newspaper, Sparkles, ShoppingCart } from 'lucide-react'; // Added ShoppingCart
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/shared/mode-toggle';
 import { 
@@ -15,9 +15,11 @@ import {
 } from "@/components/ui/sheet";
 import * as React from 'react';
 import { useUI } from '@/contexts/ui-context';
+import { Badge } from '@/components/ui/badge';
 
 export function Navbar() {
   const { isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu, toggleAiChat } = useUI();
+  const mockCartItemCount = 3; // Mock data for cart item count
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -35,6 +37,17 @@ export function Navbar() {
           <Button variant="ghost" onClick={toggleAiChat}>
             <Sparkles className="mr-2 h-4 w-4" />
             Kira
+          </Button>
+          <Button variant="ghost" asChild>
+            <Link href="/cart" className="relative">
+              <ShoppingCart className="h-5 w-5" />
+              {mockCartItemCount > 0 && (
+                <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  {mockCartItemCount}
+                </Badge>
+              )}
+              <span className="sr-only">View Cart</span>
+            </Link>
           </Button>
           <ModeToggle />
           <Button variant="ghost" asChild>

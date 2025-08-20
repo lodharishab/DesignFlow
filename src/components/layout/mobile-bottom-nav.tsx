@@ -3,35 +3,32 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, LayoutGrid, Menu as MenuIcon, Briefcase, Newspaper } from 'lucide-react'; // Added Newspaper for Blog
+import { Home, LayoutGrid, Menu as MenuIcon, Briefcase, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUI } from '@/contexts/ui-context';
+import { Badge } from '../ui/badge';
 
 const navItems = [
-  { href: '/client/dashboard', label: 'Home', icon: Home }, // Assuming client dashboard as home when logged in
+  { href: '/client/dashboard', label: 'Home', icon: Home }, // Assuming client dashboard as home
   { href: '/services', label: 'Services', icon: LayoutGrid },
   { href: '/portfolio', label: 'Portfolio', icon: Briefcase },
-  { href: '/blog', label: 'Blog', icon: Newspaper }, // Added Blog
+  { href: '/cart', label: 'Cart', icon: ShoppingCart }, // Changed from Blog to Cart
 ];
 
 export function MobileBottomNav() {
   const pathname = usePathname();
   const { toggleMobileMenu } = useUI();
+  const mockCartItemCount = 3; // Mock data
 
   // Determine if any main nav item is active.
-  // Exclude the "More" button itself from this check.
   const isAnyMainNavItemActive = navItems.some(item => {
     let effectiveIsActive = pathname === item.href;
-    // For nested routes, make parent active
     if (item.href !== '/' && item.href.length > 1) { 
       if (item.href === '/services') {
            effectiveIsActive = pathname === '/services' || pathname.startsWith('/services/');
       } else if (item.href === '/portfolio') {
           effectiveIsActive = pathname === '/portfolio' || pathname.startsWith('/portfolio/');
-      } else if (item.href === '/blog') { // Check for blog and its children
-          effectiveIsActive = pathname === '/blog' || pathname.startsWith('/blog/');
-      }
-       else {
+      } else {
           effectiveIsActive = effectiveIsActive || pathname.startsWith(item.href);
       }
     }
@@ -43,16 +40,12 @@ export function MobileBottomNav() {
       <div className="flex justify-around items-center h-full">
         {navItems.map((item) => {
           let effectiveIsActive = pathname === item.href;
-          // For nested routes, make parent active
           if (item.href !== '/' && item.href.length > 1) { 
             if (item.href === '/services') {
                  effectiveIsActive = pathname === '/services' || pathname.startsWith('/services/');
             } else if (item.href === '/portfolio') {
                 effectiveIsActive = pathname === '/portfolio' || pathname.startsWith('/portfolio/');
-            } else if (item.href === '/blog') { // Check for blog and its children
-                effectiveIsActive = pathname === '/blog' || pathname.startsWith('/blog/');
-            }
-             else {
+            } else {
                 effectiveIsActive = effectiveIsActive || pathname.startsWith(item.href);
             }
           }
@@ -62,11 +55,16 @@ export function MobileBottomNav() {
               key={item.label}
               href={item.href}
               className={cn(
-                'flex flex-col items-center justify-center text-xs w-full h-full transition-colors',
+                'flex flex-col items-center justify-center text-xs w-full h-full transition-colors relative',
                 effectiveIsActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <item.icon className={cn('h-6 w-6 mb-0.5', effectiveIsActive ? 'text-primary' : '')} />
+              {item.href === '/cart' && mockCartItemCount > 0 && (
+                 <Badge variant="destructive" className="absolute top-1 right-5 h-4 w-4 p-0 flex items-center justify-center text-xs">
+                  {mockCartItemCount}
+                </Badge>
+              )}
               <span>{item.label}</span>
             </Link>
           );
@@ -76,7 +74,7 @@ export function MobileBottomNav() {
           onClick={toggleMobileMenu}
           className={cn(
             'flex flex-col items-center justify-center text-xs w-full h-full transition-colors',
-            !isAnyMainNavItemActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground' // Active if no other item is active
+            !isAnyMainNavItemActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
           )}
           aria-label="Open menu"
         >
