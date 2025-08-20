@@ -129,6 +129,22 @@ function InvoiceContent() {
 }
 
 export default function InvoicePage() {
+    // Correct way to add dynamic styles for printing
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.innerHTML = `
+        @media print {
+            body {
+            -webkit-print-color-adjust: exact;
+            }
+        }
+        `;
+        document.head.appendChild(style);
+        return () => {
+        document.head.removeChild(style);
+        };
+    }, []);
+
     return (
         <div className="flex flex-col min-h-screen">
             <div className="print:hidden">
@@ -143,18 +159,4 @@ export default function InvoicePage() {
             </div>
         </div>
     );
-}
-
-// Add basic print styles
-const styles = `
-@media print {
-  body {
-    -webkit-print-color-adjust: exact;
-  }
-}
-`;
-
-const style = <style>{styles}</style>;
-if (typeof window !== 'undefined') {
-  document.head.appendChild(style.props.children.ref.current);
 }
