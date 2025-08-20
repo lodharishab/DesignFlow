@@ -10,9 +10,11 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Smartphone, Loader2 } from 'lucide-react';
+import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Smartphone, Loader2, LogIn, LogOut, AlertCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface CartItem {
   id: string;
@@ -60,6 +62,7 @@ export default function CartPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // New state for auth simulation
 
   useEffect(() => {
     setCartItems(initialMockCartItems);
@@ -83,36 +86,35 @@ export default function CartPage() {
   const totalAmount = subtotal + taxes;
   const totalAmountInPaise = Math.round(totalAmount * 100); 
 
-  const handleSimulatedPayment = async () => {
+  const handlePaymentOrLogin = () => {
+    if (!isLoggedIn) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to proceed with your order.",
+        variant: "destructive",
+      });
+      router.push('/login');
+      return;
+    }
+
     setIsProcessing(true);
     toast({
       title: "Processing Payment...",
       description: "Please wait while we confirm your order.",
     });
 
-    // **THE FIX**: Use a valid, existing Order ID from our mock data.
+    // Use a valid, existing Order ID from mock data for invoice page to find
     const simulatedOrderId = 'ORD7361P'; 
     const simulatedPaymentId = `pay_SIMULATED_${Date.now()}`;
 
-    // Simulate network delay
     setTimeout(() => {
       toast({
         title: "Payment Successful (Simulated)",
         description: `Your order has been placed. Order ID: ${simulatedOrderId}`,
       });
       router.push(`/order-success?orderId=${simulatedOrderId}&paymentId=${simulatedPaymentId}`);
-      // No need to set isProcessing to false as we are navigating away
-    }, 1500); // 1.5 second delay
+    }, 1500);
   };
-
-  const handlePhonePePayment = () => {
-    toast({
-      title: "PhonePe (Coming Soon)",
-      description: "PhonePe integration is currently under development.",
-      duration: 3000,
-    });
-  };
-
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -123,6 +125,30 @@ export default function CartPage() {
           <ShoppingCart className="h-8 w-8 mr-3 text-primary" />
           <h1 className="text-3xl md:text-4xl font-bold font-headline">Your Shopping Cart</h1>
         </div>
+        
+        {/* Login Simulation Toggle */}
+        <Card className="mb-6 shadow-md bg-secondary/30">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center">
+              <AlertCircle className="mr-3 h-5 w-5 text-muted-foreground" />
+              <div>
+                <Label htmlFor="login-switch" className="font-semibold">Login Simulation</Label>
+                <p className="text-xs text-muted-foreground">Toggle this to simulate being logged in or out.</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Label htmlFor="login-switch" className={isLoggedIn ? "text-primary font-medium" : ""}>
+                {isLoggedIn ? 'Logged In' : 'Logged Out'}
+              </Label>
+              <Switch
+                id="login-switch"
+                checked={isLoggedIn}
+                onCheckedChange={setIsLoggedIn}
+                aria-label="Toggle login status"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         {cartItems.length === 0 ? (
           <Card className="text-center py-16 shadow-lg">
@@ -205,26 +231,20 @@ export default function CartPage() {
                   <Button 
                     size="lg" 
                     className="w-full" 
-                    onClick={handleSimulatedPayment}
+                    onClick={handlePaymentOrLogin}
                     disabled={isProcessing || totalAmountInPaise <= 0}
                   >
                     {isProcessing ? (
                       <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...</>
                     ) : (
-                      <>
-                        <CreditCard className="mr-2 h-5 w-5" /> Proceed to Checkout
-                      </>
+                      isLoggedIn ? (
+                        <><CreditCard className="mr-2 h-5 w-5" /> Proceed to Checkout</>
+                      ) : (
+                        <><LogIn className="mr-2 h-5 w-5" /> Login to Continue</>
+                      )
                     )}
                   </Button>
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
-                    className="w-full" 
-                    onClick={handlePhonePePayment}
-                    disabled={isProcessing || totalAmountInPaise <= 0}
-                  >
-                    <Smartphone className="mr-2 h-5 w-5" /> Pay with PhonePe (Coming Soon)
-                  </Button>
+                  
                   <Button variant="outline" className="w-full mt-2" asChild disabled={isProcessing}>
                     <Link href="/design-services">Continue Shopping</Link>
                   </Button>
