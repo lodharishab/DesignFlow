@@ -10,7 +10,7 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Smartphone, Loader2, LogIn, LogOut, AlertCircle } from 'lucide-react';
+import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Smartphone, Loader2, LogIn, LogOut, UserPlus, ArrowRight } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
 import { Switch } from '@/components/ui/switch';
@@ -106,19 +106,44 @@ export default function CartPage() {
     }, 1500);
   };
   
-  const handleCheckoutAction = () => {
-    if (!isLoggedIn) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to proceed with your order.",
-        variant: "destructive",
-      });
-      // Redirect to login page with a parameter to return to cart
-      router.push('/login?redirect=/cart');
-      return;
+  const renderCheckoutActions = () => {
+    if (isLoggedIn) {
+      return (
+        <Button
+          size="lg"
+          className="w-full"
+          onClick={handleSimulatedPayment}
+          disabled={isProcessing || totalAmountInPaise <= 0}
+        >
+          {isProcessing ? (
+            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...</>
+          ) : (
+            <><CreditCard className="mr-2 h-5 w-5" /> Proceed to Checkout</>
+          )}
+        </Button>
+      );
     }
-    
-    handleSimulatedPayment();
+
+    // New, clearer actions for logged-out users
+    return (
+      <div className="w-full space-y-3">
+        <Button
+          size="lg"
+          className="w-full"
+          asChild
+        >
+          <Link href="/signup?redirect=/cart">
+            <UserPlus className="mr-2 h-5 w-5" /> Sign Up to Continue
+          </Link>
+        </Button>
+        <div className="text-center text-sm text-muted-foreground">
+          Already have an account?{' '}
+          <Link href="/login?redirect=/cart" className="font-medium text-primary hover:underline">
+            Log In
+          </Link>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -126,9 +151,16 @@ export default function CartPage() {
       <Navbar />
       <CategoriesNavbar />
       <main className="flex-grow container mx-auto py-12 px-5">
-        <div className="flex items-center mb-8">
-          <ShoppingCart className="h-8 w-8 mr-3 text-primary" />
-          <h1 className="text-3xl md:text-4xl font-bold font-headline">Your Shopping Cart</h1>
+        <div className="flex items-center justify-between mb-8">
+            <div className='flex items-center'>
+                <ShoppingCart className="h-8 w-8 mr-3 text-primary" />
+                <h1 className="text-3xl md:text-4xl font-bold font-headline">Your Shopping Cart</h1>
+            </div>
+            {/* Login simulation toggle for development */}
+            <div className="flex items-center space-x-2">
+                <Switch id="login-simulation" checked={isLoggedIn} onCheckedChange={setIsLoggedIn} />
+                <Label htmlFor="login-simulation" className="text-xs text-muted-foreground">{isLoggedIn ? 'Logged In' : 'Logged Out'}</Label>
+            </div>
         </div>
         
         {cartItems.length === 0 ? (
@@ -209,22 +241,7 @@ export default function CartPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-3 pt-4">
-                  <Button 
-                    size="lg" 
-                    className="w-full" 
-                    onClick={handleCheckoutAction}
-                    disabled={isProcessing || totalAmountInPaise <= 0}
-                  >
-                    {isProcessing ? (
-                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...</>
-                    ) : (
-                      isLoggedIn ? (
-                        <><CreditCard className="mr-2 h-5 w-5" /> Proceed to Checkout</>
-                      ) : (
-                        <><LogIn className="mr-2 h-5 w-5" /> Login to Continue</>
-                      )
-                    )}
-                  </Button>
+                  {renderCheckoutActions()}
                   
                   <Button variant="outline" className="w-full mt-2" asChild disabled={isProcessing}>
                     <Link href="/design-services">Continue Shopping</Link>
