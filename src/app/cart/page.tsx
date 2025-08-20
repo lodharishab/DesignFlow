@@ -10,7 +10,7 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Smartphone } from 'lucide-react';
+import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Smartphone, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
 
@@ -54,13 +54,6 @@ const initialMockCartItems: CartItem[] = [
 ];
 
 const TAX_RATE = 0.18; // 18% GST
-const RAZORPAY_TEST_KEY_ID = "rzp_test_YOUR_KEY_ID"; 
-
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -90,81 +83,25 @@ export default function CartPage() {
   const totalAmount = subtotal + taxes;
   const totalAmountInPaise = Math.round(totalAmount * 100); 
 
-  const handleRazorpayPayment = async () => {
+  const handleSimulatedPayment = async () => {
     setIsProcessing(true);
-    if (typeof window.Razorpay === "undefined") {
-      toast({
-        title: "Error",
-        description: "Razorpay SDK not loaded. Please try again in a moment.",
-        variant: "destructive",
-      });
-      setIsProcessing(false);
-      return;
-    }
+    toast({
+      title: "Processing Payment...",
+      description: "Please wait while we confirm your order.",
+    });
 
     const simulatedOrderId = `ORD_DESIGNFLOW_${Date.now()}`;
+    const simulatedPaymentId = `pay_SIMULATED_${Date.now()}`;
 
-    const options = {
-      key: RAZORPAY_TEST_KEY_ID, 
-      amount: totalAmountInPaise, 
-      currency: "INR",
-      name: "DesignFlow",
-      description: "Design Services Order",
-      image: "https://placehold.co/100x100.png?text=DF", 
-      order_id: "", 
-      handler: function (response: any) {
-        toast({
-          title: "Payment Successful (Simulated)",
-          description: `Payment ID: ${response.razorpay_payment_id}. Order ID: ${simulatedOrderId}`,
-        });
-        router.push(`/order-success?orderId=${simulatedOrderId}&paymentId=${response.razorpay_payment_id}`);
-        setIsProcessing(false);
-      },
-      prefill: {
-        name: "Test User", 
-        email: "test.user@example.com",
-        contact: "9999988888"
-      },
-      notes: {
-        address: "DesignFlow Office, City"
-      },
-      theme: {
-        color: "#2081F9" 
-      },
-      modal: {
-        ondismiss: function() {
-          toast({
-            title: "Payment Cancelled",
-            description: "You closed the payment window.",
-            variant: "destructive",
-          });
-          router.push(`/order-failed?orderId=${simulatedOrderId}&reason=cancelled_by_user`); 
-          setIsProcessing(false);
-        }
-      }
-    };
-
-    try {
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (response: any){
-        toast({
-          title: "Payment Failed (Simulated)",
-          description: `Error: ${response.error.description}`,
-          variant: "destructive",
-        });
-        router.push(`/order-failed?orderId=${simulatedOrderId}&errorCode=${response.error.code}&errorDesc=${response.error.description}`);
-        setIsProcessing(false);
-      });
-      rzp.open();
-    } catch (error) {
-      console.error("Razorpay error: ", error);
+    // Simulate network delay
+    setTimeout(() => {
       toast({
-        title: "Payment Error",
-        description: "Could not initiate Razorpay payment. Please check console for errors.",
-        variant: "destructive",
+        title: "Payment Successful (Simulated)",
+        description: `Your order has been placed. Order ID: ${simulatedOrderId}`,
       });
-      setIsProcessing(false);
-    }
+      router.push(`/order-success?orderId=${simulatedOrderId}&paymentId=${simulatedPaymentId}`);
+      // No need to set isProcessing to false as we are navigating away
+    }, 1500); // 1.5 second delay
   };
 
   const handlePhonePePayment = () => {
@@ -267,12 +204,14 @@ export default function CartPage() {
                   <Button 
                     size="lg" 
                     className="w-full" 
-                    onClick={handleRazorpayPayment}
+                    onClick={handleSimulatedPayment}
                     disabled={isProcessing || totalAmountInPaise <= 0}
                   >
-                    {isProcessing ? 'Processing...' : (
+                    {isProcessing ? (
+                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...</>
+                    ) : (
                       <>
-                        <CreditCard className="mr-2 h-5 w-5" /> Pay with Razorpay
+                        <CreditCard className="mr-2 h-5 w-5" /> Proceed to Checkout
                       </>
                     )}
                   </Button>
