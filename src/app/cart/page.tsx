@@ -90,7 +90,8 @@ export default function CartPage() {
       description: "Please wait while we confirm your order.",
     });
 
-    const simulatedOrderId = `ORD_DESIGNFLOW_${Date.now()}`;
+    // **THE FIX**: Use a valid, existing Order ID from our mock data.
+    const simulatedOrderId = 'ORD7361P'; 
     const simulatedPaymentId = `pay_SIMULATED_${Date.now()}`;
 
     // Simulate network delay
