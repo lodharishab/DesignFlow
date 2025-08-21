@@ -62,13 +62,13 @@ export default function CartPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Defaulting to logged in now
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Defaulting to logged out now, as it should be.
   const [showOtpStep, setShowOtpStep] = useState(false);
   const [otp, setOtp] = useState('');
 
   useEffect(() => {
     // In a real app, you would check auth status here.
-    // For now, we default to logged in for testing purposes.
+    // For now, we simulate being logged out initially.
     setCartItems(initialMockCartItems);
   }, []);
 
@@ -97,6 +97,7 @@ export default function CartPage() {
       description: "Please wait while we confirm your order.",
     });
     
+    // Use a valid, pre-existing Order ID for the redirect so the invoice page can find it.
     const simulatedOrderId = 'ORD7361P'; 
     const simulatedPaymentId = `pay_SIMULATED_${Date.now()}`;
 
