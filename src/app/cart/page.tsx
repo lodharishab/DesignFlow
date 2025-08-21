@@ -62,11 +62,13 @@ export default function CartPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // Defaulting to logged in now
   const [showOtpStep, setShowOtpStep] = useState(false);
   const [otp, setOtp] = useState('');
 
   useEffect(() => {
+    // In a real app, you would check auth status here.
+    // For now, we default to logged in for testing purposes.
     setCartItems(initialMockCartItems);
   }, []);
 
@@ -95,7 +97,6 @@ export default function CartPage() {
       description: "Please wait while we confirm your order.",
     });
     
-    // Use a valid, existing Order ID from mock data for invoice page to find
     const simulatedOrderId = 'ORD7361P'; 
     const simulatedPaymentId = `pay_SIMULATED_${Date.now()}`;
 
@@ -109,7 +110,6 @@ export default function CartPage() {
   };
   
   const handleProceedToCheckout = () => {
-    // If user is logged in, show the OTP step instead of paying directly
     if (isLoggedIn) {
       setShowOtpStep(true);
       toast({
@@ -117,7 +117,6 @@ export default function CartPage() {
         description: "An OTP has been sent to your registered mobile number for verification.",
       });
     } else {
-      // If user is not logged in, redirect to login page with redirect param
       router.push('/login?redirect=/cart');
     }
   };
@@ -131,7 +130,6 @@ export default function CartPage() {
       });
       return;
     }
-    // If OTP is valid (simulated), proceed with payment
     handleSimulatedPayment();
   };
 
@@ -154,12 +152,11 @@ export default function CartPage() {
       );
     }
 
-    // Single "Continue" button for logged-out users
     return (
       <Button
         size="lg"
         className="w-full"
-        onClick={handleProceedToCheckout} // This will now redirect to /login
+        onClick={handleProceedToCheckout}
       >
         Continue <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
@@ -175,24 +172,6 @@ export default function CartPage() {
             <div className='flex items-center'>
                 <ShoppingCart className="h-8 w-8 mr-3 text-primary" />
                 <h1 className="text-3xl md:text-4xl font-bold font-headline">Your Shopping Cart</h1>
-            </div>
-             <div className="flex items-center space-x-2">
-                <Label htmlFor="login-simulation">Simulate Login:</Label>
-                <span className={`text-sm font-medium ${!isLoggedIn ? 'text-primary' : 'text-muted-foreground'}`}>Logged Out</span>
-                <Input
-                    type="checkbox"
-                    id="login-simulation"
-                    className="hidden"
-                    checked={isLoggedIn}
-                    onChange={() => setIsLoggedIn(prev => !prev)}
-                />
-                <Label
-                    htmlFor="login-simulation"
-                    className="relative inline-flex items-center cursor-pointer"
-                >
-                    <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                </Label>
-                <span className={`text-sm font-medium ${isLoggedIn ? 'text-primary' : 'text-muted-foreground'}`}>Logged In</span>
             </div>
         </div>
         
