@@ -117,7 +117,7 @@ export default function CartPage() {
         description: "An OTP has been sent to your registered mobile number for verification.",
       });
     } else {
-      // Logic for logged out users remains the same
+      // If user is not logged in, redirect to login page with redirect param
       router.push('/login?redirect=/cart');
     }
   };
@@ -154,25 +154,15 @@ export default function CartPage() {
       );
     }
 
-    // New unified flow for logged out users
+    // Single "Continue" button for logged-out users
     return (
-      <div className="w-full space-y-3">
-        <Button
-          size="lg"
-          className="w-full"
-          asChild
-        >
-          <Link href="/signup?redirect=/cart">
-            Sign Up to Continue <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
-         <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link href="/login?redirect=/cart" className="font-medium text-primary hover:underline">
-            Log In
-          </Link>
-        </p>
-      </div>
+      <Button
+        size="lg"
+        className="w-full"
+        onClick={handleProceedToCheckout} // This will now redirect to /login
+      >
+        Continue <ArrowRight className="ml-2 h-4 w-4" />
+      </Button>
     );
   };
 
@@ -326,4 +316,3 @@ export default function CartPage() {
     </div>
   );
 }
-
