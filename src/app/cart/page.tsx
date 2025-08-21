@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Navbar } from '@/components/layout/navbar';
@@ -10,9 +10,9 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Smartphone, Loader2, LogIn, UserPlus, ArrowRight, KeyRound } from 'lucide-react';
+import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Loader2, KeyRound, ArrowRight } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
@@ -57,20 +57,22 @@ const initialMockCartItems: CartItem[] = [
 
 const TAX_RATE = 0.18; // 18% GST
 
-export default function CartPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+function CartPageContent() {
+  const [cartItems, setCartItems] = useState<CartItem[]>(initialMockCartItems);
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Defaulting to logged out now, as it should be.
+  const [isLoggedIn, setIsLoggedIn] = useState(false); 
   const [showOtpStep, setShowOtpStep] = useState(false);
   const [otp, setOtp] = useState('');
 
   useEffect(() => {
-    // In a real app, you would check auth status here.
-    // For now, we simulate being logged out initially.
-    setCartItems(initialMockCartItems);
-  }, []);
+    // Check if the 'loggedin' query param is present
+    if (searchParams.get('loggedin') === 'true') {
+      setIsLoggedIn(true);
+    }
+  }, [searchParams]);
 
   const handleRemoveItem = (itemId: string) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
@@ -97,7 +99,6 @@ export default function CartPage() {
       description: "Please wait while we confirm your order.",
     });
     
-    // Use a valid, pre-existing Order ID for the redirect so the invoice page can find it.
     const simulatedOrderId = 'ORD7361P'; 
     const simulatedPaymentId = `pay_SIMULATED_${Date.now()}`;
 
@@ -111,15 +112,11 @@ export default function CartPage() {
   };
   
   const handleProceedToCheckout = () => {
-    if (isLoggedIn) {
       setShowOtpStep(true);
       toast({
         title: "OTP Sent (Simulated)",
         description: "An OTP has been sent to your registered mobile number for verification.",
       });
-    } else {
-      router.push('/login?redirect=/cart');
-    }
   };
 
   const handleVerifyOtpAndPay = () => {
@@ -133,7 +130,6 @@ export default function CartPage() {
     }
     handleSimulatedPayment();
   };
-
 
   const renderCheckoutActions = () => {
     if (isLoggedIn) {
@@ -157,13 +153,12 @@ export default function CartPage() {
       <Button
         size="lg"
         className="w-full"
-        onClick={handleProceedToCheckout}
+        onClick={() => router.push('/login?redirect=/cart')}
       >
         Continue <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
     );
   };
-
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -254,7 +249,7 @@ export default function CartPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-3 pt-4">
-                  {showOtpStep ? (
+                  {isLoggedIn && showOtpStep ? (
                      <div className="w-full space-y-4">
                         <div className="space-y-2 text-left">
                             <Label htmlFor="otp">Verify to Continue</Label>
@@ -281,7 +276,7 @@ export default function CartPage() {
                     renderCheckoutActions()
                   )}
                   
-                  {!showOtpStep && (
+                  {!(isLoggedIn && showOtpStep) && (
                      <Button variant="outline" className="w-full mt-2" asChild disabled={isProcessing}>
                        <Link href="/design-services">Continue Shopping</Link>
                      </Button>
@@ -295,4 +290,12 @@ export default function CartPage() {
       <Footer />
     </div>
   );
+}
+
+export default function CartPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CartPageContent />
+    </Suspense>
+  )
 }
