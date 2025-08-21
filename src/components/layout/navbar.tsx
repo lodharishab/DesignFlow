@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { LogIn, UserPlus, Brush, LayoutGrid, PanelLeftClose, Briefcase, Newspaper, Sparkles, ShoppingCart } from 'lucide-react'; // Added ShoppingCart
+import { LogIn, UserPlus, Brush, LayoutGrid, PanelLeftClose, Briefcase, Newspaper, Sparkles, ShoppingCart, UserCircle } from 'lucide-react'; // Added UserCircle
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/shared/mode-toggle';
 import { 
@@ -15,11 +15,26 @@ import {
 } from "@/components/ui/sheet";
 import * as React from 'react';
 import { useUI } from '@/contexts/ui-context';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Navbar() {
-  const { isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu, toggleAiChat } = useUI();
+  const { isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu, toggleAiChat, isLoggedIn, setIsLoggedIn } = useUI();
   const mockCartItemCount = 3; // Mock data for cart item count
+
+  // Function to handle logout, setting global state to false
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    // In a real app, you would also clear tokens, etc.
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -50,18 +65,50 @@ export function Navbar() {
             </Link>
           </Button>
           <ModeToggle />
-          <Button variant="ghost" asChild>
-            <Link href="/login">
-              <LogIn className="mr-2 h-4 w-4" />
-              Login
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href="/signup">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Sign Up
-            </Link>
-          </Button>
+
+          {isLoggedIn ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="https://placehold.co/100x100.png" alt="Client User" data-ai-hint="person avatar"/>
+                    <AvatarFallback>CL</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">Client User</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      client@designflow.com
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild><Link href="/client/dashboard">Dashboard</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/client/orders">My Orders</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/client/profile">Settings</Link></DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link href="/login">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href="/signup">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Sign Up
+                </Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Trigger */}
@@ -109,18 +156,35 @@ export function Navbar() {
                     Services
                   </Link>
                 </Button>
-                <Button variant="default" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
-                  <Link href="/login">
-                    <LogIn className="mr-3 h-5 w-5" />
-                    Login
-                  </Link>
-                </Button>
-                <Button variant="outline" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
-                  <Link href="/signup">
-                    <UserPlus className="mr-3 h-5 w-5" />
-                    Sign Up
-                  </Link>
-                </Button>
+                {isLoggedIn ? (
+                  <>
+                     <Button variant="default" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
+                      <Link href="/client/dashboard">
+                        <UserCircle className="mr-3 h-5 w-5" />
+                        My Dashboard
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start py-6 text-base" onClick={() => {handleLogout(); setIsMobileMenuOpen(false);}}>
+                        <LogIn className="mr-3 h-5 w-5" />
+                        Log Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="default" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
+                      <Link href="/login">
+                        <LogIn className="mr-3 h-5 w-5" />
+                        Login
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
+                      <Link href="/signup">
+                        <UserPlus className="mr-3 h-5 w-5" />
+                        Sign Up
+                      </Link>
+                    </Button>
+                  </>
+                )}
                 <div className="pt-4">
                   <label className="text-sm font-medium text-muted-foreground px-1">Theme</label>
                   <div className="mt-2 flex items-center justify-between rounded-md border p-2">

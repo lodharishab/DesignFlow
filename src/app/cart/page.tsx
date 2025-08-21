@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { useUI } from '@/contexts/ui-context';
 
 interface CartItem {
   id: string;
@@ -63,16 +64,16 @@ function CartPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); 
+  const { isLoggedIn, setIsLoggedIn } = useUI(); // Use global state
   const [showOtpStep, setShowOtpStep] = useState(false);
   const [otp, setOtp] = useState('');
 
   useEffect(() => {
-    // Check if the 'loggedin' query param is present
+    // Check if the 'loggedin' query param is present and update global state
     if (searchParams.get('loggedin') === 'true') {
       setIsLoggedIn(true);
     }
-  }, [searchParams]);
+  }, [searchParams, setIsLoggedIn]);
 
   const handleRemoveItem = (itemId: string) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
@@ -99,6 +100,7 @@ function CartPageContent() {
       description: "Please wait while we confirm your order.",
     });
     
+    // Pick a pre-existing valid order ID to simulate the flow correctly
     const simulatedOrderId = 'ORD7361P'; 
     const simulatedPaymentId = `pay_SIMULATED_${Date.now()}`;
 
@@ -150,15 +152,16 @@ function CartPageContent() {
     }
 
     return (
-      <Button
-        size="lg"
-        className="w-full"
-        onClick={() => router.push('/login?redirect=/cart')}
-      >
-        Continue <ArrowRight className="ml-2 h-4 w-4" />
-      </Button>
+        <Button
+            size="lg"
+            className="w-full"
+            onClick={() => router.push('/login?redirect=/cart')}
+        >
+            Continue <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
     );
   };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -294,7 +297,7 @@ function CartPageContent() {
 
 export default function CartPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="flex-grow container mx-auto py-12 px-5 text-center">Loading...</div>}>
       <CartPageContent />
     </Suspense>
   )

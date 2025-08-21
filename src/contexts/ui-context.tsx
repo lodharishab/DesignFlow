@@ -11,6 +11,8 @@ interface UIContextType {
   isAiChatOpen: boolean;
   setIsAiChatOpen: React.Dispatch<React.SetStateAction<boolean>>;
   toggleAiChat: () => void;
+  isLoggedIn: boolean; // Add isLoggedIn state
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>; // Add setter for isLoggedIn
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -18,12 +20,17 @@ const UIContext = createContext<UIContextType | undefined>(undefined);
 export function UIProvider({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Default to logged out
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
   const toggleAiChat = () => setIsAiChatOpen(prev => !prev);
 
   return (
-    <UIContext.Provider value={{ isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu, isAiChatOpen, setIsAiChatOpen, toggleAiChat }}>
+    <UIContext.Provider value={{ 
+      isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu, 
+      isAiChatOpen, setIsAiChatOpen, toggleAiChat,
+      isLoggedIn, setIsLoggedIn // Provide state and setter
+    }}>
       {children}
     </UIContext.Provider>
   );
