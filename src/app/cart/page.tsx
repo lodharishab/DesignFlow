@@ -10,11 +10,11 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Smartphone, Loader2, LogIn, UserPlus, ArrowRight } from 'lucide-react';
+import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Smartphone, Loader2, LogIn, UserPlus, ArrowRight, KeyRound } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 interface CartItem {
   id: string;
@@ -62,7 +62,9 @@ export default function CartPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Default to logged out
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showOtpStep, setShowOtpStep] = useState(false);
+  const [otp, setOtp] = useState('');
 
   useEffect(() => {
     setCartItems(initialMockCartItems);
@@ -106,13 +108,41 @@ export default function CartPage() {
     }, 1500);
   };
   
+  const handleProceedToCheckout = () => {
+    // If user is logged in, show the OTP step instead of paying directly
+    if (isLoggedIn) {
+      setShowOtpStep(true);
+      toast({
+        title: "OTP Sent (Simulated)",
+        description: "An OTP has been sent to your registered mobile number for verification.",
+      });
+    } else {
+      // Logic for logged out users remains the same
+      router.push('/login?redirect=/cart');
+    }
+  };
+
+  const handleVerifyOtpAndPay = () => {
+    if (otp.length !== 6) {
+      toast({
+        title: "Invalid OTP",
+        description: "Please enter a valid 6-digit OTP.",
+        variant: "destructive",
+      });
+      return;
+    }
+    // If OTP is valid (simulated), proceed with payment
+    handleSimulatedPayment();
+  };
+
+
   const renderCheckoutActions = () => {
     if (isLoggedIn) {
       return (
         <Button
           size="lg"
           className="w-full"
-          onClick={handleSimulatedPayment}
+          onClick={handleProceedToCheckout}
           disabled={isProcessing || totalAmountInPaise <= 0}
         >
           {isProcessing ? (
@@ -124,17 +154,25 @@ export default function CartPage() {
       );
     }
 
-    // Single "Continue" button for logged-out users
+    // New unified flow for logged out users
     return (
-      <Button
-        size="lg"
-        className="w-full"
-        asChild
-      >
-        <Link href="/login?redirect=/cart">
-          Continue
-        </Link>
-      </Button>
+      <div className="w-full space-y-3">
+        <Button
+          size="lg"
+          className="w-full"
+          asChild
+        >
+          <Link href="/signup?redirect=/cart">
+            Sign Up to Continue <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+         <p className="text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link href="/login?redirect=/cart" className="font-medium text-primary hover:underline">
+            Log In
+          </Link>
+        </p>
+      </div>
     );
   };
 
@@ -148,7 +186,24 @@ export default function CartPage() {
                 <ShoppingCart className="h-8 w-8 mr-3 text-primary" />
                 <h1 className="text-3xl md:text-4xl font-bold font-headline">Your Shopping Cart</h1>
             </div>
-            {/* Login simulation toggle for development is now removed */}
+             <div className="flex items-center space-x-2">
+                <Label htmlFor="login-simulation">Simulate Login:</Label>
+                <span className={`text-sm font-medium ${!isLoggedIn ? 'text-primary' : 'text-muted-foreground'}`}>Logged Out</span>
+                <Input
+                    type="checkbox"
+                    id="login-simulation"
+                    className="hidden"
+                    checked={isLoggedIn}
+                    onChange={() => setIsLoggedIn(prev => !prev)}
+                />
+                <Label
+                    htmlFor="login-simulation"
+                    className="relative inline-flex items-center cursor-pointer"
+                >
+                    <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                </Label>
+                <span className={`text-sm font-medium ${isLoggedIn ? 'text-primary' : 'text-muted-foreground'}`}>Logged In</span>
+            </div>
         </div>
         
         {cartItems.length === 0 ? (
@@ -229,11 +284,38 @@ export default function CartPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-3 pt-4">
-                  {renderCheckoutActions()}
+                  {showOtpStep ? (
+                     <div className="w-full space-y-4">
+                        <div className="space-y-2 text-left">
+                            <Label htmlFor="otp">Verify to Continue</Label>
+                            <div className="relative">
+                               <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                               <Input id="otp" type="tel" placeholder="Enter 6-digit OTP" className="pl-10 tracking-widest text-center" value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6}/>
+                            </div>
+                        </div>
+                        <Button
+                          size="lg"
+                          className="w-full"
+                          onClick={handleVerifyOtpAndPay}
+                          disabled={isProcessing || otp.length !== 6}
+                        >
+                          {isProcessing ? (
+                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Verifying...</>
+                          ) : (
+                            'Verify & Pay'
+                          )}
+                        </Button>
+                        <Button variant="link" size="sm" onClick={() => setShowOtpStep(false)}>Cancel</Button>
+                     </div>
+                  ) : (
+                    renderCheckoutActions()
+                  )}
                   
-                  <Button variant="outline" className="w-full mt-2" asChild disabled={isProcessing}>
-                    <Link href="/design-services">Continue Shopping</Link>
-                  </Button>
+                  {!showOtpStep && (
+                     <Button variant="outline" className="w-full mt-2" asChild disabled={isProcessing}>
+                       <Link href="/design-services">Continue Shopping</Link>
+                     </Button>
+                  )}
                 </CardFooter>
               </Card>
             </div>
@@ -244,3 +326,4 @@ export default function CartPage() {
     </div>
   );
 }
+
