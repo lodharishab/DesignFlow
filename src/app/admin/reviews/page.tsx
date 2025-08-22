@@ -14,8 +14,8 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { updateReviewStatusAction, type Review } from '@/app/admin/reviews/actions';
-import { mockReviewsData } from '@/app/admin/reviews/data';
+import { updateReviewStatusAction } from '@/app/admin/reviews/actions';
+import { mockReviewsData, type Review } from '@/app/admin/reviews/data';
 import { Input } from '@/components/ui/input';
 
 type SortableReviewKeys = 'reviewText' | 'authorName' | 'rating' | 'status' | 'reviewDate';
