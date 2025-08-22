@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement } from 'react';
+import { useState, type ReactElement, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -155,7 +155,7 @@ export default function AdminReviewsPage(): ReactElement {
                               <span className="sr-only">Approve</span>
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent><p>Approve</p></TooltipContent>
+                        <TooltipContent><p>Approve Review</p></TooltipContent>
                       </Tooltip>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -164,7 +164,7 @@ export default function AdminReviewsPage(): ReactElement {
                               <span className="sr-only">Hide</span>
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent><p>Hide</p></TooltipContent>
+                        <TooltipContent><p>Hide / Unapprove</p></TooltipContent>
                       </Tooltip>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -173,7 +173,7 @@ export default function AdminReviewsPage(): ReactElement {
                               <span className="sr-only">Edit</span>
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent><p>Edit (Coming Soon)</p></TooltipContent>
+                        <TooltipContent><p>Edit Review (Coming Soon)</p></TooltipContent>
                       </Tooltip>
                     </TableCell>
                   </TableRow>
