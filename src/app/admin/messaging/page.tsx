@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageSquare, Users, Eye, Megaphone, Send, Search, Bot } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { MessageSquare, Users, Eye, Megaphone, Send, Search, Bot, User } from 'lucide-react';
 import { initialUsersData } from '@/app/admin/users/page'; // Using mock user data
 import { initialOrdersData } from '@/components/admin/orders/orders-table-view'; // Using mock order data
 import { useToast } from "@/hooks/use-toast";
