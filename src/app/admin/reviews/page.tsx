@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useState, type ReactElement, useEffect, useMemo } from 'react';
+import { useState, type ReactElement, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Star, ThumbsUp, EyeOff, User, Briefcase, FileText, UserCog, UserCircle, Edit3, Search, ListFilter } from 'lucide-react';
+import { Star, ThumbsUp, EyeOff, User, Edit3, Search, ListFilter, ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow } from 'date-fns';
@@ -18,6 +18,8 @@ import { updateReviewStatusAction, type Review } from '@/app/admin/reviews/actio
 import { mockReviewsData } from '@/app/admin/reviews/data';
 import { Input } from '@/components/ui/input';
 
+type SortableReviewKeys = 'reviewText' | 'authorName' | 'rating' | 'status' | 'reviewDate';
+
 
 export default function AdminReviewsPage(): ReactElement {
   const { toast } = useToast();
@@ -27,9 +29,28 @@ export default function AdminReviewsPage(): ReactElement {
   const [statusFilter, setStatusFilter] = useState<'All' | Review['status']>('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [ratingFilter, setRatingFilter] = useState<'All' | number>('All');
-  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [authorRoleFilter, setAuthorRoleFilter] = useState<'All' | Review['authorRole']>('All');
+  const [sortConfig, setSortConfig] = useState<{ key: SortableReviewKeys; direction: 'ascending' | 'descending' }>({
+    key: 'reviewDate',
+    direction: 'descending',
+  });
 
+  const requestSort = (key: SortableReviewKeys) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const getSortIndicator = (key: SortableReviewKeys) => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown className="ml-2 h-3 w-3 text-muted-foreground/50" />;
+    }
+    return sortConfig.direction === 'ascending' ?
+      <ChevronUp className="ml-1 h-4 w-4" /> :
+      <ChevronDown className="ml-1 h-4 w-4" />;
+  };
 
   const handleUpdateStatus = async (reviewId: string, newStatus: Review['status']) => {
     // Optimistic UI update
@@ -73,16 +94,26 @@ export default function AdminReviewsPage(): ReactElement {
         return true;
       });
 
-    filtered.sort((a, b) => {
-      if (sortOrder === 'newest') {
-        return new Date(b.reviewDate).getTime() - new Date(a.reviewDate).getTime();
-      } else {
-        return new Date(a.reviewDate).getTime() - new Date(b.reviewDate).getTime();
-      }
-    });
+    if (sortConfig.key) {
+      filtered.sort((a, b) => {
+        const valA = a[sortConfig.key];
+        const valB = b[sortConfig.key];
+
+        let comparison = 0;
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          comparison = valA - valB;
+        } else if (valA instanceof Date && valB instanceof Date) {
+          comparison = valA.getTime() - valB.getTime();
+        } else {
+          comparison = String(valA).toLowerCase().localeCompare(String(valB).toLowerCase());
+        }
+        
+        return sortConfig.direction === 'ascending' ? comparison : comparison * -1;
+      });
+    }
 
     return filtered;
-  }, [reviews, statusFilter, searchTerm, ratingFilter, sortOrder, authorRoleFilter]);
+  }, [reviews, statusFilter, searchTerm, ratingFilter, authorRoleFilter, sortConfig]);
 
   const getStatusBadgeVariant = (status: Review['status']) => {
     switch (status) {
@@ -92,14 +123,6 @@ export default function AdminReviewsPage(): ReactElement {
       default: return 'secondary';
     }
   };
-
-  const getRoleIcon = (role: Review['authorRole']) => {
-    switch(role) {
-      case 'Client': return <UserCircle className="mr-1.5 h-3 w-3 text-blue-500" />;
-      case 'Designer': return <UserCog className="mr-1.5 h-3 w-3 text-green-500" />;
-      default: return <User className="mr-1.5 h-3 w-3" />;
-    }
-  }
 
   return (
     <div className="space-y-8">
@@ -162,10 +185,26 @@ export default function AdminReviewsPage(): ReactElement {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[350px]">Review</TableHead>
-                  <TableHead>Details</TableHead>
-                  <TableHead className="text-center w-[120px]">Rating</TableHead>
-                  <TableHead className="text-center w-[120px]">Status</TableHead>
+                  <TableHead className="w-[350px]">
+                     <Button variant="ghost" onClick={() => requestSort('reviewText')} className="px-1 text-xs sm:text-sm -ml-2">
+                        Review {getSortIndicator('reviewText')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                     <Button variant="ghost" onClick={() => requestSort('authorName')} className="px-1 text-xs sm:text-sm -ml-2">
+                        Details {getSortIndicator('authorName')}
+                    </Button>
+                  </TableHead>
+                  <TableHead className="text-center w-[120px]">
+                     <Button variant="ghost" onClick={() => requestSort('rating')} className="px-1 text-xs sm:text-sm -ml-2">
+                        Rating {getSortIndicator('rating')}
+                    </Button>
+                  </TableHead>
+                  <TableHead className="text-center w-[120px]">
+                     <Button variant="ghost" onClick={() => requestSort('status')} className="px-1 text-xs sm:text-sm -ml-2">
+                        Status {getSortIndicator('status')}
+                    </Button>
+                  </TableHead>
                   <TableHead className="text-right w-[150px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -180,13 +219,13 @@ export default function AdminReviewsPage(): ReactElement {
                     </TableCell>
                     <TableCell className="text-xs">
                       <p className="font-semibold flex items-center">
-                          {getRoleIcon(review.authorRole)}
+                          {review.authorRole === 'Client' ? <User className="mr-1.5 h-3 w-3" /> : <User className="mr-1.5 h-3 w-3" />}
                           {review.authorName} ({review.authorRole})
                       </p>
                       <p className="flex items-center text-muted-foreground">
                           <User className="mr-1.5 h-3 w-3" /> Review for: {review.recipientName}
                       </p>
-                      <p className="flex items-center text-muted-foreground"><FileText className="mr-1.5 h-3 w-3" /> <Link href={`/admin/orders/details/${review.orderId}`} className="text-primary hover:underline">Order: {review.orderId}</Link></p>
+                      <p className="flex items-center text-muted-foreground">Order: <Link href={`/admin/orders/details/${review.orderId}`} className="text-primary hover:underline ml-1">{review.orderId}</Link></p>
                       <p className="text-muted-foreground mt-1" title={format(review.reviewDate, 'PPpp')}>
                           {formatDistanceToNow(review.reviewDate, { addSuffix: true })}
                       </p>
@@ -202,7 +241,7 @@ export default function AdminReviewsPage(): ReactElement {
                       <Badge variant={getStatusBadgeVariant(review.status)}>{review.status}</Badge>
                     </TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Tooltip>
+                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button variant="outline" size="icon" onClick={() => handleUpdateStatus(review.id, 'Approved')} disabled={review.status === 'Approved'}>
                               <ThumbsUp className="h-4 w-4" />
