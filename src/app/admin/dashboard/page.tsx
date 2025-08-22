@@ -19,7 +19,7 @@ export default async function AdminDashboardPage() {
     { title: "Pending Orders", value: "12", icon: ClipboardList, color: "text-yellow-500", bgColor: "bg-yellow-100 dark:bg-yellow-900", href: "/admin/orders/pending-assignment" },
     { title: "Pending Applications", value: pendingDesigners.toString(), icon: UserCheck, color: "text-orange-500", bgColor: "bg-orange-100 dark:bg-orange-900", href: "/admin/designers?status=pending-approval" },
     { title: "Total Blog Posts", value: totalBlogPosts.toString(), icon: Newspaper, color: "text-indigo-500", bgColor: "bg-indigo-100 dark:bg-indigo-900", href: "/admin/blog/posts" },
-    { title: "New Reviews", value: "3", icon: Star, color: "text-pink-500", bgColor: "bg-pink-100 dark:bg-pink-900", href: "#" }, // Placeholder href
+    { title: "New Reviews", value: "3", icon: Star, color: "text-pink-500", bgColor: "bg-pink-100 dark:bg-pink-900", href: "/admin/reviews" },
   ];
 
   const quickLinks = [
@@ -32,7 +32,7 @@ export default async function AdminDashboardPage() {
 
   const recentActivities = [
     { icon: Users, text: "New designer application: John Doe joined.", time: "2 min ago", color: "text-green-500" },
-    { icon: Star, text: "New 5-star review received for 'Startup Logo' by Priya S.", time: "10 min ago", color: "text-pink-500" },
+    { icon: Star, text: "New 5-star review received for 'Startup Logo' by Priya S.", time: "10 min ago", color: "text-pink-500", href: "/admin/reviews" },
     { icon: ClipboardList, text: "Order #ORD8872V updated to 'Cancelled'.", time: "15 min ago", color: "text-red-500" },
     { icon: Newspaper, text: "Blog post 'Top 5 Logo Trends' published.", time: "1 hour ago", color: "text-indigo-500" },
     { icon: Briefcase, text: "Service 'UI Kit Pro' updated by Admin.", time: "3 hours ago", color: "text-blue-500" },
@@ -88,15 +88,21 @@ export default async function AdminDashboardPage() {
           <CardContent>
             <ul className="space-y-4">
               {recentActivities.map((activity, index) => (
-                <li key={index} className="flex items-start space-x-3">
-                  <div className={`p-2 rounded-full ${activity.color.replace('text-', 'bg-')}/10`}>
-                    <activity.icon className={`h-5 w-5 ${activity.color}`} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-foreground">{activity.text}</p>
-                    <p className="text-xs text-muted-foreground">{activity.time}</p>
-                  </div>
-                </li>
+                 <li key={index} className="flex items-start space-x-3">
+                 <div className={`p-2 rounded-full ${activity.color.replace('text-', 'bg-')}/10`}>
+                   <activity.icon className={`h-5 w-5 ${activity.color}`} />
+                 </div>
+                 <div className="w-full">
+                    {activity.href ? (
+                        <Link href={activity.href} className="hover:underline">
+                            <p className="text-sm text-foreground">{activity.text}</p>
+                        </Link>
+                    ) : (
+                        <p className="text-sm text-foreground">{activity.text}</p>
+                    )}
+                   <p className="text-xs text-muted-foreground">{activity.time}</p>
+                 </div>
+               </li>
               ))}
             </ul>
           </CardContent>
