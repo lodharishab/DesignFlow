@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useActionState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,7 +18,7 @@ import type { Review } from '@/app/admin/reviews/data';
 
 function EditReviewForm({ review }: { review: Review }) {
   const updateReviewActionWithId = updateReviewDetailsAction.bind(null, review.id);
-  const [state, formAction] = useFormState(updateReviewActionWithId, { success: false, message: '' });
+  const [state, formAction] = useActionState(updateReviewActionWithId, { success: false, message: '' });
   const { toast } = useToast();
   const router = useRouter();
 
