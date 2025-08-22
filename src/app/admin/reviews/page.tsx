@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Star, ThumbsUp, EyeOff, User, Briefcase, FileText, UserCog, UserCircle } from 'lucide-react';
+import { Star, ThumbsUp, EyeOff, User, Briefcase, FileText, UserCog, UserCircle, Edit3 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow } from 'date-fns';
@@ -165,6 +165,15 @@ export default function AdminReviewsPage(): ReactElement {
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent><p>Hide</p></TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                           <Button variant="outline" size="icon" disabled>
+                              <Edit3 className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Edit (Coming Soon)</p></TooltipContent>
                       </Tooltip>
                     </TableCell>
                   </TableRow>
