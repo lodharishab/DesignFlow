@@ -64,16 +64,15 @@ function CartPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
-  const { isLoggedIn, setIsLoggedIn } = useUI(); // Use global state
+  const { isLoggedIn, setIsLoggedIn } = useUI();
   const [showOtpStep, setShowOtpStep] = useState(false);
   const [otp, setOtp] = useState('');
 
   useEffect(() => {
-    // Check if the 'loggedin' query param is present and update global state
-    if (searchParams.get('loggedin') === 'true') {
+    if (searchParams.get('loggedin') === 'true' && !isLoggedIn) {
       setIsLoggedIn(true);
     }
-  }, [searchParams, setIsLoggedIn]);
+  }, [searchParams, isLoggedIn, setIsLoggedIn]);
 
   const handleRemoveItem = (itemId: string) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
@@ -100,7 +99,6 @@ function CartPageContent() {
       description: "Please wait while we confirm your order.",
     });
     
-    // Pick a pre-existing valid order ID to simulate the flow correctly
     const simulatedOrderId = 'ORD7361P'; 
     const simulatedPaymentId = `pay_SIMULATED_${Date.now()}`;
 
@@ -131,35 +129,6 @@ function CartPageContent() {
       return;
     }
     handleSimulatedPayment();
-  };
-
-  const renderCheckoutActions = () => {
-    if (isLoggedIn) {
-      return (
-        <Button
-          size="lg"
-          className="w-full"
-          onClick={handleProceedToCheckout}
-          disabled={isProcessing || totalAmountInPaise <= 0}
-        >
-          {isProcessing ? (
-            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...</>
-          ) : (
-            <><CreditCard className="mr-2 h-5 w-5" /> Proceed to Checkout</>
-          )}
-        </Button>
-      );
-    }
-
-    return (
-        <Button
-            size="lg"
-            className="w-full"
-            onClick={() => router.push('/login?redirect=/cart')}
-        >
-            Continue <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-    );
   };
 
   return (
@@ -252,14 +221,15 @@ function CartPageContent() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-3 pt-4">
-                  {isLoggedIn && showOtpStep ? (
-                     <div className="w-full space-y-4">
+                  {isLoggedIn ? (
+                    showOtpStep ? (
+                      <div className="w-full space-y-4">
                         <div className="space-y-2 text-left">
-                            <Label htmlFor="otp">Verify to Continue</Label>
-                            <div className="relative">
-                               <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                               <Input id="otp" type="tel" placeholder="Enter 6-digit OTP" className="pl-10 tracking-widest text-center" value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6}/>
-                            </div>
+                          <Label htmlFor="otp">Verify to Continue</Label>
+                          <div className="relative">
+                            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input id="otp" type="tel" placeholder="Enter 6-digit OTP" className="pl-10 tracking-widest text-center" value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} />
+                          </div>
                         </div>
                         <Button
                           size="lg"
@@ -267,16 +237,28 @@ function CartPageContent() {
                           onClick={handleVerifyOtpAndPay}
                           disabled={isProcessing || otp.length !== 6}
                         >
-                          {isProcessing ? (
-                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Verifying...</>
-                          ) : (
-                            'Verify & Pay'
-                          )}
+                          {isProcessing ? (<><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Verifying...</>) : ('Verify & Pay')}
                         </Button>
                         <Button variant="link" size="sm" onClick={() => setShowOtpStep(false)}>Cancel</Button>
-                     </div>
+                      </div>
+                    ) : (
+                      <Button
+                        size="lg"
+                        className="w-full"
+                        onClick={handleProceedToCheckout}
+                        disabled={isProcessing || totalAmountInPaise <= 0}
+                      >
+                        {isProcessing ? (<><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...</>) : (<><CreditCard className="mr-2 h-5 w-5" /> Proceed to Checkout</>)}
+                      </Button>
+                    )
                   ) : (
-                    renderCheckoutActions()
+                    <Button
+                      size="lg"
+                      className="w-full"
+                      onClick={() => router.push('/login?redirect=/cart')}
+                    >
+                      Continue <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
                   )}
                   
                   {!(isLoggedIn && showOtpStep) && (
