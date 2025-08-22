@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useState, type ReactElement, useEffect } from 'react';
+import { useState, type ReactElement, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Star, ThumbsUp, EyeOff, User, Briefcase, FileText, UserCog, UserCircle, Edit3 } from 'lucide-react';
+import { Star, ThumbsUp, EyeOff, User, Briefcase, FileText, UserCog, UserCircle, Edit3, Search, ListFilter } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow } from 'date-fns';
@@ -16,12 +16,20 @@ import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { updateReviewStatusAction, type Review } from '@/app/admin/reviews/actions';
 import { mockReviewsData } from '@/app/admin/reviews/data';
+import { Input } from '@/components/ui/input';
 
 
 export default function AdminReviewsPage(): ReactElement {
   const { toast } = useToast();
   const [reviews, setReviews] = useState<Review[]>(mockReviewsData);
+  
+  // Filtering and sorting states
   const [statusFilter, setStatusFilter] = useState<'All' | Review['status']>('All');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [ratingFilter, setRatingFilter] = useState<'All' | number>('All');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [authorRoleFilter, setAuthorRoleFilter] = useState<'All' | Review['authorRole']>('All');
+
 
   const handleUpdateStatus = async (reviewId: string, newStatus: Review['status']) => {
     // Optimistic UI update
@@ -49,9 +57,32 @@ export default function AdminReviewsPage(): ReactElement {
     }
   };
 
-  const filteredReviews = reviews.filter(review => 
-    statusFilter === 'All' || review.status === statusFilter
-  );
+  const filteredReviews = useMemo(() => {
+    let filtered = reviews
+      .filter(review => {
+        if (statusFilter !== 'All' && review.status !== statusFilter) return false;
+        if (ratingFilter !== 'All' && review.rating !== ratingFilter) return false;
+        if (authorRoleFilter !== 'All' && review.authorRole !== authorRoleFilter) return false;
+        if (searchTerm && 
+            !review.authorName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            !review.recipientName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            !review.orderId.toLowerCase().includes(searchTerm.toLowerCase())
+           ) {
+          return false;
+        }
+        return true;
+      });
+
+    filtered.sort((a, b) => {
+      if (sortOrder === 'newest') {
+        return new Date(b.reviewDate).getTime() - new Date(a.reviewDate).getTime();
+      } else {
+        return new Date(a.reviewDate).getTime() - new Date(b.reviewDate).getTime();
+      }
+    });
+
+    return filtered;
+  }, [reviews, statusFilter, searchTerm, ratingFilter, sortOrder, authorRoleFilter]);
 
   const getStatusBadgeVariant = (status: Review['status']) => {
     switch (status) {
@@ -83,19 +114,47 @@ export default function AdminReviewsPage(): ReactElement {
         <CardHeader>
           <CardTitle>All Client & Designer Reviews</CardTitle>
           <CardDescription>Approve, hide, or manage feedback. Approved reviews will be visible on relevant public profiles.</CardDescription>
-           <div className="pt-4 flex items-center gap-4">
-            <Label htmlFor="statusFilter" className="font-semibold">Filter by status:</Label>
-             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'All' | Review['status'])}>
-              <SelectTrigger id="statusFilter" className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Statuses</SelectItem>
-                <SelectItem value="Pending">Pending</SelectItem>
-                <SelectItem value="Approved">Approved</SelectItem>
-                <SelectItem value="Hidden">Hidden</SelectItem>
-              </SelectContent>
-            </Select>
+           <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-1">
+                <Label htmlFor="search" className="text-xs">Search Name/Order ID</Label>
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="search" placeholder="e.g., Priya or ORD..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9"/>
+                </div>
+            </div>
+             <div className="space-y-1">
+                <Label htmlFor="statusFilter" className="text-xs">Status</Label>
+                <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'All' | Review['status'])}>
+                  <SelectTrigger id="statusFilter"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Statuses</SelectItem>
+                    <SelectItem value="Pending">Pending</SelectItem>
+                    <SelectItem value="Approved">Approved</SelectItem>
+                    <SelectItem value="Hidden">Hidden</SelectItem>
+                  </SelectContent>
+                </Select>
+            </div>
+            <div className="space-y-1">
+                <Label htmlFor="ratingFilter" className="text-xs">Rating</Label>
+                <Select value={String(ratingFilter)} onValueChange={(value) => setRatingFilter(value === 'All' ? 'All' : Number(value))}>
+                  <SelectTrigger id="ratingFilter"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Ratings</SelectItem>
+                    {[5, 4, 3, 2, 1].map(r => <SelectItem key={r} value={String(r)}>{r} Star{r > 1 ? 's' : ''}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+            </div>
+            <div className="space-y-1">
+                <Label htmlFor="authorRoleFilter" className="text-xs">Author Type</Label>
+                <Select value={authorRoleFilter} onValueChange={(value) => setAuthorRoleFilter(value as 'All' | Review['authorRole'])}>
+                  <SelectTrigger id="authorRoleFilter"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Authors</SelectItem>
+                    <SelectItem value="Client">By Client</SelectItem>
+                    <SelectItem value="Designer">By Designer</SelectItem>
+                  </SelectContent>
+                </Select>
+            </div>
            </div>
         </CardHeader>
         <CardContent>
