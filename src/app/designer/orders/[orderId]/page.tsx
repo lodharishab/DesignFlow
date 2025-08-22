@@ -23,7 +23,8 @@ import {
   Clock,
   CheckCircle2,
   AlertTriangle,
-  Eye
+  Eye,
+  Star
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -174,10 +175,19 @@ function DesignerOrderDetailPageContent(): ReactElement {
         <Button variant="outline" onClick={() => router.back()} className="w-full md:w-auto">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to My Orders
         </Button>
-         <Badge variant={getStatusBadgeVariant(order.status)} className="text-base px-4 py-2 self-start md:self-center">
-            {getStatusIcon(order.status)}
-            {order.status}
-        </Badge>
+        <div className="flex items-center gap-2">
+            {order.status === 'Completed' && (
+                <Button asChild>
+                    <Link href={`/designer/review/${order.id}`}>
+                        <Star className="mr-2 h-4 w-4"/> Leave Review
+                    </Link>
+                </Button>
+            )}
+             <Badge variant={getStatusBadgeVariant(order.status)} className="text-base px-4 py-2 self-start md:self-center">
+                {getStatusIcon(order.status)}
+                {order.status}
+            </Badge>
+        </div>
       </div>
 
       <Card className="shadow-lg">
@@ -367,4 +377,3 @@ export default function DesignerOrderDetailWrapper(): ReactElement {
         </Suspense>
     )
 }
-

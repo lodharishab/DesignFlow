@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Star, ThumbsUp, ThumbsDown, EyeOff, User, Briefcase, FileText } from 'lucide-react';
+import { Star, ThumbsUp, ThumbsDown, EyeOff, User, Briefcase, FileText, UserCog, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow } from 'date-fns';
@@ -18,8 +18,9 @@ import { Label } from '@/components/ui/label';
 interface Review {
   id: string;
   orderId: string;
-  clientName: string;
-  designerName: string;
+  authorName: string;
+  authorRole: 'Client' | 'Designer';
+  recipientName: string;
   serviceName: string;
   rating: number; // 1-5
   reviewText?: string;
@@ -28,10 +29,11 @@ interface Review {
 }
 
 const mockReviewsData: Review[] = [
-  { id: 'rev001', orderId: 'ORD2945S', clientName: 'Sunita Rao', designerName: 'Priya Sharma', serviceName: 'Startup Logo & Brand Identity', rating: 5, reviewText: 'Priya was absolutely amazing! She understood the vision for SwasthyaLink perfectly and delivered a brand identity that exceeded all our expectations. The process was smooth and collaborative. Highly recommend!', reviewDate: new Date(2024, 6, 14), status: 'Approved' },
-  { id: 'rev002', orderId: 'ORDXXXX1', clientName: 'Arun Kumar', designerName: 'Rohan Kapoor', serviceName: 'E-commerce Website UI/UX', rating: 4, reviewText: 'The UI design was clean and modern. There were some minor delays but the end result was great and Rohan was very responsive to feedback.', reviewDate: new Date(2024, 6, 12), status: 'Approved' },
-  { id: 'rev003', orderId: 'ORDXXXX2', clientName: 'Kavita Singh', designerName: 'Aisha Khan', serviceName: 'Social Media Campaign', rating: 3, reviewText: '', reviewDate: new Date(2024, 6, 11), status: 'Pending' },
-  { id: 'rev004', orderId: 'ORDXXXX3', clientName: 'Vijay Patil', designerName: 'Priya Sharma', serviceName: 'Modern Logo Design', rating: 5, reviewText: 'Fantastic work on the logo. Quick turnaround and very creative.', reviewDate: new Date(2024, 6, 10), status: 'Hidden' },
+  { id: 'rev001', orderId: 'ORD2945S', authorName: 'Sunita Rao', authorRole: 'Client', recipientName: 'Priya Sharma', serviceName: 'Startup Logo & Brand Identity', rating: 5, reviewText: 'Priya was absolutely amazing! She understood the vision for SwasthyaLink perfectly and delivered a brand identity that exceeded all our expectations. The process was smooth and collaborative. Highly recommend!', reviewDate: new Date(2024, 6, 14), status: 'Approved' },
+  { id: 'rev002', orderId: 'ORDXXXX1', authorName: 'Arun Kumar', authorRole: 'Client', recipientName: 'Rohan Kapoor', serviceName: 'E-commerce Website UI/UX', rating: 4, reviewText: 'The UI design was clean and modern. There were some minor delays but the end result was great and Rohan was very responsive to feedback.', reviewDate: new Date(2024, 6, 12), status: 'Approved' },
+  { id: 'rev003', orderId: 'ORDXXXX2', authorName: 'Kavita Singh', authorRole: 'Client', recipientName: 'Aisha Khan', serviceName: 'Social Media Campaign', rating: 3, reviewText: '', reviewDate: new Date(2024, 6, 11), status: 'Pending' },
+  { id: 'rev004', orderId: 'ORDXXXX3', authorName: 'Vijay Patil', authorRole: 'Client', recipientName: 'Priya Sharma', serviceName: 'Modern Logo Design', rating: 5, reviewText: 'Fantastic work on the logo. Quick turnaround and very creative.', reviewDate: new Date(2024, 6, 10), status: 'Hidden' },
+  { id: 'rev005', orderId: 'ORD2945S', authorName: 'Priya Sharma', authorRole: 'Designer', recipientName: 'Sunita Rao', serviceName: 'Startup Logo & Brand Identity', rating: 5, reviewText: 'Sunita was a pleasure to work with. She provided a clear and detailed brief, was very communicative, and offered constructive feedback. A fantastic client!', reviewDate: new Date(2024, 6, 15), status: 'Pending' },
 ];
 
 export default function AdminReviewsPage(): ReactElement {
@@ -64,6 +66,14 @@ export default function AdminReviewsPage(): ReactElement {
     }
   };
 
+  const getRoleIcon = (role: Review['authorRole']) => {
+    switch(role) {
+      case 'Client': return <UserCircle className="mr-1.5 h-3 w-3 text-blue-500" />;
+      case 'Designer': return <UserCog className="mr-1.5 h-3 w-3 text-green-500" />;
+      default: return <User className="mr-1.5 h-3 w-3" />;
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -75,8 +85,8 @@ export default function AdminReviewsPage(): ReactElement {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>All Client Reviews</CardTitle>
-          <CardDescription>Approve, hide, or manage client feedback. Approved reviews will be visible on designer profiles and service pages.</CardDescription>
+          <CardTitle>All Client & Designer Reviews</CardTitle>
+          <CardDescription>Approve, hide, or manage feedback. Approved reviews will be visible on relevant public profiles.</CardDescription>
            <div className="pt-4 flex items-center gap-4">
             <Label htmlFor="statusFilter" className="font-semibold">Filter by status:</Label>
              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'All' | Review['status'])}>
@@ -113,8 +123,13 @@ export default function AdminReviewsPage(): ReactElement {
                     <p className="text-sm text-foreground italic">{review.reviewText ? `"${review.reviewText}"` : <span className="text-muted-foreground">No written review.</span>}</p>
                   </TableCell>
                   <TableCell className="text-xs">
-                    <p className="font-semibold flex items-center"><User className="mr-1.5 h-3 w-3 text-muted-foreground" /> {review.clientName}</p>
-                    <p className="flex items-center text-muted-foreground"><Briefcase className="mr-1.5 h-3 w-3" /> Designer: {review.designerName}</p>
+                    <p className="font-semibold flex items-center">
+                        {getRoleIcon(review.authorRole)}
+                        {review.authorName} ({review.authorRole})
+                    </p>
+                    <p className="flex items-center text-muted-foreground">
+                        <User className="mr-1.5 h-3 w-3" /> Review for: {review.recipientName}
+                    </p>
                     <p className="flex items-center text-muted-foreground"><FileText className="mr-1.5 h-3 w-3" /> <Link href={`/admin/orders/details/${review.orderId}`} className="text-primary hover:underline">Order: {review.orderId}</Link></p>
                      <p className="text-muted-foreground mt-1" title={format(review.reviewDate, 'PPpp')}>
                         {formatDistanceToNow(review.reviewDate, { addSuffix: true })}
