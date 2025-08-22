@@ -95,7 +95,9 @@ export default function ClientOrderDetailPage() {
           The order (ID: {orderId}) you are looking for does not exist or you may not have access to it.
         </p>
         <Button asChild className="mt-6" onClick={() => router.back()}>
+          <span>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to My Orders
+          </span>
         </Button>
       </div>
     );
