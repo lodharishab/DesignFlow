@@ -20,8 +20,9 @@ import { Separator } from '@/components/ui/separator';
 
 // Mock data for active orders - consistent with /client/orders page
 const activeOrdersMock = [
-  { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', status: 'In Progress', designer: 'Rohan K.', orderDate: '2024-07-01', total: '₹24,999.00' },
-  { id: 'ORD1038K', serviceName: 'Social Media Campaign Graphics', status: 'Pending Assignment', designer: 'N/A', orderDate: '2024-07-05', total: '₹7,999.00' },
+  { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', status: 'In Progress', designer: 'Rohan K.', orderDate: '2024-07-01', total: '₹24,999.00', tier: 'Premium' },
+  { id: 'ORD1038K', serviceName: 'Social Media Campaign Graphics', status: 'Pending Assignment', designer: 'N/A', orderDate: '2024-07-05', total: '₹7,999.00', tier: 'Standard' },
+  { id: 'ORD5050T', serviceName: 'Mobile App Icon Set', status: 'Awaiting Client Review', designer: 'Aisha K.', orderDate: '2024-07-10', total: '₹4,999.00', tier: 'Standard' },
 ];
 
 const clientStats = [
@@ -144,7 +145,7 @@ export default function ClientDashboardPage() {
                         <Link href={`/client/orders/${order.id}`} className="hover:underline">
                             <h3 className="font-semibold text-md group-hover:text-primary">{order.serviceName}</h3>
                         </Link>
-                        <p className="text-xs text-muted-foreground">ID: {order.id} | Ordered: {order.orderDate}</p>
+                        <p className="text-xs text-muted-foreground">ID: {order.id} | Tier: {order.tier}</p>
                         <p className="text-sm text-muted-foreground mt-1">Status: <span className="font-medium text-primary">{order.status}</span> | Designer: {order.designer}</p>
                       </div>
                       <Button variant="outline" size="sm" asChild className="shrink-0">
@@ -205,5 +206,3 @@ export default function ClientDashboardPage() {
     </div>
   );
 }
-
-    
