@@ -225,7 +225,7 @@ function CartPageContent() {
                     showOtpStep ? (
                       <div className="w-full space-y-4">
                         <div className="space-y-2 text-left">
-                          <Label htmlFor="otp">Verify to Continue</Label>
+                          <Label htmlFor="otp" className="font-semibold">Verify to Complete Payment</Label>
                           <div className="relative">
                             <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input id="otp" type="tel" placeholder="Enter 6-digit OTP" className="pl-10 tracking-widest text-center" value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} />
@@ -239,7 +239,7 @@ function CartPageContent() {
                         >
                           {isProcessing ? (<><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Verifying...</>) : ('Verify & Pay')}
                         </Button>
-                        <Button variant="link" size="sm" onClick={() => setShowOtpStep(false)}>Cancel</Button>
+                        <Button variant="link" size="sm" onClick={() => setShowOtpStep(false)} disabled={isProcessing}>Back</Button>
                       </div>
                     ) : (
                       <Button
