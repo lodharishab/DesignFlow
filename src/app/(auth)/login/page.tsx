@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Phone, KeyRound } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { useUI } from "@/contexts/ui-context";
 
 interface LoginFormErrors {
   phoneNumber?: string;
@@ -21,6 +22,7 @@ interface LoginFormErrors {
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setIsLoggedIn } = useUI(); // Use the context to set login state
   const redirectUrl = searchParams.get('redirect') || '';
 
   const [loginMethod, setLoginMethod] = useState<'otp' | 'password'>('otp');
@@ -40,6 +42,7 @@ function LoginPageContent() {
   }
 
   const handleLoginSuccess = () => {
+     setIsLoggedIn(true); // Set global logged-in state to true
      toast({
         title: "Login Successful!",
         description: "You have been successfully logged in."

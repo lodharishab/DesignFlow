@@ -8,11 +8,11 @@ import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Loader2, KeyRound, ArrowRight } from 'lucide-react';
+import { Trash2, ShoppingCart, IndianRupee, PackageSearch, CreditCard, Loader2, KeyRound, ArrowRight, UserPlus, LogIn } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useUI } from '@/contexts/ui-context';
@@ -62,17 +62,10 @@ function CartPageContent() {
   const [cartItems, setCartItems] = useState<CartItem[]>(initialMockCartItems);
   const { toast } = useToast();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
-  const { isLoggedIn, setIsLoggedIn } = useUI();
+  const { isLoggedIn } = useUI();
   const [showOtpStep, setShowOtpStep] = useState(false);
   const [otp, setOtp] = useState('');
-
-  useEffect(() => {
-    if (searchParams.get('loggedin') === 'true' && !isLoggedIn) {
-      setIsLoggedIn(true);
-    }
-  }, [searchParams, isLoggedIn, setIsLoggedIn]);
 
   const handleRemoveItem = (itemId: string) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
@@ -252,13 +245,21 @@ function CartPageContent() {
                       </Button>
                     )
                   ) : (
-                    <Button
-                      size="lg"
-                      className="w-full"
-                      onClick={() => router.push('/login?redirect=/cart')}
-                    >
-                      Continue <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+                    <div className="w-full space-y-3">
+                        <Button
+                            size="lg"
+                            className="w-full"
+                            onClick={() => router.push('/signup?redirect=/cart')}
+                        >
+                            <UserPlus className="mr-2 h-4 w-4" /> Sign Up to Continue
+                        </Button>
+                        <div className="text-center text-xs text-muted-foreground">
+                            Already have an account?{' '}
+                            <Link href="/login?redirect=/cart" className="text-primary hover:underline font-semibold">
+                               Log In
+                            </Link>
+                        </div>
+                    </div>
                   )}
                   
                   {!(isLoggedIn && showOtpStep) && (
