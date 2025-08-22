@@ -63,7 +63,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
@@ -76,7 +76,7 @@ interface User {
   status: 'Active' | 'Suspended';
 }
 
-const initialUsers: User[] = [
+export const initialUsersData: User[] = [
   { id: 'usr001', name: 'Priya Sharma', email: 'priya.sharma@example.in', mobileNumber: '9820098200', roles: ['Client'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman client', joinDate: new Date(2023, 0, 15), lastLogin: new Date(2024, 5, 1), status: 'Active' },
   { id: 'usr002', name: 'Rohan Kapoor', email: 'rohan.designer@example.in', mobileNumber: '9987654321', roles: ['Designer'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man designer', joinDate: new Date(2022, 11, 5), lastLogin: new Date(2024, 5, 3), status: 'Active' },
   { id: 'usr003', name: 'Aarav Patel', email: 'aarav.patel@example.in', mobileNumber: '9765432109', roles: ['Client', 'Designer'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian person avatar', joinDate: new Date(2023, 2, 20), lastLogin: new Date(2024, 4, 28), status: 'Suspended' },
@@ -95,7 +95,7 @@ const availableStatuses: UserStatus[] = ['Active', 'Suspended'];
 type SortableUserKeys = 'name' | 'email' | 'joinDate' | 'lastLogin';
 
 export default function UserManagementPage(): ReactElement {
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [users, setUsers] = useState<User[]>(initialUsersData);
   const { toast } = useToast();
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());

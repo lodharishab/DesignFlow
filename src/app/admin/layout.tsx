@@ -25,7 +25,8 @@ import {
   Newspaper,
   PlusCircle, // For Add New Post
   BarChart3, // Changed from IndianRupee for Payments
-  Star // For Reviews
+  Star, // For Reviews
+  MessageSquare // For new Messaging page
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -70,8 +71,6 @@ const navItems = [
       { href: '/admin/orders/cancelled', icon: XCircle, label: 'Cancelled Orders' },
     ]
   },
-  { href: '/admin/reviews', icon: Star, label: 'Reviews' },
-  { href: '/admin/payments', icon: BarChart3, label: 'Payments & Revenue' },
   {
     label: 'Services',
     icon: Briefcase,
@@ -83,18 +82,20 @@ const navItems = [
       { href: '/admin/services/tags', icon: TagsIcon, label: 'Service Tags' },
     ]
   },
-  { href: '/admin/designers', icon: Users, label: 'Designers' },
   { href: '/admin/users', icon: UsersRound, label: 'Users' },
+  { href: '/admin/designers', icon: Users, label: 'Designers' },
   {
-    label: 'Blog', // Changed from "Blog Posts"
+    label: 'Content',
     icon: Newspaper,
-    pathPrefix: '/admin/blog', // Path prefix for the parent
+    pathPrefix: '/admin/blog',
     children: [
-      { href: '/admin/blog/posts', icon: List, label: 'All Posts' },
+      { href: '/admin/blog/posts', icon: List, label: 'Blog Posts' },
       { href: '/admin/blog/posts/new', icon: PlusCircle, label: 'Add New Post' },
-      // Future: { href: '/admin/blog/categories', icon: TagsIcon, label: 'Blog Categories' },
     ]
   },
+  { href: '/admin/reviews', icon: Star, label: 'Reviews' },
+  { href: '/admin/messaging', icon: MessageSquare, label: 'Messaging' },
+  { href: '/admin/payments', icon: BarChart3, label: 'Payments & Revenue' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
