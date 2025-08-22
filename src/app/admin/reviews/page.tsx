@@ -168,12 +168,12 @@ export default function AdminReviewsPage(): ReactElement {
                       </Tooltip>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                           <Button variant="outline" size="icon" disabled>
+                           <Button variant="outline" size="icon">
                               <Edit3 className="h-4 w-4" />
                               <span className="sr-only">Edit</span>
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent><p>Edit Review (Coming Soon)</p></TooltipContent>
+                        <TooltipContent><p>Edit Review (simulated)</p></TooltipContent>
                       </Tooltip>
                     </TableCell>
                   </TableRow>
