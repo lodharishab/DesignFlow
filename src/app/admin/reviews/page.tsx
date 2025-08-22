@@ -13,6 +13,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 interface Review {
@@ -103,63 +104,76 @@ export default function AdminReviewsPage(): ReactElement {
            </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[350px]">Review</TableHead>
-                <TableHead>Details</TableHead>
-                <TableHead className="text-center w-[120px]">Rating</TableHead>
-                <TableHead className="text-center w-[120px]">Status</TableHead>
-                <TableHead className="text-right w-[200px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredReviews.length === 0 ? (
-                 <TableRow><TableCell colSpan={5} className="text-center h-24">No reviews match the current filter.</TableCell></TableRow>
-              ) : (
-                filteredReviews.map((review) => (
-                <TableRow key={review.id}>
-                  <TableCell>
-                    <p className="text-sm text-foreground italic">{review.reviewText ? `"${review.reviewText}"` : <span className="text-muted-foreground">No written review.</span>}</p>
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    <p className="font-semibold flex items-center">
-                        {getRoleIcon(review.authorRole)}
-                        {review.authorName} ({review.authorRole})
-                    </p>
-                    <p className="flex items-center text-muted-foreground">
-                        <User className="mr-1.5 h-3 w-3" /> Review for: {review.recipientName}
-                    </p>
-                    <p className="flex items-center text-muted-foreground"><FileText className="mr-1.5 h-3 w-3" /> <Link href={`/admin/orders/details/${review.orderId}`} className="text-primary hover:underline">Order: {review.orderId}</Link></p>
-                     <p className="text-muted-foreground mt-1" title={format(review.reviewDate, 'PPpp')}>
-                        {formatDistanceToNow(review.reviewDate, { addSuffix: true })}
-                    </p>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={cn("h-5 w-5", i < review.rating ? 'text-yellow-400 fill-current' : 'text-muted-foreground/30')} />
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">
-                     <Badge variant={getStatusBadgeVariant(review.status)}>{review.status}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right space-x-1">
-                    <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(review.id, 'Approved')} disabled={review.status === 'Approved'}>
-                        <ThumbsUp className="mr-1.5 h-4 w-4" /> Approve
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(review.id, 'Hidden')} disabled={review.status === 'Hidden'}>
-                        <EyeOff className="mr-1.5 h-4 w-4" /> Hide
-                    </Button>
-                  </TableCell>
+          <TooltipProvider>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[350px]">Review</TableHead>
+                  <TableHead>Details</TableHead>
+                  <TableHead className="text-center w-[120px]">Rating</TableHead>
+                  <TableHead className="text-center w-[120px]">Status</TableHead>
+                  <TableHead className="text-right w-[150px]">Actions</TableHead>
                 </TableRow>
-              )))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredReviews.length === 0 ? (
+                  <TableRow><TableCell colSpan={5} className="text-center h-24">No reviews match the current filter.</TableCell></TableRow>
+                ) : (
+                  filteredReviews.map((review) => (
+                  <TableRow key={review.id}>
+                    <TableCell>
+                      <p className="text-sm text-foreground italic">{review.reviewText ? `"${review.reviewText}"` : <span className="text-muted-foreground">No written review.</span>}</p>
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      <p className="font-semibold flex items-center">
+                          {getRoleIcon(review.authorRole)}
+                          {review.authorName} ({review.authorRole})
+                      </p>
+                      <p className="flex items-center text-muted-foreground">
+                          <User className="mr-1.5 h-3 w-3" /> Review for: {review.recipientName}
+                      </p>
+                      <p className="flex items-center text-muted-foreground"><FileText className="mr-1.5 h-3 w-3" /> <Link href={`/admin/orders/details/${review.orderId}`} className="text-primary hover:underline">Order: {review.orderId}</Link></p>
+                      <p className="text-muted-foreground mt-1" title={format(review.reviewDate, 'PPpp')}>
+                          {formatDistanceToNow(review.reviewDate, { addSuffix: true })}
+                      </p>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className={cn("h-5 w-5", i < review.rating ? 'text-yellow-400 fill-current' : 'text-muted-foreground/30')} />
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant={getStatusBadgeVariant(review.status)}>{review.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon" onClick={() => handleUpdateStatus(review.id, 'Approved')} disabled={review.status === 'Approved'}>
+                              <ThumbsUp className="h-4 w-4" />
+                              <span className="sr-only">Approve</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Approve</p></TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                           <Button variant="outline" size="icon" onClick={() => handleUpdateStatus(review.id, 'Hidden')} disabled={review.status === 'Hidden'}>
+                              <EyeOff className="h-4 w-4" />
+                              <span className="sr-only">Hide</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Hide</p></TooltipContent>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                )))}
+              </TableBody>
+            </Table>
+          </TooltipProvider>
         </CardContent>
       </Card>
     </div>
   );
 }
-
