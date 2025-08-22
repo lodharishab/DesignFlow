@@ -205,12 +205,17 @@ export default function AdminReviewsPage(): ReactElement {
                         Status {getSortIndicator('status')}
                     </Button>
                   </TableHead>
+                   <TableHead className="w-[150px]">
+                     <Button variant="ghost" onClick={() => requestSort('reviewDate')} className="px-1 text-xs sm:text-sm -ml-2">
+                        Date {getSortIndicator('reviewDate')}
+                    </Button>
+                  </TableHead>
                   <TableHead className="text-right w-[150px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredReviews.length === 0 ? (
-                  <TableRow><TableCell colSpan={5} className="text-center h-24">No reviews match the current filter.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="text-center h-24">No reviews match the current filter.</TableCell></TableRow>
                 ) : (
                   filteredReviews.map((review) => (
                   <TableRow key={review.id}>
@@ -226,9 +231,6 @@ export default function AdminReviewsPage(): ReactElement {
                           <User className="mr-1.5 h-3 w-3" /> Review for: {review.recipientName}
                       </p>
                       <p className="flex items-center text-muted-foreground">Order: <Link href={`/admin/orders/details/${review.orderId}`} className="text-primary hover:underline ml-1">{review.orderId}</Link></p>
-                      <p className="text-muted-foreground mt-1" title={format(review.reviewDate, 'PPpp')}>
-                          {formatDistanceToNow(review.reviewDate, { addSuffix: true })}
-                      </p>
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-0.5">
@@ -240,6 +242,9 @@ export default function AdminReviewsPage(): ReactElement {
                     <TableCell className="text-center">
                       <Badge variant={getStatusBadgeVariant(review.status)}>{review.status}</Badge>
                     </TableCell>
+                     <TableCell className="text-xs text-muted-foreground" title={format(review.reviewDate, 'PPpp')}>
+                        {formatDistanceToNow(review.reviewDate, { addSuffix: true })}
+                      </TableCell>
                     <TableCell className="text-right space-x-1">
                        <Tooltip>
                         <TooltipTrigger asChild>
