@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, Users, ClipboardList, BarChart3, ArrowRight, UsersRound, IndianRupee, UserCheck, Newspaper, Edit } from 'lucide-react';
+import { Briefcase, Users, ClipboardList, BarChart3, ArrowRight, UsersRound, IndianRupee, UserCheck, Newspaper, Edit, Star } from 'lucide-react';
 import Link from 'next/link';
 import { getAllBlogPosts } from '@/lib/blog-db'; // For blog post count
 // Assuming a way to get pending designers count (using existing mock data for now)
@@ -19,7 +19,7 @@ export default async function AdminDashboardPage() {
     { title: "Pending Orders", value: "12", icon: ClipboardList, color: "text-yellow-500", bgColor: "bg-yellow-100 dark:bg-yellow-900", href: "/admin/orders/pending-assignment" },
     { title: "Pending Applications", value: pendingDesigners.toString(), icon: UserCheck, color: "text-orange-500", bgColor: "bg-orange-100 dark:bg-orange-900", href: "/admin/designers?status=pending-approval" },
     { title: "Total Blog Posts", value: totalBlogPosts.toString(), icon: Newspaper, color: "text-indigo-500", bgColor: "bg-indigo-100 dark:bg-indigo-900", href: "/admin/blog/posts" },
-    { title: "Revenue (Month)", value: "₹12,500", icon: BarChart3, color: "text-purple-500", bgColor: "bg-purple-100 dark:bg-purple-900", href: "#" }, // Placeholder href
+    { title: "New Reviews", value: "3", icon: Star, color: "text-pink-500", bgColor: "bg-pink-100 dark:bg-pink-900", href: "#" }, // Placeholder href
   ];
 
   const quickLinks = [
@@ -32,6 +32,7 @@ export default async function AdminDashboardPage() {
 
   const recentActivities = [
     { icon: Users, text: "New designer application: John Doe joined.", time: "2 min ago", color: "text-green-500" },
+    { icon: Star, text: "New 5-star review received for 'Startup Logo' by Priya S.", time: "10 min ago", color: "text-pink-500" },
     { icon: ClipboardList, text: "Order #ORD8872V updated to 'Cancelled'.", time: "15 min ago", color: "text-red-500" },
     { icon: Newspaper, text: "Blog post 'Top 5 Logo Trends' published.", time: "1 hour ago", color: "text-indigo-500" },
     { icon: Briefcase, text: "Service 'UI Kit Pro' updated by Admin.", time: "3 hours ago", color: "text-blue-500" },

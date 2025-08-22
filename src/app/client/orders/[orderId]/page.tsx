@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, ShoppingBag, Calendar, FileText, MessageSquare, User, PackageSearch, IndianRupee } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Calendar, FileText, MessageSquare, User, PackageSearch, IndianRupee, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 
@@ -115,7 +115,15 @@ export default function ClientOrderDetailPage() {
                     <FileText className="mr-2 h-4 w-4" /> View Invoice
                 </Link>
             </Button>
-             <Button variant="destructive" disabled>Cancel Order</Button>
+            {order.status === 'Completed' ? (
+                <Button variant="default" asChild>
+                  <Link href={`/client/review/${order.id}`}>
+                    <Star className="mr-2 h-4 w-4" /> Leave a Review
+                  </Link>
+                </Button>
+            ) : (
+                <Button variant="destructive" disabled>Cancel Order</Button>
+            )}
         </div>
       </div>
 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, PackageSearch, ArrowRight, Info, CalendarDays, FileText, IndianRupee, Clock, CheckCircle2, ListFilter, AlertTriangle, Eye, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
+import { ShoppingCart, PackageSearch, ArrowRight, Info, CalendarDays, FileText, IndianRupee, Clock, CheckCircle2, ListFilter, AlertTriangle, Eye, ArrowUpDown, ChevronUp, ChevronDown, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState, useMemo, type ReactElement } from 'react';
 
@@ -187,11 +187,19 @@ export default function ClientOrdersPage(): ReactElement {
                     </TableCell>
                     <TableCell className="text-right">₹{order.total.toLocaleString('en-IN')}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/client/orders/${order.id}`}>
-                          View Details <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                        </Link>
-                      </Button>
+                      {order.status === 'Completed' ? (
+                         <Button variant="default" size="sm" asChild>
+                            <Link href={`/client/review/${order.id}`}>
+                              <Star className="mr-1.5 h-3.5 w-3.5" /> Leave Review
+                            </Link>
+                          </Button>
+                      ) : (
+                         <Button variant="outline" size="sm" asChild>
+                          <Link href={`/client/orders/${order.id}`}>
+                            View Details <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                          </Link>
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
