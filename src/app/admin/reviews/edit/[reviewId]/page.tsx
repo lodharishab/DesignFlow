@@ -17,8 +17,7 @@ import { mockReviewsData } from '@/app/admin/reviews/data';
 import type { Review } from '@/app/admin/reviews/data';
 
 function EditReviewForm({ review }: { review: Review }) {
-  const updateReviewActionWithId = updateReviewDetailsAction.bind(null, review.id);
-  const [state, formAction] = useActionState(updateReviewActionWithId, { success: false, message: '' });
+  const [state, formAction] = useActionState(updateReviewDetailsAction, { success: false, message: '' });
   const { toast } = useToast();
   const router = useRouter();
 
@@ -51,6 +50,7 @@ function EditReviewForm({ review }: { review: Review }) {
   return (
     <form action={formAction}>
        <CardContent className="space-y-6">
+          <input type="hidden" name="reviewId" value={review.id} />
           <div className="space-y-2">
             <Label className="text-lg font-medium">Rating</Label>
             <div className="flex items-center space-x-1" onMouseLeave={() => setHoverRating(0)}>
@@ -148,7 +148,7 @@ export default function EditReviewPage() {
     return (
         <div className="space-y-8">
              <h1 className="text-3xl font-bold font-headline flex items-center">
-                <Edit3 className="mr-3 h-8 w-8 text-primary" />
+                <Edit3 className="mr-2 h-8 w-8 text-primary" />
                 Edit Review
             </h1>
             <Suspense fallback={<div className="text-center py-10">Loading...</div>}>
@@ -157,3 +157,4 @@ export default function EditReviewPage() {
         </div>
     )
 }
+
