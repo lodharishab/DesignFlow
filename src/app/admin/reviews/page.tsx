@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Star, ThumbsUp, EyeOff, User, Edit3, Search, ListFilter, ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { Star, ThumbsUp, EyeOff, User, Edit3, Search, ListFilter, ArrowUpDown, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, sub } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
@@ -19,7 +19,7 @@ import { mockReviewsData, type Review } from '@/app/admin/reviews/data';
 import { Input } from '@/components/ui/input';
 
 type SortableReviewKeys = 'reviewText' | 'authorName' | 'rating' | 'status' | 'reviewDate';
-
+type DateFilter = 'All' | '1m' | '3m' | '1y';
 
 export default function AdminReviewsPage(): ReactElement {
   const { toast } = useToast();
@@ -30,6 +30,7 @@ export default function AdminReviewsPage(): ReactElement {
   const [searchTerm, setSearchTerm] = useState('');
   const [ratingFilter, setRatingFilter] = useState<'All' | number>('All');
   const [authorRoleFilter, setAuthorRoleFilter] = useState<'All' | Review['authorRole']>('All');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortableReviewKeys; direction: 'ascending' | 'descending' }>({
     key: 'reviewDate',
     direction: 'descending',
@@ -91,6 +92,16 @@ export default function AdminReviewsPage(): ReactElement {
            ) {
           return false;
         }
+        if (dateFilter !== 'All') {
+            const now = new Date();
+            let startDate: Date;
+            if (dateFilter === '1m') startDate = sub(now, { months: 1 });
+            else if (dateFilter === '3m') startDate = sub(now, { months: 3 });
+            else if (dateFilter === '1y') startDate = sub(now, { years: 1 });
+            else startDate = new Date(0); // Should not happen with 'All' handled
+            
+            return review.reviewDate >= startDate;
+        }
         return true;
       });
 
@@ -113,7 +124,7 @@ export default function AdminReviewsPage(): ReactElement {
     }
 
     return filtered;
-  }, [reviews, statusFilter, searchTerm, ratingFilter, authorRoleFilter, sortConfig]);
+  }, [reviews, statusFilter, searchTerm, ratingFilter, authorRoleFilter, dateFilter, sortConfig]);
 
   const getStatusBadgeVariant = (status: Review['status']) => {
     switch (status) {
@@ -137,7 +148,7 @@ export default function AdminReviewsPage(): ReactElement {
         <CardHeader>
           <CardTitle>All Client & Designer Reviews</CardTitle>
           <CardDescription>Approve, hide, or manage feedback. Approved reviews will be visible on relevant public profiles.</CardDescription>
-           <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+           <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
             <div className="space-y-1">
                 <Label htmlFor="search" className="text-xs">Search Name/Order ID</Label>
                 <div className="relative">
@@ -175,6 +186,18 @@ export default function AdminReviewsPage(): ReactElement {
                     <SelectItem value="All">All Authors</SelectItem>
                     <SelectItem value="Client">By Client</SelectItem>
                     <SelectItem value="Designer">By Designer</SelectItem>
+                  </SelectContent>
+                </Select>
+            </div>
+            <div className="space-y-1">
+                <Label htmlFor="dateFilter" className="text-xs">Date Range</Label>
+                <Select value={dateFilter} onValueChange={(value) => setDateFilter(value as DateFilter)}>
+                  <SelectTrigger id="dateFilter"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Time</SelectItem>
+                    <SelectItem value="1m">Last Month</SelectItem>
+                    <SelectItem value="3m">Last 3 Months</SelectItem>
+                    <SelectItem value="1y">Last Year</SelectItem>
                   </SelectContent>
                 </Select>
             </div>
