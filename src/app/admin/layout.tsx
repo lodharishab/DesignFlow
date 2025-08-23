@@ -26,7 +26,8 @@ import {
   PlusCircle, // For Add New Post
   BarChart3, // Changed from IndianRupee for Payments
   Star, // For Reviews
-  MessageSquare // For new Messaging page
+  MessageSquare, // For new Messaging page
+  ShieldAlert // For new Reports page
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -94,6 +95,7 @@ const navItems = [
     ]
   },
   { href: '/admin/reviews', icon: Star, label: 'Reviews' },
+  { href: '/admin/reports', icon: ShieldAlert, label: 'Reports' },
   { href: '/admin/messaging', icon: MessageSquare, label: 'Messaging' },
   { href: '/admin/payments', icon: BarChart3, label: 'Payments & Revenue' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
