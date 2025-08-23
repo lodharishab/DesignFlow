@@ -126,22 +126,40 @@ export default function AdminReportsPage(): ReactElement {
                       </TableCell>
                       <TableCell className="text-right">
                          <div className="flex justify-end items-center gap-2">
-                           <Button variant="outline" size="sm" asChild className="shadow-sm hover:shadow-md transition-all">
-                                <Link href={`/admin/reports/${report.id}`} className="flex items-center">
-                                  <Eye className="mr-1.5 h-4 w-4" /> View
-                                </Link>
-                            </Button>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="outline" size="icon" asChild className="shadow-sm hover:shadow-md transition-all h-9 w-9">
+                                    <Link href={`/admin/reports/${report.id}`}>
+                                      <Eye className="h-4 w-4" />
+                                      <span className="sr-only">View Details</span>
+                                    </Link>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>View Details</p></TooltipContent>
+                            </Tooltip>
 
                           {report.status === 'Open' && (
-                             <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(report.id, 'In Progress')} className="shadow-sm hover:shadow-md transition-all text-orange-600 border-orange-300 hover:bg-orange-50 hover:text-orange-700">
-                                <PlayCircle className="mr-1.5 h-4 w-4" /> Start
-                              </Button>
+                             <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="outline" size="icon" onClick={() => handleUpdateStatus(report.id, 'In Progress')} className="shadow-sm hover:shadow-md transition-all h-9 w-9 text-orange-600 border-orange-300 hover:bg-orange-50 hover:text-orange-700">
+                                    <PlayCircle className="h-4 w-4" />
+                                    <span className="sr-only">Start Progress</span>
+                                </Button>
+                               </TooltipTrigger>
+                              <TooltipContent><p>Mark as In Progress</p></TooltipContent>
+                            </Tooltip>
                           )}
                           
                           {(report.status === 'Open' || report.status === 'In Progress') && (
-                             <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(report.id, 'Resolved')} className="shadow-sm hover:shadow-md transition-all text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700">
-                                <CheckCircle2 className="mr-1.5 h-4 w-4" /> Resolve
-                              </Button>
+                             <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="outline" size="icon" onClick={() => handleUpdateStatus(report.id, 'Resolved')} className="shadow-sm hover:shadow-md transition-all h-9 w-9 text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700">
+                                    <CheckCircle2 className="h-4 w-4" />
+                                    <span className="sr-only">Resolve</span>
+                                </Button>
+                               </TooltipTrigger>
+                              <TooltipContent><p>Mark as Resolved</p></TooltipContent>
+                            </Tooltip>
                           )}
                         </div>
                       </TableCell>
