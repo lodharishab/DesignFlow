@@ -129,7 +129,7 @@ export default function AdminReportsPage(): ReactElement {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button variant="ghost" size="icon" asChild>
-                                <Link href={`/admin/reports/${report.id}`} className="flex items-center">
+                                <Link href={`/admin/reports/${report.id}`} className="flex items-center text-muted-foreground hover:text-primary">
                                   <Eye className="h-4 w-4" />
                                   <span className="sr-only">View Details</span>
                                 </Link>
@@ -141,8 +141,8 @@ export default function AdminReportsPage(): ReactElement {
                           {report.status === 'Open' && (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(report.id, 'In Progress')}>
-                                  <PlayCircle className="h-4 w-4 text-orange-500" />
+                                <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(report.id, 'In Progress')} className="text-orange-500 hover:text-orange-600">
+                                  <PlayCircle className="h-4 w-4" />
                                   <span className="sr-only">Mark as In Progress</span>
                                 </Button>
                               </TooltipTrigger>
@@ -153,8 +153,8 @@ export default function AdminReportsPage(): ReactElement {
                           {(report.status === 'Open' || report.status === 'In Progress') && (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(report.id, 'Resolved')}>
-                                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(report.id, 'Resolved')} className="text-green-500 hover:text-green-600">
+                                  <CheckCircle2 className="h-4 w-4" />
                                   <span className="sr-only">Mark as Resolved</span>
                                 </Button>
                               </TooltipTrigger>
