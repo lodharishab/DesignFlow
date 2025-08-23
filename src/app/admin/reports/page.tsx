@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ShieldAlert, User, Edit3, Eye, ArrowRight } from 'lucide-react';
+import { ShieldAlert, User, Edit3, Eye, ArrowRight, CheckCircle2, ListFilter, PlayCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { format } from 'date-fns';
@@ -19,15 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { MoreHorizontal } from 'lucide-react';
+import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function AdminReportsPage(): ReactElement {
   const { toast } = useToast();
@@ -102,64 +94,81 @@ export default function AdminReportsPage(): ReactElement {
             </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[150px]">Report ID</TableHead>
-                <TableHead>Subject</TableHead>
-                <TableHead>Reporter</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredReports.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center h-24">No reports match the current filter.</TableCell></TableRow>
-              ) : (
-                filteredReports.map((report) => (
-                  <TableRow key={report.id}>
-                    <TableCell className="font-medium text-primary hover:underline">
-                        <Link href={`/admin/reports/${report.id}`}>{report.id}</Link>
-                    </TableCell>
-                    <TableCell className="font-medium">{report.subject}</TableCell>
-                    <TableCell className="flex items-center">
-                      <User className="mr-2 h-4 w-4 text-muted-foreground" />
-                      {report.reporterName}
-                    </TableCell>
-                    <TableCell>{format(report.reportDate, 'MMM d, yyyy')}</TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(report.status)}>{report.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem asChild>
-                                <Link href={`/admin/reports/${report.id}`} className="flex items-center"> 
-                                    <Eye className="mr-2 h-4 w-4" /> View Details
+          <TooltipProvider>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[150px]">Report ID</TableHead>
+                  <TableHead>Subject</TableHead>
+                  <TableHead>Reporter</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredReports.length === 0 ? (
+                  <TableRow><TableCell colSpan={6} className="text-center h-24">No reports match the current filter.</TableCell></TableRow>
+                ) : (
+                  filteredReports.map((report) => (
+                    <TableRow key={report.id}>
+                      <TableCell className="font-medium text-primary hover:underline">
+                          <Link href={`/admin/reports/${report.id}`}>{report.id}</Link>
+                      </TableCell>
+                      <TableCell className="font-medium">{report.subject}</TableCell>
+                      <TableCell className="flex items-center">
+                        <User className="mr-2 h-4 w-4 text-muted-foreground" />
+                        {report.reporterName}
+                      </TableCell>
+                      <TableCell>{format(report.reportDate, 'MMM d, yyyy')}</TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusBadgeVariant(report.status)}>{report.status}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end items-center gap-1">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" asChild>
+                                <Link href={`/admin/reports/${report.id}`} className="flex items-center">
+                                  <Eye className="h-4 w-4" />
+                                  <span className="sr-only">View Details</span>
                                 </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleUpdateStatus(report.id, 'In Progress')} disabled={report.status === 'In Progress' || report.status === 'Resolved'}>
-                                Mark as In Progress
-                            </DropdownMenuItem>
-                             <DropdownMenuItem onClick={() => handleUpdateStatus(report.id, 'Resolved')} disabled={report.status === 'Resolved'}>
-                                Mark as Resolved
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>View Details</p></TooltipContent>
+                          </Tooltip>
+
+                          {report.status === 'Open' && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(report.id, 'In Progress')}>
+                                  <PlayCircle className="h-4 w-4 text-orange-500" />
+                                  <span className="sr-only">Mark as In Progress</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Mark as In Progress</p></TooltipContent>
+                            </Tooltip>
+                          )}
+                          
+                          {(report.status === 'Open' || report.status === 'In Progress') && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(report.id, 'Resolved')}>
+                                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                  <span className="sr-only">Mark as Resolved</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Mark as Resolved</p></TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TooltipProvider>
         </CardContent>
       </Card>
     </div>
