@@ -6,7 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ShieldAlert, User, Edit3, Eye, ArrowRight, CheckCircle2, ListFilter, PlayCircle } from 'lucide-react';
+import { 
+  ShieldAlert, 
+  User, 
+  Eye, 
+  CheckCircle2, 
+  PlayCircle,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { format } from 'date-fns';
@@ -21,10 +30,33 @@ import {
 } from "@/components/ui/select";
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
+type SortableReportKeys = 'id' | 'subject' | 'reporterName' | 'reportDate' | 'status';
+
 export default function AdminReportsPage(): ReactElement {
   const { toast } = useToast();
   const [reports, setReports] = useState<Report[]>(mockReportsData);
   const [statusFilter, setStatusFilter] = useState<'All' | Report['status']>('All');
+  const [sortConfig, setSortConfig] = useState<{ key: SortableReportKeys; direction: 'ascending' | 'descending' }>({
+    key: 'reportDate',
+    direction: 'descending',
+  });
+
+  const requestSort = (key: SortableReportKeys) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const getSortIndicator = (key: SortableReportKeys) => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown className="ml-2 h-3 w-3 text-muted-foreground/50" />;
+    }
+    return sortConfig.direction === 'ascending' ?
+      <ChevronUp className="ml-1 h-4 w-4" /> :
+      <ChevronDown className="ml-1 h-4 w-4" />;
+  };
 
   const handleUpdateStatus = async (reportId: string, newStatus: Report['status']) => {
     setReports(prevReports =>
@@ -51,11 +83,32 @@ export default function AdminReportsPage(): ReactElement {
   };
 
   const filteredReports = useMemo(() => {
-    if (statusFilter === 'All') {
-      return reports;
+    let sortableItems = [...reports];
+
+    if (statusFilter !== 'All') {
+      sortableItems = sortableItems.filter(report => report.status === statusFilter);
     }
-    return reports.filter(report => report.status === statusFilter);
-  }, [reports, statusFilter]);
+
+    if (sortConfig.key) {
+      sortableItems.sort((a, b) => {
+        const valA = a[sortConfig.key!];
+        const valB = b[sortConfig.key!];
+
+        let comparison = 0;
+        if (valA === undefined || valA === null) comparison = -1;
+        else if (valB === undefined || valB === null) comparison = 1;
+        else if (valA instanceof Date && valB instanceof Date) {
+          comparison = valA.getTime() - valB.getTime();
+        } else {
+          comparison = String(valA).toLowerCase().localeCompare(String(valB).toLowerCase());
+        }
+        
+        return sortConfig.direction === 'ascending' ? comparison : comparison * -1;
+      });
+    }
+
+    return sortableItems;
+  }, [reports, statusFilter, sortConfig]);
 
   const getStatusBadgeVariant = (status: Report['status']) => {
     switch (status) {
@@ -98,11 +151,31 @@ export default function AdminReportsPage(): ReactElement {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[150px]">Report ID</TableHead>
-                  <TableHead>Subject</TableHead>
-                  <TableHead>Reporter</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="w-[150px]">
+                    <Button variant="ghost" onClick={() => requestSort('id')} className="px-1 text-xs sm:text-sm -ml-2">
+                      Report ID {getSortIndicator('id')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('subject')} className="px-1 text-xs sm:text-sm -ml-2">
+                      Subject {getSortIndicator('subject')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                     <Button variant="ghost" onClick={() => requestSort('reporterName')} className="px-1 text-xs sm:text-sm -ml-2">
+                      Reporter {getSortIndicator('reporterName')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('reportDate')} className="px-1 text-xs sm:text-sm -ml-2">
+                      Date {getSortIndicator('reportDate')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('status')} className="px-1 text-xs sm:text-sm -ml-2">
+                      Status {getSortIndicator('status')}
+                    </Button>
+                  </TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -174,3 +247,4 @@ export default function AdminReportsPage(): ReactElement {
     </div>
   );
 }
+
