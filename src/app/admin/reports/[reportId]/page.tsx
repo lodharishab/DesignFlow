@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { updateReportStatusAction } from '@/app/admin/reports/actions';
+import { Label } from '@/components/ui/label';
 
 function ReportDetailContent() {
   const router = useRouter();
