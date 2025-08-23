@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function AdminReportsPage(): ReactElement {
   const { toast } = useToast();
@@ -125,41 +125,23 @@ export default function AdminReportsPage(): ReactElement {
                         <Badge variant={getStatusBadgeVariant(report.status)}>{report.status}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end items-center gap-1">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" asChild>
-                                <Link href={`/admin/reports/${report.id}`} className="flex items-center text-muted-foreground hover:text-primary">
-                                  <Eye className="h-4 w-4" />
-                                  <span className="sr-only">View Details</span>
+                         <div className="flex justify-end items-center gap-2">
+                           <Button variant="outline" size="sm" asChild className="shadow-sm hover:shadow-md transition-all">
+                                <Link href={`/admin/reports/${report.id}`} className="flex items-center">
+                                  <Eye className="mr-1.5 h-4 w-4" /> View
                                 </Link>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>View Details</p></TooltipContent>
-                          </Tooltip>
+                            </Button>
 
                           {report.status === 'Open' && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(report.id, 'In Progress')} className="text-orange-500 hover:text-orange-600">
-                                  <PlayCircle className="h-4 w-4" />
-                                  <span className="sr-only">Mark as In Progress</span>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent><p>Mark as In Progress</p></TooltipContent>
-                            </Tooltip>
+                             <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(report.id, 'In Progress')} className="shadow-sm hover:shadow-md transition-all text-orange-600 border-orange-300 hover:bg-orange-50 hover:text-orange-700">
+                                <PlayCircle className="mr-1.5 h-4 w-4" /> Start
+                              </Button>
                           )}
                           
                           {(report.status === 'Open' || report.status === 'In Progress') && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(report.id, 'Resolved')} className="text-green-500 hover:text-green-600">
-                                  <CheckCircle2 className="h-4 w-4" />
-                                  <span className="sr-only">Mark as Resolved</span>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent><p>Mark as Resolved</p></TooltipContent>
-                            </Tooltip>
+                             <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(report.id, 'Resolved')} className="shadow-sm hover:shadow-md transition-all text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700">
+                                <CheckCircle2 className="mr-1.5 h-4 w-4" /> Resolve
+                              </Button>
                           )}
                         </div>
                       </TableCell>
