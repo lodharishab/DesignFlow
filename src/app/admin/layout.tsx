@@ -97,15 +97,15 @@ const navItems = [
   {
     label: 'Messaging Center',
     icon: MessageSquare,
-    pathPrefix: '/admin/messaging',
+    pathPrefix: '/admin/messaging', // Main path prefix for this group
     children: [
       { href: '/admin/messaging/direct', icon: Users, label: 'Direct Messages' },
       { href: '/admin/messaging/monitor', icon: Eye, label: 'Monitor Chats' },
       { href: '/admin/messaging/announcements', icon: Newspaper, label: 'Announcements' },
+      { href: '/admin/reviews', icon: Star, label: 'Reviews' },
+      { href: '/admin/reports', icon: ShieldAlert, label: 'Reports' },
     ]
   },
-  { href: '/admin/reviews', icon: Star, label: 'Reviews' },
-  { href: '/admin/reports', icon: ShieldAlert, label: 'Reports' },
   { href: '/admin/payments', icon: BarChart3, label: 'Payments & Revenue' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
@@ -119,8 +119,12 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
   useEffect(() => {
     const initiallyOpen: Record<string, boolean> = {};
     navItems.forEach(item => {
-      if (item.children && item.pathPrefix && pathname.startsWith(item.pathPrefix)) {
-        initiallyOpen[item.label] = true;
+      if (item.children && item.pathPrefix) {
+        if (pathname.startsWith(item.pathPrefix)) {
+          initiallyOpen[item.label] = true;
+        } else if (item.children.some(child => pathname.startsWith(child.href))) {
+           initiallyOpen[item.label] = true;
+        }
       }
     });
     setOpenSubmenus(initiallyOpen);
@@ -143,8 +147,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
           <SidebarMenu>
             {navItems.map((item) => {
               if (item.children && item.pathPrefix) {
-                const isParentActive = pathname.startsWith(item.pathPrefix);
-                const isOpen = openSubmenus[item.label] || false;
+                 const isParentActive = item.children.some(child => pathname.startsWith(child.href));
+                 const isOpen = openSubmenus[item.label] || false;
 
                 return (
                   <SidebarMenuItem key={item.label}>
@@ -169,8 +173,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                     {isOpen && (
                       <SidebarMenuSub>
                         {item.children.map(child => {
-                           const isChildActive = pathname === child.href || (child.href !== item.pathPrefix && pathname.startsWith(child.href) && child.href.split('/').length <= pathname.split('/').length);
-
+                           const isChildActive = pathname.startsWith(child.href);
                           return (
                             <SidebarMenuSubItem key={child.label}>
                               <SidebarMenuSubButton asChild isActive={isChildActive}>
