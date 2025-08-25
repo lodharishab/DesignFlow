@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Edit3, Trash2, Newspaper, PackageSearch, ArrowUpDown, ChevronUp, ChevronDown, Search, CheckCircle, FileText, Clock, Eye, BarChart2, ThumbsUp, MessageSquare } from 'lucide-react';
+import { PlusCircle, Edit3, Trash2, Newspaper, PackageSearch, ArrowUpDown, ChevronUp, ChevronDown, Search, CheckCircle, FileText, Clock, Eye, BarChart2, ThumbsUp, MessageSquare, ChevronDown as ChevronDownIcon, CheckCircle2, AlertOctagon } from 'lucide-react';
 import { type BlogPost, deleteBlogPost } from '@/lib/blog-db';
 import { format } from 'date-fns';
 import {
@@ -23,8 +23,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type SortByType = 'newest' | 'oldest' | 'views' | 'likes' | 'comments';
 type StatusFilter = 'All' | BlogPost['status'];
@@ -55,6 +64,7 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
     const [categoryFilter, setCategoryFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('All');
     const [sortBy, setSortBy] = useState<SortByType>('newest');
+    const [selectedPostIds, setSelectedPostIds] = useState<Set<string>>(new Set());
     
     const uniqueCategories = useMemo(() => {
         const categories = new Set(initialPosts.map(post => post.category).filter(Boolean));
@@ -105,6 +115,36 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
         return sortableItems;
     }, [posts, searchTerm, categoryFilter, statusFilter, sortBy]);
 
+    const handleSelectAll = (checked: boolean | 'indeterminate') => {
+        if (checked === true) {
+        setSelectedPostIds(new Set(displayedPosts.map(d => d.id)));
+        } else {
+        setSelectedPostIds(new Set());
+        }
+    };
+
+    const handleSelectOne = (postId: string, checked: boolean | 'indeterminate') => {
+        setSelectedPostIds(prevSelected => {
+        const newSelected = new Set(prevSelected);
+        if (checked === true) {
+            newSelected.add(postId);
+        } else {
+            newSelected.delete(postId);
+        }
+        return newSelected;
+        });
+    };
+  
+    const isAllDisplayedSelected = useMemo(() => {
+        return displayedPosts.length > 0 && selectedPostIds.size === displayedPosts.length && displayedPosts.every(d => selectedPostIds.has(d.id));
+    }, [displayedPosts, selectedPostIds]);
+
+    const isIndeterminate = useMemo(() => {
+        const displayedSelectedCount = displayedPosts.filter(d => selectedPostIds.has(d.id)).length;
+        return displayedSelectedCount > 0 && displayedSelectedCount < displayedPosts.length;
+    }, [displayedPosts, selectedPostIds]);
+
+
     const handleDeletePost = async (postId: string) => {
         const success = await deleteBlogPost(postId);
         if (success) {
@@ -113,6 +153,31 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
         } else {
             toast({ title: 'Error', description: 'Failed to delete blog post.', variant: 'destructive' });
         }
+    };
+    
+    const handleBulkStatusChange = (newStatus: BlogPost['status']) => {
+        setPosts(prevPosts =>
+            prevPosts.map(post => 
+                selectedPostIds.has(post.id) ? { ...post, status: newStatus } : post
+            )
+        );
+        toast({
+            title: `Bulk Status Update`,
+            description: `${selectedPostIds.size} post(s) status changed to ${newStatus}. (Simulated)`,
+        });
+        setSelectedPostIds(new Set());
+    };
+
+    const handleBulkDelete = () => {
+        setPosts(prevPosts =>
+            prevPosts.filter(p => !selectedPostIds.has(p.id))
+        );
+        toast({
+            title: 'Bulk Delete Success',
+            description: `${selectedPostIds.size} post(s) have been deleted. (Simulated)`,
+            variant: 'destructive',
+        });
+        setSelectedPostIds(new Set());
     };
 
     return (
@@ -172,9 +237,64 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
                 </div>
             </div>
 
+            {selectedPostIds.size > 0 && (
+                <div className="mb-4 p-3 bg-secondary/50 rounded-md flex items-center justify-between">
+                <p className="text-sm font-medium">
+                    {selectedPostIds.size} post{selectedPostIds.size > 1 ? 's' : ''} selected
+                </p>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                        Bulk Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
+                    </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Apply to selected</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleBulkStatusChange('Published')}>
+                        <CheckCircle2 className="mr-2 h-4 w-4" /> Publish
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkStatusChange('Draft')}>
+                        <FileText className="mr-2 h-4 w-4" /> Set to Draft
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                     <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Confirm Bulk Deletion</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Are you sure you want to delete {selectedPostIds.size} selected post(s)? This action cannot be undone.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                                Delete Posts
+                            </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                </div>
+            )}
+
             <Table>
                 <TableHeader>
                     <TableRow>
+                        <TableHead className="w-[50px]">
+                            <Checkbox
+                                checked={isIndeterminate ? 'indeterminate' : isAllDisplayedSelected}
+                                onCheckedChange={handleSelectAll}
+                                aria-label="Select all displayed rows"
+                                disabled={displayedPosts.length === 0}
+                            />
+                        </TableHead>
                         <TableHead className="w-[40%]">Title</TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead>Author</TableHead>
@@ -186,14 +306,21 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
                 <TableBody>
                     {displayedPosts.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={6} className="text-center h-24">
+                            <TableCell colSpan={7} className="text-center h-24">
                                 <PackageSearch className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-2" />
                                 No blog posts match your filters.
                             </TableCell>
                         </TableRow>
                     ) : (
                         displayedPosts.map((post) => (
-                            <TableRow key={post.id}>
+                            <TableRow key={post.id} data-state={selectedPostIds.has(post.id) ? "selected" : ""}>
+                                <TableCell>
+                                    <Checkbox
+                                        checked={selectedPostIds.has(post.id)}
+                                        onCheckedChange={(checked) => handleSelectOne(post.id, checked)}
+                                        aria-label={`Select row for ${post.title}`}
+                                    />
+                                </TableCell>
                                 <TableCell className="font-medium">
                                     <Link href={`/blog/${post.id}`} target="_blank" title={`View "${post.title}" on site`} className="hover:text-primary hover:underline">
                                         {post.title}
