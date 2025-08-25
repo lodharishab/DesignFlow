@@ -28,7 +28,7 @@ import {
   Clock,
   CheckCircle2,
   Flag,
-  Download, // Import Download icon
+  Download,
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -145,7 +145,7 @@ export default function AdminMonitorChatsPage() {
     const rows = filteredChats.map(chat => [
       chat.threadId,
       chat.orderId,
-      `"${chat.clientName.replace(/"/g, '""')}"`, // Handle potential commas/quotes in names
+      `"${chat.clientName.replace(/"/g, '""')}"`,
       `"${chat.designerName.replace(/"/g, '""')}"`,
       format(chat.lastActivity, "yyyy-MM-dd HH:mm:ss"),
       chat.status
@@ -198,7 +198,7 @@ export default function AdminMonitorChatsPage() {
         </h1>
         <Button onClick={handleExportCsv} disabled={filteredChats.length === 0}>
             <Download className="mr-2 h-4 w-4" />
-            Export Logs
+            Export Log List
         </Button>
       </div>
       
@@ -325,6 +325,28 @@ function ChatListPane({ filteredChats, handleRowClick, getStatusBadgeVariant, ge
 
 function ChatPreviewPane({ chat, onBack, onToggleFlag }: { chat: MonitoredChat, onBack: () => void, onToggleFlag: (messageId: string) => void }) {
     const isMobile = useIsMobile();
+
+    const handleExportIndividualChat = useCallback(() => {
+        const headers = ["Timestamp", "Sender", "Message"];
+        const rows = chat.messages.map(msg => [
+            format(msg.timestamp, "yyyy-MM-dd HH:mm:ss"),
+            `"${msg.sender.replace(/"/g, '""')}"`,
+            `"${msg.text.replace(/"/g, '""').replace(/\n/g, '\\n')}"` // Handle newlines
+        ]);
+
+        let csvContent = "data:text/csv;charset=utf-8," 
+            + headers.join(",") + "\n" 
+            + rows.map(e => e.join(",")).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `chat_log_${chat.orderId}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }, [chat]);
+    
     return (
         <Card className="shadow-lg flex flex-col h-full lg:max-h-[calc(100vh-14rem)]">
             <CardHeader className="flex flex-row items-center justify-between p-3 border-b bg-muted/50">
@@ -332,9 +354,14 @@ function ChatPreviewPane({ chat, onBack, onToggleFlag }: { chat: MonitoredChat, 
                     <CardTitle className="text-base font-semibold">Chat Preview: {chat.orderId}</CardTitle>
                     <CardDescription className="text-xs">{chat.clientName} & {chat.designerName}</CardDescription>
                 </div>
-                <Button variant="ghost" size="icon" onClick={onBack}>
-                    <PanelLeftClose className="h-5 w-5" />
-                </Button>
+                <div className="flex items-center">
+                    <Button variant="ghost" size="icon" title="Export this chat" onClick={handleExportIndividualChat}>
+                        <Download className="h-5 w-5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" title="Close preview" onClick={onBack}>
+                        <PanelLeftClose className="h-5 w-5" />
+                    </Button>
+                </div>
             </CardHeader>
             <ScrollArea className="flex-grow p-4">
                 <div className="space-y-4">
@@ -379,5 +406,3 @@ function ChatPreviewPane({ chat, onBack, onToggleFlag }: { chat: MonitoredChat, 
         </Card>
     )
 }
-
-    
