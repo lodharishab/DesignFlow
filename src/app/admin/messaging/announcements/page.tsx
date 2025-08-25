@@ -13,9 +13,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
-import { Megaphone, History, Users, UserCheck, Eye, Calendar as CalendarIcon, Clock, Send, Loader2 } from 'lucide-react';
+import { Megaphone, History, Eye, Send, Loader2, Wand2, Sparkles, AlertCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { generateAnnouncement, type AnnouncementRequest, type AnnouncementResponse } from '@/ai/flows/announcement-flow';
 
 type AudienceType = 'all' | 'role' | 'user';
 type ScheduleType = 'now' | 'later';
@@ -35,6 +36,85 @@ const mockAnnouncements: Announcement[] = [
   { id: 'ann002', title: 'Diwali Campaign Reminder', audience: 'Designers', status: 'Sent', scheduledTime: new Date(2024, 6, 5, 15, 30), message: 'A reminder to all designers: The Diwali campaign submission deadline is approaching. Please ensure all your related projects are on track.' },
   { id: 'ann003', title: 'Scheduled Maintenance', audience: 'All Users', status: 'Scheduled', scheduledTime: new Date('2024-08-28T18:00:00'), message: 'The platform will be down for scheduled maintenance for approximately 30 minutes. We apologize for any inconvenience.' },
 ];
+
+function AiAssistDialog({ onAccept }: { onAccept: (content: AnnouncementResponse) => void }) {
+  const [prompt, setPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<AnnouncementResponse | null>(null);
+  const { toast } = useToast();
+  const quickPrompts = ["New feature release", "Scheduled maintenance", "Holiday campaign", "Policy update"];
+
+  const handleGenerate = async () => {
+    if (!prompt.trim()) {
+      toast({ title: "Prompt is empty", description: "Please enter what you want to announce.", variant: "destructive" });
+      return;
+    }
+    setIsGenerating(true);
+    setGeneratedContent(null);
+    try {
+      const result = await generateAnnouncement({ topic: prompt });
+      setGeneratedContent(result);
+    } catch (error) {
+      console.error(error);
+      toast({ title: "AI Generation Failed", description: "Could not generate content. Please try again.", variant: "destructive" });
+    }
+    setIsGenerating(false);
+  };
+
+  const handleAccept = () => {
+    if (generatedContent) {
+      onAccept(generatedContent);
+    }
+  };
+
+  return (
+    <DialogContent className="sm:max-w-[600px]">
+      <DialogHeader>
+        <DialogTitle className="font-headline text-2xl flex items-center"><Wand2 className="mr-3 h-6 w-6 text-primary"/> AI Announcement Assistant</DialogTitle>
+        <DialogDescription>Describe the announcement topic, and let AI draft a title and message for you.</DialogDescription>
+      </DialogHeader>
+      <div className="space-y-4 py-4">
+        <div className="space-y-2">
+          <Label htmlFor="ai-prompt">What do you want to announce?</Label>
+          <Input id="ai-prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="e.g., Launching a new dashboard for designers" />
+          <div className="flex flex-wrap gap-2 pt-2">
+            {quickPrompts.map(p => (
+              <Button key={p} variant="outline" size="sm" onClick={() => setPrompt(p)}>{p}</Button>
+            ))}
+          </div>
+        </div>
+        <Button onClick={handleGenerate} disabled={isGenerating} className="w-full">
+          {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4"/>}
+          {isGenerating ? 'Generating...' : 'Generate Content'}
+        </Button>
+        
+        {generatedContent && (
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="font-semibold">Suggested Content:</h3>
+            <div className="space-y-1">
+              <Label>Generated Title</Label>
+              <p className="p-3 border rounded-md bg-muted text-sm">{generatedContent.title}</p>
+            </div>
+            <div className="space-y-1">
+              <Label>Generated Message</Label>
+              <p className="p-3 border rounded-md bg-muted text-sm whitespace-pre-wrap">{generatedContent.message}</p>
+            </div>
+          </div>
+        )}
+         <p className="text-xs text-muted-foreground flex items-center pt-2">
+            <AlertCircle className="h-3 w-3 mr-1.5"/>Powered by AI — please review carefully before sending.
+        </p>
+      </div>
+      <DialogFooter className="sm:justify-between gap-2">
+        <Button variant="outline" onClick={handleGenerate} disabled={isGenerating}>Regenerate</Button>
+        <DialogTrigger asChild>
+          <Button onClick={handleAccept} disabled={!generatedContent}>Accept & Insert</Button>
+        </DialogTrigger>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
 
 export default function AdminAnnouncementsPage(): ReactElement {
   const { toast } = useToast();
@@ -73,7 +153,7 @@ export default function AdminAnnouncementsPage(): ReactElement {
     };
     console.log("Sending announcement:", newAnnouncement);
     setTimeout(() => {
-        setAnnouncements(prev => [newAnnouncement, ...prev]);
+        setAnnouncements(prev => [newAnnouncement, ...prev].sort((a, b) => b.scheduledTime.getTime() - a.scheduledTime.getTime()));
         setTitle('');
         setMessage('');
         toast({ title: "Announcement Sent (Simulated)", description: `Your message "${title}" has been sent/scheduled.`});
@@ -87,6 +167,11 @@ export default function AdminAnnouncementsPage(): ReactElement {
         case 'Scheduled': return 'secondary';
         case 'Draft': return 'outline';
     }
+  };
+  
+  const handleAcceptAiContent = (content: AnnouncementResponse) => {
+    setTitle(content.title);
+    setMessage(content.message);
   };
 
   return (
@@ -104,7 +189,15 @@ export default function AdminAnnouncementsPage(): ReactElement {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="announcement-title">Title</Label>
+            <div className="flex justify-between items-center">
+                <Label htmlFor="announcement-title">Title</Label>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="secondary" size="sm"><Wand2 className="mr-1.5 h-4 w-4"/> AI Assist</Button>
+                    </DialogTrigger>
+                    <AiAssistDialog onAccept={handleAcceptAiContent} />
+                </Dialog>
+            </div>
             <Input id="announcement-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., New Features Live!" />
           </div>
           <div className="space-y-2">
@@ -147,7 +240,7 @@ export default function AdminAnnouncementsPage(): ReactElement {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between">
+        <CardFooter className="flex justify-between items-center gap-4">
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline"><Eye className="mr-2 h-4 w-4"/> Preview</Button>
@@ -159,7 +252,7 @@ export default function AdminAnnouncementsPage(): ReactElement {
               </DialogHeader>
               <div className="p-4 border rounded-lg bg-secondary/50">
                 <h3 className="font-bold text-lg mb-2">{title || "Your Title Here"}</h3>
-                <p className="text-sm text-secondary-foreground">{message || "Your message content will appear here."}</p>
+                <p className="text-sm text-secondary-foreground whitespace-pre-wrap">{message || "Your message content will appear here."}</p>
               </div>
             </DialogContent>
           </Dialog>
