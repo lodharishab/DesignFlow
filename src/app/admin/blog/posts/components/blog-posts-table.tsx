@@ -3,6 +3,7 @@
 
 import { useState, useMemo, type ReactElement } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +60,7 @@ const sortOptions: {label: string, value: SortByType}[] = [
 
 export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElement {
     const { toast } = useToast();
+    const router = useRouter();
     const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('All');
@@ -190,6 +192,17 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
         return `?duplicate=${encodeURIComponent(JSON.stringify(postToDuplicate))}`;
     }
 
+    const handleDuplicateSelected = () => {
+        if (selectedPostIds.size !== 1) return;
+        const postId = selectedPostIds.values().next().value;
+        const postToDuplicate = posts.find(p => p.id === postId);
+        if (postToDuplicate) {
+            const duplicateQuery = getDuplicateQuery(postToDuplicate);
+            router.push(`/admin/blog/posts/new${duplicateQuery}`);
+        }
+    };
+
+
     return (
         <>
             <div className="flex flex-wrap gap-2 mb-4">
@@ -261,6 +274,9 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
                     <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Apply to selected</DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                     <DropdownMenuItem onClick={handleDuplicateSelected} disabled={selectedPostIds.size !== 1}>
+                        <Copy className="mr-2 h-4 w-4" /> Duplicate
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleBulkStatusChange('Published')}>
                         <CheckCircle2 className="mr-2 h-4 w-4" /> Publish
                     </DropdownMenuItem>
