@@ -197,11 +197,7 @@ export default function AdminDirectMessagesPage() {
   }, [conversations, filterBy, sortBy]);
   
   const handleSelectConversation = (conversation: Conversation) => {
-    if (selectedConversation?.userId === conversation.userId) {
-        setSelectedConversation(null); // Deselect if clicking the same one
-    } else {
-        setSelectedConversation(conversation);
-    }
+    setSelectedConversation(conversation);
   };
 
   return (
@@ -214,34 +210,37 @@ export default function AdminDirectMessagesPage() {
        </div>
 
         <div className={cn(
-            "grid h-[calc(100vh-12rem)] gap-4 transition-all duration-300",
-            selectedConversation ? "grid-cols-[25%_1fr]" : "grid-cols-[1fr_0fr]"
+            "grid h-[calc(100vh-12rem)] gap-4 transition-all duration-500 ease-in-out",
+            selectedConversation ? "grid-cols-[25%_1fr]" : "grid-cols-[1fr]"
         )}>
-            <ThreadList 
-                conversations={filteredAndSortedConversations} 
-                selectedConversation={selectedConversation} 
-                onSelect={handleSelectConversation}
-                filterBy={filterBy}
-                setFilterBy={setFilterBy}
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-                onToggleRead={handleToggleRead}
-                onToggleArchive={handleToggleArchive}
-                onTogglePin={handleTogglePin}
-             />
-            <div 
+            <div className={cn("transition-opacity duration-300", selectedConversation ? "opacity-60 lg:opacity-100" : "opacity-100")}>
+              <ThreadList 
+                  conversations={filteredAndSortedConversations} 
+                  selectedConversation={selectedConversation} 
+                  onSelect={handleSelectConversation}
+                  filterBy={filterBy}
+                  setFilterBy={setFilterBy}
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  onToggleRead={handleToggleRead}
+                  onToggleArchive={handleToggleArchive}
+                  onTogglePin={handleTogglePin}
+              />
+            </div>
+            
+             <div 
                 className={cn(
-                  "grid transition-all duration-300 ease-in-out",
-                  selectedConversation ? "grid-cols-[1fr_300px] gap-4" : "grid-cols-[1fr_0px] gap-0"
+                  "grid transition-all duration-500 ease-in-out h-full",
+                  selectedConversation ? "grid-cols-[1fr_20%]" : "grid-cols-[0fr_0fr] pointer-events-none"
                 )}
             >
-              <div className={cn("transition-opacity duration-300", selectedConversation ? "opacity-100" : "opacity-0")}>
+              <div className={cn("transition-opacity duration-300 w-full h-full", selectedConversation ? "opacity-100" : "opacity-0")}>
                 <ChatView 
                     conversation={selectedConversation} 
                     onClose={() => setSelectedConversation(null)} 
                 />
               </div>
-              <div className={cn("transition-opacity duration-300", selectedConversation ? "opacity-100" : "opacity-0")}>
+              <div className={cn("transition-opacity duration-300 w-full h-full", selectedConversation ? "opacity-100" : "opacity-0")}>
                 <UserDetailsPane conversation={selectedConversation} />
               </div>
             </div>
@@ -369,6 +368,18 @@ function ThreadList({
 }
 
 function ChatView({ conversation, onClose }: { conversation: Conversation | null, onClose: () => void }) {
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredMessages = useMemo(() => {
+        if (!conversation) return [];
+        if (!searchTerm.trim()) {
+            return conversation.messages;
+        }
+        return conversation.messages.filter(message =>
+            message.text.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [conversation, searchTerm]);
+
     if (!conversation) {
         return (
             <Card className="h-full hidden md:flex flex-col items-center justify-center">
@@ -391,12 +402,21 @@ function ChatView({ conversation, onClose }: { conversation: Conversation | null
                     <p className="font-semibold">{conversation.userName}</p>
                     <p className="text-xs text-muted-foreground">Online</p>
                 </div>
+                 <div className="relative ml-auto">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search in chat..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9 h-8 w-48"
+                    />
+                </div>
                  <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0">
                     <PanelLeftClose className="h-5 w-5" />
                  </Button>
             </CardHeader>
             <ScrollArea className="flex-grow p-4 space-y-4">
-                 {conversation.messages.map(message => (
+                 {filteredMessages.length > 0 ? filteredMessages.map(message => (
                     <div key={message.id} className={cn("flex items-end gap-2", message.sender === 'admin' ? 'justify-end' : '')}>
                         {message.sender !== 'admin' && (
                             <Avatar className="h-8 w-8 shrink-0">
@@ -412,7 +432,11 @@ function ChatView({ conversation, onClose }: { conversation: Conversation | null
                             <p className={cn("text-xs mt-1", message.sender === 'admin' ? 'text-primary-foreground/70' : 'text-muted-foreground/80')}>{message.timestamp}</p>
                         </div>
                     </div>
-                ))}
+                )) : (
+                     <div className="text-center text-sm text-muted-foreground py-10">
+                        No messages found{searchTerm ? ` for "${searchTerm}"` : ''}.
+                    </div>
+                )}
             </ScrollArea>
             <CardContent className="p-4 border-t">
                 <div className="flex items-center gap-2">
