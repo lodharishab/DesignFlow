@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,13 +23,18 @@ import {
   Inbox,
   Mail,
   Pin,
-  PinOff
+  PinOff,
+  Sparkles,
+  Copy,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { summarizeChatAction } from '@/components/ai/actions';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Label } from '@/components/ui/label';
 
 
 interface Message {
@@ -129,7 +134,6 @@ export default function AdminDirectMessagesPage() {
   const [filterBy, setFilterBy] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortType>('date');
   const { toast } = useToast();
-  const isMobile = useIsMobile();
 
   const handleConversationUpdate = (updatedConversation: Conversation) => {
     setConversations(prev =>
@@ -211,9 +215,9 @@ export default function AdminDirectMessagesPage() {
 
         <div className={cn(
             "grid h-[calc(100vh-12rem)] gap-4 transition-all duration-500 ease-in-out",
-            selectedConversation ? "grid-cols-[25%_1fr]" : "grid-cols-[1fr]"
+            selectedConversation ? "grid-cols-[1fr] lg:grid-cols-[25%_55%_20%]" : "grid-cols-[1fr]"
         )}>
-            <div className={cn("transition-opacity duration-300", selectedConversation ? "opacity-60 lg:opacity-100" : "opacity-100")}>
+            <div className={cn("transition-opacity duration-300", selectedConversation ? "hidden lg:block opacity-60 lg:opacity-100" : "block opacity-100")}>
               <ThreadList 
                   conversations={filteredAndSortedConversations} 
                   selectedConversation={selectedConversation} 
@@ -228,21 +232,14 @@ export default function AdminDirectMessagesPage() {
               />
             </div>
             
-             <div 
-                className={cn(
-                  "grid transition-all duration-500 ease-in-out h-full",
-                  selectedConversation ? "grid-cols-[1fr_20%]" : "grid-cols-[0fr_0fr] pointer-events-none"
-                )}
-            >
-              <div className={cn("transition-opacity duration-300 w-full h-full", selectedConversation ? "opacity-100" : "opacity-0")}>
-                <ChatView 
-                    conversation={selectedConversation} 
-                    onClose={() => setSelectedConversation(null)} 
-                />
-              </div>
-              <div className={cn("transition-opacity duration-300 w-full h-full", selectedConversation ? "opacity-100" : "opacity-0")}>
-                <UserDetailsPane conversation={selectedConversation} />
-              </div>
+            <div className={cn("transition-opacity duration-300 w-full h-full", selectedConversation ? "block opacity-100" : "hidden opacity-0")}>
+              <ChatView 
+                  conversation={selectedConversation} 
+                  onClose={() => setSelectedConversation(null)} 
+              />
+            </div>
+            <div className={cn("transition-opacity duration-300 w-full h-full", selectedConversation ? "hidden lg:block opacity-100" : "hidden opacity-0")}>
+              <UserDetailsPane conversation={selectedConversation} />
             </div>
         </div>
     </div>
@@ -394,6 +391,9 @@ function ChatView({ conversation, onClose }: { conversation: Conversation | null
     return (
         <Card className="flex flex-col h-full w-full">
              <CardHeader className="flex flex-row items-center gap-3 p-3 border-b bg-background sticky top-0 z-10">
+                <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0 lg:hidden">
+                    <ArrowLeft className="h-5 w-5" />
+                 </Button>
                 <Avatar className="h-10 w-10">
                     <AvatarImage src={conversation.avatarUrl} alt={conversation.userName} data-ai-hint={conversation.avatarHint} />
                     <AvatarFallback>{conversation.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
@@ -411,7 +411,7 @@ function ChatView({ conversation, onClose }: { conversation: Conversation | null
                         className="pl-9 h-8 w-48"
                     />
                 </div>
-                 <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0">
+                 <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0 hidden lg:flex">
                     <PanelLeftClose className="h-5 w-5" />
                  </Button>
             </CardHeader>
@@ -482,6 +482,7 @@ function UserDetailsPane({ conversation }: { conversation: Conversation | null }
                      <div className="space-y-2 pt-2">
                         <h4 className="font-semibold text-muted-foreground">Actions</h4>
                         <div className="flex flex-col gap-2">
+                            <AiSummaryDialog conversation={conversation} />
                             <Button variant="outline"><VolumeX className="mr-2 h-4 w-4" /> Mute Conversation</Button>
                             <Button variant="outline"><Archive className="mr-2 h-4 w-4" /> Archive Chat</Button>
                         </div>
@@ -490,4 +491,72 @@ function UserDetailsPane({ conversation }: { conversation: Conversation | null }
             </ScrollArea>
         </Card>
     )
+}
+
+function AiSummaryDialog({ conversation }: { conversation: Conversation }) {
+    const { toast } = useToast();
+    const [summary, setSummary] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleGenerateSummary = async () => {
+        setIsLoading(true);
+        setSummary('');
+        try {
+            // Get last 20 messages and format them
+            const chatHistory = conversation.messages
+                .slice(-20)
+                .map(msg => `${msg.sender}: ${msg.text}`)
+                .join('\n');
+            
+            const result = await summarizeChatAction(chatHistory);
+            setSummary(result);
+        } catch (error) {
+            console.error("AI Summary Error:", error);
+            toast({ title: "Error", description: "Failed to generate summary.", variant: "destructive" });
+        }
+        setIsLoading(false);
+    };
+
+    const handleCopyToClipboard = () => {
+        navigator.clipboard.writeText(summary);
+        toast({ title: "Copied!", description: "Summary copied to clipboard." });
+    };
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="outline"><Sparkles className="mr-2 h-4 w-4 text-primary" /> AI Summary</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>AI Chat Summary</DialogTitle>
+                    <DialogDescription>
+                        A quick summary of the recent conversation with {conversation.userName}.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                    {summary ? (
+                        <div className="p-3 border rounded-md bg-secondary/50 text-sm whitespace-pre-wrap max-h-60 overflow-y-auto">
+                            {summary}
+                        </div>
+                    ) : (
+                        <Button onClick={handleGenerateSummary} disabled={isLoading} className="w-full">
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                            {isLoading ? 'Generating...' : 'Generate Summary'}
+                        </Button>
+                    )}
+                </div>
+                <DialogFooter className="sm:justify-end gap-2">
+                    <DialogClose asChild>
+                        <Button type="button" variant="secondary">
+                            Close
+                        </Button>
+                    </DialogClose>
+                     <Button type="button" onClick={handleCopyToClipboard} disabled={!summary}>
+                        <Copy className="mr-2 h-4 w-4" /> Copy
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
 }
