@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { addBlogPostAction, type BlogActionResult } from '@/app/admin/blog/actions';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { generateBlogPostIdeas } from '@/ai/flows/blog-post-flow';
-import type { BlogPostRequest, BlogPostResponse } from '@/ai/flows/blog-post-flow';
+import type { BlogPostRequest, BlogPostResponse } from '@/ai/flows/blog-post-types';
 
 
 function AiAssistDialog({ onAccept }: { onAccept: (content: BlogPostResponse) => void }) {
