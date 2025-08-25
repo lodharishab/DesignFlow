@@ -341,7 +341,7 @@ function ThreadList({
                                         )}
                                     </div>
                                 </button>
-                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center bg-muted/50 rounded-full border opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center bg-background/70 rounded-full border opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => onTogglePin(e, convo)}>
