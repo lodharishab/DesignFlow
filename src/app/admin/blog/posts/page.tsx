@@ -95,7 +95,7 @@ export default async function AdminBlogPostsPage() {
                           <Edit3 className="h-4 w-4" />
                         </Link>
                       </Button>
-                       <form action={async () => { await handleDeletePost(post.id); }} className="inline-block">
+                       <form action={handleDeletePost.bind(null, post.id)} className="inline-block">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="outline" size="icon" className="hover:text-destructive" aria-label={`Delete ${post.title}`}>
