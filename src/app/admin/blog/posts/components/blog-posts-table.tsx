@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Edit3, Trash2, Newspaper, PackageSearch, ArrowUpDown, ChevronUp, ChevronDown, Search, CheckCircle, FileText, Clock, Eye, BarChart2, ThumbsUp, MessageSquare, ChevronDown as ChevronDownIcon, CheckCircle2, AlertOctagon } from 'lucide-react';
+import { PlusCircle, Edit3, Trash2, Newspaper, PackageSearch, ArrowUpDown, ChevronUp, ChevronDown, Search, CheckCircle, FileText, Clock, Eye, BarChart2, ThumbsUp, MessageSquare, ChevronDown as ChevronDownIcon, CheckCircle2, AlertOctagon, Copy } from 'lucide-react';
 import { type BlogPost, deleteBlogPost } from '@/lib/blog-db';
 import { format } from 'date-fns';
 import {
@@ -179,6 +179,16 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
         });
         setSelectedPostIds(new Set());
     };
+    
+    const getDuplicateQuery = (post: BlogPost) => {
+        const { _id, id, publishDate, ...duplicatablePost } = post;
+        const postToDuplicate = {
+            ...duplicatablePost,
+            title: `${duplicatablePost.title} (Copy)`,
+            publishDateString: new Date().toISOString().split('T')[0], // Set to today
+        }
+        return `?duplicate=${encodeURIComponent(JSON.stringify(postToDuplicate))}`;
+    }
 
     return (
         <>
@@ -345,7 +355,12 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
                                     <Badge variant={getStatusBadgeVariant(post.status)}>{post.status}</Badge>
                                 </TableCell>
                                 <TableCell className="text-muted-foreground">{format(post.publishDate, 'MMM d, yyyy')}</TableCell>
-                                <TableCell className="text-right space-x-2">
+                                <TableCell className="text-right space-x-1">
+                                    <Button variant="outline" size="icon" asChild className="hover:text-primary">
+                                        <Link href={`/admin/blog/posts/new${getDuplicateQuery(post)}`} aria-label={`Duplicate ${post.title}`}>
+                                            <Copy className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
                                     <Button variant="outline" size="icon" asChild className="hover:text-primary">
                                         <Link href={`/admin/blog/posts/edit/${post.id}`} aria-label={`Edit ${post.title}`}>
                                             <Edit3 className="h-4 w-4" />

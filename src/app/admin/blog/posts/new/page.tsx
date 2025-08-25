@@ -2,8 +2,8 @@
 "use client";
 
 import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import { addBlogPostAction, type BlogActionResult } from '@/app/admin/blog/actio
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { generateBlogPostIdeas } from '@/ai/flows/blog-post-flow';
 import type { BlogPostRequest, BlogPostResponse } from '@/ai/flows/blog-post-types';
+import type { BlogPost } from '@/lib/blog-db';
 
 
 function AiAssistDialog({ onAccept }: { onAccept: (content: BlogPostResponse) => void }) {
@@ -120,16 +121,54 @@ const initialState: BlogActionResult = {
   errors: {},
 };
 
-export default function AdminAddNewBlogPostPage() {
+function AddNewBlogPostPageContent() {
   const [state, formAction] = useFormState(addBlogPostAction, initialState);
   const { toast } = useToast();
   const router = useRouter();
-  
-  // State for form fields to be controlled by AI
+  const searchParams = useSearchParams();
+
+  // State for form fields to be controlled
   const [title, setTitle] = useState('');
   const [excerpt, setExcerpt] = useState('');
+  const [content, setContent] = useState('');
   const [slug, setSlug] = useState('');
+  const [category, setCategory] = useState<string | undefined>(undefined);
+  const [tags, setTags] = useState('');
+  const [status, setStatus] = useState<BlogPost['status']>('Draft');
+  const [featuredImageUrl, setFeaturedImageUrl] = useState('https://placehold.co/800x450.png');
+  const [featuredImageHint, setFeaturedImageHint] = useState('blog post image');
+  const [publishDate, setPublishDate] = useState(new Date().toISOString().split('T')[0]);
 
+  // Effect to handle duplication from query params
+  useEffect(() => {
+    const duplicateDataString = searchParams.get('duplicate');
+    if (duplicateDataString) {
+      try {
+        const data = JSON.parse(duplicateDataString);
+        setTitle(data.title || '');
+        setExcerpt(data.excerpt || '');
+        setContent(data.content || '');
+        setCategory(data.category || undefined);
+        setTags(Array.isArray(data.tags) ? data.tags.join(', ') : '');
+        setStatus(data.status || 'Draft');
+        setFeaturedImageUrl(data.featuredImageUrl || 'https://placehold.co/800x450.png');
+        setFeaturedImageHint(data.featuredImageHint || 'blog post image');
+        setPublishDate(data.publishDateString || new Date().toISOString().split('T')[0]);
+        setSlug(''); // Clear slug to force regeneration on save
+        toast({
+          title: "Post Duplicated",
+          description: "Content from the original post has been copied. Please review and save.",
+        });
+      } catch (error) {
+        console.error("Failed to parse duplicate data:", error);
+        toast({
+          title: "Error",
+          description: "Could not load duplicated post data.",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [searchParams, toast]);
 
   useEffect(() => {
     if (state.message && !state.success && state.errors && Object.keys(state.errors).length > 0) {
@@ -194,7 +233,7 @@ export default function AdminAddNewBlogPostPage() {
                   <Label htmlFor="title">Post Title*</Label>
                    <Dialog>
                     <DialogTrigger asChild>
-                        <Button variant="secondary" size="sm"><Wand2 className="mr-1.5 h-4 w-4"/> AI Assist</Button>
+                        <Button type="button" variant="secondary" size="sm"><Wand2 className="mr-1.5 h-4 w-4"/> AI Assist</Button>
                     </DialogTrigger>
                     <AiAssistDialog onAccept={handleAcceptAiContent} />
                   </Dialog>
@@ -218,19 +257,19 @@ export default function AdminAddNewBlogPostPage() {
 
             <div className="space-y-2">
               <Label htmlFor="content">Main Content (HTML or Markdown)*</Label>
-              <Textarea id="content" name="content" rows={10} required placeholder="Write your blog post content here. You can use HTML tags for formatting." aria-describedby="content-error"/>
+              <Textarea id="content" name="content" value={content} onChange={(e) => setContent(e.target.value)} rows={10} required placeholder="Write your blog post content here. You can use HTML tags for formatting." aria-describedby="content-error"/>
               {state.errors?.content && <p id="content-error" className="text-sm text-destructive">{state.errors.content}</p>}
             </div>
             
             <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="featuredImageUrl"><ImageIcon className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Featured Image URL*</Label>
-                    <Input id="featuredImageUrl" name="featuredImageUrl" type="url" required placeholder="https://placehold.co/800x450.png" defaultValue="https://placehold.co/800x450.png" aria-describedby="imageUrl-error"/>
+                    <Input id="featuredImageUrl" name="featuredImageUrl" type="url" value={featuredImageUrl} onChange={(e) => setFeaturedImageUrl(e.target.value)} required placeholder="https://placehold.co/800x450.png" aria-describedby="imageUrl-error"/>
                     {state.errors?.featuredImageUrl && <p id="imageUrl-error" className="text-sm text-destructive">{state.errors.featuredImageUrl}</p>}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="featuredImageHint"><ImageIcon className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Featured Image AI Hint</Label>
-                    <Input id="featuredImageHint" name="featuredImageHint" placeholder="e.g., abstract design background" defaultValue="blog post image" aria-describedby="imageHint-error"/>
+                    <Input id="featuredImageHint" name="featuredImageHint" value={featuredImageHint} onChange={(e) => setFeaturedImageHint(e.target.value)} placeholder="e.g., abstract design background" aria-describedby="imageHint-error"/>
                     {state.errors?.featuredImageHint && <p id="imageHint-error" className="text-sm text-destructive">{state.errors.featuredImageHint}</p>}
                 </div>
             </div>
@@ -238,25 +277,25 @@ export default function AdminAddNewBlogPostPage() {
             <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="category"><Tag className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Category</Label>
-                    <Input id="category" name="category" placeholder="e.g., Design Trends, Tutorials" aria-describedby="category-error"/>
+                    <Input id="category" name="category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g., Design Trends, Tutorials" aria-describedby="category-error"/>
                     {state.errors?.category && <p id="category-error" className="text-sm text-destructive">{state.errors.category}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="tags"><ExternalLink className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Tags (comma-separated, max 5)</Label>
-                    <Input id="tags" name="tags" placeholder="e.g., branding, ui, figma" aria-describedby="tags-error"/>
+                    <Input id="tags" name="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="e.g., branding, ui, figma" aria-describedby="tags-error"/>
                     {state.errors?.tags && <p id="tags-error" className="text-sm text-destructive">{state.errors.tags}</p>}
                 </div>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="publishDate"><CalendarDays className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Publish Date (YYYY-MM-DD)</Label>
-                    <Input id="publishDate" name="publishDate" type="date" defaultValue={new Date().toISOString().split('T')[0]} aria-describedby="publishDate-error"/>
+                    <Input id="publishDate" name="publishDate" type="date" value={publishDate} onChange={(e) => setPublishDate(e.target.value)} aria-describedby="publishDate-error"/>
                     <p className="text-xs text-muted-foreground">Past dates publish immediately. Future dates are scheduled.</p>
                     {state.errors?.publishDateString && <p id="publishDate-error" className="text-sm text-destructive">{state.errors.publishDateString}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="status"><Activity className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Status*</Label>
-                    <Select name="status" defaultValue="Draft">
+                    <Select name="status" value={status} onValueChange={(v) => setStatus(v as BlogPost['status'])}>
                         <SelectTrigger id="status" aria-describedby="status-error">
                             <SelectValue placeholder="Select status" />
                         </SelectTrigger>
@@ -282,4 +321,13 @@ export default function AdminAddNewBlogPostPage() {
       </form>
     </div>
   );
+}
+
+
+export default function AdminAddNewBlogPostPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AddNewBlogPostPageContent />
+    </Suspense>
+  )
 }
