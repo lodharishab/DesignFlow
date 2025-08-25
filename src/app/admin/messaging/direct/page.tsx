@@ -189,14 +189,14 @@ function ChatView({ conversation }: { conversation: Conversation | null }) {
 
     return (
         <Card className="flex flex-col h-full">
-            <CardHeader className="flex flex-row items-center gap-3 p-3 border-b">
+             <CardHeader className="flex flex-row items-center gap-3 p-3 border-b bg-background sticky top-0 z-10">
                 <Avatar className="h-10 w-10">
                     <AvatarImage src={conversation.avatarUrl} alt={conversation.userName} data-ai-hint={conversation.avatarHint} />
                     <AvatarFallback>{conversation.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <CardTitle className="text-base font-semibold">{conversation.userName}</CardTitle>
-                    <CardDescription className="text-xs">Online</CardDescription>
+                    <p className="font-semibold">{conversation.userName}</p>
+                    <p className="text-xs text-muted-foreground">Online</p>
                 </div>
             </CardHeader>
             <ScrollArea className="flex-grow p-4 space-y-4">
@@ -302,3 +302,5 @@ function UserDetailsPane({ conversation, isOpen, onToggle }: { conversation: Con
         </Card>
     )
 }
+
+    
