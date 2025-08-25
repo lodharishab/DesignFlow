@@ -121,18 +121,20 @@ export default function AdminMessagingPage() {
                    </div>
                 </div>
                 <ScrollArea className="flex-grow">
-                  {initialUsersData.map(user => (
-                    <button key={user.id} onClick={() => setActiveUser(user)} className={cn("w-full text-left p-3 flex items-center gap-3 hover:bg-accent", activeUser?.id === user.id && 'bg-accent')}>
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint={user.avatarHint} />
-                        <AvatarFallback>{user.name.substring(0,2)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.roles.join(', ')}</p>
-                      </div>
-                    </button>
-                  ))}
+                  <div className="flex-1 overflow-y-auto">
+                    {initialUsersData.map(user => (
+                        <button key={user.id} onClick={() => setActiveUser(user)} className={cn("w-full text-left p-3 flex items-center gap-3 hover:bg-accent", activeUser?.id === user.id && 'bg-accent')}>
+                        <Avatar className="h-10 w-10">
+                            <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint={user.avatarHint} />
+                            <AvatarFallback>{user.name.substring(0,2)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="font-semibold">{user.name}</p>
+                            <p className="text-xs text-muted-foreground">{user.roles.join(', ')}</p>
+                        </div>
+                        </button>
+                    ))}
+                  </div>
                 </ScrollArea>
               </div>
               <div className="flex flex-col h-full">
