@@ -3,3 +3,4 @@
 import './flows/kira-flow';
 import './flows/announcement-flow';
 import './flows/summarize-chat-flow';
+import './flows/blog-post-flow';

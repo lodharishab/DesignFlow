@@ -10,11 +10,99 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Save, XCircle, Newspaper, Image as ImageIcon, Tag, CalendarDays, ExternalLink, Activity } from 'lucide-react';
+import { PlusCircle, Save, XCircle, Newspaper, Image as ImageIcon, Tag, CalendarDays, ExternalLink, Activity, Wand2, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { addBlogPostAction, type BlogActionResult } from '@/app/admin/blog/actions';
-import type { BlogPost } from '@/lib/blog-db';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { generateBlogPostIdeas } from '@/ai/flows/blog-post-flow';
+import type { BlogPostRequest, BlogPostResponse } from '@/ai/flows/blog-post-flow';
+
+
+function AiAssistDialog({ onAccept }: { onAccept: (content: BlogPostResponse) => void }) {
+  const [prompt, setPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<BlogPostResponse | null>(null);
+  const { toast } = useToast();
+  const quickPrompts = ["Top 5 UI Trends", "Why Branding Matters", "Choosing a Color Palette", "Design for Startups"];
+
+  const handleGenerate = async () => {
+    if (!prompt.trim()) {
+      toast({ title: "Prompt is empty", description: "Please enter a topic for the blog post.", variant: "destructive" });
+      return;
+    }
+    setIsGenerating(true);
+    setGeneratedContent(null);
+    try {
+      const result = await generateBlogPostIdeas({ topic: prompt });
+      setGeneratedContent(result);
+    } catch (error) {
+      console.error(error);
+      toast({ title: "AI Generation Failed", description: "Could not generate content. Please try again.", variant: "destructive" });
+    }
+    setIsGenerating(false);
+  };
+  
+  const handleAccept = () => {
+    if (generatedContent) {
+      onAccept(generatedContent);
+    }
+  };
+
+
+  return (
+    <DialogContent className="sm:max-w-[600px]">
+      <DialogHeader>
+        <DialogTitle className="font-headline text-2xl flex items-center"><Wand2 className="mr-3 h-6 w-6 text-primary"/> AI Blog Post Assistant</DialogTitle>
+        <DialogDescription>Provide a topic and let AI draft a title and excerpt for your next blog post.</DialogDescription>
+      </DialogHeader>
+      <div className="space-y-4 py-4">
+        <div className="space-y-2">
+          <Label htmlFor="ai-prompt">Blog Post Topic</Label>
+          <Input id="ai-prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="e.g., The impact of color psychology in branding" />
+          <div className="flex flex-wrap gap-2 pt-2">
+            {quickPrompts.map(p => (
+              <Button key={p} variant="outline" size="sm" onClick={() => setPrompt(p)}>{p}</Button>
+            ))}
+          </div>
+        </div>
+        <Button onClick={handleGenerate} disabled={isGenerating} className="w-full">
+          {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4"/>}
+          {isGenerating ? 'Generating...' : 'Generate Ideas'}
+        </Button>
+        
+        {generatedContent && (
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="font-semibold">Suggested Content:</h3>
+            <div className="space-y-1">
+              <Label>Generated Title</Label>
+              <p className="p-3 border rounded-md bg-muted text-sm">{generatedContent.title}</p>
+            </div>
+            <div className="space-y-1">
+              <Label>Generated Excerpt/Summary</Label>
+              <p className="p-3 border rounded-md bg-muted text-sm whitespace-pre-wrap">{generatedContent.excerpt}</p>
+            </div>
+          </div>
+        )}
+         <p className="text-xs text-muted-foreground flex items-center pt-2">
+            <AlertCircle className="h-3 w-3 mr-1.5"/>Powered by AI — please review carefully before publishing.
+        </p>
+      </div>
+       <DialogFooter className="sm:justify-between gap-2">
+        <DialogClose asChild>
+            <Button variant="ghost">Cancel</Button>
+        </DialogClose>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleGenerate} disabled={isGenerating}>Regenerate</Button>
+          <DialogClose asChild>
+            <Button onClick={handleAccept} disabled={!generatedContent}>Accept & Insert</Button>
+          </DialogClose>
+        </div>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -36,8 +124,12 @@ export default function AdminAddNewBlogPostPage() {
   const [state, formAction] = useFormState(addBlogPostAction, initialState);
   const { toast } = useToast();
   const router = useRouter();
-  const [slug, setSlug] = useState('');
+  
+  // State for form fields to be controlled by AI
   const [title, setTitle] = useState('');
+  const [excerpt, setExcerpt] = useState('');
+  const [slug, setSlug] = useState('');
+
 
   useEffect(() => {
     if (state.message && !state.success && state.errors && Object.keys(state.errors).length > 0) {
@@ -69,6 +161,15 @@ export default function AdminAddNewBlogPostPage() {
   const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSlug(e.target.value.toLowerCase().replace(/[^\w-]/g, '').replace(/\s+/g, '-').slice(0,70));
   };
+  
+  const handleAcceptAiContent = (content: BlogPostResponse) => {
+    setTitle(content.title);
+    setExcerpt(content.excerpt);
+    
+    const newSlug = content.title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0,70);
+    setSlug(newSlug);
+  };
+
 
   return (
     <div className="space-y-8">
@@ -89,7 +190,15 @@ export default function AdminAddNewBlogPostPage() {
             {state.errors?.general && <p className="text-sm text-destructive">{state.errors.general}</p>}
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="title">Post Title*</Label>
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="title">Post Title*</Label>
+                   <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="secondary" size="sm"><Wand2 className="mr-1.5 h-4 w-4"/> AI Assist</Button>
+                    </DialogTrigger>
+                    <AiAssistDialog onAccept={handleAcceptAiContent} />
+                  </Dialog>
+                </div>
                 <Input id="title" name="title" value={title} onChange={handleTitleChange} required placeholder="Enter a catchy title" aria-describedby="title-error"/>
                 {state.errors?.title && <p id="title-error" className="text-sm text-destructive">{state.errors.title}</p>}
               </div>
@@ -103,7 +212,7 @@ export default function AdminAddNewBlogPostPage() {
 
             <div className="space-y-2">
               <Label htmlFor="excerpt">Excerpt / Short Summary*</Label>
-              <Textarea id="excerpt" name="excerpt" rows={3} required placeholder="A brief summary that appears in post listings." aria-describedby="excerpt-error"/>
+              <Textarea id="excerpt" name="excerpt" value={excerpt} onChange={(e) => setExcerpt(e.target.value)} rows={3} required placeholder="A brief summary that appears in post listings." aria-describedby="excerpt-error"/>
               {state.errors?.excerpt && <p id="excerpt-error" className="text-sm text-destructive">{state.errors.excerpt}</p>}
             </div>
 
