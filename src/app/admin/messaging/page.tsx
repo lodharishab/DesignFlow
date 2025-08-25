@@ -113,14 +113,14 @@ export default function AdminMessagingPage() {
         <TabsContent value="direct-message">
           <Card className="shadow-lg h-[70vh]">
             <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] h-full">
-              <div className="border-r flex flex-col">
+              <div className="border-r flex flex-col h-full">
                 <div className="p-3 border-b">
                    <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input placeholder="Search users..." className="pl-9"/>
                    </div>
                 </div>
-                <ScrollArea>
+                <ScrollArea className="flex-grow">
                   {initialUsersData.map(user => (
                     <button key={user.id} onClick={() => setActiveUser(user)} className={cn("w-full text-left p-3 flex items-center gap-3 hover:bg-accent", activeUser?.id === user.id && 'bg-accent')}>
                       <Avatar className="h-10 w-10">
@@ -179,14 +179,14 @@ export default function AdminMessagingPage() {
         <TabsContent value="monitor-chats">
           <Card className="shadow-lg h-[70vh]">
              <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] h-full">
-                <div className="border-r flex flex-col">
+                <div className="border-r flex flex-col h-full">
                   <div className="p-3 border-b">
                     <div className="relative">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input placeholder="Search orders or users..." className="pl-9"/>
                     </div>
                   </div>
-                  <ScrollArea>
+                  <ScrollArea className="flex-grow">
                       {initialOrdersData.filter(o => o.designerId).map(order => (
                           <button key={order.id} onClick={() => setActiveOrderChat(order.id)} className={cn("w-full text-left p-3 hover:bg-accent", activeOrderChat === order.id && 'bg-accent')}>
                               <p className="font-semibold truncate">{order.serviceName}</p>
