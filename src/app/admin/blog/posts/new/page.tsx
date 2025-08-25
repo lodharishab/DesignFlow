@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect, useState, Suspense } from 'react';
+import { useFormStatus } from 'react-dom';
+import { useEffect, useState, Suspense, useActionState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -122,7 +122,7 @@ const initialState: BlogActionResult = {
 };
 
 function AddNewBlogPostPageContent() {
-  const [state, formAction] = useFormState(addBlogPostAction, initialState);
+  const [state, formAction] = useActionState(addBlogPostAction, initialState);
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
