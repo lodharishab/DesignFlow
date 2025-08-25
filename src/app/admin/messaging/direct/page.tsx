@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,13 +26,14 @@ import {
   PinOff,
   Sparkles,
   Copy,
-  Loader2
+  Loader2,
+  ArrowLeft
 } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { summarizeChatAction } from '@/components/ai/actions';
+import { summarizeChat } from '@/ai/flows/summarize-chat-flow';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
 
@@ -128,6 +129,16 @@ const mockConversations: Conversation[] = [
 type FilterType = 'all' | 'unread' | 'archived' | 'muted';
 type SortType = 'date' | 'name';
 
+function TimeAgo({ date }: { date: Date }) {
+  const [timeAgo, setTimeAgo] = useState('');
+
+  useEffect(() => {
+    setTimeAgo(formatDistanceToNow(date, { addSuffix: true }));
+  }, [date]);
+
+  return <span>{timeAgo}</span>;
+}
+
 export default function AdminDirectMessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -215,7 +226,7 @@ export default function AdminDirectMessagesPage() {
 
         <div className={cn(
             "grid h-[calc(100vh-12rem)] gap-4 transition-all duration-500 ease-in-out",
-            selectedConversation ? "grid-cols-[1fr] lg:grid-cols-[25%_55%_20%]" : "grid-cols-[1fr]"
+            selectedConversation ? "grid-cols-1 lg:grid-cols-[25%_55%_20%]" : "grid-cols-1"
         )}>
             <div className={cn("transition-opacity duration-300", selectedConversation ? "hidden lg:block opacity-60 lg:opacity-100" : "block opacity-100")}>
               <ThreadList 
@@ -232,7 +243,10 @@ export default function AdminDirectMessagesPage() {
               />
             </div>
             
-            <div className={cn("transition-opacity duration-300 w-full h-full", selectedConversation ? "block opacity-100" : "hidden opacity-0")}>
+            <div className={cn(
+                "transition-opacity duration-300 w-full h-full data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right-1/2 data-[state=open]:slide-in-from-right-1/2",
+                selectedConversation ? "block opacity-100" : "hidden opacity-0"
+                )} data-state={selectedConversation ? 'open' : 'closed'}>
               <ChatView 
                   conversation={selectedConversation} 
                   onClose={() => setSelectedConversation(null)} 
@@ -321,7 +335,7 @@ function ThreadList({
                                         <p className="text-xs text-muted-foreground truncate">{convo.lastMessage}</p>
                                     </div>
                                     <div className="flex flex-col items-end text-xs text-muted-foreground self-start shrink-0">
-                                        <span>{formatDistanceToNow(convo.lastMessageTimestamp, { addSuffix: true })}</span>
+                                        <TimeAgo date={convo.lastMessageTimestamp} />
                                         {!convo.isRead && (
                                             <span className="mt-1.5 h-2 w-2 rounded-full bg-primary"></span>
                                         )}
@@ -508,7 +522,7 @@ function AiSummaryDialog({ conversation }: { conversation: Conversation }) {
                 .map(msg => `${msg.sender}: ${msg.text}`)
                 .join('\n');
             
-            const result = await summarizeChatAction(chatHistory);
+            const result = await summarizeChat(chatHistory);
             setSummary(result);
         } catch (error) {
             console.error("AI Summary Error:", error);
