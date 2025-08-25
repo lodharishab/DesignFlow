@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Edit3, Trash2, Newspaper, PackageSearch, ArrowUpDown, ChevronUp, ChevronDown, Search, CheckCircle, FileText, Clock } from 'lucide-react';
+import { PlusCircle, Edit3, Trash2, Newspaper, PackageSearch, ArrowUpDown, ChevronUp, ChevronDown, Search, CheckCircle, FileText, Clock, Eye, BarChart2 } from 'lucide-react';
 import { type BlogPost, deleteBlogPost } from '@/lib/blog-db';
 import { format } from 'date-fns';
 import {
@@ -26,7 +26,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-type SortableKeys = 'title' | 'category' | 'publishDate' | 'status';
+type SortByType = 'newest' | 'oldest' | 'views' | 'engagement';
 type StatusFilter = 'All' | BlogPost['status'];
 
 interface BlogPostsTableProps {
@@ -40,38 +40,25 @@ const statusFilters: {label: string; value: StatusFilter, icon?: React.ElementTy
     {label: 'Scheduled', value: 'Scheduled', icon: Clock},
 ];
 
+const sortOptions: {label: string, value: SortByType}[] = [
+    {label: 'Newest First', value: 'newest'},
+    {label: 'Oldest First', value: 'oldest'},
+    {label: 'Most Viewed', value: 'views'},
+    {label: 'Most Engaged', value: 'engagement'},
+]
+
 export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElement {
     const { toast } = useToast();
     const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('All');
-    const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' }>({
-        key: 'publishDate',
-        direction: 'descending',
-    });
+    const [sortBy, setSortBy] = useState<SortByType>('newest');
     
     const uniqueCategories = useMemo(() => {
         const categories = new Set(initialPosts.map(post => post.category).filter(Boolean));
         return ['All', ...Array.from(categories).sort()];
     }, [initialPosts]);
-
-    const requestSort = (key: SortableKeys) => {
-        let direction: 'ascending' | 'descending' = 'ascending';
-        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending';
-        }
-        setSortConfig({ key, direction });
-    };
-
-    const getSortIndicator = (key: SortableKeys) => {
-        if (sortConfig.key !== key) {
-            return <ArrowUpDown className="ml-2 h-3 w-3 text-muted-foreground/50" />;
-        }
-        return sortConfig.direction === 'ascending' ?
-            <ChevronUp className="ml-1 h-4 w-4" /> :
-            <ChevronDown className="ml-1 h-4 w-4" />;
-    };
 
     const getStatusBadgeVariant = (status: BlogPost['status']) => {
         switch (status) {
@@ -98,24 +85,22 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
             sortableItems = sortableItems.filter(post => post.status === statusFilter);
         }
 
-        if (sortConfig.key) {
-            sortableItems.sort((a, b) => {
-                const valA = a[sortConfig.key] ?? '';
-                const valB = b[sortConfig.key] ?? '';
-                let comparison = 0;
-                
-                if (valA instanceof Date && valB instanceof Date) {
-                    comparison = valA.getTime() - valB.getTime();
-                } else {
-                    comparison = String(valA).toLowerCase().localeCompare(String(valB).toLowerCase());
-                }
-
-                return sortConfig.direction === 'ascending' ? comparison : comparison * -1;
-            });
-        }
+        sortableItems.sort((a, b) => {
+            switch (sortBy) {
+                case 'oldest':
+                    return a.publishDate.getTime() - b.publishDate.getTime();
+                case 'views':
+                    return (b.views || 0) - (a.views || 0);
+                case 'engagement':
+                    return (b.engagement || 0) - (a.engagement || 0);
+                case 'newest':
+                default:
+                    return b.publishDate.getTime() - a.publishDate.getTime();
+            }
+        });
 
         return sortableItems;
-    }, [posts, searchTerm, categoryFilter, statusFilter, sortConfig]);
+    }, [posts, searchTerm, categoryFilter, statusFilter, sortBy]);
 
     const handleDeletePost = async (postId: string) => {
         const success = await deleteBlogPost(postId);
@@ -142,7 +127,7 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
                     </Button>
                 ))}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 p-4 border rounded-lg bg-card">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6 p-4 border rounded-lg bg-card">
                 <div className="space-y-1">
                     <Label htmlFor="searchTitle" className="text-xs">Search by Title</Label>
                     <div className="relative">
@@ -169,38 +154,37 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
                         </SelectContent>
                     </Select>
                 </div>
+                 <div className="space-y-1">
+                    <Label htmlFor="sortBy" className="text-xs">Sort By</Label>
+                    <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortByType)}>
+                        <SelectTrigger id="sortBy">
+                            <SelectValue placeholder="Sort posts by..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {sortOptions.map(option => (
+                                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>
-                             <Button variant="ghost" onClick={() => requestSort('title')} className="px-1 text-xs sm:text-sm -ml-2">
-                                Title {getSortIndicator('title')}
-                            </Button>
-                        </TableHead>
-                        <TableHead>
-                             <Button variant="ghost" onClick={() => requestSort('category')} className="px-1 text-xs sm:text-sm -ml-2">
-                                Category {getSortIndicator('category')}
-                            </Button>
-                        </TableHead>
-                         <TableHead>
-                            <Button variant="ghost" onClick={() => requestSort('status')} className="px-1 text-xs sm:text-sm -ml-2">
-                                Status {getSortIndicator('status')}
-                            </Button>
-                        </TableHead>
-                        <TableHead>
-                            <Button variant="ghost" onClick={() => requestSort('publishDate')} className="px-1 text-xs sm:text-sm -ml-2">
-                                Publish Date {getSortIndicator('publishDate')}
-                            </Button>
-                        </TableHead>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Publish Date</TableHead>
+                        <TableHead className="text-center">Views</TableHead>
+                        <TableHead className="text-center">Engagement</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {displayedPosts.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={5} className="text-center h-24">
+                            <TableCell colSpan={7} className="text-center h-24">
                                 <PackageSearch className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-2" />
                                 No blog posts match your filters.
                             </TableCell>
@@ -220,6 +204,8 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
                                     <Badge variant={getStatusBadgeVariant(post.status)}>{post.status}</Badge>
                                 </TableCell>
                                 <TableCell className="text-muted-foreground">{format(post.publishDate, 'MMM d, yyyy')}</TableCell>
+                                <TableCell className="text-center text-muted-foreground">{post.views?.toLocaleString() || 0}</TableCell>
+                                <TableCell className="text-center text-muted-foreground">{post.engagement?.toLocaleString() || 0}</TableCell>
                                 <TableCell className="text-right space-x-2">
                                     <Button variant="outline" size="icon" asChild className="hover:text-primary">
                                         <Link href={`/admin/blog/posts/edit/${post.id}`} aria-label={`Edit ${post.title}`}>
