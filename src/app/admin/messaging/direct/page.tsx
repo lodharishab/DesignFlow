@@ -118,8 +118,8 @@ type SortType = 'date' | 'name';
 
 export default function AdminDirectMessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(conversations[0]);
-  const [isUserDetailsOpen, setIsUserDetailsOpen] = useState(true);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [isUserDetailsOpen, setIsUserDetailsOpen] = useState(false);
   const [filterBy, setFilterBy] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortType>('date');
 
@@ -179,7 +179,7 @@ export default function AdminDirectMessagesPage() {
 
         <div className={cn(
             "hidden md:grid h-[calc(100vh-12rem)] gap-4 transition-all duration-300",
-            isUserDetailsOpen ? "grid-cols-[320px_1fr_280px]" : "grid-cols-[320px_1fr_0px]"
+            isUserDetailsOpen ? "grid-cols-[25%_55%_20%]" : "grid-cols-[30%_70%_0px]"
         )}>
             <ThreadList 
                 conversations={filteredAndSortedConversations} 
@@ -248,7 +248,7 @@ function ThreadList({ conversations, selectedConversation, onSelect, filterBy, s
                             key={convo.userId}
                             onClick={() => onSelect(convo)}
                             className={cn(
-                                "flex items-center gap-3 p-4 w-full text-left transition-colors",
+                                "flex items-start gap-3 p-4 w-full text-left transition-colors",
                                 selectedConversation?.userId === convo.userId ? "bg-primary/10" : "hover:bg-muted/50"
                             )}
                         >
