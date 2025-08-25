@@ -4,26 +4,12 @@
  * @fileOverview An AI flow for generating marketing announcements.
  *
  * - generateAnnouncement - A function that creates a title and message for an announcement.
- * - AnnouncementRequest - The input type for the generateAnnouncement function.
- * - AnnouncementResponse - The return type for the generateAnnouncement function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'zod';
+import type { AnnouncementRequest, AnnouncementResponse } from './announcement-types';
+import { AnnouncementRequestSchema, AnnouncementResponseSchema } from './announcement-types';
 
-// Define the schema for the flow's input
-export const AnnouncementRequestSchema = z.object({
-  topic: z.string().describe('The core topic of the announcement. For example: "new dashboard feature", "Diwali promotion", "scheduled maintenance on Sunday".'),
-});
-export type AnnouncementRequest = z.infer<typeof AnnouncementRequestSchema>;
-
-
-// Define the schema for the flow's structured output
-export const AnnouncementResponseSchema = z.object({
-    title: z.string().describe("A short, catchy, and professional title for the announcement. Should be less than 10 words."),
-    message: z.string().describe("A friendly and professional message body for the announcement. It should be 2-3 sentences long, explaining the core topic clearly to users."),
-});
-export type AnnouncementResponse = z.infer<typeof AnnouncementResponseSchema>;
 
 // Define the prompt for the model
 const announcementPrompt = ai.definePrompt({
@@ -61,4 +47,3 @@ const announcementFlow = ai.defineFlow(
 export async function generateAnnouncement(request: AnnouncementRequest): Promise<AnnouncementResponse> {
   return await announcementFlow(request);
 }
-

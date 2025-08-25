@@ -11,12 +11,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Megaphone, History, Eye, Send, Loader2, Wand2, Sparkles, AlertCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { generateAnnouncement, type AnnouncementRequest, type AnnouncementResponse } from '@/ai/flows/announcement-flow';
+import { generateAnnouncement } from '@/ai/flows/announcement-flow';
+import type { AnnouncementRequest, AnnouncementResponse } from '@/ai/flows/announcement-types';
+
 
 type AudienceType = 'all' | 'role' | 'user';
 type ScheduleType = 'now' | 'later';
@@ -32,8 +34,8 @@ interface Announcement {
 }
 
 const mockAnnouncements: Announcement[] = [
-  { id: 'ann001', title: 'New Feature: Brand Profiles!', audience: 'All Users', status: 'Sent', scheduledTime: new Date(2024, 6, 10, 10, 0), message: 'We have just launched Brand Profiles for clients! You can now save your brand information to help designers understand your needs better.' },
-  { id: 'ann002', title: 'Diwali Campaign Reminder', audience: 'Designers', status: 'Sent', scheduledTime: new Date(2024, 6, 5, 15, 30), message: 'A reminder to all designers: The Diwali campaign submission deadline is approaching. Please ensure all your related projects are on track.' },
+  { id: 'ann001', title: 'New Feature: Brand Profiles!', audience: 'All Users', status: 'Sent', scheduledTime: new Date('2024-07-10T10:00:00'), message: 'We have just launched Brand Profiles for clients! You can now save your brand information to help designers understand your needs better.' },
+  { id: 'ann002', title: 'Diwali Campaign Reminder', audience: 'Designers', status: 'Sent', scheduledTime: new Date('2024-07-05T15:30:00'), message: 'A reminder to all designers: The Diwali campaign submission deadline is approaching. Please ensure all your related projects are on track.' },
   { id: 'ann003', title: 'Scheduled Maintenance', audience: 'All Users', status: 'Scheduled', scheduledTime: new Date('2024-08-28T18:00:00'), message: 'The platform will be down for scheduled maintenance for approximately 30 minutes. We apologize for any inconvenience.' },
 ];
 
@@ -105,11 +107,16 @@ function AiAssistDialog({ onAccept }: { onAccept: (content: AnnouncementResponse
             <AlertCircle className="h-3 w-3 mr-1.5"/>Powered by AI — please review carefully before sending.
         </p>
       </div>
-      <DialogFooter className="sm:justify-between gap-2">
-        <Button variant="outline" onClick={handleGenerate} disabled={isGenerating}>Regenerate</Button>
-        <DialogTrigger asChild>
-          <Button onClick={handleAccept} disabled={!generatedContent}>Accept & Insert</Button>
-        </DialogTrigger>
+       <DialogFooter className="sm:justify-between gap-2">
+        <DialogClose asChild>
+            <Button variant="ghost">Cancel</Button>
+        </DialogClose>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleGenerate} disabled={isGenerating}>Regenerate</Button>
+          <DialogClose asChild>
+            <Button onClick={handleAccept} disabled={!generatedContent}>Accept & Insert</Button>
+          </DialogClose>
+        </div>
       </DialogFooter>
     </DialogContent>
   );
