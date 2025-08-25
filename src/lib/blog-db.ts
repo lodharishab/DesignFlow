@@ -14,6 +14,7 @@ export interface BlogPost {
   authorAvatarUrl?: string;
   authorAvatarHint?: string;
   publishDate: Date;
+  status: 'Published' | 'Draft' | 'Scheduled';
   featuredImageUrl: string;
   featuredImageHint: string;
   category?: string;
@@ -43,6 +44,7 @@ const MOCK_BLOG_POSTS: BlogPost[] = [
     authorAvatarUrl: 'https://placehold.co/40x40.png',
     authorAvatarHint: 'team logo',
     publishDate: new Date('2024-07-20T10:00:00Z'),
+    status: 'Published',
     featuredImageUrl: 'https://placehold.co/800x450.png',
     featuredImageHint: 'creative design abstract',
     category: 'Announcements',
@@ -70,6 +72,7 @@ const MOCK_BLOG_POSTS: BlogPost[] = [
     authorAvatarUrl: 'https://placehold.co/40x40.png',
     authorAvatarHint: 'indian woman graphic artist',
     publishDate: new Date('2024-07-22T14:30:00Z'),
+    status: 'Published',
     featuredImageUrl: 'https://placehold.co/800x450.png',
     featuredImageHint: 'logo design trends collage',
     category: 'Design Trends',
@@ -98,6 +101,7 @@ const MOCK_BLOG_POSTS: BlogPost[] = [
     authorAvatarUrl: 'https://placehold.co/40x40.png',
     authorAvatarHint: 'indian woman designer',
     publishDate: new Date('2024-07-18T09:00:00Z'),
+    status: 'Draft',
     featuredImageUrl: 'https://placehold.co/800x450.png',
     featuredImageHint: 'design brief document',
     category: 'Client Tips',

@@ -9,10 +9,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Save, XCircle, Newspaper, Image as ImageIcon, Tag, CalendarDays, ExternalLink } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PlusCircle, Save, XCircle, Newspaper, Image as ImageIcon, Tag, CalendarDays, ExternalLink, Activity } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { addBlogPostAction, type BlogActionResult } from '@/app/admin/blog/actions';
+import type { BlogPost } from '@/lib/blog-db';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -136,11 +138,27 @@ export default function AdminAddNewBlogPostPage() {
                     {state.errors?.tags && <p id="tags-error" className="text-sm text-destructive">{state.errors.tags}</p>}
                 </div>
             </div>
-             <div className="space-y-2">
-                <Label htmlFor="publishDate"><CalendarDays className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Publish Date (YYYY-MM-DD)</Label>
-                <Input id="publishDate" name="publishDate" type="date" defaultValue={new Date().toISOString().split('T')[0]} aria-describedby="publishDate-error"/>
-                <p className="text-xs text-muted-foreground">Defaults to today if left blank. Past dates publish immediately.</p>
-                {state.errors?.publishDateString && <p id="publishDate-error" className="text-sm text-destructive">{state.errors.publishDateString}</p>}
+            <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <Label htmlFor="publishDate"><CalendarDays className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Publish Date (YYYY-MM-DD)</Label>
+                    <Input id="publishDate" name="publishDate" type="date" defaultValue={new Date().toISOString().split('T')[0]} aria-describedby="publishDate-error"/>
+                    <p className="text-xs text-muted-foreground">Past dates publish immediately. Future dates are scheduled.</p>
+                    {state.errors?.publishDateString && <p id="publishDate-error" className="text-sm text-destructive">{state.errors.publishDateString}</p>}
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="status"><Activity className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Status*</Label>
+                    <Select name="status" defaultValue="Draft">
+                        <SelectTrigger id="status" aria-describedby="status-error">
+                            <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Published">Published</SelectItem>
+                            <SelectItem value="Draft">Draft</SelectItem>
+                            <SelectItem value="Scheduled">Scheduled</SelectItem>
+                        </SelectContent>
+                    </Select>
+                     {state.errors?.status && <p id="status-error" className="text-sm text-destructive">{state.errors.status}</p>}
+                </div>
             </div>
           </CardContent>
           <CardFooter className="flex justify-end space-x-3">

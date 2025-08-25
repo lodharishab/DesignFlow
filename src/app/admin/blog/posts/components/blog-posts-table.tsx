@@ -4,13 +4,12 @@
 import { useState, useMemo, type ReactElement } from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Edit3, Trash2, Newspaper, PackageSearch, ArrowUpDown, ChevronUp, ChevronDown, Search } from 'lucide-react';
+import { PlusCircle, Edit3, Trash2, Newspaper, PackageSearch, ArrowUpDown, ChevronUp, ChevronDown, Search, CheckCircle, FileText, Clock } from 'lucide-react';
 import { type BlogPost, deleteBlogPost } from '@/lib/blog-db';
 import { format } from 'date-fns';
 import {
@@ -25,18 +24,28 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
-type SortableKeys = 'title' | 'category' | 'publishDate';
+type SortableKeys = 'title' | 'category' | 'publishDate' | 'status';
+type StatusFilter = 'All' | BlogPost['status'];
 
 interface BlogPostsTableProps {
     initialPosts: BlogPost[];
 }
+
+const statusFilters: {label: string; value: StatusFilter, icon?: React.ElementType}[] = [
+    {label: 'All Posts', value: 'All'},
+    {label: 'Published', value: 'Published', icon: CheckCircle},
+    {label: 'Drafts', value: 'Draft', icon: FileText},
+    {label: 'Scheduled', value: 'Scheduled', icon: Clock},
+];
 
 export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElement {
     const { toast } = useToast();
     const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('All');
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>('All');
     const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' }>({
         key: 'publishDate',
         direction: 'descending',
@@ -64,6 +73,15 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
             <ChevronDown className="ml-1 h-4 w-4" />;
     };
 
+    const getStatusBadgeVariant = (status: BlogPost['status']) => {
+        switch (status) {
+            case 'Published': return 'default';
+            case 'Draft': return 'secondary';
+            case 'Scheduled': return 'outline';
+            default: return 'outline';
+        }
+    }
+
     const displayedPosts = useMemo(() => {
         let sortableItems = [...posts];
 
@@ -74,6 +92,10 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
 
         if (categoryFilter !== 'All') {
             sortableItems = sortableItems.filter(post => post.category === categoryFilter);
+        }
+
+        if (statusFilter !== 'All') {
+            sortableItems = sortableItems.filter(post => post.status === statusFilter);
         }
 
         if (sortConfig.key) {
@@ -93,7 +115,7 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
         }
 
         return sortableItems;
-    }, [posts, searchTerm, categoryFilter, sortConfig]);
+    }, [posts, searchTerm, categoryFilter, statusFilter, sortConfig]);
 
     const handleDeletePost = async (postId: string) => {
         const success = await deleteBlogPost(postId);
@@ -107,6 +129,19 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
 
     return (
         <>
+            <div className="flex flex-wrap gap-2 mb-4">
+                {statusFilters.map(filter => (
+                    <Button
+                        key={filter.value}
+                        variant={statusFilter === filter.value ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setStatusFilter(filter.value)}
+                    >
+                         {filter.icon && <filter.icon className="mr-2 h-4 w-4" />}
+                         {filter.label}
+                    </Button>
+                ))}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 p-4 border rounded-lg bg-card">
                 <div className="space-y-1">
                     <Label htmlFor="searchTitle" className="text-xs">Search by Title</Label>
@@ -149,7 +184,11 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
                                 Category {getSortIndicator('category')}
                             </Button>
                         </TableHead>
-                        <TableHead>Author</TableHead>
+                         <TableHead>
+                            <Button variant="ghost" onClick={() => requestSort('status')} className="px-1 text-xs sm:text-sm -ml-2">
+                                Status {getSortIndicator('status')}
+                            </Button>
+                        </TableHead>
                         <TableHead>
                             <Button variant="ghost" onClick={() => requestSort('publishDate')} className="px-1 text-xs sm:text-sm -ml-2">
                                 Publish Date {getSortIndicator('publishDate')}
@@ -177,7 +216,9 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
                                 <TableCell>
                                     {post.category ? <Badge variant="outline">{post.category}</Badge> : <span className="text-muted-foreground italic">N/A</span>}
                                 </TableCell>
-                                <TableCell className="text-muted-foreground">{post.authorName}</TableCell>
+                                <TableCell>
+                                    <Badge variant={getStatusBadgeVariant(post.status)}>{post.status}</Badge>
+                                </TableCell>
                                 <TableCell className="text-muted-foreground">{format(post.publishDate, 'MMM d, yyyy')}</TableCell>
                                 <TableCell className="text-right space-x-2">
                                     <Button variant="outline" size="icon" asChild className="hover:text-primary">

@@ -42,6 +42,7 @@ export async function addBlogPostAction(prevState: any, formData: FormData): Pro
   let slug = formData.get('slug') as string;
   const excerpt = formData.get('excerpt') as string;
   const content = formData.get('content') as string;
+  const status = formData.get('status') as BlogPost['status'] || 'Draft';
   const featuredImageUrl = formData.get('featuredImageUrl') as string;
   const featuredImageHint = formData.get('featuredImageHint') as string;
   const category = formData.get('category') as string || undefined;
@@ -72,6 +73,11 @@ export async function addBlogPostAction(prevState: any, formData: FormData): Pro
   if (!content) errors.content = 'Main content is required.';
   else if (content.length < 50) errors.content = 'Main content must be at least 50 characters long.';
 
+  // Status Validation
+  if (!['Published', 'Draft', 'Scheduled'].includes(status)) {
+    errors.status = 'Invalid status value.';
+  }
+
   // Featured Image URL validation
   if (!featuredImageUrl) errors.featuredImageUrl = 'Featured Image URL is required.';
   else if (!validateUrl(featuredImageUrl)) errors.featuredImageUrl = 'Featured Image URL must be a valid URL.';
@@ -100,6 +106,7 @@ export async function addBlogPostAction(prevState: any, formData: FormData): Pro
     title,
     excerpt,
     content,
+    status,
     featuredImageUrl,
     featuredImageHint: featuredImageHint || title,
     authorName: MOCK_ADMIN_AUTHOR_NAME,
@@ -133,6 +140,7 @@ export async function updateBlogPostAction(postId: string, prevState: any, formD
   const title = formData.get('title') as string;
   const excerpt = formData.get('excerpt') as string;
   const content = formData.get('content') as string;
+  const status = formData.get('status') as BlogPost['status'] || 'Draft';
   const featuredImageUrl = formData.get('featuredImageUrl') as string;
   const featuredImageHint = formData.get('featuredImageHint') as string;
   const category = formData.get('category') as string || undefined;
@@ -149,6 +157,10 @@ export async function updateBlogPostAction(postId: string, prevState: any, formD
 
   if (!content) errors.content = 'Main content is required.';
   else if (content.length < 50) errors.content = 'Main content must be at least 50 characters long.';
+
+  if (!['Published', 'Draft', 'Scheduled'].includes(status)) {
+    errors.status = 'Invalid status value.';
+  }
 
   if (!featuredImageUrl) errors.featuredImageUrl = 'Featured Image URL is required.';
   else if (!validateUrl(featuredImageUrl)) errors.featuredImageUrl = 'Featured Image URL must be a valid URL.';
@@ -176,6 +188,7 @@ export async function updateBlogPostAction(postId: string, prevState: any, formD
     title,
     excerpt,
     content,
+    status,
     featuredImageUrl,
     featuredImageHint: featuredImageHint || title,
     category,
