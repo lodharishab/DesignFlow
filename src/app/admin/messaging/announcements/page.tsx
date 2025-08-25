@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Megaphone, History, Eye, Send, Loader2, Wand2, Sparkles, AlertCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
@@ -302,3 +302,5 @@ export default function AdminAnnouncementsPage(): ReactElement {
     </div>
   );
 }
+
+    
