@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo, useEffect } from 'react';
+import { useState, type ReactElement, useMemo, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -144,7 +144,7 @@ export default function AdminAnnouncementsPage(): ReactElement {
   const [announcements, setAnnouncements] = useState<Announcement[]>(mockAnnouncements);
   const [sortBy, setSortBy] = useState<SortByType>('newest');
   
-  const formRef = React.useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   // Form state
   const [editingId, setEditingId] = useState<string | null>(null);
