@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo } from 'react';
+import { useState, type ReactElement, useMemo, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,11 +13,22 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
-import { Megaphone, History, Eye, Send, Loader2, Wand2, Sparkles, AlertCircle, ArrowUpDown } from 'lucide-react';
+import { Megaphone, History, Eye, Send, Loader2, Wand2, Sparkles, AlertCircle, ArrowUpDown, Edit, Trash2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { generateAnnouncement } from '@/ai/flows/announcement-flow';
 import type { AnnouncementRequest, AnnouncementResponse } from '@/ai/flows/announcement-types';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 
 type AudienceType = 'all' | 'role' | 'user';
@@ -30,6 +41,8 @@ interface Announcement {
   id: string;
   title: string;
   audience: string;
+  audienceType: AudienceType;
+  selectedRole?: string;
   status: AnnouncementStatus;
   scheduledTime: Date;
   message: string;
@@ -37,9 +50,9 @@ interface Announcement {
 }
 
 const mockAnnouncements: Announcement[] = [
-  { id: 'ann001', title: 'New Feature: Brand Profiles!', audience: 'All Users', status: 'Sent', scheduledTime: new Date('2024-07-10T10:00:00'), message: 'We have just launched Brand Profiles for clients! You can now save your brand information to help designers understand your needs better.', importance: 'Normal' },
-  { id: 'ann002', title: 'Diwali Campaign Reminder', audience: 'Designers', status: 'Sent', scheduledTime: new Date('2024-07-05T15:30:00'), message: 'A reminder to all designers: The Diwali campaign submission deadline is approaching. Please ensure all your related projects are on track.', importance: 'Normal' },
-  { id: 'ann003', title: 'Scheduled Maintenance', audience: 'All Users', status: 'Scheduled', scheduledTime: new Date('2024-08-28T18:00:00'), message: 'The platform will be down for scheduled maintenance for approximately 30 minutes. We apologize for any inconvenience.', importance: 'High' },
+  { id: 'ann001', title: 'New Feature: Brand Profiles!', audience: 'All Users', audienceType: 'all', status: 'Sent', scheduledTime: new Date('2024-07-10T10:00:00'), message: 'We have just launched Brand Profiles for clients! You can now save your brand information to help designers understand your needs better.', importance: 'Normal' },
+  { id: 'ann002', title: 'Diwali Campaign Reminder', audience: 'Designers', audienceType: 'role', selectedRole: 'Designers', status: 'Sent', scheduledTime: new Date('2024-07-05T15:30:00'), message: 'A reminder to all designers: The Diwali campaign submission deadline is approaching. Please ensure all your related projects are on track.', importance: 'Normal' },
+  { id: 'ann003', title: 'Scheduled Maintenance', audience: 'All Users', audienceType: 'all', status: 'Scheduled', scheduledTime: new Date('2024-08-28T18:00:00'), message: 'The platform will be down for scheduled maintenance for approximately 30 minutes. We apologize for any inconvenience.', importance: 'High' },
 ];
 
 function AiAssistDialog({ onAccept }: { onAccept: (content: AnnouncementResponse) => void }) {
@@ -130,8 +143,11 @@ export default function AdminAnnouncementsPage(): ReactElement {
   const { toast } = useToast();
   const [announcements, setAnnouncements] = useState<Announcement[]>(mockAnnouncements);
   const [sortBy, setSortBy] = useState<SortByType>('newest');
+  
+  const formRef = React.useRef<HTMLDivElement>(null);
 
   // Form state
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [audienceType, setAudienceType] = useState<AudienceType>('all');
@@ -164,7 +180,17 @@ export default function AdminAnnouncementsPage(): ReactElement {
       }
     });
   }, [announcements, sortBy]);
-
+  
+  const resetForm = () => {
+    setEditingId(null);
+    setTitle('');
+    setMessage('');
+    setAudienceType('all');
+    setSelectedRole('');
+    setScheduleType('now');
+    setScheduledDate(undefined);
+    setImportance('Normal');
+  };
 
   const handleSendAnnouncement = () => {
     if (!title || !message) {
@@ -172,24 +198,58 @@ export default function AdminAnnouncementsPage(): ReactElement {
         return;
     }
     setIsSending(true);
-    const newAnnouncement: Announcement = {
-        id: `ann${Date.now()}`,
-        title,
-        message,
-        audience: getAudienceDisplay(),
+
+    if (editingId) {
+      // Update existing announcement
+      const updatedAnnouncement: Announcement = {
+        id: editingId,
+        title, message, audience: getAudienceDisplay(), audienceType, selectedRole,
         status: scheduleType === 'now' ? 'Sent' : 'Scheduled',
         scheduledTime: scheduleType === 'now' ? new Date() : scheduledDate || new Date(),
         importance,
-    };
-    console.log("Sending announcement:", newAnnouncement);
-    setTimeout(() => {
-        setAnnouncements(prev => [newAnnouncement, ...prev]);
-        setTitle('');
-        setMessage('');
-        toast({ title: "Announcement Sent (Simulated)", description: `Your message "${title}" has been sent/scheduled.`});
+      };
+      console.log("Updating announcement:", updatedAnnouncement);
+      setTimeout(() => {
+        setAnnouncements(prev => prev.map(ann => ann.id === editingId ? updatedAnnouncement : ann));
+        toast({ title: "Announcement Updated (Simulated)", description: `Your message "${title}" has been updated.`});
         setIsSending(false);
-    }, 1000);
+        resetForm();
+      }, 1000);
+    } else {
+      // Create new announcement
+      const newAnnouncement: Announcement = {
+          id: `ann${Date.now()}`,
+          title, message, audience: getAudienceDisplay(), audienceType, selectedRole,
+          status: scheduleType === 'now' ? 'Sent' : 'Scheduled',
+          scheduledTime: scheduleType === 'now' ? new Date() : scheduledDate || new Date(),
+          importance,
+      };
+      console.log("Sending announcement:", newAnnouncement);
+      setTimeout(() => {
+          setAnnouncements(prev => [newAnnouncement, ...prev]);
+          toast({ title: "Announcement Sent (Simulated)", description: `Your message "${title}" has been sent/scheduled.`});
+          setIsSending(false);
+          resetForm();
+      }, 1000);
+    }
   };
+  
+  const handleEdit = (announcement: Announcement) => {
+    setEditingId(announcement.id);
+    setTitle(announcement.title);
+    setMessage(announcement.message);
+    setAudienceType(announcement.audienceType);
+    setSelectedRole(announcement.selectedRole || '');
+    setScheduleType(announcement.status === 'Scheduled' ? 'later' : 'now');
+    setScheduledDate(announcement.status === 'Scheduled' ? announcement.scheduledTime : undefined);
+    setImportance(announcement.importance);
+    formRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
+  const handleDelete = (id: string) => {
+    setAnnouncements(prev => prev.filter(ann => ann.id !== id));
+    toast({ title: "Announcement Deleted", variant: "destructive"});
+  }
   
   const getStatusBadgeVariant = (status: AnnouncementStatus) => {
     switch(status) {
@@ -212,9 +272,12 @@ export default function AdminAnnouncementsPage(): ReactElement {
       </h1>
       
       {/* Create Announcement Form */}
-      <Card className="shadow-lg">
+      <Card className="shadow-lg" ref={formRef}>
         <CardHeader>
-          <CardTitle className="font-headline text-xl flex items-center"><Send className="mr-2 h-5 w-5"/> Create Announcement</CardTitle>
+          <CardTitle className="font-headline text-xl flex items-center">
+            <Send className="mr-2 h-5 w-5"/>
+            {editingId ? 'Edit Announcement' : 'Create Announcement'}
+          </CardTitle>
           <CardDescription>Compose and send a new message to your users.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -281,24 +344,29 @@ export default function AdminAnnouncementsPage(): ReactElement {
           </div>
         </CardContent>
         <CardFooter className="flex justify-between items-center gap-4">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline"><Eye className="mr-2 h-4 w-4"/> Preview</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="font-headline text-2xl flex items-center"><Megaphone className="mr-3 h-6 w-6"/> Announcement Preview</DialogTitle>
-                <DialogDescription>This is how the announcement will appear to users.</DialogDescription>
-              </DialogHeader>
-              <div className="p-4 border rounded-lg bg-secondary/50">
-                <h3 className="font-bold text-lg mb-2">{title || "Your Title Here"}</h3>
-                <p className="text-sm text-secondary-foreground whitespace-pre-wrap">{message || "Your message content will appear here."}</p>
-              </div>
-            </DialogContent>
-          </Dialog>
+            <div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline"><Eye className="mr-2 h-4 w-4"/> Preview</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="font-headline text-2xl flex items-center"><Megaphone className="mr-3 h-6 w-6"/> Announcement Preview</DialogTitle>
+                    <DialogDescription>This is how the announcement will appear to users.</DialogDescription>
+                  </DialogHeader>
+                  <div className="p-4 border rounded-lg bg-secondary/50">
+                    <h3 className="font-bold text-lg mb-2">{title || "Your Title Here"}</h3>
+                    <p className="text-sm text-secondary-foreground whitespace-pre-wrap">{message || "Your message content will appear here."}</p>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              {editingId && (
+                <Button variant="ghost" onClick={resetForm} className="ml-2">Cancel Edit</Button>
+              )}
+            </div>
           <Button onClick={handleSendAnnouncement} disabled={isSending}>
             {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Send className="mr-2 h-4 w-4"/>}
-            {isSending ? 'Sending...' : 'Send Announcement'}
+            {isSending ? (editingId ? 'Updating...' : 'Sending...') : (editingId ? 'Update Announcement' : 'Send Announcement')}
           </Button>
         </CardFooter>
       </Card>
@@ -334,6 +402,7 @@ export default function AdminAnnouncementsPage(): ReactElement {
                 <TableHead>Status</TableHead>
                 <TableHead>Importance</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -348,6 +417,32 @@ export default function AdminAnnouncementsPage(): ReactElement {
                     )}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{format(ann.scheduledTime, 'PPp')}</TableCell>
+                  <TableCell className="text-right space-x-2">
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(ann)}>
+                        <Edit className="h-4 w-4" />
+                        <span className="sr-only">Edit</span>
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Delete</span>
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the announcement "{ann.title}".
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(ann.id)}>Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
