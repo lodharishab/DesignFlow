@@ -94,9 +94,18 @@ const navItems = [
       { href: '/admin/blog/posts/new', icon: PlusCircle, label: 'Add New Post' },
     ]
   },
+  {
+    label: 'Messaging Center',
+    icon: MessageSquare,
+    pathPrefix: '/admin/messaging',
+    children: [
+      { href: '/admin/messaging/direct', icon: Users, label: 'Direct Messages' },
+      { href: '/admin/messaging/monitor', icon: Eye, label: 'Monitor Chats' },
+      { href: '/admin/messaging/announcements', icon: Newspaper, label: 'Announcements' },
+    ]
+  },
   { href: '/admin/reviews', icon: Star, label: 'Reviews' },
   { href: '/admin/reports', icon: ShieldAlert, label: 'Reports' },
-  { href: '/admin/messaging', icon: MessageSquare, label: 'Messaging' },
   { href: '/admin/payments', icon: BarChart3, label: 'Payments & Revenue' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
