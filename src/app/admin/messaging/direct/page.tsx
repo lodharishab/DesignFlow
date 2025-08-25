@@ -23,11 +23,15 @@ import {
   Filter,
   ArrowUpDown,
   Check,
-  Inbox
+  Inbox,
+  Mail,
+  Pin,
+  PinOff
 } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDistanceToNow } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 
 interface Message {
@@ -47,6 +51,7 @@ interface Conversation {
   isRead: boolean;
   isArchived: boolean;
   isMuted: boolean;
+  isPinned: boolean;
   messages: Message[];
 }
 
@@ -61,6 +66,7 @@ const mockConversations: Conversation[] = [
     isRead: false,
     isArchived: false,
     isMuted: false,
+    isPinned: true,
     messages: [
       { id: 'msg1', sender: 'admin', text: 'Hi Priya, just wanted to let you know your assigned designer has started working on the project.', timestamp: '11:30 AM' },
       { id: 'msg2', sender: 'user', text: 'Great, thanks for the update! Looking forward to the designs.', timestamp: '11:32 AM' },
@@ -76,6 +82,7 @@ const mockConversations: Conversation[] = [
     isRead: true,
     isArchived: false,
     isMuted: false,
+    isPinned: false,
     messages: [
        { id: 'msg3', sender: 'admin', text: 'Hi Rohan, did you get a chance to submit your portfolio for the Web UI/UX category?', timestamp: '9:00 AM' },
        { id: 'msg4', sender: 'user', text: 'Yes, I have submitted my portfolio for the new category.', timestamp: '9:05 AM' },
@@ -91,6 +98,7 @@ const mockConversations: Conversation[] = [
     isRead: true,
     isArchived: true,
     isMuted: false,
+    isPinned: false,
      messages: [
         { id: 'msg5', sender: 'user', text: 'I had a question about my last order.', timestamp: 'Yesterday' },
         { id: 'msg6', sender: 'admin', text: 'Hi Aarav, of course. How can I help?', timestamp: 'Yesterday' },
@@ -109,7 +117,8 @@ const mockConversations: Conversation[] = [
     isRead: true,
     isArchived: false,
     isMuted: true,
-     messages: []
+    isPinned: false,
+    messages: []
   },
 ];
 
@@ -122,6 +131,47 @@ export default function AdminDirectMessagesPage() {
   const [isUserDetailsOpen, setIsUserDetailsOpen] = useState(false);
   const [filterBy, setFilterBy] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortType>('date');
+  const { toast } = useToast();
+
+  const handleConversationUpdate = (updatedConversation: Conversation) => {
+    setConversations(prev =>
+      prev.map(c => (c.userId === updatedConversation.userId ? updatedConversation : c))
+    );
+  };
+  
+  const handleToggleRead = (e: React.MouseEvent, conversation: Conversation) => {
+    e.stopPropagation();
+    const updatedConvo = { ...conversation, isRead: !conversation.isRead };
+    handleConversationUpdate(updatedConvo);
+    toast({
+        title: `Conversation marked as ${updatedConvo.isRead ? 'read' : 'unread'}`,
+        duration: 2000,
+    });
+  };
+
+  const handleToggleArchive = (e: React.MouseEvent, conversation: Conversation) => {
+    e.stopPropagation();
+    const updatedConvo = { ...conversation, isArchived: !conversation.isArchived };
+    handleConversationUpdate(updatedConvo);
+    if (selectedConversation?.userId === conversation.userId && updatedConvo.isArchived) {
+        setSelectedConversation(null); // Deselect if archived
+    }
+    toast({
+        title: `Conversation ${updatedConvo.isArchived ? 'archived' : 'unarchived'}`,
+        duration: 2000,
+    });
+  };
+
+  const handleTogglePin = (e: React.MouseEvent, conversation: Conversation) => {
+      e.stopPropagation();
+      const updatedConvo = { ...conversation, isPinned: !conversation.isPinned };
+      handleConversationUpdate(updatedConvo);
+       toast({
+        title: `Conversation ${updatedConvo.isPinned ? 'pinned' : 'unpinned'}`,
+        duration: 2000,
+    });
+  };
+
 
   const filteredAndSortedConversations = useMemo(() => {
     let filtered = conversations;
@@ -133,13 +183,16 @@ export default function AdminDirectMessagesPage() {
         if (filterBy === 'muted') return c.isMuted;
         return true;
       });
+    } else {
+        // In 'all' view, don't show archived unless it's the active filter
+        filtered = conversations.filter(c => !c.isArchived);
     }
 
     return filtered.sort((a, b) => {
+      if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
       if (sortBy === 'name') {
         return a.userName.localeCompare(b.userName);
       }
-      // Default to sorting by date (latest first)
       return b.lastMessageTimestamp.getTime() - a.lastMessageTimestamp.getTime();
     });
 
@@ -170,6 +223,9 @@ export default function AdminDirectMessagesPage() {
                     setFilterBy={setFilterBy}
                     sortBy={sortBy}
                     setSortBy={setSortBy}
+                    onToggleRead={handleToggleRead}
+                    onToggleArchive={handleToggleArchive}
+                    onTogglePin={handleTogglePin}
                  />
             </TabsContent>
             <TabsContent value="conversation" className="h-full">
@@ -189,6 +245,9 @@ export default function AdminDirectMessagesPage() {
                 setFilterBy={setFilterBy}
                 sortBy={sortBy}
                 setSortBy={setSortBy}
+                onToggleRead={handleToggleRead}
+                onToggleArchive={handleToggleArchive}
+                onTogglePin={handleTogglePin}
             />
             <ChatView conversation={selectedConversation} />
             <UserDetailsPane 
@@ -202,14 +261,28 @@ export default function AdminDirectMessagesPage() {
 }
 
 
-function ThreadList({ conversations, selectedConversation, onSelect, filterBy, setFilterBy, sortBy, setSortBy }: { 
+function ThreadList({ 
+    conversations, 
+    selectedConversation, 
+    onSelect, 
+    filterBy, 
+    setFilterBy, 
+    sortBy, 
+    setSortBy,
+    onToggleRead,
+    onToggleArchive,
+    onTogglePin
+}: { 
     conversations: Conversation[], 
     selectedConversation: Conversation | null, 
     onSelect: (c: Conversation) => void,
     filterBy: FilterType,
     setFilterBy: (f: FilterType) => void,
     sortBy: SortType,
-    setSortBy: (s: SortType) => void
+    setSortBy: (s: SortType) => void,
+    onToggleRead: (e: React.MouseEvent, c: Conversation) => void,
+    onToggleArchive: (e: React.MouseEvent, c: Conversation) => void,
+    onTogglePin: (e: React.MouseEvent, c: Conversation) => void,
 }) {
     return (
         <Card className="flex flex-col h-full">
@@ -242,35 +315,64 @@ function ThreadList({ conversations, selectedConversation, onSelect, filterBy, s
                 </div>
             </CardHeader>
             <ScrollArea className="flex-grow">
-                <CardContent className="p-0">
-                    {conversations.length > 0 ? conversations.map(convo => (
-                        <button
-                            key={convo.userId}
-                            onClick={() => onSelect(convo)}
-                            className={cn(
-                                "flex items-start gap-3 p-4 w-full text-left transition-colors",
-                                selectedConversation?.userId === convo.userId ? "bg-primary/10" : "hover:bg-muted/50"
-                            )}
-                        >
-                            <Avatar className="h-10 w-10">
-                                <AvatarImage src={convo.avatarUrl} alt={convo.userName} data-ai-hint={convo.avatarHint} />
-                                <AvatarFallback>{convo.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-grow overflow-hidden">
-                                <p className="font-semibold truncate">{convo.userName}</p>
-                                <p className="text-xs text-muted-foreground truncate">{convo.lastMessage}</p>
-                            </div>
-                            <div className="flex flex-col items-end text-xs text-muted-foreground self-start shrink-0">
-                                <span>{formatDistanceToNow(convo.lastMessageTimestamp, { addSuffix: true })}</span>
-                                {!convo.isRead && (
-                                    <span className="mt-1.5 h-2 w-2 rounded-full bg-primary"></span>
+                <TooltipProvider>
+                    <CardContent className="p-0">
+                        {conversations.length > 0 ? conversations.map(convo => (
+                            <div
+                                key={convo.userId}
+                                className={cn(
+                                    "flex items-center gap-3 w-full text-left transition-colors relative group",
+                                    selectedConversation?.userId === convo.userId ? "bg-primary/10" : "hover:bg-muted/50"
                                 )}
+                            >
+                                <button onClick={() => onSelect(convo)} className="flex-grow p-4 flex items-start gap-3 w-full">
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage src={convo.avatarUrl} alt={convo.userName} data-ai-hint={convo.avatarHint} />
+                                        <AvatarFallback>{convo.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-grow overflow-hidden">
+                                        <p className="font-semibold truncate flex items-center">{convo.userName} {convo.isPinned && <Pin className="h-3 w-3 ml-1.5 text-muted-foreground" />}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{convo.lastMessage}</p>
+                                    </div>
+                                    <div className="flex flex-col items-end text-xs text-muted-foreground self-start shrink-0">
+                                        <span>{formatDistanceToNow(convo.lastMessageTimestamp, { addSuffix: true })}</span>
+                                        {!convo.isRead && (
+                                            <span className="mt-1.5 h-2 w-2 rounded-full bg-primary"></span>
+                                        )}
+                                    </div>
+                                </button>
+                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center bg-muted/50 rounded-full border opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => onTogglePin(e, convo)}>
+                                                {convo.isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top"><p>{convo.isPinned ? 'Unpin' : 'Pin'}</p></TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => onToggleRead(e, convo)}>
+                                                <Mail className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top"><p>{convo.isRead ? 'Mark as unread' : 'Mark as read'}</p></TooltipContent>
+                                    </Tooltip>
+                                     <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => onToggleArchive(e, convo)}>
+                                                <Archive className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top"><p>{convo.isArchived ? 'Unarchive' : 'Archive'}</p></TooltipContent>
+                                    </Tooltip>
+                                </div>
                             </div>
-                        </button>
-                    )) : (
-                        <div className="text-center p-8 text-muted-foreground text-sm">No conversations match your filters.</div>
-                    )}
-                </CardContent>
+                        )) : (
+                            <div className="text-center p-8 text-muted-foreground text-sm">No conversations match your filters.</div>
+                        )}
+                    </CardContent>
+                </TooltipProvider>
             </ScrollArea>
         </Card>
     );
