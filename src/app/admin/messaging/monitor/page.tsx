@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, type ReactElement } from 'react';
+import { useState, useMemo, type ReactElement, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ import {
   Clock,
   CheckCircle2,
   Flag,
+  Download, // Import Download icon
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -138,6 +139,31 @@ export default function AdminMonitorChatsPage() {
         prevChats.map(chat => chat.threadId === updatedChat.threadId ? updatedChat : chat)
     );
   };
+  
+  const handleExportCsv = useCallback(() => {
+    const headers = ["Thread ID", "Order ID", "Client Name", "Designer Name", "Last Activity", "Status"];
+    const rows = filteredChats.map(chat => [
+      chat.threadId,
+      chat.orderId,
+      `"${chat.clientName.replace(/"/g, '""')}"`, // Handle potential commas/quotes in names
+      `"${chat.designerName.replace(/"/g, '""')}"`,
+      format(chat.lastActivity, "yyyy-MM-dd HH:mm:ss"),
+      chat.status
+    ]);
+
+    let csvContent = "data:text/csv;charset=utf-8," 
+      + headers.join(",") + "\n" 
+      + rows.map(e => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "chat_logs.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [filteredChats]);
+
 
   if (isMobile) {
       return (
@@ -165,10 +191,16 @@ export default function AdminMonitorChatsPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold font-headline flex items-center">
-        <Eye className="mr-3 h-8 w-8 text-primary" />
-        Monitor Chats
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold font-headline flex items-center">
+          <Eye className="mr-3 h-8 w-8 text-primary" />
+          Monitor Chats
+        </h1>
+        <Button onClick={handleExportCsv} disabled={filteredChats.length === 0}>
+            <Download className="mr-2 h-4 w-4" />
+            Export Logs
+        </Button>
+      </div>
       
       <div className={cn(
           "grid gap-6 transition-all duration-500",
