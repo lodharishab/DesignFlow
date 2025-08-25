@@ -33,7 +33,7 @@ interface Announcement {
 const mockAnnouncements: Announcement[] = [
   { id: 'ann001', title: 'New Feature: Brand Profiles!', audience: 'All Users', status: 'Sent', scheduledTime: new Date(2024, 6, 10, 10, 0), message: 'We have just launched Brand Profiles for clients! You can now save your brand information to help designers understand your needs better.' },
   { id: 'ann002', title: 'Diwali Campaign Reminder', audience: 'Designers', status: 'Sent', scheduledTime: new Date(2024, 6, 5, 15, 30), message: 'A reminder to all designers: The Diwali campaign submission deadline is approaching. Please ensure all your related projects are on track.' },
-  { id: 'ann003', title: 'Scheduled Maintenance', audience: 'All Users', status: 'Scheduled', scheduledTime: new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000), message: 'The platform will be down for scheduled maintenance for approximately 30 minutes. We apologize for any inconvenience.' },
+  { id: 'ann003', title: 'Scheduled Maintenance', audience: 'All Users', status: 'Scheduled', scheduledTime: new Date('2024-08-28T18:00:00'), message: 'The platform will be down for scheduled maintenance for approximately 30 minutes. We apologize for any inconvenience.' },
 ];
 
 export default function AdminAnnouncementsPage(): ReactElement {
