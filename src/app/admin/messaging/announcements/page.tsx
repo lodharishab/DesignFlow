@@ -96,52 +96,22 @@ export default function AdminAnnouncementsPage(): ReactElement {
         Platform Announcements
       </h1>
       
-      <div className="grid lg:grid-cols-5 gap-8 items-start">
-        {/* Left Column: History */}
-        <Card className="lg:col-span-3 shadow-lg">
-          <CardHeader>
-            <CardTitle className="font-headline text-xl flex items-center"><History className="mr-2 h-5 w-5"/> Announcement History</CardTitle>
-            <CardDescription>A log of all past and scheduled announcements.</CardDescription>
-          </CardHeader>
-          <CardContent>
-             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Audience</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {announcements.map(ann => (
-                  <TableRow key={ann.id}>
-                    <TableCell className="font-medium">{ann.title}</TableCell>
-                    <TableCell><Badge variant="outline">{ann.audience}</Badge></TableCell>
-                    <TableCell><Badge variant={getStatusBadgeVariant(ann.status)}>{ann.status}</Badge></TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{format(ann.scheduledTime, 'PPp')}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        {/* Right Column: Create New */}
-        <Card className="lg:col-span-2 shadow-lg sticky top-24">
-          <CardHeader>
-            <CardTitle className="font-headline text-xl flex items-center"><Send className="mr-2 h-5 w-5"/> Create Announcement</CardTitle>
-             <CardDescription>Compose and send a new message to your users.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="announcement-title">Title</Label>
-              <Input id="announcement-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., New Features Live!" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="announcement-message">Message</Label>
-              <Textarea id="announcement-message" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Write your announcement here..." rows={4} />
-            </div>
+      {/* Create Announcement Form */}
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="font-headline text-xl flex items-center"><Send className="mr-2 h-5 w-5"/> Create Announcement</CardTitle>
+          <CardDescription>Compose and send a new message to your users.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="announcement-title">Title</Label>
+            <Input id="announcement-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., New Features Live!" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="announcement-message">Message</Label>
+            <Textarea id="announcement-message" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Write your announcement here..." rows={4} />
+          </div>
+          <div className="grid md:grid-cols-2 gap-6 items-start">
             <div className="space-y-3">
               <Label>Audience</Label>
               <RadioGroup value={audienceType} onValueChange={(v) => setAudienceType(v as AudienceType)} className="flex space-x-4">
@@ -160,7 +130,7 @@ export default function AdminAnnouncementsPage(): ReactElement {
                 </Select>
               )}
             </div>
-             <div className="space-y-3">
+            <div className="space-y-3">
               <Label>Schedule</Label>
               <RadioGroup value={scheduleType} onValueChange={(v) => setScheduleType(v as ScheduleType)} className="flex space-x-4">
                 <div className="flex items-center space-x-2"><RadioGroupItem value="now" id="sch-now" /><Label htmlFor="sch-now">Send Now</Label></div>
@@ -175,31 +145,60 @@ export default function AdminAnnouncementsPage(): ReactElement {
                     />
               )}
             </div>
-          </CardContent>
-          
-          <CardFooter className="flex justify-between">
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button variant="outline"><Eye className="mr-2 h-4 w-4"/> Preview</Button>
-                </DialogTrigger>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle className="font-headline text-2xl flex items-center"><Megaphone className="mr-3 h-6 w-6"/> Announcement Preview</DialogTitle>
-                        <DialogDescription>This is how the announcement will appear to users.</DialogDescription>
-                    </DialogHeader>
-                    <div className="p-4 border rounded-lg bg-secondary/50">
-                        <h3 className="font-bold text-lg mb-2">{title || "Your Title Here"}</h3>
-                        <p className="text-sm text-secondary-foreground">{message || "Your message content will appear here."}</p>
-                    </div>
-                </DialogContent>
-            </Dialog>
-            <Button onClick={handleSendAnnouncement} disabled={isSending}>
-                {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Send className="mr-2 h-4 w-4"/>}
-                {isSending ? 'Sending...' : 'Send Announcement'}
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline"><Eye className="mr-2 h-4 w-4"/> Preview</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="font-headline text-2xl flex items-center"><Megaphone className="mr-3 h-6 w-6"/> Announcement Preview</DialogTitle>
+                <DialogDescription>This is how the announcement will appear to users.</DialogDescription>
+              </DialogHeader>
+              <div className="p-4 border rounded-lg bg-secondary/50">
+                <h3 className="font-bold text-lg mb-2">{title || "Your Title Here"}</h3>
+                <p className="text-sm text-secondary-foreground">{message || "Your message content will appear here."}</p>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button onClick={handleSendAnnouncement} disabled={isSending}>
+            {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Send className="mr-2 h-4 w-4"/>}
+            {isSending ? 'Sending...' : 'Send Announcement'}
+          </Button>
+        </CardFooter>
+      </Card>
+
+      {/* Announcement History */}
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="font-headline text-xl flex items-center"><History className="mr-2 h-5 w-5"/> Announcement History</CardTitle>
+          <CardDescription>A log of all past and scheduled announcements.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Audience</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {announcements.map(ann => (
+                <TableRow key={ann.id}>
+                  <TableCell className="font-medium">{ann.title}</TableCell>
+                  <TableCell><Badge variant="outline">{ann.audience}</Badge></TableCell>
+                  <TableCell><Badge variant={getStatusBadgeVariant(ann.status)}>{ann.status}</Badge></TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{format(ann.scheduledTime, 'PPp')}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
