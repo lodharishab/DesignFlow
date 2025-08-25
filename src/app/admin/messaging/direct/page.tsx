@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
@@ -18,9 +17,7 @@ import {
   UserCircle,
   Archive,
   VolumeX,
-  PanelRightClose,
-  PanelRightOpen,
-  Filter,
+  PanelLeftClose,
   ArrowUpDown,
   Check,
   Inbox,
@@ -32,6 +29,7 @@ import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 
 interface Message {
@@ -128,10 +126,10 @@ type SortType = 'date' | 'name';
 export default function AdminDirectMessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [isUserDetailsOpen, setIsUserDetailsOpen] = useState(false);
   const [filterBy, setFilterBy] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortType>('date');
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const handleConversationUpdate = (updatedConversation: Conversation) => {
     setConversations(prev =>
@@ -197,6 +195,14 @@ export default function AdminDirectMessagesPage() {
     });
 
   }, [conversations, filterBy, sortBy]);
+  
+  const handleSelectConversation = (conversation: Conversation) => {
+    if (selectedConversation?.userId === conversation.userId) {
+        setSelectedConversation(null); // Deselect if clicking the same one
+    } else {
+        setSelectedConversation(conversation);
+    }
+  };
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -207,40 +213,14 @@ export default function AdminDirectMessagesPage() {
             </h1>
        </div>
 
-        <Tabs defaultValue="chat" className="md:hidden w-full flex-grow">
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="chat">Chats</TabsTrigger>
-                <TabsTrigger value="conversation" disabled={!selectedConversation}>
-                    Conversation
-                </TabsTrigger>
-            </TabsList>
-            <TabsContent value="chat" className="h-full">
-                <ThreadList 
-                    conversations={filteredAndSortedConversations} 
-                    selectedConversation={selectedConversation} 
-                    onSelect={setSelectedConversation}
-                    filterBy={filterBy}
-                    setFilterBy={setFilterBy}
-                    sortBy={sortBy}
-                    setSortBy={setSortBy}
-                    onToggleRead={handleToggleRead}
-                    onToggleArchive={handleToggleArchive}
-                    onTogglePin={handleTogglePin}
-                 />
-            </TabsContent>
-            <TabsContent value="conversation" className="h-full">
-                <ChatView conversation={selectedConversation} />
-            </TabsContent>
-        </Tabs>
-
         <div className={cn(
-            "hidden md:grid h-[calc(100vh-12rem)] gap-4 transition-all duration-300",
-            isUserDetailsOpen ? "grid-cols-[25%_55%_20%]" : "grid-cols-[30%_70%_0px]"
+            "grid h-[calc(100vh-12rem)] gap-4 transition-all duration-300",
+            selectedConversation ? "grid-cols-[25%_1fr]" : "grid-cols-[1fr_0fr]"
         )}>
             <ThreadList 
                 conversations={filteredAndSortedConversations} 
                 selectedConversation={selectedConversation} 
-                onSelect={setSelectedConversation} 
+                onSelect={handleSelectConversation}
                 filterBy={filterBy}
                 setFilterBy={setFilterBy}
                 sortBy={sortBy}
@@ -248,13 +228,23 @@ export default function AdminDirectMessagesPage() {
                 onToggleRead={handleToggleRead}
                 onToggleArchive={handleToggleArchive}
                 onTogglePin={handleTogglePin}
-            />
-            <ChatView conversation={selectedConversation} />
-            <UserDetailsPane 
-                conversation={selectedConversation} 
-                isOpen={isUserDetailsOpen} 
-                onToggle={() => setIsUserDetailsOpen(!isUserDetailsOpen)}
-            />
+             />
+            <div 
+                className={cn(
+                  "grid transition-all duration-300 ease-in-out",
+                  selectedConversation ? "grid-cols-[1fr_300px] gap-4" : "grid-cols-[1fr_0px] gap-0"
+                )}
+            >
+              <div className={cn("transition-opacity duration-300", selectedConversation ? "opacity-100" : "opacity-0")}>
+                <ChatView 
+                    conversation={selectedConversation} 
+                    onClose={() => setSelectedConversation(null)} 
+                />
+              </div>
+              <div className={cn("transition-opacity duration-300", selectedConversation ? "opacity-100" : "opacity-0")}>
+                <UserDetailsPane conversation={selectedConversation} />
+              </div>
+            </div>
         </div>
     </div>
   );
@@ -378,7 +368,7 @@ function ThreadList({
     );
 }
 
-function ChatView({ conversation }: { conversation: Conversation | null }) {
+function ChatView({ conversation, onClose }: { conversation: Conversation | null, onClose: () => void }) {
     if (!conversation) {
         return (
             <Card className="h-full hidden md:flex flex-col items-center justify-center">
@@ -391,16 +381,19 @@ function ChatView({ conversation }: { conversation: Conversation | null }) {
     }
 
     return (
-        <Card className="flex flex-col h-full">
+        <Card className="flex flex-col h-full w-full">
              <CardHeader className="flex flex-row items-center gap-3 p-3 border-b bg-background sticky top-0 z-10">
                 <Avatar className="h-10 w-10">
                     <AvatarImage src={conversation.avatarUrl} alt={conversation.userName} data-ai-hint={conversation.avatarHint} />
                     <AvatarFallback>{conversation.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <div>
+                <div className="flex-grow">
                     <p className="font-semibold">{conversation.userName}</p>
                     <p className="text-xs text-muted-foreground">Online</p>
                 </div>
+                 <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0">
+                    <PanelLeftClose className="h-5 w-5" />
+                 </Button>
             </CardHeader>
             <ScrollArea className="flex-grow p-4 space-y-4">
                  {conversation.messages.map(message => (
@@ -431,77 +424,46 @@ function ChatView({ conversation }: { conversation: Conversation | null }) {
     );
 }
 
-function UserDetailsPane({ conversation, isOpen, onToggle }: { conversation: Conversation | null, isOpen: boolean, onToggle: () => void }) {
-    if (!isOpen) {
+function UserDetailsPane({ conversation }: { conversation: Conversation | null }) {
+    if (!conversation) {
          return (
-             <div className="flex items-start justify-center pt-2">
-                 <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={onToggle}>
-                                <PanelRightClose className="h-5 w-5" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="left"><p>Show User Details</p></TooltipContent>
-                    </Tooltip>
-                 </TooltipProvider>
-             </div>
+             <Card className="h-full hidden md:flex flex-col items-center justify-center bg-muted/50">
+                {/* Placeholder content when no chat is selected */}
+             </Card>
          )
     }
 
     return (
         <Card className="flex flex-col h-full w-full shrink-0 overflow-hidden">
-            {conversation ? (
-                <>
-                    <CardHeader className="p-4 border-b">
-                        <div className="flex items-center justify-between">
-                             <CardTitle className="text-lg font-semibold">User Details</CardTitle>
-                             <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" onClick={onToggle}>
-                                            <PanelRightOpen className="h-5 w-5" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p>Hide Details</p></TooltipContent>
-                                </Tooltip>
-                             </TooltipProvider>
+            <CardHeader className="p-4 border-b">
+                 <CardTitle className="text-lg font-semibold">User Details</CardTitle>
+            </CardHeader>
+            <ScrollArea className="flex-grow">
+                <CardContent className="p-4 space-y-4 text-sm">
+                     <div className="flex flex-col items-center gap-3 py-4">
+                        <Avatar className="h-20 w-20">
+                            <AvatarImage src={conversation.avatarUrl} alt={conversation.userName} data-ai-hint={conversation.avatarHint} />
+                            <AvatarFallback className="text-2xl">{conversation.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="text-center">
+                            <p className="font-bold text-lg">{conversation.userName}</p>
+                            <p className="text-muted-foreground text-xs">{conversation.userId}</p>
                         </div>
-                    </CardHeader>
-                    <ScrollArea className="flex-grow">
-                        <CardContent className="p-4 space-y-4 text-sm">
-                             <div className="flex flex-col items-center gap-3 py-4">
-                                <Avatar className="h-20 w-20">
-                                    <AvatarImage src={conversation.avatarUrl} alt={conversation.userName} data-ai-hint={conversation.avatarHint} />
-                                    <AvatarFallback className="text-2xl">{conversation.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
-                                </Avatar>
-                                <div className="text-center">
-                                    <p className="font-bold text-lg">{conversation.userName}</p>
-                                    <p className="text-muted-foreground text-xs">{conversation.userId}</p>
-                                </div>
-                            </div>
-                            <Button variant="outline" asChild className="w-full">
-                                <Link href={`/admin/users/view/${conversation.userId}`}>
-                                    <UserCircle className="mr-2 h-4 w-4" /> View Full Profile
-                                </Link>
-                            </Button>
-                             <div className="space-y-2 pt-2">
-                                <h4 className="font-semibold text-muted-foreground">Actions</h4>
-                                <div className="flex flex-col gap-2">
-                                    <Button variant="outline"><VolumeX className="mr-2 h-4 w-4" /> Mute Conversation</Button>
-                                    <Button variant="outline"><Archive className="mr-2 h-4 w-4" /> Archive Chat</Button>
-                                </div>
-                             </div>
-                        </CardContent>
-                    </ScrollArea>
-                </>
-            ) : (
-                <CardContent className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                    <Users className="h-16 w-16 opacity-50 mb-4" />
-                    <p>No user selected.</p>
-                    <p className="text-xs">Select a conversation to see user details.</p>
+                    </div>
+                    <Button variant="outline" asChild className="w-full">
+                        <Link href={`/admin/users/view/${conversation.userId}`}>
+                            <UserCircle className="mr-2 h-4 w-4" /> View Full Profile
+                        </Link>
+                    </Button>
+                     <div className="space-y-2 pt-2">
+                        <h4 className="font-semibold text-muted-foreground">Actions</h4>
+                        <div className="flex flex-col gap-2">
+                            <Button variant="outline"><VolumeX className="mr-2 h-4 w-4" /> Mute Conversation</Button>
+                            <Button variant="outline"><Archive className="mr-2 h-4 w-4" /> Archive Chat</Button>
+                        </div>
+                     </div>
                 </CardContent>
-            )}
+            </ScrollArea>
         </Card>
     )
 }
