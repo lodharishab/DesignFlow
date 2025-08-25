@@ -23,7 +23,10 @@ import {
   X,
   PanelLeftClose,
   MessageSquare,
-  Loader2
+  Loader2,
+  AlertTriangle,
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -80,6 +83,17 @@ export default function AdminMonitorChatsPage() {
     }
   }
 
+  const getStatusIcon = (status: ChatStatus) => {
+    switch (status) {
+        case 'Active': return <Clock className="mr-1.5 h-3 w-3" />;
+        case 'Idle': return <MessageSquare className="mr-1.5 h-3 w-3" />;
+        case 'Escalated': return <AlertTriangle className="mr-1.5 h-3 w-3" />;
+        case 'Closed': return <CheckCircle2 className="mr-1.5 h-3 w-3" />;
+        default: return null;
+    }
+  };
+
+
   const handleRowClick = (chat: MonitoredChat) => {
     if (selectedChat?.threadId === chat.threadId) {
         setSelectedChat(null); // Deselect if clicking the same row
@@ -98,6 +112,7 @@ export default function AdminMonitorChatsPage() {
                     filteredChats={filteredChats}
                     handleRowClick={handleRowClick}
                     getStatusBadgeVariant={getStatusBadgeVariant}
+                    getStatusIcon={getStatusIcon}
                     setSearchTerm={setSearchTerm}
                     setStatusFilter={setStatusFilter}
                     setDateRange={setDateRange}
@@ -121,11 +136,12 @@ export default function AdminMonitorChatsPage() {
           "grid gap-6 transition-all duration-500",
           selectedChat ? "grid-cols-1 lg:grid-cols-[1fr_0.8fr]" : "grid-cols-1"
       )}>
-        <div className={cn("transition-opacity duration-300", selectedChat ? "opacity-60" : "opacity-100")}>
+        <div className={cn("transition-opacity duration-300", selectedChat ? "lg:opacity-60" : "opacity-100")}>
             <ChatListPane 
                 filteredChats={filteredChats}
                 handleRowClick={handleRowClick}
                 getStatusBadgeVariant={getStatusBadgeVariant}
+                getStatusIcon={getStatusIcon}
                 setSearchTerm={setSearchTerm}
                 setStatusFilter={setStatusFilter}
                 setDateRange={setDateRange}
@@ -149,7 +165,7 @@ export default function AdminMonitorChatsPage() {
   );
 }
 
-function ChatListPane({ filteredChats, handleRowClick, getStatusBadgeVariant, setSearchTerm, setStatusFilter, setDateRange, searchTerm, statusFilter, dateRange, selectedChatId }: any) {
+function ChatListPane({ filteredChats, handleRowClick, getStatusBadgeVariant, getStatusIcon, setSearchTerm, setStatusFilter, setDateRange, searchTerm, statusFilter, dateRange, selectedChatId }: any) {
     return (
         <Card className="shadow-lg">
             <CardHeader>
@@ -213,7 +229,12 @@ function ChatListPane({ filteredChats, handleRowClick, getStatusBadgeVariant, se
                                 </TableCell>
                                 <TableCell className="text-xs text-muted-foreground">{formatDistanceToNow(chat.lastActivity, { addSuffix: true })}</TableCell>
                                 <TableCell><Badge variant="secondary">{chat.unreadCount}</Badge></TableCell>
-                                <TableCell><Badge variant={getStatusBadgeVariant(chat.status)}>{chat.status}</Badge></TableCell>
+                                <TableCell>
+                                    <Badge variant={getStatusBadgeVariant(chat.status)} className="whitespace-nowrap">
+                                        {getStatusIcon(chat.status)}
+                                        {chat.status}
+                                    </Badge>
+                                </TableCell>
                             </TableRow>
                         )) : (
                             <TableRow><TableCell colSpan={5} className="text-center h-24">No chats match filters</TableCell></TableRow>
