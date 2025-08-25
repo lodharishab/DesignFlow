@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect, useState } from 'react';
+import { useFormStatus } from 'react-dom';
+import { useEffect, useState, useActionState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,7 +40,7 @@ export default function AdminEditBlogPostPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const updateBlogPostActionWithId = updateBlogPostAction.bind(null, postId);
-  const [state, formAction] = useFormState(updateBlogPostActionWithId, initialState);
+  const [state, formAction] = useActionState(updateBlogPostActionWithId, initialState);
   
   const { toast } = useToast();
   const router = useRouter();
