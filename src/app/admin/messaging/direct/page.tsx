@@ -116,21 +116,18 @@ export default function AdminDirectMessagesPage() {
             </TabsContent>
         </Tabs>
 
-       <div className="hidden md:grid h-[calc(100vh-12rem)] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-4">
-            <div className={cn(
-                "grid transition-all duration-300",
-                isUserDetailsOpen ? "lg:grid-cols-[320px_minmax(0,1fr)]" : "lg:grid-cols-[320px_minmax(0,1fr)]"
-            )}>
-                <ThreadList conversations={conversations} selectedConversation={selectedConversation} onSelect={setSelectedConversation} />
-                <ChatView conversation={selectedConversation} />
-            </div>
-
+        <div className={cn(
+            "hidden md:grid h-[calc(100vh-12rem)] gap-4 transition-all duration-300",
+            isUserDetailsOpen ? "grid-cols-[25%_55%_20%]" : "grid-cols-[320px_1fr_0px]"
+        )}>
+            <ThreadList conversations={conversations} selectedConversation={selectedConversation} onSelect={setSelectedConversation} />
+            <ChatView conversation={selectedConversation} />
             <UserDetailsPane 
                 conversation={selectedConversation} 
                 isOpen={isUserDetailsOpen} 
                 onToggle={() => setIsUserDetailsOpen(!isUserDetailsOpen)}
             />
-       </div>
+        </div>
     </div>
   );
 }
@@ -234,7 +231,7 @@ function ChatView({ conversation }: { conversation: Conversation | null }) {
 function UserDetailsPane({ conversation, isOpen, onToggle }: { conversation: Conversation | null, isOpen: boolean, onToggle: () => void }) {
     if (!isOpen) {
          return (
-             <div className="hidden lg:flex items-start justify-center pt-2">
+             <div className="flex items-start justify-center pt-2">
                  <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -250,7 +247,7 @@ function UserDetailsPane({ conversation, isOpen, onToggle }: { conversation: Con
     }
 
     return (
-        <Card className="flex flex-col h-full lg:w-[300px] shrink-0">
+        <Card className="flex flex-col h-full w-full shrink-0 overflow-hidden">
             {conversation ? (
                 <>
                     <CardHeader className="p-4 border-b">
@@ -305,5 +302,3 @@ function UserDetailsPane({ conversation, isOpen, onToggle }: { conversation: Con
         </Card>
     )
 }
-
-    
