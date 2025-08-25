@@ -118,25 +118,32 @@ export default function AdminMonitorChatsPage() {
       </h1>
       
       <div className={cn(
-          "grid gap-6 transition-all duration-300",
+          "grid gap-6 transition-all duration-500",
           selectedChat ? "grid-cols-1 lg:grid-cols-[1fr_0.8fr]" : "grid-cols-1"
       )}>
-        <ChatListPane 
-            filteredChats={filteredChats}
-            handleRowClick={handleRowClick}
-            getStatusBadgeVariant={getStatusBadgeVariant}
-            setSearchTerm={setSearchTerm}
-            setStatusFilter={setStatusFilter}
-            setDateRange={setDateRange}
-            searchTerm={searchTerm}
-            statusFilter={statusFilter}
-            dateRange={dateRange}
-            selectedChatId={selectedChat?.threadId}
-        />
-
-        {selectedChat && (
-            <ChatPreviewPane chat={selectedChat} onBack={() => setSelectedChat(null)} />
-        )}
+        <div className={cn("transition-opacity duration-300", selectedChat ? "opacity-60" : "opacity-100")}>
+            <ChatListPane 
+                filteredChats={filteredChats}
+                handleRowClick={handleRowClick}
+                getStatusBadgeVariant={getStatusBadgeVariant}
+                setSearchTerm={setSearchTerm}
+                setStatusFilter={setStatusFilter}
+                setDateRange={setDateRange}
+                searchTerm={searchTerm}
+                statusFilter={statusFilter}
+                dateRange={dateRange}
+                selectedChatId={selectedChat?.threadId}
+            />
+        </div>
+        
+        <div className={cn(
+            "transform-gpu transition-all duration-500 ease-in-out",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right-1/2 data-[state=open]:slide-in-from-right-1/2"
+        )} data-state={selectedChat ? 'open' : 'closed'}>
+            {selectedChat && (
+                <ChatPreviewPane chat={selectedChat} onBack={() => setSelectedChat(null)} />
+            )}
+        </div>
       </div>
     </div>
   );
@@ -261,4 +268,3 @@ function ChatPreviewPane({ chat, onBack }: { chat: MonitoredChat, onBack: () => 
         </Card>
     )
 }
-
