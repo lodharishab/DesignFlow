@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement } from 'react';
+import { useState, type ReactElement, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
-import { Megaphone, History, Eye, Send, Loader2, Wand2, Sparkles, AlertCircle } from 'lucide-react';
+import { Megaphone, History, Eye, Send, Loader2, Wand2, Sparkles, AlertCircle, ArrowUpDown } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { generateAnnouncement } from '@/ai/flows/announcement-flow';
@@ -23,6 +23,8 @@ import type { AnnouncementRequest, AnnouncementResponse } from '@/ai/flows/annou
 type AudienceType = 'all' | 'role' | 'user';
 type ScheduleType = 'now' | 'later';
 type AnnouncementStatus = 'Sent' | 'Scheduled' | 'Draft';
+type AnnouncementImportance = 'High' | 'Normal';
+type SortByType = 'newest' | 'oldest' | 'importance';
 
 interface Announcement {
   id: string;
@@ -31,12 +33,13 @@ interface Announcement {
   status: AnnouncementStatus;
   scheduledTime: Date;
   message: string;
+  importance: AnnouncementImportance;
 }
 
 const mockAnnouncements: Announcement[] = [
-  { id: 'ann001', title: 'New Feature: Brand Profiles!', audience: 'All Users', status: 'Sent', scheduledTime: new Date('2024-07-10T10:00:00'), message: 'We have just launched Brand Profiles for clients! You can now save your brand information to help designers understand your needs better.' },
-  { id: 'ann002', title: 'Diwali Campaign Reminder', audience: 'Designers', status: 'Sent', scheduledTime: new Date('2024-07-05T15:30:00'), message: 'A reminder to all designers: The Diwali campaign submission deadline is approaching. Please ensure all your related projects are on track.' },
-  { id: 'ann003', title: 'Scheduled Maintenance', audience: 'All Users', status: 'Scheduled', scheduledTime: new Date('2024-08-28T18:00:00'), message: 'The platform will be down for scheduled maintenance for approximately 30 minutes. We apologize for any inconvenience.' },
+  { id: 'ann001', title: 'New Feature: Brand Profiles!', audience: 'All Users', status: 'Sent', scheduledTime: new Date('2024-07-10T10:00:00'), message: 'We have just launched Brand Profiles for clients! You can now save your brand information to help designers understand your needs better.', importance: 'Normal' },
+  { id: 'ann002', title: 'Diwali Campaign Reminder', audience: 'Designers', status: 'Sent', scheduledTime: new Date('2024-07-05T15:30:00'), message: 'A reminder to all designers: The Diwali campaign submission deadline is approaching. Please ensure all your related projects are on track.', importance: 'Normal' },
+  { id: 'ann003', title: 'Scheduled Maintenance', audience: 'All Users', status: 'Scheduled', scheduledTime: new Date('2024-08-28T18:00:00'), message: 'The platform will be down for scheduled maintenance for approximately 30 minutes. We apologize for any inconvenience.', importance: 'High' },
 ];
 
 function AiAssistDialog({ onAccept }: { onAccept: (content: AnnouncementResponse) => void }) {
@@ -126,7 +129,8 @@ function AiAssistDialog({ onAccept }: { onAccept: (content: AnnouncementResponse
 export default function AdminAnnouncementsPage(): ReactElement {
   const { toast } = useToast();
   const [announcements, setAnnouncements] = useState<Announcement[]>(mockAnnouncements);
-  
+  const [sortBy, setSortBy] = useState<SortByType>('newest');
+
   // Form state
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
@@ -134,6 +138,7 @@ export default function AdminAnnouncementsPage(): ReactElement {
   const [selectedRole, setSelectedRole] = useState('');
   const [scheduleType, setScheduleType] = useState<ScheduleType>('now');
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
+  const [importance, setImportance] = useState<AnnouncementImportance>('Normal');
   const [isSending, setIsSending] = useState(false);
 
   const getAudienceDisplay = () => {
@@ -143,6 +148,23 @@ export default function AdminAnnouncementsPage(): ReactElement {
       default: return 'All Users';
     }
   };
+  
+  const sortedAnnouncements = useMemo(() => {
+    return [...announcements].sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return a.scheduledTime.getTime() - b.scheduledTime.getTime();
+        case 'importance':
+          if (a.importance === 'High' && b.importance !== 'High') return -1;
+          if (a.importance !== 'High' && b.importance === 'High') return 1;
+          return b.scheduledTime.getTime() - a.scheduledTime.getTime(); // Secondary sort by newest
+        case 'newest':
+        default:
+          return b.scheduledTime.getTime() - a.scheduledTime.getTime();
+      }
+    });
+  }, [announcements, sortBy]);
+
 
   const handleSendAnnouncement = () => {
     if (!title || !message) {
@@ -157,10 +179,11 @@ export default function AdminAnnouncementsPage(): ReactElement {
         audience: getAudienceDisplay(),
         status: scheduleType === 'now' ? 'Sent' : 'Scheduled',
         scheduledTime: scheduleType === 'now' ? new Date() : scheduledDate || new Date(),
+        importance,
     };
     console.log("Sending announcement:", newAnnouncement);
     setTimeout(() => {
-        setAnnouncements(prev => [newAnnouncement, ...prev].sort((a, b) => b.scheduledTime.getTime() - a.scheduledTime.getTime()));
+        setAnnouncements(prev => [newAnnouncement, ...prev]);
         setTitle('');
         setMessage('');
         toast({ title: "Announcement Sent (Simulated)", description: `Your message "${title}" has been sent/scheduled.`});
@@ -211,7 +234,7 @@ export default function AdminAnnouncementsPage(): ReactElement {
             <Label htmlFor="announcement-message">Message</Label>
             <Textarea id="announcement-message" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Write your announcement here..." rows={4} />
           </div>
-          <div className="grid md:grid-cols-2 gap-6 items-start">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
             <div className="space-y-3">
               <Label>Audience</Label>
               <RadioGroup value={audienceType} onValueChange={(v) => setAudienceType(v as AudienceType)} className="flex space-x-4">
@@ -245,6 +268,16 @@ export default function AdminAnnouncementsPage(): ReactElement {
                     />
               )}
             </div>
+             <div className="space-y-3">
+                <Label>Importance</Label>
+                 <Select value={importance} onValueChange={(v) => setImportance(v as AnnouncementImportance)}>
+                  <SelectTrigger><SelectValue placeholder="Set importance..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Normal">Normal</SelectItem>
+                    <SelectItem value="High">High (e.g., for critical alerts)</SelectItem>
+                  </SelectContent>
+                </Select>
+            </div>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between items-center gap-4">
@@ -273,8 +306,24 @@ export default function AdminAnnouncementsPage(): ReactElement {
       {/* Announcement History */}
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="font-headline text-xl flex items-center"><History className="mr-2 h-5 w-5"/> Announcement History</CardTitle>
-          <CardDescription>A log of all past and scheduled announcements.</CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <CardTitle className="font-headline text-xl flex items-center"><History className="mr-2 h-5 w-5"/> Announcement History</CardTitle>
+              <CardDescription>A log of all past and scheduled announcements.</CardDescription>
+            </div>
+            <div className="w-full sm:w-[200px]">
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortByType)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="importance">Most Important</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -283,15 +332,21 @@ export default function AdminAnnouncementsPage(): ReactElement {
                 <TableHead>Title</TableHead>
                 <TableHead>Audience</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Importance</TableHead>
                 <TableHead>Date</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {announcements.map(ann => (
+              {sortedAnnouncements.map(ann => (
                 <TableRow key={ann.id}>
                   <TableCell className="font-medium">{ann.title}</TableCell>
                   <TableCell><Badge variant="outline">{ann.audience}</Badge></TableCell>
                   <TableCell><Badge variant={getStatusBadgeVariant(ann.status)}>{ann.status}</Badge></TableCell>
+                  <TableCell>
+                    {ann.importance === 'High' && (
+                      <Badge variant="destructive">High</Badge>
+                    )}
+                  </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{format(ann.scheduledTime, 'PPp')}</TableCell>
                 </TableRow>
               ))}
