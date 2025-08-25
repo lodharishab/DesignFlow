@@ -373,11 +373,6 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
                                 <TableCell className="text-muted-foreground">{format(post.publishDate, 'MMM d, yyyy')}</TableCell>
                                 <TableCell className="text-right space-x-1">
                                     <Button variant="outline" size="icon" asChild className="hover:text-primary">
-                                        <Link href={`/admin/blog/posts/new${getDuplicateQuery(post)}`} aria-label={`Duplicate ${post.title}`}>
-                                            <Copy className="h-4 w-4" />
-                                        </Link>
-                                    </Button>
-                                    <Button variant="outline" size="icon" asChild className="hover:text-primary">
                                         <Link href={`/admin/blog/posts/edit/${post.id}`} aria-label={`Edit ${post.title}`}>
                                             <Edit3 className="h-4 w-4" />
                                         </Link>
