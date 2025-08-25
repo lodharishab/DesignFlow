@@ -132,7 +132,7 @@ function AddNewBlogPostPageContent() {
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [slug, setSlug] = useState('');
-  const [category, setCategory] = useState<string | undefined>(undefined);
+  const [category, setCategory] = useState('');
   const [tags, setTags] = useState('');
   const [status, setStatus] = useState<BlogPost['status']>('Draft');
   const [featuredImageUrl, setFeaturedImageUrl] = useState('https://placehold.co/800x450.png');
@@ -148,7 +148,7 @@ function AddNewBlogPostPageContent() {
         setTitle(data.title || '');
         setExcerpt(data.excerpt || '');
         setContent(data.content || '');
-        setCategory(data.category || undefined);
+        setCategory(data.category || '');
         setTags(Array.isArray(data.tags) ? data.tags.join(', ') : '');
         setStatus(data.status || 'Draft');
         setFeaturedImageUrl(data.featuredImageUrl || 'https://placehold.co/800x450.png');
