@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,9 +19,16 @@ import {
   Archive,
   VolumeX,
   PanelRightClose,
-  PanelRightOpen
+  PanelRightOpen,
+  Filter,
+  ArrowUpDown,
+  Check,
+  Inbox
 } from 'lucide-react';
 import Link from 'next/link';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { formatDistanceToNow } from 'date-fns';
+
 
 interface Message {
   id: string;
@@ -36,8 +43,10 @@ interface Conversation {
   avatarUrl: string;
   avatarHint: string;
   lastMessage: string;
-  lastMessageTime: string;
+  lastMessageTimestamp: Date;
   isRead: boolean;
+  isArchived: boolean;
+  isMuted: boolean;
   messages: Message[];
 }
 
@@ -48,8 +57,10 @@ const mockConversations: Conversation[] = [
     avatarUrl: 'https://placehold.co/100x100.png',
     avatarHint: 'indian woman client',
     lastMessage: 'Great, thanks for the update! Looking forward to the designs.',
-    lastMessageTime: '10m',
+    lastMessageTimestamp: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
     isRead: false,
+    isArchived: false,
+    isMuted: false,
     messages: [
       { id: 'msg1', sender: 'admin', text: 'Hi Priya, just wanted to let you know your assigned designer has started working on the project.', timestamp: '11:30 AM' },
       { id: 'msg2', sender: 'user', text: 'Great, thanks for the update! Looking forward to the designs.', timestamp: '11:32 AM' },
@@ -61,21 +72,25 @@ const mockConversations: Conversation[] = [
     avatarUrl: 'https://placehold.co/100x100.png',
     avatarHint: 'indian man designer',
     lastMessage: 'Yes, I have submitted my portfolio for the new category.',
-    lastMessageTime: '2h',
+    lastMessageTimestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
     isRead: true,
+    isArchived: false,
+    isMuted: false,
     messages: [
        { id: 'msg3', sender: 'admin', text: 'Hi Rohan, did you get a chance to submit your portfolio for the Web UI/UX category?', timestamp: '9:00 AM' },
        { id: 'msg4', sender: 'user', text: 'Yes, I have submitted my portfolio for the new category.', timestamp: '9:05 AM' },
     ]
   },
-    {
+  {
     userId: 'usr003',
     userName: 'Aarav Patel',
     avatarUrl: 'https://placehold.co/100x100.png',
     avatarHint: 'indian person avatar',
     lastMessage: 'Okay, I understand the policy. Thanks for clarifying.',
-    lastMessageTime: '1d',
+    lastMessageTimestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
     isRead: true,
+    isArchived: true,
+    isMuted: false,
      messages: [
         { id: 'msg5', sender: 'user', text: 'I had a question about my last order.', timestamp: 'Yesterday' },
         { id: 'msg6', sender: 'admin', text: 'Hi Aarav, of course. How can I help?', timestamp: 'Yesterday' },
@@ -84,13 +99,51 @@ const mockConversations: Conversation[] = [
         { id: 'msg9', sender: 'user', text: 'Okay, I understand the policy. Thanks for clarifying.', timestamp: 'Yesterday' },
     ]
   },
+  {
+    userId: 'usr004',
+    userName: 'Sneha Reddy',
+    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarHint: 'indian woman professional',
+    lastMessage: 'Perfect, thank you!',
+    lastMessageTimestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+    isRead: true,
+    isArchived: false,
+    isMuted: true,
+     messages: []
+  },
 ];
 
+type FilterType = 'all' | 'unread' | 'archived' | 'muted';
+type SortType = 'date' | 'name';
 
 export default function AdminDirectMessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(conversations[0]);
   const [isUserDetailsOpen, setIsUserDetailsOpen] = useState(true);
+  const [filterBy, setFilterBy] = useState<FilterType>('all');
+  const [sortBy, setSortBy] = useState<SortType>('date');
+
+  const filteredAndSortedConversations = useMemo(() => {
+    let filtered = conversations;
+
+    if (filterBy !== 'all') {
+      filtered = conversations.filter(c => {
+        if (filterBy === 'unread') return !c.isRead;
+        if (filterBy === 'archived') return c.isArchived;
+        if (filterBy === 'muted') return c.isMuted;
+        return true;
+      });
+    }
+
+    return filtered.sort((a, b) => {
+      if (sortBy === 'name') {
+        return a.userName.localeCompare(b.userName);
+      }
+      // Default to sorting by date (latest first)
+      return b.lastMessageTimestamp.getTime() - a.lastMessageTimestamp.getTime();
+    });
+
+  }, [conversations, filterBy, sortBy]);
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -109,7 +162,15 @@ export default function AdminDirectMessagesPage() {
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="chat" className="h-full">
-                <ThreadList conversations={conversations} selectedConversation={selectedConversation} onSelect={setSelectedConversation} />
+                <ThreadList 
+                    conversations={filteredAndSortedConversations} 
+                    selectedConversation={selectedConversation} 
+                    onSelect={setSelectedConversation}
+                    filterBy={filterBy}
+                    setFilterBy={setFilterBy}
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
+                 />
             </TabsContent>
             <TabsContent value="conversation" className="h-full">
                 <ChatView conversation={selectedConversation} />
@@ -118,9 +179,17 @@ export default function AdminDirectMessagesPage() {
 
         <div className={cn(
             "hidden md:grid h-[calc(100vh-12rem)] gap-4 transition-all duration-300",
-            isUserDetailsOpen ? "grid-cols-[25%_55%_20%]" : "grid-cols-[320px_1fr_0px]"
+            isUserDetailsOpen ? "grid-cols-[320px_1fr_280px]" : "grid-cols-[320px_1fr_0px]"
         )}>
-            <ThreadList conversations={conversations} selectedConversation={selectedConversation} onSelect={setSelectedConversation} />
+            <ThreadList 
+                conversations={filteredAndSortedConversations} 
+                selectedConversation={selectedConversation} 
+                onSelect={setSelectedConversation} 
+                filterBy={filterBy}
+                setFilterBy={setFilterBy}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+            />
             <ChatView conversation={selectedConversation} />
             <UserDetailsPane 
                 conversation={selectedConversation} 
@@ -133,7 +202,15 @@ export default function AdminDirectMessagesPage() {
 }
 
 
-function ThreadList({ conversations, selectedConversation, onSelect }: { conversations: Conversation[], selectedConversation: Conversation | null, onSelect: (c: Conversation) => void }) {
+function ThreadList({ conversations, selectedConversation, onSelect, filterBy, setFilterBy, sortBy, setSortBy }: { 
+    conversations: Conversation[], 
+    selectedConversation: Conversation | null, 
+    onSelect: (c: Conversation) => void,
+    filterBy: FilterType,
+    setFilterBy: (f: FilterType) => void,
+    sortBy: SortType,
+    setSortBy: (s: SortType) => void
+}) {
     return (
         <Card className="flex flex-col h-full">
             <CardHeader className="p-4 border-b">
@@ -141,10 +218,32 @@ function ThreadList({ conversations, selectedConversation, onSelect }: { convers
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input placeholder="Search messages..." className="pl-9" />
                 </div>
+                <div className="flex items-center gap-2 pt-2">
+                    <Select value={filterBy} onValueChange={(v) => setFilterBy(v as FilterType)}>
+                        <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Filter by..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all"><Inbox className="mr-2 h-4 w-4 inline-block"/> All</SelectItem>
+                            <SelectItem value="unread"><Check className="mr-2 h-4 w-4 inline-block"/> Unread</SelectItem>
+                            <SelectItem value="archived"><Archive className="mr-2 h-4 w-4 inline-block"/> Archived</SelectItem>
+                            <SelectItem value="muted"><VolumeX className="mr-2 h-4 w-4 inline-block"/> Muted</SelectItem>
+                        </SelectContent>
+                    </Select>
+                     <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortType)}>
+                        <SelectTrigger className="flex-1">
+                             <SelectValue placeholder="Sort by..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="date"><ArrowUpDown className="mr-2 h-4 w-4 inline-block"/> Latest</SelectItem>
+                            <SelectItem value="name"><ArrowUpDown className="mr-2 h-4 w-4 inline-block"/> Name</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </CardHeader>
             <ScrollArea className="flex-grow">
                 <CardContent className="p-0">
-                    {conversations.map(convo => (
+                    {conversations.length > 0 ? conversations.map(convo => (
                         <button
                             key={convo.userId}
                             onClick={() => onSelect(convo)}
@@ -162,13 +261,15 @@ function ThreadList({ conversations, selectedConversation, onSelect }: { convers
                                 <p className="text-xs text-muted-foreground truncate">{convo.lastMessage}</p>
                             </div>
                             <div className="flex flex-col items-end text-xs text-muted-foreground self-start shrink-0">
-                                <span>{convo.lastMessageTime}</span>
+                                <span>{formatDistanceToNow(convo.lastMessageTimestamp, { addSuffix: true })}</span>
                                 {!convo.isRead && (
                                     <span className="mt-1.5 h-2 w-2 rounded-full bg-primary"></span>
                                 )}
                             </div>
                         </button>
-                    ))}
+                    )) : (
+                        <div className="text-center p-8 text-muted-foreground text-sm">No conversations match your filters.</div>
+                    )}
                 </CardContent>
             </ScrollArea>
         </Card>
@@ -302,5 +403,3 @@ function UserDetailsPane({ conversation, isOpen, onToggle }: { conversation: Con
         </Card>
     )
 }
-
-    
