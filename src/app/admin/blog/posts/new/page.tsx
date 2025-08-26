@@ -2,7 +2,7 @@
 "use client";
 
 import { useFormStatus } from 'react-dom';
-import { useEffect, useState, Suspense, useActionState } from 'react';
+import { useEffect, useState, Suspense, useActionState, useRef, type ChangeEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Save, XCircle, Newspaper, Image as ImageIcon, Tag, CalendarDays, ExternalLink, Activity, Wand2, Sparkles, Loader2, AlertCircle, BookOpen } from 'lucide-react';
+import { PlusCircle, Save, XCircle, Newspaper, Image as ImageIcon, Tag, CalendarDays, ExternalLink, Activity, Wand2, Sparkles, Loader2, AlertCircle, BookOpen, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { addBlogPostAction, type BlogActionResult } from '@/app/admin/blog/actions';
@@ -203,6 +203,7 @@ function AddNewBlogPostPageContent() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // State for form fields to be controlled
   const [title, setTitle] = useState('');
@@ -291,6 +292,35 @@ function AddNewBlogPostPageContent() {
     // Note: The DialogClose with asChild on the button will close the dialog.
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileImport = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const fileContent = e.target?.result as string;
+      setContent(fileContent);
+      toast({
+        title: "Content Imported",
+        description: `Successfully imported content from ${file.name}.`
+      })
+    };
+    reader.onerror = () => {
+        toast({
+            title: "Import Error",
+            description: "Could not read the selected file.",
+            variant: "destructive"
+        })
+    }
+    reader.readAsText(file);
+    // Reset file input to allow re-uploading the same file
+    event.target.value = '';
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -339,39 +369,51 @@ function AddNewBlogPostPageContent() {
             <div className="space-y-2">
                <div className="flex justify-between items-center">
                   <Label htmlFor="content">Main Content (HTML or Markdown)*</Label>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                        <Button type="button" variant="secondary" size="sm"><BookOpen className="mr-1.5 h-4 w-4"/> Choose Template</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-3xl">
-                        <DialogHeader>
-                            <DialogTitle className="font-headline text-2xl">Select a Blog Post Template</DialogTitle>
-                            <DialogDescription>
-                                Start with a pre-defined structure to write your post faster.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="py-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {blogTemplates.map(template => (
-                                <DialogClose key={template.name} asChild>
-                                    <Card 
-                                        className="hover:shadow-lg hover:border-primary cursor-pointer transition-all flex flex-col text-left"
-                                        onClick={() => handleSelectTemplate(template.content)}
-                                    >
-                                        <CardHeader className="p-0">
-                                            <div className="relative aspect-video w-full">
-                                                 <Image src={template.thumbnailUrl} alt={template.name} fill style={{objectFit: 'cover'}} className="rounded-t-lg" data-ai-hint={template.thumbnailHint} />
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent className="p-3 flex-grow">
-                                            <p className="font-semibold text-sm">{template.name}</p>
-                                            <p className="text-xs text-muted-foreground">{template.description}</p>
-                                        </CardContent>
-                                    </Card>
-                                </DialogClose>
-                            ))}
-                        </div>
-                    </DialogContent>
-                  </Dialog>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileImport}
+                      className="hidden"
+                      accept=".txt, .md, .html"
+                    />
+                    <Button type="button" variant="secondary" size="sm" onClick={handleImportClick}>
+                      <Upload className="mr-1.5 h-4 w-4"/> Import from File
+                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                          <Button type="button" variant="secondary" size="sm"><BookOpen className="mr-1.5 h-4 w-4"/> Choose Template</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-3xl">
+                          <DialogHeader>
+                              <DialogTitle className="font-headline text-2xl">Select a Blog Post Template</DialogTitle>
+                              <DialogDescription>
+                                  Start with a pre-defined structure to write your post faster.
+                              </DialogDescription>
+                          </DialogHeader>
+                          <div className="py-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {blogTemplates.map(template => (
+                                  <DialogClose key={template.name} asChild>
+                                      <Card 
+                                          className="hover:shadow-lg hover:border-primary cursor-pointer transition-all flex flex-col text-left"
+                                          onClick={() => handleSelectTemplate(template.content)}
+                                      >
+                                          <CardHeader className="p-0">
+                                              <div className="relative aspect-video w-full">
+                                                   <Image src={template.thumbnailUrl} alt={template.name} fill style={{objectFit: 'cover'}} className="rounded-t-lg" data-ai-hint={template.thumbnailHint} />
+                                              </div>
+                                          </CardHeader>
+                                          <CardContent className="p-3 flex-grow">
+                                              <p className="font-semibold text-sm">{template.name}</p>
+                                              <p className="text-xs text-muted-foreground">{template.description}</p>
+                                          </CardContent>
+                                      </Card>
+                                  </DialogClose>
+                              ))}
+                          </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
               </div>
               <Textarea id="content" name="content" value={content} onChange={(e) => setContent(e.target.value)} rows={15} required placeholder="Write your blog post content here. You can use HTML tags for formatting." aria-describedby="content-error"/>
               {state.errors?.content && <p id="content-error" className="text-sm text-destructive">{state.errors.content}</p>}
