@@ -7,8 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Settings, UserCog, CreditCard, Bell, Layers, IndianRupee } from "lucide-react"; // Added Layers for Membership, IndianRupee
-import React, { useState } from 'react';
+import { Settings, UserCog, CreditCard, Bell, Layers, IndianRupee, History, Search as SearchIcon } from "lucide-react";
+import React, { useState, useMemo } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format, formatDistanceToNow } from "date-fns";
+import Link from 'next/link';
+import { Badge } from "@/components/ui/badge";
 
 // In a real app, these values would be fetched and saved to a backend.
 interface SiteSettings {
@@ -33,6 +38,124 @@ interface SiteSettings {
   adminNotificationEmail: string;
   stripeApiKey: string; // Placeholder
   paypalClientId: string; // Placeholder
+}
+
+interface AuditLog {
+  id: string;
+  action: 'User Update' | 'Service Edit' | 'Order Status Change' | 'Settings Change' | 'Designer Approved';
+  actor: {
+    id: string;
+    name: string;
+  };
+  target: {
+    type: 'User' | 'Service' | 'Order' | 'Platform';
+    id: string;
+    name?: string;
+  };
+  timestamp: Date;
+  notes?: string;
+}
+
+const mockAuditLogs: AuditLog[] = [
+    { id: 'log_001', action: 'Order Status Change', actor: { id: 'admin001', name: 'Admin User' }, target: { type: 'Order', id: 'ORD7361P', name: 'E-commerce Website UI/UX' }, timestamp: new Date(new Date().setDate(new Date().getDate() - 1)), notes: 'Status changed from Pending to In Progress' },
+    { id: 'log_002', action: 'Designer Approved', actor: { id: 'admin002', name: 'Super Admin' }, target: { type: 'User', id: 'des007', name: 'Neha Joshi' }, timestamp: new Date(new Date().setDate(new Date().getDate() - 2)), notes: 'Approved for Print Design category.' },
+    { id: 'log_003', action: 'Service Edit', actor: { id: 'admin001', name: 'Admin User' }, target: { type: 'Service', id: '1', name: 'Modern Logo Design' }, timestamp: new Date(new Date().setDate(new Date().getDate() - 3)), notes: 'Updated price for Premium tier.' },
+    { id: 'log_004', action: 'Settings Change', actor: { id: 'admin002', name: 'Super Admin' }, target: { type: 'Platform', id: 'registration_settings', name: 'User Registrations' }, timestamp: new Date(new Date().setDate(new Date().getDate() - 4)), notes: 'Disabled new designer registrations.' },
+    { id: 'log_005', action: 'User Update', actor: { id: 'admin001', name: 'Admin User' }, target: { type: 'User', id: 'usr003', name: 'Charlie Brown' }, timestamp: new Date(new Date().setDate(new Date().getDate() - 5)), notes: 'Suspended user account.' },
+];
+
+const uniqueActors = Array.from(new Set(mockAuditLogs.map(log => log.actor.name))).sort();
+const uniqueActions = Array.from(new Set(mockAuditLogs.map(log => log.action))).sort();
+
+function AuditLogsSection() {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [actionFilter, setActionFilter] = useState('All');
+    const [actorFilter, setActorFilter] = useState('All');
+
+    const filteredLogs = useMemo(() => {
+        return mockAuditLogs.filter(log => {
+            const searchTermLower = searchTerm.toLowerCase();
+            const searchMatch = !searchTerm ||
+                log.target.id.toLowerCase().includes(searchTermLower) ||
+                log.target.name?.toLowerCase().includes(searchTermLower) ||
+                log.notes?.toLowerCase().includes(searchTermLower);
+
+            const actionMatch = actionFilter === 'All' || log.action === actionFilter;
+            const actorMatch = actorFilter === 'All' || log.actor.name === actorFilter;
+
+            return searchMatch && actionMatch && actorMatch;
+        });
+    }, [searchTerm, actionFilter, actorFilter]);
+
+    return (
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center"><History className="mr-2 h-5 w-5 text-muted-foreground" />Audit Logs</CardTitle>
+                <CardDescription>Review recent administrative actions taken across the platform.</CardDescription>
+                <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                        <Label htmlFor="logSearch" className="text-xs">Search Target/Notes</Label>
+                         <div className="relative">
+                            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input id="logSearch" placeholder="e.g., ORD7361P or user" className="pl-9" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                        </div>
+                    </div>
+                     <div className="space-y-1">
+                        <Label htmlFor="actionFilter" className="text-xs">Filter by Action</Label>
+                        <Select value={actionFilter} onValueChange={setActionFilter}>
+                            <SelectTrigger id="actionFilter"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="All">All Actions</SelectItem>
+                                {uniqueActions.map(action => <SelectItem key={action} value={action}>{action}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-1">
+                        <Label htmlFor="actorFilter" className="text-xs">Filter by Admin</Label>
+                        <Select value={actorFilter} onValueChange={setActorFilter}>
+                            <SelectTrigger id="actorFilter"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="All">All Admins</SelectItem>
+                                 {uniqueActors.map(actor => <SelectItem key={actor} value={actor}>{actor}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Action</TableHead>
+                            <TableHead>Target</TableHead>
+                            <TableHead>Actor</TableHead>
+                            <TableHead>Timestamp</TableHead>
+                            <TableHead>Notes</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredLogs.map(log => (
+                            <TableRow key={log.id}>
+                                <TableCell><Badge variant="secondary">{log.action}</Badge></TableCell>
+                                <TableCell>
+                                    <span className="font-medium">{log.target.name || log.target.id}</span>
+                                    <span className="block text-xs text-muted-foreground">{log.target.type}: {log.target.id}</span>
+                                </TableCell>
+                                <TableCell>{log.actor.name}</TableCell>
+                                <TableCell className="text-xs text-muted-foreground" title={format(log.timestamp, 'PPpp')}>
+                                    {formatDistanceToNow(log.timestamp, { addSuffix: true })}
+                                </TableCell>
+                                <TableCell className="text-sm text-muted-foreground">{log.notes || 'N/A'}</TableCell>
+                            </TableRow>
+                        ))}
+                        {filteredLogs.length === 0 && (
+                             <TableRow><TableCell colSpan={5} className="text-center h-24">No logs match your filters.</TableCell></TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
 }
 
 export default function AdminSettingsPage() {
@@ -287,6 +410,9 @@ export default function AdminSettingsPage() {
           {/* More notification toggles could go here */}
         </CardContent>
       </Card>
+
+      {/* Audit Logs Section */}
+      <AuditLogsSection />
 
       <div className="flex justify-end mt-8">
          <Button onClick={handleSaveSettings} size="lg">Save All Settings</Button>
