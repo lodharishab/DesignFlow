@@ -34,7 +34,11 @@ import {
     X,
     CheckCircle2, // For Approve button
     XCircle, // For Reject button
-    HandCoins // For Advance Requests section
+    HandCoins, // For Advance Requests section
+    RefreshCw, // For Retry
+    CircleOff, // For Cancel
+    SendToBack, // For Pending Payouts section
+    Loader2 // For Processing
 } from "lucide-react";
 import { format } from 'date-fns';
 import Link from 'next/link';
@@ -93,6 +97,22 @@ const mockAdvanceRequests: AdvanceRequest[] = [
   { id: 'ADV003', designerName: 'Vikram Singh', designerId: 'des004', amount: 3000, reason: 'Marketing materials for personal brand', status: 'Rejected', requestDate: new Date(2024, 6, 12) },
 ];
 
+type PayoutStatus = 'Pending' | 'Processing' | 'Paid' | 'Failed' | 'Cancelled';
+interface PendingPayout {
+  id: string;
+  designerName: string;
+  designerId: string;
+  amount: number;
+  status: PayoutStatus;
+  scheduledDate: Date;
+  relatedOrderIds: string[];
+}
+
+const mockPendingPayouts: PendingPayout[] = [
+  { id: 'PAYOUT001', designerName: 'Vikram Singh', designerId: 'des004', amount: 6299.10, status: 'Pending', scheduledDate: new Date(2024, 6, 18), relatedOrderIds: ['ORD6531A'] },
+  { id: 'PAYOUT002', designerName: 'Rohan Kapoor', designerId: 'des002', amount: 15000.00, status: 'Processing', scheduledDate: new Date(2024, 6, 20), relatedOrderIds: ['ORD7361P', 'ORDXXXX1'] },
+  { id: 'PAYOUT003', designerName: 'Aisha Khan', designerId: 'des003', amount: 8500.00, status: 'Failed', scheduledDate: new Date(2024, 6, 17), relatedOrderIds: ['ORDXXXX2'] },
+];
 
 // Detail Modal Component
 function TransactionDetailModal({ transaction, ledger, escrowBalance, onAction }: { transaction: Transaction; ledger: Transaction[]; escrowBalance: number, onAction: (action: string) => void; }) {
@@ -182,6 +202,7 @@ export default function AdminPaymentsPage(): ReactElement {
   const { toast } = useToast();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [advanceRequests, setAdvanceRequests] = useState<AdvanceRequest[]>(mockAdvanceRequests);
+  const [pendingPayouts, setPendingPayouts] = useState<PendingPayout[]>(mockPendingPayouts);
   
   const [filters, setFilters] = useState({
     transactionId: '',
@@ -269,18 +290,32 @@ export default function AdminPaymentsPage(): ReactElement {
       description: `Advance request ${requestId} has been ${newStatus.toLowerCase()}.`,
     });
   };
+  
+  const handlePayoutStatusChange = (payoutId: string, newStatus: PayoutStatus) => {
+      setPendingPayouts(prevPayouts => 
+          prevPayouts.map(p => p.id === payoutId ? {...p, status: newStatus} : p)
+      );
+      toast({
+          title: `Payout ${payoutId} Updated`,
+          description: `Status changed to ${newStatus}.`,
+      });
+  };
 
-  const getStatusBadgeVariant = (status: TransactionStatus | AdvanceRequestStatus) => {
+  const getStatusBadgeVariant = (status: TransactionStatus | AdvanceRequestStatus | PayoutStatus) => {
     switch (status) {
       case 'Completed':
       case 'Approved':
+      case 'Paid':
         return 'default';
       case 'Pending':
       case 'On Hold':
         return 'secondary';
+      case 'Processing':
+        return 'outline';
       case 'Failed':
       case 'Rejected':
       case 'Refunded':
+      case 'Cancelled':
         return 'destructive';
       default:
         return 'outline';
@@ -389,59 +424,105 @@ export default function AdminPaymentsPage(): ReactElement {
         </CardContent>
       </Card>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center"><HandCoins className="mr-2 h-5 w-5 text-primary" />Designer Advance Requests</CardTitle>
-          <CardDescription>Review and manage advance payment requests from designers.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Request ID</TableHead>
-                <TableHead>Designer</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {advanceRequests.map((req) => (
-                <TableRow key={req.id}>
-                  <TableCell className="font-mono text-xs">{req.id}</TableCell>
-                  <TableCell>
-                    <Link href={`/admin/designers/edit/${req.designerId}`} className="font-medium text-primary hover:underline">{req.designerName}</Link>
-                  </TableCell>
-                  <TableCell>{format(req.requestDate, 'MMM d, yyyy')}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{req.reason}</TableCell>
-                  <TableCell className="text-right font-medium">₹{req.amount.toLocaleString('en-IN')}</TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadgeVariant(req.status)} className="capitalize">{req.status}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right space-x-2">
-                    {req.status === 'Pending' ? (
-                      <>
-                        <Button size="sm" variant="outline" className="text-green-600 border-green-500 hover:bg-green-50 hover:text-green-700" onClick={() => handleAdvanceRequestStatusChange(req.id, 'Approved')}>
-                            <CheckCircle2 className="mr-1 h-4 w-4" /> Approve
-                        </Button>
-                        <Button size="sm" variant="outline" className="text-red-600 border-red-500 hover:bg-red-50 hover:text-red-700" onClick={() => handleAdvanceRequestStatusChange(req.id, 'Rejected')}>
-                            <XCircle className="mr-1 h-4 w-4" /> Reject
-                        </Button>
-                      </>
-                    ) : (
-                      <span className="text-xs text-muted-foreground italic">Actioned</span>
-                    )}
-                  </TableCell>
+      <div className="grid lg:grid-cols-2 gap-8 items-start">
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center"><HandCoins className="mr-2 h-5 w-5 text-primary" />Designer Advance Requests</CardTitle>
+            <CardDescription>Review and manage advance payment requests from designers.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Designer</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {advanceRequests.map((req) => (
+                  <TableRow key={req.id}>
+                    <TableCell>
+                      <Link href={`/admin/designers/edit/${req.designerId}`} className="font-medium text-primary hover:underline">{req.designerName}</Link>
+                      <p className="text-xs text-muted-foreground truncate" title={req.reason}>{req.reason}</p>
+                    </TableCell>
+                    <TableCell className="text-right font-medium">₹{req.amount.toLocaleString('en-IN')}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadgeVariant(req.status)} className="capitalize">{req.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      {req.status === 'Pending' ? (
+                        <>
+                          <Button size="icon" variant="outline" className="h-8 w-8 text-green-600 border-green-500 hover:bg-green-50 hover:text-green-700" onClick={() => handleAdvanceRequestStatusChange(req.id, 'Approved')}>
+                              <CheckCircle2 className="h-4 w-4" /><span className="sr-only">Approve</span>
+                          </Button>
+                          <Button size="icon" variant="outline" className="h-8 w-8 text-red-600 border-red-500 hover:bg-red-50 hover:text-red-700" onClick={() => handleAdvanceRequestStatusChange(req.id, 'Rejected')}>
+                              <XCircle className="h-4 w-4" /><span className="sr-only">Reject</span>
+                          </Button>
+                        </>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">Actioned</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+        
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center"><SendToBack className="mr-2 h-5 w-5 text-primary" />Pending Payouts</CardTitle>
+            <CardDescription>Manage and track upcoming payouts to designers.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Designer</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingPayouts.map((payout) => (
+                  <TableRow key={payout.id}>
+                    <TableCell>
+                      <Link href={`/admin/designers/edit/${payout.designerId}`} className="font-medium text-primary hover:underline">{payout.designerName}</Link>
+                      <p className="text-xs text-muted-foreground">Due: {format(payout.scheduledDate, 'MMM d, yyyy')}</p>
+                    </TableCell>
+                    <TableCell className="text-right font-medium">₹{payout.amount.toLocaleString('en-IN')}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadgeVariant(payout.status)} className="capitalize">{payout.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-1">
+                      {payout.status === 'Failed' && (
+                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => handlePayoutStatusChange(payout.id, 'Processing')}>
+                          <RefreshCw className="h-4 w-4" /><span className="sr-only">Retry</span>
+                        </Button>
+                      )}
+                      {payout.status === 'Pending' && (
+                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => handlePayoutStatusChange(payout.id, 'Cancelled')}>
+                          <CircleOff className="h-4 w-4" /><span className="sr-only">Cancel</span>
+                        </Button>
+                      )}
+                      <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => handlePayoutStatusChange(payout.id, 'Paid')}>
+                        <CheckCircle2 className="h-4 w-4" /><span className="sr-only">Mark as Paid</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
 
     </div>
     </TooltipProvider>
   );
 }
+
