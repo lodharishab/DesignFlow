@@ -124,6 +124,46 @@ const initialState: BlogActionResult = {
 
 const blogTemplates = [
   {
+    name: 'Full Article Layout',
+    description: 'A structured template for a complete blog post.',
+    thumbnailUrl: 'https://placehold.co/150x100.png',
+    thumbnailHint: 'blog layout article',
+    content: `
+<h2 class="font-headline text-2xl mt-6 mb-2">[Your Main Section Title]</h2>
+<p>This is the opening paragraph for your first main section. Introduce the key ideas you'll be discussing here. Keep it engaging to draw the reader in.</p>
+<p>You can add another paragraph here to elaborate on the topic before introducing a visual element.</p>
+
+<div class="my-6">
+  <img src="https://placehold.co/800x400.png" alt="Placeholder for your relevant image" class="rounded-lg shadow-md" data-ai-hint="placeholder relevant image">
+  <p class="text-center text-sm text-muted-foreground mt-2"><em>Optional: A caption for your image.</em></p>
+</div>
+
+<h3 class="font-headline text-xl mt-4 mb-2">A. Sub-heading for a Key Point</h3>
+<p>Discuss the first key point of your section here. Use clear, concise language. This is a great place to use bullet points to break up text:</p>
+<ul class="list-disc list-inside space-y-1 my-4">
+  <li>First important point or feature.</li>
+  <li>Second important point or feature.</li>
+  <li>Third important point, elaborating further.</li>
+</ul>
+
+<blockquote class="border-l-4 border-primary pl-4 italic my-6">
+  "This is a great spot for a powerful quote, a key takeaway, or a customer testimonial that supports your point."
+</blockquote>
+
+<h3 class="font-headline text-xl mt-4 mb-2">B. Sub-heading for Another Key Point</h3>
+<p>Introduce another aspect of your topic. Maybe this is a good place for a numbered list to show a process or steps:</p>
+<ol class="list-decimal list-inside space-y-1 my-4">
+  <li>The first step in the process.</li>
+  <li>The second step, which builds on the first.</li>
+  <li>The final step to achieve the result.</li>
+</ol>
+
+<h2 class="font-headline text-2xl mt-6 mb-2">Conclusion & Call to Action</h2>
+<p>Summarize the main points of your article here. Reiterate the key message you want your reader to remember. End with a clear call to action.</p>
+<p>For example, encourage them to check out a related service, contact you for more information, or leave a comment below.</p>
+`
+  },
+  {
     name: 'How-To Guide',
     description: 'A step-by-step guide to help users achieve a goal.',
     thumbnailUrl: 'https://placehold.co/150x100.png',
@@ -154,24 +194,6 @@ const blogTemplates = [
 </ul>
 <h3 class="font-headline text-xl mt-4 mb-2">What's Next?</h3>
 <p>Briefly mention what this update means for the future or what users can look forward to next. Thank your community for their continued support.</p>`
-  },
-  {
-    name: 'Product Launch',
-    description: 'Introduce a new product or service to your audience.',
-    thumbnailUrl: 'https://placehold.co/150x100.png',
-    thumbnailHint: 'product box launch',
-    content: `<h2 class="font-headline text-2xl mt-6 mb-2">Introducing: [Product/Service Name]</h2>
-<p>A captivating introduction to your new product or service. Explain the "why" behind its creation and the main problem it solves for your customers.</p>
-<p><em>Consider adding a high-quality product image or video here.</em></p>
-<h3 class="font-headline text-xl mt-4 mb-2">Key Features & Benefits</h3>
-<ul class="list-disc list-inside space-y-1 my-4">
-  <li><strong>Feature 1:</strong> [Explain the feature and its primary benefit.]</li>
-  <li><strong>Feature 2:</strong> [Explain the feature and its primary benefit.]</li>
-  <li><strong>Feature 3:</strong> [Explain the feature and its primary benefit.]</li>
-</ul>
-<h3 class="font-headline text-xl mt-4 mb-2">How to Get It</h3>
-<p>Explain how users can purchase, access, or start using the new product or service. Include a clear call to action.</p>
-<p><a href="[Your Link Here]" class="text-primary hover:underline"><strong>Click here to learn more and get started!</strong></a></p>`
   },
 ];
 
@@ -321,7 +343,7 @@ function AddNewBlogPostPageContent() {
                     <DialogTrigger asChild>
                         <Button type="button" variant="secondary" size="sm"><BookOpen className="mr-1.5 h-4 w-4"/> Choose Template</Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-2xl">
+                    <DialogContent className="sm:max-w-3xl">
                         <DialogHeader>
                             <DialogTitle className="font-headline text-2xl">Select a Blog Post Template</DialogTitle>
                             <DialogDescription>
@@ -351,7 +373,7 @@ function AddNewBlogPostPageContent() {
                     </DialogContent>
                   </Dialog>
               </div>
-              <Textarea id="content" name="content" value={content} onChange={(e) => setContent(e.target.value)} rows={10} required placeholder="Write your blog post content here. You can use HTML tags for formatting." aria-describedby="content-error"/>
+              <Textarea id="content" name="content" value={content} onChange={(e) => setContent(e.target.value)} rows={15} required placeholder="Write your blog post content here. You can use HTML tags for formatting." aria-describedby="content-error"/>
               {state.errors?.content && <p id="content-error" className="text-sm text-destructive">{state.errors.content}</p>}
             </div>
             
