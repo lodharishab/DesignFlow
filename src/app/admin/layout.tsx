@@ -87,8 +87,15 @@ const navItems = [
       { href: '/admin/services/tags', icon: TagsIcon, label: 'Service Tags' },
     ]
   },
-  { href: '/admin/users', icon: UsersRound, label: 'Users' },
-  { href: '/admin/designers', icon: Users, label: 'Designers' },
+  {
+    label: 'Users',
+    icon: UsersRound,
+    pathPrefix: '/admin/users|/admin/designers', // Use regex to match either path
+    children: [
+      { href: '/admin/users', icon: UsersRound, label: 'All Users' },
+      { href: '/admin/designers', icon: Users, label: 'Designers' }
+    ]
+  },
   {
     label: 'Content',
     icon: Newspaper,
@@ -136,7 +143,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
     const initiallyOpen: Record<string, boolean> = {};
     navItems.forEach(item => {
       if (item.children && item.pathPrefix) {
-        if (pathname.startsWith(item.pathPrefix)) {
+        // Use a regex to check if the pathname starts with any of the specified paths
+        const pathRegex = new RegExp(`^(${item.pathPrefix})`);
+        if (pathRegex.test(pathname)) {
           initiallyOpen[item.label] = true;
         } else if (item.children.some(child => pathname.startsWith(child.href))) {
            initiallyOpen[item.label] = true;
@@ -189,7 +198,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                     {isOpen && (
                       <SidebarMenuSub>
                         {item.children.map(child => {
-                           const isChildActive = pathname === child.href;
+                           const isChildActive = pathname === child.href || pathname.startsWith(`${child.href}/`);
                           return (
                             <SidebarMenuSubItem key={child.label}>
                               <SidebarMenuSubButton asChild isActive={isChildActive}>
