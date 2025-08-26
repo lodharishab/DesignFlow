@@ -37,7 +37,7 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 
 type TransactionStatus = 'Completed' | 'Pending' | 'Failed' | 'Refunded' | 'On Hold';
 type TransactionType = 'Sale' | 'Payout' | 'Refund' | 'Fee';
@@ -328,7 +328,7 @@ export default function AdminPaymentsPage(): ReactElement {
                   <TableCell><div className="text-xs space-y-0.5"><p className="flex items-center"><User className="mr-1.5 h-3 w-3"/>Client: {txn.clientName}</p>{txn.designerName && <p className="flex items-center text-muted-foreground"><User className="mr-1.5 h-3 w-3"/>Designer: {txn.designerName}</p>}</div></TableCell>
                   <TableCell className={`text-right font-medium ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>{txn.amount > 0 ? '+' : ''}₹{Math.abs(txn.amount).toLocaleString('en-IN')}</TableCell>
                   <TableCell className="text-right">
-                     <Dialog>
+                     <Dialog onOpenChange={(open) => !open && setSelectedTransaction(null)}>
                         <DialogTrigger asChild>
                              <Button variant="outline" size="sm" onClick={() => setSelectedTransaction(txn)}>
                                 <Eye className="mr-2 h-4 w-4" /> Details
