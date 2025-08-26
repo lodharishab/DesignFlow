@@ -27,7 +27,11 @@ import {
   BarChart3, // For Payments
   Star, // For Reviews
   MessageSquare, // For new Messaging page
-  ShieldAlert // For new Reports page
+  ShieldAlert, // For new Reports page
+  IndianRupee,
+  HandCoins,
+  SendToBack,
+  PieChart as PieChartIcon
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -111,7 +115,11 @@ const navItems = [
     icon: BarChart3,
     pathPrefix: '/admin/payments',
     children: [
-        { href: '/admin/payments', icon: BarChart3, label: 'Dashboard & Ledger' },
+        { href: '/admin/payments', icon: IndianRupee, label: 'Dashboard & Ledger' },
+        { href: '/admin/payments/payouts', icon: SendToBack, label: 'Pending Payouts' },
+        { href: '/admin/payments/advances', icon: HandCoins, label: 'Advance Requests' },
+        { href: '/admin/payments/disputes', icon: ShieldAlert, label: 'Dispute Management' },
+        { href: '/admin/payments/reports', icon: PieChartIcon, label: 'Reports & Analytics' },
         { href: '/admin/payments/settings', icon: Settings, label: 'Payment Settings' },
     ]
   },
@@ -181,7 +189,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                     {isOpen && (
                       <SidebarMenuSub>
                         {item.children.map(child => {
-                           const isChildActive = pathname.startsWith(child.href);
+                           const isChildActive = pathname === child.href;
                           return (
                             <SidebarMenuSubItem key={child.label}>
                               <SidebarMenuSubButton asChild isActive={isChildActive}>

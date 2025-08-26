@@ -1,0 +1,122 @@
+
+"use client";
+
+import { useState, type ReactElement, useMemo } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { HandCoins, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
+import { format } from 'date-fns';
+import Link from 'next/link';
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from 'next/navigation';
+
+type AdvanceRequestStatus = 'Pending' | 'Approved' | 'Rejected';
+interface AdvanceRequest {
+  id: string;
+  designerName: string;
+  designerId: string;
+  amount: number;
+  reason: string;
+  status: AdvanceRequestStatus;
+  requestDate: Date;
+}
+
+const mockAdvanceRequests: AdvanceRequest[] = [
+  { id: 'ADV001', designerName: 'Rohan Kapoor', designerId: 'des002', amount: 5000, reason: 'Software subscription renewal (Adobe CC)', status: 'Pending', requestDate: new Date(2024, 6, 19) },
+  { id: 'ADV002', designerName: 'Aisha Khan', designerId: 'des003', amount: 10000, reason: 'Hardware upgrade - Graphics tablet', status: 'Approved', requestDate: new Date(2024, 6, 15) },
+  { id: 'ADV003', designerName: 'Vikram Singh', designerId: 'des004', amount: 3000, reason: 'Marketing materials for personal brand', status: 'Rejected', requestDate: new Date(2024, 6, 12) },
+];
+
+
+export default function AdminAdvanceRequestsPage(): ReactElement {
+    const { toast } = useToast();
+    const router = useRouter();
+    const [advanceRequests, setAdvanceRequests] = useState<AdvanceRequest[]>(mockAdvanceRequests);
+
+    const handleAdvanceRequestStatusChange = (requestId: string, newStatus: AdvanceRequestStatus) => {
+        setAdvanceRequests(prevRequests =>
+        prevRequests.map(req => (req.id === requestId ? { ...req, status: newStatus } : req))
+        );
+        toast({
+        title: `Request ${newStatus}`,
+        description: `Advance request ${requestId} has been ${newStatus.toLowerCase()}.`,
+        });
+    };
+
+    const getStatusBadgeVariant = (status: AdvanceRequestStatus) => {
+        switch (status) {
+            case 'Approved': return 'default';
+            case 'Pending': return 'secondary';
+            case 'Rejected': return 'destructive';
+            default: return 'outline';
+        }
+    };
+
+    return (
+        <div className="space-y-8">
+            <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold font-headline flex items-center">
+                    <HandCoins className="mr-3 h-8 w-8 text-primary" />
+                    Designer Advance Requests
+                </h1>
+                <Button variant="outline" asChild>
+                    <Link href="/admin/payments"><ArrowLeft className="mr-2 h-4 w-4" />Back to Payments Dashboard</Link>
+                </Button>
+            </div>
+            
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle>Manage Advance Requests</CardTitle>
+                    <CardDescription>Review and manage advance payment requests from designers.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Request ID</TableHead>
+                                <TableHead>Designer</TableHead>
+                                <TableHead className="text-right">Amount</TableHead>
+                                <TableHead>Reason</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {advanceRequests.map((req) => (
+                            <TableRow key={req.id}>
+                                <TableCell className="font-medium">{req.id}</TableCell>
+                                <TableCell>
+                                <Link href={`/admin/designers/edit/${req.designerId}`} className="font-medium text-primary hover:underline">{req.designerName}</Link>
+                                </TableCell>
+                                <TableCell className="text-right font-medium">₹{req.amount.toLocaleString('en-IN')}</TableCell>
+                                <TableCell className="text-xs text-muted-foreground" title={req.reason}>{req.reason}</TableCell>
+                                <TableCell className="text-xs">{format(req.requestDate, 'MMM d, yyyy')}</TableCell>
+                                <TableCell>
+                                <Badge variant={getStatusBadgeVariant(req.status)} className="capitalize">{req.status}</Badge>
+                                </TableCell>
+                                <TableCell className="text-right space-x-2">
+                                {req.status === 'Pending' ? (
+                                    <>
+                                    <Button size="icon" variant="outline" className="h-8 w-8 text-green-600 border-green-500 hover:bg-green-50 hover:text-green-700" onClick={() => handleAdvanceRequestStatusChange(req.id, 'Approved')}>
+                                        <CheckCircle2 className="h-4 w-4" /><span className="sr-only">Approve</span>
+                                    </Button>
+                                    <Button size="icon" variant="outline" className="h-8 w-8 text-red-600 border-red-500 hover:bg-red-50 hover:text-red-700" onClick={() => handleAdvanceRequestStatusChange(req.id, 'Rejected')}>
+                                        <XCircle className="h-4 w-4" /><span className="sr-only">Reject</span>
+                                    </Button>
+                                    </>
+                                ) : (
+                                    <span className="text-xs text-muted-foreground italic">Actioned</span>
+                                )}
+                                </TableCell>
+                            </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </div>
+    )
+}

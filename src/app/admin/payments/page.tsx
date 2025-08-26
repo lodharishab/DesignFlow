@@ -17,41 +17,30 @@ import {
     Link as LinkIcon, 
     User, 
     Search, 
-    CalendarDays, 
     BarChart3, 
-    Banknote, 
-    ArrowUpDown, 
-    ChevronUp, 
-    ChevronDown, 
-    AlertTriangle, 
-    Send,
     Hourglass, 
     CircleArrowOutUpRight,
     Eye,
     ReceiptText,
     History,
-    MoreHorizontal,
     X,
-    CheckCircle2, // For Approve button
-    XCircle, // For Reject button
-    HandCoins, // For Advance Requests section
-    RefreshCw, // For Retry
-    CircleOff, // For Cancel
-    SendToBack, // For Pending Payouts section
-    Loader2, // For Processing
-    ShieldAlert, // For Disputes section
-    Download, // For Export
-    PieChart as PieChartIcon // For Reports section
+    AlertTriangle,
+    Send,
+    ArrowUpDown,
+    ChevronDown,
+    ChevronUp,
+    Download,
+    PieChart as PieChartIcon,
+    SendToBack,
+    HandCoins,
+    ShieldAlert,
+    Settings
 } from "lucide-react";
-import { format, parseISO, startOfMonth } from 'date-fns';
+import { format } from 'date-fns';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis, Legend, Cell } from "recharts";
-import type { ChartConfig } from "@/components/ui/chart";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
-
 
 type TransactionStatus = 'Completed' | 'Pending' | 'Failed' | 'Refunded' | 'On Hold';
 type TransactionType = 'Sale' | 'Payout' | 'Refund' | 'Fee';
@@ -85,61 +74,6 @@ const mockTransactions: Transaction[] = [
 ];
 
 type SortableKeys = 'id' | 'date' | 'type' | 'status' | 'clientName' | 'amount';
-
-// New interface and mock data for Advance Requests
-type AdvanceRequestStatus = 'Pending' | 'Approved' | 'Rejected';
-interface AdvanceRequest {
-  id: string;
-  designerName: string;
-  designerId: string;
-  amount: number;
-  reason: string;
-  status: AdvanceRequestStatus;
-  requestDate: Date;
-}
-
-const mockAdvanceRequests: AdvanceRequest[] = [
-  { id: 'ADV001', designerName: 'Rohan Kapoor', designerId: 'des002', amount: 5000, reason: 'Software subscription renewal (Adobe CC)', status: 'Pending', requestDate: new Date(2024, 6, 19) },
-  { id: 'ADV002', designerName: 'Aisha Khan', designerId: 'des003', amount: 10000, reason: 'Hardware upgrade - Graphics tablet', status: 'Approved', requestDate: new Date(2024, 6, 15) },
-  { id: 'ADV003', designerName: 'Vikram Singh', designerId: 'des004', amount: 3000, reason: 'Marketing materials for personal brand', status: 'Rejected', requestDate: new Date(2024, 6, 12) },
-];
-
-type PayoutStatus = 'Pending' | 'Processing' | 'Paid' | 'Failed' | 'Cancelled';
-interface PendingPayout {
-  id: string;
-  designerName: string;
-  designerId: string;
-  amount: number;
-  status: PayoutStatus;
-  scheduledDate: Date;
-  relatedOrderIds: string[];
-}
-
-const mockPendingPayouts: PendingPayout[] = [
-  { id: 'PAYOUT001', designerName: 'Vikram Singh', designerId: 'des004', amount: 6299.10, status: 'Pending', scheduledDate: new Date(2024, 6, 18), relatedOrderIds: ['ORD6531A'] },
-  { id: 'PAYOUT002', designerName: 'Rohan Kapoor', designerId: 'des002', amount: 15000.00, status: 'Processing', scheduledDate: new Date(2024, 6, 20), relatedOrderIds: ['ORD7361P', 'ORDXXXX1'] },
-  { id: 'PAYOUT003', designerName: 'Aisha Khan', designerId: 'des003', amount: 8500.00, status: 'Failed', scheduledDate: new Date(2024, 6, 17), relatedOrderIds: ['ORDXXXX2'] },
-];
-
-// New interface and mock data for Disputes
-type DisputeStatus = 'Open' | 'Under Review' | 'Resolved - Client Favored' | 'Resolved - Designer Favored';
-interface Dispute {
-  id: string;
-  paymentId: string;
-  orderId: string;
-  clientName: string;
-  designerName: string;
-  reason: string;
-  status: DisputeStatus;
-  disputeDate: Date;
-}
-
-const mockDisputes: Dispute[] = [
-    { id: 'DISP001', paymentId: 'txn_Olcftg87sHjkl', orderId: 'ORD7361P', clientName: 'Priya Sharma', designerName: 'Rohan Kapoor', reason: 'Deliverable not as described', status: 'Under Review', disputeDate: new Date(2024, 6, 18) },
-    { id: 'DISP002', paymentId: 'txn_refund_md01', orderId: 'ORD4011M', clientName: 'Mohan Das', designerName: 'Sunita Reddy', reason: 'Did not receive full refund', status: 'Open', disputeDate: new Date(2024, 6, 19) },
-    { id: 'DISP003', paymentId: 'txn_Nnbvcxz87Uyt', orderId: 'ORD2945S', clientName: 'Sunita Rao', designerName: 'Priya Sharma', reason: 'Duplicate charge reported', status: 'Resolved - Client Favored', disputeDate: new Date(2024, 6, 1) },
-];
-
 
 // Detail Modal Component
 function TransactionDetailModal({ transaction, ledger, escrowBalance, onAction }: { transaction: Transaction; ledger: Transaction[]; escrowBalance: number, onAction: (action: string) => void; }) {
@@ -224,13 +158,17 @@ function TransactionDetailModal({ transaction, ledger, escrowBalance, onAction }
   )
 }
 
+const quickLinks = [
+    { href: "/admin/payments/payouts", label: "Pending Payouts", icon: SendToBack },
+    { href: "/admin/payments/advances", label: "Advance Requests", icon: HandCoins },
+    { href: "/admin/payments/disputes", label: "Dispute Management", icon: ShieldAlert },
+    { href: "/admin/payments/reports", label: "Reports & Analytics", icon: PieChartIcon },
+    { href: "/admin/payments/settings", label: "Payment Settings", icon: Settings },
+];
 
 export default function AdminPaymentsPage(): ReactElement {
   const { toast } = useToast();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const [advanceRequests, setAdvanceRequests] = useState<AdvanceRequest[]>(mockAdvanceRequests);
-  const [pendingPayouts, setPendingPayouts] = useState<PendingPayout[]>(mockPendingPayouts);
-  const [disputes, setDisputes] = useState<Dispute[]>(mockDisputes);
   
   const [filters, setFilters] = useState({
     transactionId: '',
@@ -309,55 +247,21 @@ export default function AdminPaymentsPage(): ReactElement {
       setSelectedTransaction(null);
   }
 
-  const handleAdvanceRequestStatusChange = (requestId: string, newStatus: AdvanceRequestStatus) => {
-    setAdvanceRequests(prevRequests =>
-      prevRequests.map(req => (req.id === requestId ? { ...req, status: newStatus } : req))
-    );
-    toast({
-      title: `Request ${newStatus}`,
-      description: `Advance request ${requestId} has been ${newStatus.toLowerCase()}.`,
-    });
-  };
-  
-  const handlePayoutStatusChange = (payoutId: string, newStatus: PayoutStatus) => {
-      setPendingPayouts(prevPayouts => 
-          prevPayouts.map(p => p.id === payoutId ? {...p, status: newStatus} : p)
-      );
-      toast({
-          title: `Payout ${payoutId} Updated`,
-          description: `Status changed to ${newStatus}.`,
-      });
-  };
-
-  const getStatusBadgeVariant = (status: TransactionStatus | AdvanceRequestStatus | PayoutStatus | DisputeStatus) => {
+  const getStatusBadgeVariant = (status: TransactionStatus) => {
     switch (status) {
-      case 'Completed':
-      case 'Approved':
-      case 'Paid':
-      case 'Resolved - Client Favored':
-      case 'Resolved - Designer Favored':
-        return 'default';
+      case 'Completed': return 'default';
       case 'Pending':
-      case 'On Hold':
-      case 'Open':
-      case 'Under Review':
-        return 'secondary';
-      case 'Processing':
-        return 'outline';
+      case 'On Hold': return 'secondary';
       case 'Failed':
-      case 'Rejected':
-      case 'Refunded':
-      case 'Cancelled':
-        return 'destructive';
-      default:
-        return 'outline';
+      case 'Refunded': return 'destructive';
+      default: return 'outline';
     }
   };
 
    const totalRevenue = mockTransactions.filter(t => t.type === 'Sale' && (t.status === 'Completed' || t.status === 'On Hold')).reduce((acc, t) => acc + t.amount, 0);
    const pendingInEscrow = mockTransactions.filter(t => t.type === 'Sale' && t.status === 'On Hold').reduce((acc, t) => acc + t.amount, 0);
    const releasedPayments = mockTransactions.filter(t => t.type === 'Payout' && t.status === 'Completed').reduce((acc, t) => acc + Math.abs(t.amount), 0);
-   const advancesGiven = mockAdvanceRequests.filter(r => r.status === 'Approved').reduce((acc, r) => acc + r.amount, 0);
+   const advancesGiven = mockTransactions.filter(t => t.type === 'Payout' && t.status === 'Pending').reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
    const statCards = [
      { title: "Total Revenue", value: totalRevenue, icon: IndianRupee, trend: "+10.2%" },
@@ -402,62 +306,6 @@ export default function AdminPaymentsPage(): ReactElement {
     document.body.removeChild(link);
   }, [displayedTransactions]);
 
-
-  // Prepare data for charts
-    const revenueByMonthData = useMemo(() => {
-        const sales = mockTransactions.filter(t => t.type === 'Sale' && t.status === 'Completed');
-        const monthlyRevenue: { [key: string]: number } = {};
-
-        sales.forEach(sale => {
-            const month = format(sale.date, 'MMM yyyy');
-            if (!monthlyRevenue[month]) {
-                monthlyRevenue[month] = 0;
-            }
-            monthlyRevenue[month] += sale.amount;
-        });
-        
-        return Object.entries(monthlyRevenue)
-            .map(([month, revenue]) => ({ month, revenue }))
-            .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime()); // Sort by date
-    }, []);
-    const revenueChartConfig = {
-      revenue: {
-        label: "Revenue (₹)",
-        color: "hsl(var(--chart-1))",
-      },
-    } satisfies ChartConfig;
-    
-    const fundsChartData = useMemo(() => {
-      const released = mockTransactions
-        .filter(t => t.type === 'Payout' && t.status === 'Completed')
-        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-      const escrow = mockTransactions
-        .filter(t => t.type === 'Sale' && t.status === 'On Hold')
-        .reduce((sum, t) => sum + t.amount, 0);
-      return [{ name: 'Funds', escrow, released }];
-    }, []);
-    const fundsChartConfig = {
-      escrow: { label: "In Escrow", color: "hsl(var(--chart-2))" },
-      released: { label: "Released", color: "hsl(var(--chart-3))" },
-    } satisfies ChartConfig;
-
-    const statusChartData = useMemo(() => {
-        const statusCounts = mockTransactions.reduce((acc, t) => {
-            if (t.type !== 'Sale') return acc;
-            acc[t.status] = (acc[t.status] || 0) + 1;
-            return acc;
-        }, {} as Record<TransactionStatus, number>);
-        
-        return Object.entries(statusCounts).map(([name, value]) => ({ name, value, fill: `var(--color-${name.toLowerCase().replace(' ', '-')})` }));
-    }, []);
-    const statusChartConfig = {
-        'on-hold': { label: 'On Hold', color: 'hsl(var(--chart-2))' },
-        completed: { label: 'Completed', color: 'hsl(var(--chart-1))' },
-        failed: { label: 'Failed', color: 'hsl(var(--chart-5))' },
-        refunded: { label: 'Refunded', color: 'hsl(var(--chart-4))' },
-    } satisfies ChartConfig;
-
-
   return (
     <TooltipProvider>
     <div className="space-y-8">
@@ -486,70 +334,26 @@ export default function AdminPaymentsPage(): ReactElement {
         ))}
       </div>
       
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center"><PieChartIcon className="mr-2 h-5 w-5 text-primary" />Reports &amp; Analytics</CardTitle>
-          <CardDescription>Visual overview of platform finances.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid lg:grid-cols-3 gap-8">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Revenue Over Time</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={revenueChartConfig} className="h-[250px] w-full">
-                <LineChart data={revenueByMonthData} margin={{ left: 12, right: 12, top: 5, bottom: 5 }}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)} />
-                  <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line dataKey="revenue" type="monotone" stroke="var(--color-revenue)" strokeWidth={2} dot={true} />
-                </LineChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Statuses (Sales)</CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center justify-center">
-              <ChartContainer config={statusChartConfig} className="h-[250px] w-full">
-                <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                  <Pie data={statusChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
-                    {statusChartData.map((entry) => (
-                      <Cell key={entry.name} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <ChartLegend content={<ChartLegendContent />} />
-                </PieChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-           <Card className="lg:col-span-3">
-              <CardHeader>
-                <CardTitle>Escrow vs. Released Funds</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer config={fundsChartConfig} className="h-[250px] w-full">
-                  <BarChart data={fundsChartData} accessibilityLayer>
-                    <CartesianGrid vertical={false} />
-                    <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
-                    <YAxis tickLine={false} axisLine={false} tickMargin={8}/>
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Legend />
-                    <Bar dataKey="escrow" fill="var(--color-escrow)" radius={4} />
-                    <Bar dataKey="released" fill="var(--color-released)" radius={4} />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-        </CardContent>
-      </Card>
+       <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle>Quick Management</CardTitle>
+            <CardDescription>Jump to specific financial management sections.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {quickLinks.map(link => (
+              <Link key={link.href} href={link.href} className="block">
+                <Card className="h-full text-center hover:bg-primary/5 hover:shadow-lg transition-all p-6 flex flex-col items-center justify-center">
+                  <link.icon className="h-8 w-8 text-primary mb-2" />
+                  <p className="font-semibold text-sm">{link.label}</p>
+                </Card>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>All Transactions</CardTitle>
+          <CardTitle>All Transactions Ledger</CardTitle>
           <CardDescription>A detailed log of all financial transactions, including funds held in escrow.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -602,149 +406,6 @@ export default function AdminPaymentsPage(): ReactElement {
             </TableBody>
           </Table>
         </CardContent>
-      </Card>
-
-      <div className="grid lg:grid-cols-2 gap-8 items-start">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center"><HandCoins className="mr-2 h-5 w-5 text-primary" />Designer Advance Requests</CardTitle>
-            <CardDescription>Review and manage advance payment requests from designers.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Designer</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {advanceRequests.map((req) => (
-                  <TableRow key={req.id}>
-                    <TableCell>
-                      <Link href={`/admin/designers/edit/${req.designerId}`} className="font-medium text-primary hover:underline">{req.designerName}</Link>
-                      <p className="text-xs text-muted-foreground truncate" title={req.reason}>{req.reason}</p>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">₹{req.amount.toLocaleString('en-IN')}</TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(req.status)} className="capitalize">{req.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right space-x-2">
-                      {req.status === 'Pending' ? (
-                        <>
-                          <Button size="icon" variant="outline" className="h-8 w-8 text-green-600 border-green-500 hover:bg-green-50 hover:text-green-700" onClick={() => handleAdvanceRequestStatusChange(req.id, 'Approved')}>
-                              <CheckCircle2 className="h-4 w-4" /><span className="sr-only">Approve</span>
-                          </Button>
-                          <Button size="icon" variant="outline" className="h-8 w-8 text-red-600 border-red-500 hover:bg-red-50 hover:text-red-700" onClick={() => handleAdvanceRequestStatusChange(req.id, 'Rejected')}>
-                              <XCircle className="h-4 w-4" /><span className="sr-only">Reject</span>
-                          </Button>
-                        </>
-                      ) : (
-                        <span className="text-xs text-muted-foreground italic">Actioned</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-        
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center"><SendToBack className="mr-2 h-5 w-5 text-primary" />Pending Payouts</CardTitle>
-            <CardDescription>Manage and track upcoming payouts to designers.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Designer</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pendingPayouts.map((payout) => (
-                  <TableRow key={payout.id}>
-                    <TableCell>
-                      <Link href={`/admin/designers/edit/${payout.designerId}`} className="font-medium text-primary hover:underline">{payout.designerName}</Link>
-                      <p className="text-xs text-muted-foreground">Due: {format(payout.scheduledDate, 'MMM d, yyyy')}</p>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">₹{payout.amount.toLocaleString('en-IN')}</TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(payout.status)} className="capitalize">{payout.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right space-x-1">
-                      {payout.status === 'Failed' && (
-                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => handlePayoutStatusChange(payout.id, 'Processing')}>
-                          <RefreshCw className="h-4 w-4" /><span className="sr-only">Retry</span>
-                        </Button>
-                      )}
-                      {payout.status === 'Pending' && (
-                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => handlePayoutStatusChange(payout.id, 'Cancelled')}>
-                          <CircleOff className="h-4 w-4" /><span className="sr-only">Cancel</span>
-                        </Button>
-                      )}
-                      <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => handlePayoutStatusChange(payout.id, 'Paid')}>
-                        <CheckCircle2 className="h-4 w-4" /><span className="sr-only">Mark as Paid</span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-
-       <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center"><ShieldAlert className="mr-2 h-5 w-5 text-primary" />Payment Disputes</CardTitle>
-            <CardDescription>Review and mediate payment disputes between clients and designers.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Dispute ID</TableHead>
-                        <TableHead>Participants</TableHead>
-                        <TableHead>Reason</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {disputes.map((dispute) => (
-                        <TableRow key={dispute.id}>
-                            <TableCell className="font-medium">{dispute.id}
-                                <Link href={`/admin/orders/details/${dispute.orderId}`} className="block text-primary/80 hover:underline text-xs">
-                                Order: {dispute.orderId}
-                                </Link>
-                            </TableCell>
-                            <TableCell>
-                                <div className="text-xs space-y-0.5">
-                                    <p>Client: {dispute.clientName}</p>
-                                    <p className="text-muted-foreground">Designer: {dispute.designerName}</p>
-                                </div>
-                            </TableCell>
-                            <TableCell className="text-xs text-muted-foreground">{dispute.reason}</TableCell>
-                             <TableCell><Badge variant={getStatusBadgeVariant(dispute.status)} className="capitalize whitespace-nowrap">{dispute.status}</Badge></TableCell>
-                             <TableCell className="text-xs">{format(dispute.disputeDate, 'MMM d, yyyy')}</TableCell>
-                             <TableCell className="text-right">
-                                 <Button variant="outline" size="sm" disabled>
-                                    <Eye className="mr-2 h-4 w-4" /> Details
-                                 </Button>
-                             </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-          </CardContent>
       </Card>
     </div>
     </TooltipProvider>
