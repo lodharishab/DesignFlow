@@ -80,6 +80,14 @@ export default function AdminReportsPage(): ReactElement {
       released: { label: "Released", color: "hsl(var(--chart-3))" },
     } satisfies ChartConfig;
 
+    const statusChartConfig = {
+        'On Hold': { label: 'On Hold', color: 'hsl(var(--chart-2))' },
+        Completed: { label: 'Completed', color: 'hsl(var(--chart-1))' },
+        Failed: { label: 'Failed', color: 'hsl(var(--chart-5))' },
+        Refunded: { label: 'Refunded', color: 'hsl(var(--chart-4))' },
+        Pending: { label: 'Pending', color: 'hsl(var(--chart-3))' }, // Added for completeness
+    } satisfies ChartConfig;
+    
     const statusChartData = useMemo(() => {
         const statusCounts = mockTransactions.reduce((acc, t) => {
             if (t.type !== 'Sale') return acc;
@@ -87,14 +95,13 @@ export default function AdminReportsPage(): ReactElement {
             return acc;
         }, {} as Record<TransactionStatus, number>);
         
-        return Object.entries(statusCounts).map(([name, value]) => ({ name, value, fill: `var(--color-${name.toLowerCase().replace(/ /g, '-')})` }));
+        // Map the data and assign a fill color from the config
+        return Object.entries(statusCounts).map(([name, value]) => ({
+            name,
+            value,
+            fill: `var(--color-${name.toLowerCase().replace(/ /g, '-')})`,
+        }));
     }, []);
-    const statusChartConfig = {
-        'On Hold': { label: 'On Hold', color: 'hsl(var(--chart-2))' },
-        'Completed': { label: 'Completed', color: 'hsl(var(--chart-1))' },
-        'Failed': { label: 'Failed', color: 'hsl(var(--chart-5))' },
-        'Refunded': { label: 'Refunded', color: 'hsl(var(--chart-4))' },
-    } satisfies ChartConfig;
 
     return (
         <div className="space-y-8">
@@ -136,11 +143,11 @@ export default function AdminReportsPage(): ReactElement {
                         <PieChart>
                         <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                         <Pie data={statusChartData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
-                            {statusChartData.map((entry) => (
-                            <Cell key={entry.name} fill={entry.fill} />
+                             {statusChartData.map((entry) => (
+                                <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                             ))}
                         </Pie>
-                        <ChartLegend content={<ChartLegendContent />} />
+                        <ChartLegend content={<ChartLegendContent nameKey="name" />} />
                         </PieChart>
                     </ChartContainer>
                     </CardContent>
