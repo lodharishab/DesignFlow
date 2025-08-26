@@ -33,7 +33,8 @@ import {
   SendToBack,
   PieChart as PieChartIcon,
   UserCog,
-  History // for Activity Logs
+  History, // for Activity Logs
+  User as UserIcon // for Clients
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -95,7 +96,8 @@ const navItems = [
     pathPrefix: '/admin/users',
     children: [
       { href: '/admin/users', icon: UsersRound, label: 'All Users' },
-      { href: '/admin/designers', icon: Users, label: 'Designers' },
+      { href: '/admin/users/clients', icon: UserIcon, label: 'Clients' },
+      { href: '/admin/users/designers', icon: Users, label: 'Designers' },
       { href: '/admin/users/staff', icon: UserCog, label: 'Staff & Members' },
       { href: '/admin/users/staff/activity-logs', icon: History, label: 'Staff Activity Logs' },
     ]
