@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { UserCog, PlusCircle, Edit3, Trash2, Search, Phone, Mail, Calendar } from 'lucide-react';
+import { UserCog, PlusCircle, Edit3, Trash2, Search, Phone, Mail, Calendar, Eye } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -23,6 +23,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import Link from 'next/link';
 
 type StaffRole = 'Admin' | 'Manager' | 'Support Staff' | 'Accounts';
 type StaffStatus = 'Active' | 'Suspended';
@@ -158,30 +159,15 @@ export default function StaffManagementPage(): ReactElement {
                         {member.lastLogin ? formatDistanceToNow(member.lastLogin, { addSuffix: true }) : 'Never'}
                     </TableCell>
                     <TableCell className="text-right space-x-2">
-                      <Button variant="outline" size="icon" disabled>
+                       <Button variant="outline" size="sm" asChild>
+                         <Link href={`/admin/users/staff/${member.id}`}>
+                           <Eye className="mr-2 h-4 w-4" /> Details
+                         </Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" disabled>
                         <Edit3 className="h-4 w-4" />
                         <span className="sr-only">Edit Staff</span>
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="icon" className="hover:text-destructive" disabled>
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete Staff</span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete the staff account for "{member.name}". This is a placeholder action.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeleteStaff(member.id)}>Delete</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))
@@ -193,4 +179,3 @@ export default function StaffManagementPage(): ReactElement {
     </div>
   );
 }
-
