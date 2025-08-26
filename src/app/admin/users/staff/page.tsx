@@ -85,7 +85,7 @@ export default function StaffManagementPage(): ReactElement {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold font-headline flex items-center">
           <UserCog className="mr-3 h-8 w-8 text-primary" />
-          Manage Staff & Managers
+          Manage Staff & Members
         </h1>
         <Button disabled>
           <PlusCircle className="mr-2 h-4 w-4" /> Add New Staff (Soon)

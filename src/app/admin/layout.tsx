@@ -92,11 +92,11 @@ const navItems = [
   {
     label: 'Users',
     icon: UsersRound,
-    pathPrefix: '/admin/users|/admin/designers', // Use regex to match either path
+    pathPrefix: '/admin/users',
     children: [
       { href: '/admin/users', icon: UsersRound, label: 'All Users' },
       { href: '/admin/designers', icon: Users, label: 'Designers' },
-      { href: '/admin/users/staff', icon: UserCog, label: 'Staff & Managers' },
+      { href: '/admin/users/staff', icon: UserCog, label: 'Staff & Members' },
       { href: '/admin/users/staff/activity-logs', icon: History, label: 'Staff Activity Logs' },
     ]
   },
