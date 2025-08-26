@@ -32,6 +32,9 @@ import {
     History,
     MoreHorizontal,
     X,
+    CheckCircle2, // For Approve button
+    XCircle, // For Reject button
+    HandCoins // For Advance Requests section
 } from "lucide-react";
 import { format } from 'date-fns';
 import Link from 'next/link';
@@ -71,6 +74,24 @@ const mockTransactions: Transaction[] = [
 ];
 
 type SortableKeys = 'id' | 'date' | 'type' | 'status' | 'clientName' | 'amount';
+
+// New interface and mock data for Advance Requests
+type AdvanceRequestStatus = 'Pending' | 'Approved' | 'Rejected';
+interface AdvanceRequest {
+  id: string;
+  designerName: string;
+  designerId: string;
+  amount: number;
+  reason: string;
+  status: AdvanceRequestStatus;
+  requestDate: Date;
+}
+
+const mockAdvanceRequests: AdvanceRequest[] = [
+  { id: 'ADV001', designerName: 'Rohan Kapoor', designerId: 'des002', amount: 5000, reason: 'Software subscription renewal (Adobe CC)', status: 'Pending', requestDate: new Date(2024, 6, 19) },
+  { id: 'ADV002', designerName: 'Aisha Khan', designerId: 'des003', amount: 10000, reason: 'Hardware upgrade - Graphics tablet', status: 'Approved', requestDate: new Date(2024, 6, 15) },
+  { id: 'ADV003', designerName: 'Vikram Singh', designerId: 'des004', amount: 3000, reason: 'Marketing materials for personal brand', status: 'Rejected', requestDate: new Date(2024, 6, 12) },
+];
 
 
 // Detail Modal Component
@@ -160,6 +181,7 @@ function TransactionDetailModal({ transaction, ledger, escrowBalance, onAction }
 export default function AdminPaymentsPage(): ReactElement {
   const { toast } = useToast();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [advanceRequests, setAdvanceRequests] = useState<AdvanceRequest[]>(mockAdvanceRequests);
   
   const [filters, setFilters] = useState({
     transactionId: '',
@@ -238,21 +260,37 @@ export default function AdminPaymentsPage(): ReactElement {
       setSelectedTransaction(null);
   }
 
-  const getStatusBadgeVariant = (status: TransactionStatus) => {
+  const handleAdvanceRequestStatusChange = (requestId: string, newStatus: AdvanceRequestStatus) => {
+    setAdvanceRequests(prevRequests =>
+      prevRequests.map(req => (req.id === requestId ? { ...req, status: newStatus } : req))
+    );
+    toast({
+      title: `Request ${newStatus}`,
+      description: `Advance request ${requestId} has been ${newStatus.toLowerCase()}.`,
+    });
+  };
+
+  const getStatusBadgeVariant = (status: TransactionStatus | AdvanceRequestStatus) => {
     switch (status) {
-      case 'Completed': return 'default';
-      case 'Pending': return 'secondary';
-      case 'Failed': return 'destructive';
-      case 'On Hold': return 'outline';
-      case 'Refunded': return 'outline';
-      default: return 'secondary';
+      case 'Completed':
+      case 'Approved':
+        return 'default';
+      case 'Pending':
+      case 'On Hold':
+        return 'secondary';
+      case 'Failed':
+      case 'Rejected':
+      case 'Refunded':
+        return 'destructive';
+      default:
+        return 'outline';
     }
   };
 
    const totalRevenue = mockTransactions.filter(t => t.type === 'Sale' && (t.status === 'Completed' || t.status === 'On Hold')).reduce((acc, t) => acc + t.amount, 0);
    const pendingInEscrow = mockTransactions.filter(t => t.type === 'Sale' && t.status === 'On Hold').reduce((acc, t) => acc + t.amount, 0);
    const releasedPayments = mockTransactions.filter(t => t.type === 'Payout' && t.status === 'Completed').reduce((acc, t) => acc + Math.abs(t.amount), 0);
-   const advancesGiven = 0; // Placeholder for now
+   const advancesGiven = mockAdvanceRequests.filter(r => r.status === 'Approved').reduce((acc, r) => acc + r.amount, 0);
 
    const statCards = [
      { title: "Total Revenue", value: totalRevenue, icon: IndianRupee, trend: "+10.2%" },
@@ -350,9 +388,60 @@ export default function AdminPaymentsPage(): ReactElement {
           </Table>
         </CardContent>
       </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center"><HandCoins className="mr-2 h-5 w-5 text-primary" />Designer Advance Requests</CardTitle>
+          <CardDescription>Review and manage advance payment requests from designers.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Request ID</TableHead>
+                <TableHead>Designer</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Reason</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {advanceRequests.map((req) => (
+                <TableRow key={req.id}>
+                  <TableCell className="font-mono text-xs">{req.id}</TableCell>
+                  <TableCell>
+                    <Link href={`/admin/designers/edit/${req.designerId}`} className="font-medium text-primary hover:underline">{req.designerName}</Link>
+                  </TableCell>
+                  <TableCell>{format(req.requestDate, 'MMM d, yyyy')}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{req.reason}</TableCell>
+                  <TableCell className="text-right font-medium">₹{req.amount.toLocaleString('en-IN')}</TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusBadgeVariant(req.status)} className="capitalize">{req.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right space-x-2">
+                    {req.status === 'Pending' ? (
+                      <>
+                        <Button size="sm" variant="outline" className="text-green-600 border-green-500 hover:bg-green-50 hover:text-green-700" onClick={() => handleAdvanceRequestStatusChange(req.id, 'Approved')}>
+                            <CheckCircle2 className="mr-1 h-4 w-4" /> Approve
+                        </Button>
+                        <Button size="sm" variant="outline" className="text-red-600 border-red-500 hover:bg-red-50 hover:text-red-700" onClick={() => handleAdvanceRequestStatusChange(req.id, 'Rejected')}>
+                            <XCircle className="mr-1 h-4 w-4" /> Reject
+                        </Button>
+                      </>
+                    ) : (
+                      <span className="text-xs text-muted-foreground italic">Actioned</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
     </div>
     </TooltipProvider>
   );
 }
-
-    
