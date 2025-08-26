@@ -56,7 +56,7 @@ function LoginPageContent() {
     if (phoneNumber.includes('111')) {
       router.push('/admin/dashboard');
     } else if (phoneNumber.includes('222')) {
-      router.push('/designer/pending-approval');
+      router.push('/designer/dashboard'); // Changed from pending-approval to dashboard
     } else {
       router.push('/client/dashboard'); 
     }
