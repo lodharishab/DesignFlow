@@ -90,10 +90,10 @@ export default function AdminReportsPage(): ReactElement {
         return Object.entries(statusCounts).map(([name, value]) => ({ name, value, fill: `var(--color-${name.toLowerCase().replace(/ /g, '-')})` }));
     }, []);
     const statusChartConfig = {
-        'on-hold': { label: 'On Hold', color: 'hsl(var(--chart-2))' },
-        'completed': { label: 'Completed', color: 'hsl(var(--chart-1))' },
-        'failed': { label: 'Failed', color: 'hsl(var(--chart-5))' },
-        'refunded': { label: 'Refunded', color: 'hsl(var(--chart-4))' },
+        'On Hold': { label: 'On Hold', color: 'hsl(var(--chart-2))' },
+        'Completed': { label: 'Completed', color: 'hsl(var(--chart-1))' },
+        'Failed': { label: 'Failed', color: 'hsl(var(--chart-5))' },
+        'Refunded': { label: 'Refunded', color: 'hsl(var(--chart-4))' },
     } satisfies ChartConfig;
 
     return (
@@ -108,18 +108,14 @@ export default function AdminReportsPage(): ReactElement {
                 </Button>
             </div>
             
-            <Card className="shadow-lg">
-                <CardHeader>
-                    <CardTitle>Financial Overview</CardTitle>
-                    <CardDescription>Visual overview of platform finances.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid lg:grid-cols-3 gap-8">
-                <Card className="lg:col-span-2">
+            <div className="grid lg:grid-cols-2 gap-8">
+                <Card className="shadow-lg">
                     <CardHeader>
                     <CardTitle>Revenue Over Time</CardTitle>
+                    <CardDescription>Monthly revenue from completed sales.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                    <ChartContainer config={revenueChartConfig} className="h-[250px] w-full">
+                    <ChartContainer config={revenueChartConfig} className="h-[300px] w-full">
                         <LineChart data={revenueByMonthData} margin={{ left: 12, right: 12, top: 5, bottom: 5 }}>
                         <CartesianGrid vertical={false} />
                         <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)} />
@@ -130,15 +126,16 @@ export default function AdminReportsPage(): ReactElement {
                     </ChartContainer>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="shadow-lg">
                     <CardHeader>
-                    <CardTitle>Payment Statuses (Sales)</CardTitle>
+                    <CardTitle>Sales Transaction Statuses</CardTitle>
+                    <CardDescription>Breakdown of all sale transactions by their current status.</CardDescription>
                     </CardHeader>
                     <CardContent className="flex items-center justify-center">
-                    <ChartContainer config={statusChartConfig} className="h-[250px] w-full">
+                    <ChartContainer config={statusChartConfig} className="h-[300px] w-full">
                         <PieChart>
                         <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                        <Pie data={statusChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
+                        <Pie data={statusChartData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
                             {statusChartData.map((entry) => (
                             <Cell key={entry.name} fill={entry.fill} />
                             ))}
@@ -148,12 +145,13 @@ export default function AdminReportsPage(): ReactElement {
                     </ChartContainer>
                     </CardContent>
                 </Card>
-                <Card className="lg:col-span-3">
+                 <Card className="lg:col-span-2 shadow-lg">
                     <CardHeader>
                         <CardTitle>Escrow vs. Released Funds</CardTitle>
+                        <CardDescription>Comparison of funds currently held in escrow versus funds paid out to designers.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ChartContainer config={fundsChartConfig} className="h-[250px] w-full">
+                        <ChartContainer config={fundsChartConfig} className="h-[300px] w-full">
                         <BarChart data={fundsChartData} accessibilityLayer>
                             <CartesianGrid vertical={false} />
                             <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
@@ -166,8 +164,7 @@ export default function AdminReportsPage(): ReactElement {
                         </ChartContainer>
                     </CardContent>
                     </Card>
-                </CardContent>
-            </Card>
+            </div>
         </div>
     )
 }
