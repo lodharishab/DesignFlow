@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, type ReactElement, useMemo, ChangeEvent } from 'react';
+import { useState, type ReactElement, useMemo, ChangeEvent, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -39,13 +38,19 @@ import {
     CircleOff, // For Cancel
     SendToBack, // For Pending Payouts section
     Loader2, // For Processing
-    ShieldAlert // For Disputes section
+    ShieldAlert, // For Disputes section
+    Download, // For Export
+    PieChart as PieChartIcon // For Reports section
 } from "lucide-react";
-import { format } from 'date-fns';
+import { format, parseISO, startOfMonth } from 'date-fns';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis, Legend, Cell } from "recharts";
+import type { ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+
 
 type TransactionStatus = 'Completed' | 'Pending' | 'Failed' | 'Refunded' | 'On Hold';
 type TransactionType = 'Sale' | 'Payout' | 'Refund' | 'Fee';
@@ -368,15 +373,102 @@ export default function AdminPaymentsPage(): ReactElement {
    const selectedEscrowBalance = useMemo(() => {
      return selectedLedger.reduce((acc, curr) => acc + curr.amount, 0);
    }, [selectedLedger])
+   
+   const handleExportAll = useCallback(() => {
+    const headers = ["Transaction ID", "Order ID", "Date", "Type", "Status", "Amount", "Payment Method", "Client", "Designer"];
+    const rows = displayedTransactions.map(txn => [
+      txn.id,
+      txn.orderId,
+      format(txn.date, "yyyy-MM-dd HH:mm:ss"),
+      txn.type,
+      txn.status,
+      txn.amount.toString(),
+      txn.paymentMethod || 'N/A',
+      `"${txn.clientName.replace(/"/g, '""')}"`,
+      txn.designerName ? `"${txn.designerName.replace(/"/g, '""')}"` : 'N/A'
+    ]);
+
+    let csvContent = "data:text/csv;charset=utf-8,"
+      + headers.join(",") + "\n"
+      + rows.map(e => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "full_transaction_ledger.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [displayedTransactions]);
+
+
+  // Prepare data for charts
+    const revenueByMonthData = useMemo(() => {
+        const sales = mockTransactions.filter(t => t.type === 'Sale' && t.status === 'Completed');
+        const monthlyRevenue: { [key: string]: number } = {};
+
+        sales.forEach(sale => {
+            const month = format(sale.date, 'MMM yyyy');
+            if (!monthlyRevenue[month]) {
+                monthlyRevenue[month] = 0;
+            }
+            monthlyRevenue[month] += sale.amount;
+        });
+        
+        return Object.entries(monthlyRevenue)
+            .map(([month, revenue]) => ({ month, revenue }))
+            .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime()); // Sort by date
+    }, []);
+    const revenueChartConfig = {
+      revenue: {
+        label: "Revenue (₹)",
+        color: "hsl(var(--chart-1))",
+      },
+    } satisfies ChartConfig;
+    
+    const fundsChartData = useMemo(() => {
+      const released = mockTransactions
+        .filter(t => t.type === 'Payout' && t.status === 'Completed')
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      const escrow = mockTransactions
+        .filter(t => t.type === 'Sale' && t.status === 'On Hold')
+        .reduce((sum, t) => sum + t.amount, 0);
+      return [{ name: 'Funds', escrow, released }];
+    }, []);
+    const fundsChartConfig = {
+      escrow: { label: "In Escrow", color: "hsl(var(--chart-2))" },
+      released: { label: "Released", color: "hsl(var(--chart-3))" },
+    } satisfies ChartConfig;
+
+    const statusChartData = useMemo(() => {
+        const statusCounts = mockTransactions.reduce((acc, t) => {
+            if (t.type !== 'Sale') return acc;
+            acc[t.status] = (acc[t.status] || 0) + 1;
+            return acc;
+        }, {} as Record<TransactionStatus, number>);
+        
+        return Object.entries(statusCounts).map(([name, value]) => ({ name, value, fill: `var(--color-${name.toLowerCase().replace(' ', '-')})` }));
+    }, []);
+    const statusChartConfig = {
+        'on-hold': { label: 'On Hold', color: 'hsl(var(--chart-2))' },
+        completed: { label: 'Completed', color: 'hsl(var(--chart-1))' },
+        failed: { label: 'Failed', color: 'hsl(var(--chart-5))' },
+        refunded: { label: 'Refunded', color: 'hsl(var(--chart-4))' },
+    } satisfies ChartConfig;
 
 
   return (
     <TooltipProvider>
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold font-headline flex items-center">
-        <BarChart3 className="mr-3 h-8 w-8 text-primary" />
-        Payments & Revenue
-      </h1>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <h1 className="text-3xl font-bold font-headline flex items-center">
+          <BarChart3 className="mr-3 h-8 w-8 text-primary" />
+          Payments &amp; Revenue
+        </h1>
+        <Button onClick={handleExportAll}>
+          <Download className="mr-2 h-4 w-4" /> Export Full Ledger (CSV)
+        </Button>
+      </div>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map(stat => (
@@ -392,6 +484,67 @@ export default function AdminPaymentsPage(): ReactElement {
           </Card>
         ))}
       </div>
+      
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center"><PieChartIcon className="mr-2 h-5 w-5 text-primary" />Reports &amp; Analytics</CardTitle>
+          <CardDescription>Visual overview of platform finances.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid lg:grid-cols-3 gap-8">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Revenue Over Time</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={revenueChartConfig} className="h-[250px] w-full">
+                <LineChart data={revenueByMonthData} margin={{ left: 12, right: 12, top: 5, bottom: 5 }}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)} />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line dataKey="revenue" type="monotone" stroke="var(--color-revenue)" strokeWidth={2} dot={true} />
+                </LineChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment Statuses (Sales)</CardTitle>
+            </CardHeader>
+            <CardContent className="flex items-center justify-center">
+              <ChartContainer config={statusChartConfig} className="h-[250px] w-full">
+                <PieChart>
+                  <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                  <Pie data={statusChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
+                    {statusChartData.map((entry) => (
+                      <Cell key={entry.name} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <ChartLegend content={<ChartLegendContent />} />
+                </PieChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+           <Card className="lg:col-span-3">
+              <CardHeader>
+                <CardTitle>Escrow vs. Released Funds</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={fundsChartConfig} className="h-[250px] w-full">
+                  <BarChart data={fundsChartData} accessibilityLayer>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                    <YAxis tickLine={false} axisLine={false} tickMargin={8}/>
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Legend />
+                    <Bar dataKey="escrow" fill="var(--color-escrow)" radius={4} />
+                    <Bar dataKey="released" fill="var(--color-released)" radius={4} />
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+        </CardContent>
+      </Card>
 
       <Card className="shadow-lg">
         <CardHeader>
