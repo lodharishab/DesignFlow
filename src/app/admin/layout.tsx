@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -31,7 +30,8 @@ import {
   IndianRupee,
   HandCoins,
   SendToBack,
-  PieChart as PieChartIcon
+  PieChart as PieChartIcon,
+  UserCog
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -93,7 +93,8 @@ const navItems = [
     pathPrefix: '/admin/users|/admin/designers', // Use regex to match either path
     children: [
       { href: '/admin/users', icon: UsersRound, label: 'All Users' },
-      { href: '/admin/designers', icon: Users, label: 'Designers' }
+      { href: '/admin/designers', icon: Users, label: 'Designers' },
+      { href: '/admin/users/staff', icon: UserCog, label: 'Staff & Managers' },
     ]
   },
   {
