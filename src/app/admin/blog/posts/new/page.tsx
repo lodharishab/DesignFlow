@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Save, XCircle, Newspaper, Image as ImageIcon, Tag, CalendarDays, ExternalLink, Activity, Wand2, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { PlusCircle, Save, XCircle, Newspaper, Image as ImageIcon, Tag, CalendarDays, ExternalLink, Activity, Wand2, Sparkles, Loader2, AlertCircle, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { addBlogPostAction, type BlogActionResult } from '@/app/admin/blog/actions';
@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { generateBlogPostIdeas } from '@/ai/flows/blog-post-flow';
 import type { BlogPostRequest, BlogPostResponse } from '@/ai/flows/blog-post-types';
 import type { BlogPost } from '@/lib/blog-db';
+import Image from 'next/image';
 
 
 function AiAssistDialog({ onAccept }: { onAccept: (content: BlogPostResponse) => void }) {
@@ -121,6 +122,60 @@ const initialState: BlogActionResult = {
   errors: {},
 };
 
+const blogTemplates = [
+  {
+    name: 'How-To Guide',
+    description: 'A step-by-step guide to help users achieve a goal.',
+    thumbnailUrl: 'https://placehold.co/150x100.png',
+    thumbnailHint: 'checklist tutorial',
+    content: `<p>Start with a brief introduction about what this guide will help the user accomplish.</p>
+<h3 class="font-headline text-xl mt-4 mb-2">Step 1: [Your First Step]</h3>
+<p>Provide a detailed explanation of the first step. Use clear language and be concise.</p>
+<p><em>Optional: Add an image or a screenshot here to illustrate the step.</em></p>
+<h3 class="font-headline text-xl mt-4 mb-2">Step 2: [Your Second Step]</h3>
+<p>Explain the second step in the process. Break down complex parts into smaller, manageable actions.</p>
+<h3 class="font-headline text-xl mt-4 mb-2">Step 3: [Your Third Step]</h3>
+<p>Continue with the subsequent steps required to complete the task.</p>
+<h2 class="font-headline text-2xl mt-6 mb-2">Conclusion</h2>
+<p>Summarize the process and reiterate the benefits or the final outcome. Encourage users to try it out.</p>`
+  },
+  {
+    name: 'News Update',
+    description: 'Announce a new feature, event, or company news.',
+    thumbnailUrl: 'https://placehold.co/150x100.png',
+    thumbnailHint: 'newspaper announcement',
+    content: `<p>We're thrilled to announce an exciting new update for our community! [Briefly state the main news here].</p>
+<h3 class="font-headline text-xl mt-4 mb-2">What's New?</h3>
+<p>Provide more details about the update. What problem does it solve? How does it benefit the user? Be specific.</p>
+<ul class="list-disc list-inside space-y-1 my-4">
+  <li>Key benefit or feature 1.</li>
+  <li>Key benefit or feature 2.</li>
+  <li>Key benefit or feature 3.</li>
+</ul>
+<h3 class="font-headline text-xl mt-4 mb-2">What's Next?</h3>
+<p>Briefly mention what this update means for the future or what users can look forward to next. Thank your community for their continued support.</p>`
+  },
+  {
+    name: 'Product Launch',
+    description: 'Introduce a new product or service to your audience.',
+    thumbnailUrl: 'https://placehold.co/150x100.png',
+    thumbnailHint: 'product box launch',
+    content: `<h2 class="font-headline text-2xl mt-6 mb-2">Introducing: [Product/Service Name]</h2>
+<p>A captivating introduction to your new product or service. Explain the "why" behind its creation and the main problem it solves for your customers.</p>
+<p><em>Consider adding a high-quality product image or video here.</em></p>
+<h3 class="font-headline text-xl mt-4 mb-2">Key Features & Benefits</h3>
+<ul class="list-disc list-inside space-y-1 my-4">
+  <li><strong>Feature 1:</strong> [Explain the feature and its primary benefit.]</li>
+  <li><strong>Feature 2:</strong> [Explain the feature and its primary benefit.]</li>
+  <li><strong>Feature 3:</strong> [Explain the feature and its primary benefit.]</li>
+</ul>
+<h3 class="font-headline text-xl mt-4 mb-2">How to Get It</h3>
+<p>Explain how users can purchase, access, or start using the new product or service. Include a clear call to action.</p>
+<p><a href="[Your Link Here]" class="text-primary hover:underline"><strong>Click here to learn more and get started!</strong></a></p>`
+  },
+];
+
+
 function AddNewBlogPostPageContent() {
   const [state, formAction] = useActionState(addBlogPostAction, initialState);
   const { toast } = useToast();
@@ -201,14 +256,18 @@ function AddNewBlogPostPageContent() {
     setSlug(e.target.value.toLowerCase().replace(/[^\w-]/g, '').replace(/\s+/g, '-').slice(0,70));
   };
   
-  const handleAcceptAiContent = (content: BlogPostResponse) => {
-    setTitle(content.title);
-    setExcerpt(content.excerpt);
+  const handleAcceptAiContent = (aiContent: BlogPostResponse) => {
+    setTitle(aiContent.title);
+    setExcerpt(aiContent.excerpt);
     
-    const newSlug = content.title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0,70);
+    const newSlug = aiContent.title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0,70);
     setSlug(newSlug);
   };
 
+  const handleSelectTemplate = (templateContent: string) => {
+    setContent(templateContent);
+    // Note: The DialogClose with asChild on the button will close the dialog.
+  };
 
   return (
     <div className="space-y-8">
@@ -256,7 +315,42 @@ function AddNewBlogPostPageContent() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="content">Main Content (HTML or Markdown)*</Label>
+               <div className="flex justify-between items-center">
+                  <Label htmlFor="content">Main Content (HTML or Markdown)*</Label>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                        <Button type="button" variant="secondary" size="sm"><BookOpen className="mr-1.5 h-4 w-4"/> Choose Template</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle className="font-headline text-2xl">Select a Blog Post Template</DialogTitle>
+                            <DialogDescription>
+                                Start with a pre-defined structure to write your post faster.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {blogTemplates.map(template => (
+                                <DialogClose key={template.name} asChild>
+                                    <Card 
+                                        className="hover:shadow-lg hover:border-primary cursor-pointer transition-all flex flex-col text-left"
+                                        onClick={() => handleSelectTemplate(template.content)}
+                                    >
+                                        <CardHeader className="p-0">
+                                            <div className="relative aspect-video w-full">
+                                                 <Image src={template.thumbnailUrl} alt={template.name} fill style={{objectFit: 'cover'}} className="rounded-t-lg" data-ai-hint={template.thumbnailHint} />
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="p-3 flex-grow">
+                                            <p className="font-semibold text-sm">{template.name}</p>
+                                            <p className="text-xs text-muted-foreground">{template.description}</p>
+                                        </CardContent>
+                                    </Card>
+                                </DialogClose>
+                            ))}
+                        </div>
+                    </DialogContent>
+                  </Dialog>
+              </div>
               <Textarea id="content" name="content" value={content} onChange={(e) => setContent(e.target.value)} rows={10} required placeholder="Write your blog post content here. You can use HTML tags for formatting." aria-describedby="content-error"/>
               {state.errors?.content && <p id="content-error" className="text-sm text-destructive">{state.errors.content}</p>}
             </div>
