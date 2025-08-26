@@ -38,7 +38,8 @@ import {
     RefreshCw, // For Retry
     CircleOff, // For Cancel
     SendToBack, // For Pending Payouts section
-    Loader2 // For Processing
+    Loader2, // For Processing
+    ShieldAlert // For Disputes section
 } from "lucide-react";
 import { format } from 'date-fns';
 import Link from 'next/link';
@@ -113,6 +114,26 @@ const mockPendingPayouts: PendingPayout[] = [
   { id: 'PAYOUT002', designerName: 'Rohan Kapoor', designerId: 'des002', amount: 15000.00, status: 'Processing', scheduledDate: new Date(2024, 6, 20), relatedOrderIds: ['ORD7361P', 'ORDXXXX1'] },
   { id: 'PAYOUT003', designerName: 'Aisha Khan', designerId: 'des003', amount: 8500.00, status: 'Failed', scheduledDate: new Date(2024, 6, 17), relatedOrderIds: ['ORDXXXX2'] },
 ];
+
+// New interface and mock data for Disputes
+type DisputeStatus = 'Open' | 'Under Review' | 'Resolved - Client Favored' | 'Resolved - Designer Favored';
+interface Dispute {
+  id: string;
+  paymentId: string;
+  orderId: string;
+  clientName: string;
+  designerName: string;
+  reason: string;
+  status: DisputeStatus;
+  disputeDate: Date;
+}
+
+const mockDisputes: Dispute[] = [
+    { id: 'DISP001', paymentId: 'txn_Olcftg87sHjkl', orderId: 'ORD7361P', clientName: 'Priya Sharma', designerName: 'Rohan Kapoor', reason: 'Deliverable not as described', status: 'Under Review', disputeDate: new Date(2024, 6, 18) },
+    { id: 'DISP002', paymentId: 'txn_refund_md01', orderId: 'ORD4011M', clientName: 'Mohan Das', designerName: 'Sunita Reddy', reason: 'Did not receive full refund', status: 'Open', disputeDate: new Date(2024, 6, 19) },
+    { id: 'DISP003', paymentId: 'txn_Nnbvcxz87Uyt', orderId: 'ORD2945S', clientName: 'Sunita Rao', designerName: 'Priya Sharma', reason: 'Duplicate charge reported', status: 'Resolved - Client Favored', disputeDate: new Date(2024, 6, 1) },
+];
+
 
 // Detail Modal Component
 function TransactionDetailModal({ transaction, ledger, escrowBalance, onAction }: { transaction: Transaction; ledger: Transaction[]; escrowBalance: number, onAction: (action: string) => void; }) {
@@ -203,6 +224,7 @@ export default function AdminPaymentsPage(): ReactElement {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [advanceRequests, setAdvanceRequests] = useState<AdvanceRequest[]>(mockAdvanceRequests);
   const [pendingPayouts, setPendingPayouts] = useState<PendingPayout[]>(mockPendingPayouts);
+  const [disputes, setDisputes] = useState<Dispute[]>(mockDisputes);
   
   const [filters, setFilters] = useState({
     transactionId: '',
@@ -301,14 +323,18 @@ export default function AdminPaymentsPage(): ReactElement {
       });
   };
 
-  const getStatusBadgeVariant = (status: TransactionStatus | AdvanceRequestStatus | PayoutStatus) => {
+  const getStatusBadgeVariant = (status: TransactionStatus | AdvanceRequestStatus | PayoutStatus | DisputeStatus) => {
     switch (status) {
       case 'Completed':
       case 'Approved':
       case 'Paid':
+      case 'Resolved - Client Favored':
+      case 'Resolved - Designer Favored':
         return 'default';
       case 'Pending':
       case 'On Hold':
+      case 'Open':
+      case 'Under Review':
         return 'secondary';
       case 'Processing':
         return 'outline';
@@ -521,8 +547,52 @@ export default function AdminPaymentsPage(): ReactElement {
         </Card>
       </div>
 
+       <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center"><ShieldAlert className="mr-2 h-5 w-5 text-primary" />Payment Disputes</CardTitle>
+            <CardDescription>Review and mediate payment disputes between clients and designers.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Dispute ID</TableHead>
+                        <TableHead>Participants</TableHead>
+                        <TableHead>Reason</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {disputes.map((dispute) => (
+                        <TableRow key={dispute.id}>
+                            <TableCell className="font-medium">{dispute.id}
+                                <Link href={`/admin/orders/details/${dispute.orderId}`} className="block text-primary/80 hover:underline text-xs">
+                                Order: {dispute.orderId}
+                                </Link>
+                            </TableCell>
+                            <TableCell>
+                                <div className="text-xs space-y-0.5">
+                                    <p>Client: {dispute.clientName}</p>
+                                    <p className="text-muted-foreground">Designer: {dispute.designerName}</p>
+                                </div>
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{dispute.reason}</TableCell>
+                             <TableCell><Badge variant={getStatusBadgeVariant(dispute.status)} className="capitalize whitespace-nowrap">{dispute.status}</Badge></TableCell>
+                             <TableCell className="text-xs">{format(dispute.disputeDate, 'MMM d, yyyy')}</TableCell>
+                             <TableCell className="text-right">
+                                 <Button variant="outline" size="sm" disabled>
+                                    <Eye className="mr-2 h-4 w-4" /> Details
+                                 </Button>
+                             </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+          </CardContent>
+      </Card>
     </div>
     </TooltipProvider>
   );
 }
-
