@@ -338,13 +338,6 @@ export default function AdminDesignersPage(): ReactElement {
                         <Edit3 className="h-4 w-4" />
                       </Link>
                     </Button>
-                    {designer.portfolioLink && (
-                       <Button variant="outline" size="icon" asChild className="hover:text-primary">
-                        <Link href={designer.portfolioLink} target="_blank" rel="noopener noreferrer" aria-label={`View ${designer.name}'s portfolio`}>
-                          <LinkIconLucide className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -355,3 +348,5 @@ export default function AdminDesignersPage(): ReactElement {
     </div>
   );
 }
+
+    

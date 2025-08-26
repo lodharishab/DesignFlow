@@ -350,10 +350,18 @@ export default function UserManagementPage(): ReactElement {
 
   const getUserEditUrl = (user: User) => {
     if (user.roles.includes('Designer')) {
-        return `/admin/designers/edit/${user.id}`;
+      return `/admin/designers/edit/${user.id}`;
     }
     // Default edit page for clients, admins, guests
     return `/admin/users/edit/${user.id}`;
+  };
+
+  const getUserViewUrl = (user: User) => {
+    if (user.roles.includes('Designer')) {
+        return `/admin/designers/edit/${user.id}`; // Re-route designer view to edit
+    }
+    // Default view page for clients, admins, guests
+    return `/admin/users/view/${user.id}`;
   }
 
 
@@ -624,6 +632,11 @@ export default function UserManagementPage(): ReactElement {
                         <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem asChild>
+                           <Link href={getUserViewUrl(user)} className="flex items-center">
+                                <Eye className="mr-2 h-4 w-4" /> View Details
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
                             <Link href={getUserEditUrl(user)} className="flex items-center">
                                 <Edit3 className="mr-2 h-4 w-4" /> Edit User
                             </Link>
@@ -674,3 +687,5 @@ export default function UserManagementPage(): ReactElement {
     </div>
   );
 }
+
+    

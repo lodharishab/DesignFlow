@@ -22,7 +22,7 @@ interface UserDetail {
 
 const mockUsers: { [key: string]: UserDetail } = {
   'usr001': { id: 'usr001', name: 'Priya Sharma', email: 'priya.sharma@example.in', roles: ['Client'], joinDate: '2023-01-15', lastLogin: '2024-07-01', status: 'Active' },
-  'usr004': { id: 'usr004', name: 'Aditi Singh', email: 'aditi.admin@example.in', roles: ['Admin'], joinDate: '2022-05-10', lastLogin: '2024-07-04', status: 'Active' },
+  'staff001': { id: 'staff001', name: 'Aditi Singh', email: 'aditi.admin@example.in', roles: ['Admin'], joinDate: '2022-05-10', lastLogin: '2024-07-04', status: 'Active' },
 };
 
 
@@ -109,3 +109,5 @@ export default function AdminViewUserPage() {
     </div>
   );
 }
+
+    
