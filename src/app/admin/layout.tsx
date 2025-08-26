@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -31,7 +32,8 @@ import {
   HandCoins,
   SendToBack,
   PieChart as PieChartIcon,
-  UserCog
+  UserCog,
+  History // for Activity Logs
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -95,6 +97,7 @@ const navItems = [
       { href: '/admin/users', icon: UsersRound, label: 'All Users' },
       { href: '/admin/designers', icon: Users, label: 'Designers' },
       { href: '/admin/users/staff', icon: UserCog, label: 'Staff & Managers' },
+      { href: '/admin/users/staff/activity-logs', icon: History, label: 'Staff Activity Logs' },
     ]
   },
   {
