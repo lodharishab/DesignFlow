@@ -24,7 +24,7 @@ import {
   XCircle,
   Newspaper,
   PlusCircle, // For Add New Post
-  BarChart3, // Changed from IndianRupee for Payments
+  BarChart3, // For Payments
   Star, // For Reviews
   MessageSquare, // For new Messaging page
   ShieldAlert // For new Reports page
@@ -106,7 +106,15 @@ const navItems = [
       { href: '/admin/reports', icon: ShieldAlert, label: 'Reports' },
     ]
   },
-  { href: '/admin/payments', icon: BarChart3, label: 'Payments & Revenue' },
+  {
+    label: 'Payments & Revenue',
+    icon: BarChart3,
+    pathPrefix: '/admin/payments',
+    children: [
+        { href: '/admin/payments', icon: BarChart3, label: 'Dashboard & Ledger' },
+        { href: '/admin/payments/settings', icon: Settings, label: 'Payment Settings' },
+    ]
+  },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
