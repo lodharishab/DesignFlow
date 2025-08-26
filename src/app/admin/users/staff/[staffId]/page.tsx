@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { 
     UserCog, ArrowLeft, Loader2, PackageSearch, Mail, Phone, CalendarDays, 
-    ShieldCheck, Activity, KeyRound, Edit, History 
+    ShieldCheck, Activity, KeyRound, Edit, History, ListChecks 
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -18,9 +18,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 // Mock Data
-type StaffRole = 'Admin' | 'Manager' | 'Support Staff' | 'Accounts';
+type StaffRole = 'Super Admin' | 'Finance Admin' | 'Support Staff' | 'Read-Only Auditor';
 type StaffStatus = 'Active' | 'Suspended';
 
 interface StaffMember {
@@ -37,10 +44,10 @@ interface StaffMember {
 }
 
 const mockStaffData: StaffMember[] = [
-  { id: 'staff001', name: 'Aditi Singh', email: 'aditi.admin@designflow.in', phone: '9876543211', role: 'Admin', status: 'Active', joinDate: new Date(2022, 5, 10), lastLogin: new Date(new Date().setDate(new Date().getDate() - 1)), avatarUrl: 'https://placehold.co/100x100.png', avatarHint: 'woman avatar' },
-  { id: 'staff002', name: 'Raj Mehta', email: 'raj.manager@designflow.in', phone: '9876543212', role: 'Manager', status: 'Active', joinDate: new Date(2023, 1, 1), lastLogin: new Date(new Date().setDate(new Date().getDate() - 2)), avatarUrl: 'https://placehold.co/100x100.png', avatarHint: 'man avatar' },
+  { id: 'staff001', name: 'Aditi Singh', email: 'aditi.admin@designflow.in', phone: '9876543211', role: 'Super Admin', status: 'Active', joinDate: new Date(2022, 5, 10), lastLogin: new Date(new Date().setDate(new Date().getDate() - 1)), avatarUrl: 'https://placehold.co/100x100.png', avatarHint: 'woman avatar' },
+  { id: 'staff002', name: 'Raj Mehta', email: 'raj.manager@designflow.in', phone: '9876543212', role: 'Support Staff', status: 'Active', joinDate: new Date(2023, 1, 1), lastLogin: new Date(new Date().setDate(new Date().getDate() - 2)), avatarUrl: 'https://placehold.co/100x100.png', avatarHint: 'man avatar' },
   { id: 'staff003', name: 'Sonia Gupta', email: 'sonia.support@designflow.in', phone: '9876543213', role: 'Support Staff', status: 'Active', joinDate: new Date(2023, 3, 15), lastLogin: new Date(new Date().setHours(new Date().getHours() - 4)), avatarUrl: 'https://placehold.co/100x100.png', avatarHint: 'person avatar' },
-  { id: 'staff004', name: 'Anil Kumar', email: 'anil.accounts@designflow.in', phone: '9876543214', role: 'Accounts', status: 'Suspended', joinDate: new Date(2022, 9, 20), lastLogin: new Date(new Date().setMonth(new Date().getMonth() - 2)), avatarUrl: 'https://placehold.co/100x100.png', avatarHint: 'man silhouette' },
+  { id: 'staff004', name: 'Anil Kumar', email: 'anil.accounts@designflow.in', phone: '9876543214', role: 'Finance Admin', status: 'Suspended', joinDate: new Date(2022, 9, 20), lastLogin: new Date(new Date().setMonth(new Date().getMonth() - 2)), avatarUrl: 'https://placehold.co/100x100.png', avatarHint: 'man silhouette' },
 ];
 
 const mockActivityHistory = [
@@ -50,6 +57,34 @@ const mockActivityHistory = [
     { action: 'Suspended User Account', target: 'Charlie Brown', timestamp: new Date(new Date().setDate(new Date().getDate() - 3)) },
 ];
 
+const rolesAndPermissions: Record<StaffRole, string[]> = {
+    'Super Admin': [
+        'Full platform access',
+        'Manage all users (clients, designers, staff)',
+        'Manage all services, orders, and finances',
+        'Modify platform settings',
+        'Delete critical data',
+    ],
+    'Finance Admin': [
+        'View all financial data & reports',
+        'Manage payments, payouts, and disputes',
+        'Process refunds and advances',
+        'View order and user details (read-only)',
+        'Cannot modify users or services',
+    ],
+    'Support Staff': [
+        'View user and order details',
+        'Respond to support tickets and messages',
+        'Update order statuses (e.g., assign designer)',
+        'Moderate reviews and reports',
+        'Cannot access financial settings',
+    ],
+    'Read-Only Auditor': [
+        'View all platform data (users, orders, services)',
+        'Cannot make any changes',
+        'Export reports',
+    ],
+};
 
 function StaffDetailContent() {
   const router = useRouter();
@@ -59,14 +94,35 @@ function StaffDetailContent() {
 
   const [staff, setStaff] = useState<StaffMember | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdatingRole, setIsUpdatingRole] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<StaffRole>('Support Staff');
 
   useEffect(() => {
     if (staffId) {
       const foundStaff = mockStaffData.find(s => s.id === staffId);
-      setStaff(foundStaff || null);
+      if (foundStaff) {
+        setStaff(foundStaff);
+        setSelectedRole(foundStaff.role);
+      }
       setIsLoading(false);
     }
   }, [staffId]);
+
+  const handleUpdateRole = () => {
+    if (!staff) return;
+    setIsUpdatingRole(true);
+    // Simulate API call
+    console.log(`Updating role for ${staff.name} to ${selectedRole}`);
+    setTimeout(() => {
+        setStaff(prev => prev ? { ...prev, role: selectedRole } : null);
+        toast({
+            title: "Role Updated (Simulated)",
+            description: `${staff.name}'s role has been changed to ${selectedRole}.`,
+        });
+        setIsUpdatingRole(false);
+    }, 1000);
+  };
+
 
   if (isLoading) {
     return <div className="text-center py-10"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary"/></div>;
@@ -86,6 +142,7 @@ function StaffDetailContent() {
   const getStatusBadgeVariant = (status: StaffStatus) => {
     return status === 'Active' ? 'default' : 'destructive';
   };
+  const permissionsForSelectedRole = rolesAndPermissions[selectedRole] || [];
 
   return (
     <div className="space-y-8">
@@ -110,7 +167,7 @@ function StaffDetailContent() {
                         </Avatar>
                         <div>
                             <CardTitle className="font-headline text-2xl">{staff.name}</CardTitle>
-                            <CardDescription>Role: {staff.role} | ID: {staff.id}</CardDescription>
+                            <CardDescription>ID: {staff.id}</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
@@ -137,8 +194,8 @@ function StaffDetailContent() {
                             <Badge variant={getStatusBadgeVariant(staff.status)}>{staff.status}</Badge>
                         </div>
                          <div>
-                            <p className="font-semibold text-muted-foreground flex items-center mb-1"><ShieldCheck className="mr-2 h-4 w-4" />Role & Permissions</p>
-                            <p>{staff.role}</p>
+                            <p className="font-semibold text-muted-foreground flex items-center mb-1"><ShieldCheck className="mr-2 h-4 w-4" />Current Role</p>
+                            <Badge variant="secondary">{staff.role}</Badge>
                         </div>
                     </div>
                 </CardContent>
@@ -175,18 +232,35 @@ function StaffDetailContent() {
         <div className="lg:col-span-1 space-y-6">
             <Card className="shadow-lg">
                 <CardHeader>
-                    <CardTitle>Admin Actions</CardTitle>
+                    <CardTitle>Roles & Permissions</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start" disabled><Edit className="mr-2 h-4 w-4"/>Edit Role (Soon)</Button>
-                    <Button variant="outline" className="w-full justify-start" disabled><KeyRound className="mr-2 h-4 w-4"/>Reset Password (Soon)</Button>
-                    <Button variant={staff.status === 'Active' ? 'destructive' : 'default'} className="w-full justify-start" disabled>
-                        {staff.status === 'Active' ? <Activity className="mr-2 h-4 w-4"/> : <Activity className="mr-2 h-4 w-4"/>}
-                        {staff.status === 'Active' ? 'Suspend Account (Soon)' : 'Activate Account (Soon)'}
-                    </Button>
+                <CardContent className="space-y-4">
+                     <div>
+                        <Label htmlFor="role-select">Change Role</Label>
+                        <Select value={selectedRole} onValueChange={(value: StaffRole) => setSelectedRole(value)}>
+                            <SelectTrigger id="role-select">
+                                <SelectValue placeholder="Select a role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {Object.keys(rolesAndPermissions).map(role => (
+                                    <SelectItem key={role} value={role}>{role}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                     </div>
+                     <div>
+                        <Label>Permissions for "{selectedRole}"</Label>
+                        <ul className="text-xs space-y-2 mt-2 text-muted-foreground list-disc list-inside bg-muted p-3 rounded-md">
+                            {permissionsForSelectedRole.map(perm => <li key={perm}>{perm}</li>)}
+                        </ul>
+                     </div>
+                      <Button onClick={handleUpdateRole} disabled={isUpdatingRole || selectedRole === staff.role} className="w-full">
+                        {isUpdatingRole ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ShieldCheck className="mr-2 h-4 w-4"/>}
+                        {isUpdatingRole ? 'Updating...' : 'Update Role'}
+                      </Button>
                 </CardContent>
             </Card>
-             <Card className="shadow-lg">
+            <Card className="shadow-lg">
                 <CardHeader>
                     <CardTitle>Admin Notes</CardTitle>
                 </CardHeader>
