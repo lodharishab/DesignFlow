@@ -24,7 +24,9 @@ import {
     ChevronUp, 
     ChevronDown, 
     AlertTriangle, 
-    Send 
+    Send,
+    Hourglass, // For Escrow
+    CircleArrowOutUpRight // For Advances
 } from "lucide-react";
 import { format } from 'date-fns';
 import Link from 'next/link';
@@ -152,8 +154,17 @@ export default function AdminPaymentsPage(): ReactElement {
   };
 
    const totalRevenue = mockTransactions.filter(t => t.type === 'Sale' && (t.status === 'Completed' || t.status === 'On Hold')).reduce((acc, t) => acc + t.amount, 0);
-   const platformFees = mockTransactions.filter(t => t.type === 'Fee' && t.status === 'Completed').reduce((acc, t) => acc + Math.abs(t.amount), 0);
-   const payouts = mockTransactions.filter(t => t.type === 'Payout' && t.status === 'Completed').reduce((acc, t) => acc + Math.abs(t.amount), 0);
+   const pendingInEscrow = mockTransactions.filter(t => t.type === 'Sale' && t.status === 'On Hold').reduce((acc, t) => acc + t.amount, 0);
+   const releasedPayments = mockTransactions.filter(t => t.type === 'Payout' && t.status === 'Completed').reduce((acc, t) => acc + Math.abs(t.amount), 0);
+   const advancesGiven = 0; // Placeholder for now
+
+   const statCards = [
+     { title: "Total Revenue", value: totalRevenue, icon: IndianRupee, trend: "+10.2%" },
+     { title: "Pending in Escrow", value: pendingInEscrow, icon: Hourglass, trend: "-1.5%" },
+     { title: "Released Payments", value: releasedPayments, icon: ArrowUp, trend: "+8.0%" },
+     { title: "Advances Given", value: advancesGiven, icon: CircleArrowOutUpRight, trend: "0%" },
+   ];
+
 
   return (
     <TooltipProvider>
@@ -163,10 +174,19 @@ export default function AdminPaymentsPage(): ReactElement {
         Payments & Revenue
       </h1>
       
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="shadow-md"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Gross Revenue</CardTitle><IndianRupee className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">₹{totalRevenue.toLocaleString('en-IN')}</div><p className="text-xs text-muted-foreground">+10.2% from last month</p></CardContent></Card>
-        <Card className="shadow-md"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Platform Fees Collected</CardTitle><Banknote className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">₹{platformFees.toLocaleString('en-IN')}</div><p className="text-xs text-muted-foreground">Represents your platform's commission.</p></CardContent></Card>
-        <Card className="shadow-md"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Payouts to Designers</CardTitle><ArrowUp className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">₹{payouts.toLocaleString('en-IN')}</div><p className="text-xs text-muted-foreground">Total amount paid out to designers.</p></CardContent></Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {statCards.map(stat => (
+           <Card key={stat.title} className="shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">₹{stat.value.toLocaleString('en-IN')}</div>
+              <p className="text-xs text-muted-foreground">{stat.trend} from last month</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card className="shadow-lg">
@@ -236,3 +256,4 @@ export default function AdminPaymentsPage(): ReactElement {
     </TooltipProvider>
   );
 }
+
