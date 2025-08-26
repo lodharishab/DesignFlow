@@ -25,12 +25,19 @@ import {
     ChevronDown, 
     AlertTriangle, 
     Send,
-    Hourglass, // For Escrow
-    CircleArrowOutUpRight // For Advances
+    Hourglass, 
+    CircleArrowOutUpRight,
+    Eye,
+    ReceiptText,
+    History,
+    MoreHorizontal,
+    X,
 } from "lucide-react";
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 
 type TransactionStatus = 'Completed' | 'Pending' | 'Failed' | 'Refunded' | 'On Hold';
 type TransactionType = 'Sale' | 'Payout' | 'Refund' | 'Fee';
@@ -47,6 +54,7 @@ interface Transaction {
   designerName?: string;
 }
 
+// Mock data now includes related transactions to better simulate a ledger
 const mockTransactions: Transaction[] = [
   { id: 'txn_Olcftg87sHjkl', orderId: 'ORD7361P', date: new Date(2024, 6, 1), type: 'Sale', status: 'On Hold', amount: 24999, paymentMethod: 'Razorpay', clientName: 'Priya Sharma', designerName: 'Rohan Kapoor' },
   { id: 'txn_HghtrDEWAq789', orderId: 'ORD1038K', date: new Date(2024, 6, 5), type: 'Sale', status: 'On Hold', amount: 7999, paymentMethod: 'PhonePe', clientName: 'Rajesh Kumar', designerName: 'Priya Sharma' },
@@ -64,8 +72,94 @@ const mockTransactions: Transaction[] = [
 
 type SortableKeys = 'id' | 'date' | 'type' | 'status' | 'clientName' | 'amount';
 
+
+// Detail Modal Component
+function TransactionDetailModal({ transaction, ledger, escrowBalance, onAction }: { transaction: Transaction; ledger: Transaction[]; escrowBalance: number, onAction: (action: string) => void; }) {
+  return (
+    <DialogContent className="max-w-2xl">
+      <DialogHeader>
+        <DialogTitle className="font-headline text-2xl flex items-center">
+          <ReceiptText className="mr-3 h-6 w-6 text-primary" />
+          Transaction Details
+        </DialogTitle>
+        <DialogDescription>
+          Overview for Transaction ID: {transaction.id}
+        </DialogDescription>
+      </DialogHeader>
+      <div className="space-y-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div><span className="font-semibold">Order ID:</span> <Link href={`/admin/orders/details/${transaction.orderId}`} className="text-primary hover:underline">{transaction.orderId}</Link></div>
+          <div><span className="font-semibold">Client:</span> {transaction.clientName}</div>
+          <div><span className="font-semibold">Designer:</span> {transaction.designerName || 'N/A'}</div>
+          <div><span className="font-semibold">Date:</span> {format(transaction.date, 'PPpp')}</div>
+        </div>
+
+        <Separator />
+        
+        <div className="grid grid-cols-2 gap-4">
+            <Card className="bg-secondary/50">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-semibold flex items-center"><IndianRupee className="mr-2 h-4 w-4"/>Order Total</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-2xl font-bold">₹{Math.abs(ledger.find(t => t.type === 'Sale')?.amount || 0).toLocaleString('en-IN')}</p>
+                </CardContent>
+            </Card>
+             <Card className="bg-secondary/50">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-semibold flex items-center"><Hourglass className="mr-2 h-4 w-4"/>Escrow Balance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-2xl font-bold">₹{escrowBalance.toLocaleString('en-IN')}</p>
+                </CardContent>
+            </Card>
+        </div>
+
+        <Separator />
+
+        <div>
+            <h3 className="font-semibold text-lg mb-2 flex items-center"><History className="mr-2 h-5 w-5"/>Ledger History</h3>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {ledger.map(item => (
+                        <TableRow key={item.id}>
+                            <TableCell className="text-xs">{format(item.date, 'MMM d, yyyy')}</TableCell>
+                            <TableCell><Badge variant={item.type === 'Sale' ? 'default' : 'secondary'} className="capitalize">{item.type}</Badge></TableCell>
+                            <TableCell><Badge variant={item.status === 'Completed' ? 'default' : 'outline'} className="capitalize">{item.status}</Badge></TableCell>
+                            <TableCell className={`text-right font-medium ${item.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {item.amount > 0 ? '+' : ''}₹{Math.abs(item.amount).toLocaleString('en-IN')}
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+      </div>
+      <DialogFooter className="border-t pt-4 flex flex-wrap justify-end gap-2">
+         <DialogClose asChild>
+          <Button variant="outline"><X className="mr-2 h-4 w-4" />Close</Button>
+        </DialogClose>
+        <Button variant="outline" onClick={() => onAction('hold')} disabled><Hourglass className="mr-2 h-4 w-4"/>Place On Hold (Soon)</Button>
+        <Button variant="outline" onClick={() => onAction('advance')} disabled><CircleArrowOutUpRight className="mr-2 h-4 w-4"/>Give Advance (Soon)</Button>
+        <Button onClick={() => onAction('refund')} variant="destructive"><AlertTriangle className="mr-2 h-4 w-4"/>Issue Full Refund</Button>
+        <Button onClick={() => onAction('payout')}><Send className="mr-2 h-4 w-4"/>Release Payout</Button>
+      </DialogFooter>
+    </DialogContent>
+  )
+}
+
+
 export default function AdminPaymentsPage(): ReactElement {
   const { toast } = useToast();
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   
   const [filters, setFilters] = useState({
     transactionId: '',
@@ -127,20 +221,22 @@ export default function AdminPaymentsPage(): ReactElement {
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleReleasePayout = (txn: Transaction) => {
-    toast({
-        title: "Payout Initiated (Simulated)",
-        description: `Payout of ₹${(txn.amount * 0.9).toLocaleString('en-IN')} (after 10% fee) to ${txn.designerName} for order ${txn.orderId}.`,
-    });
-  };
-
-  const handleRefundClient = (txn: Transaction) => {
-    toast({
-        title: "Refund Initiated (Simulated)",
-        description: `Full refund of ₹${txn.amount.toLocaleString('en-IN')} to ${txn.clientName} for order ${txn.orderId}.`,
-        variant: 'destructive'
-    });
-  };
+  const handleAction = (action: string) => {
+      if (!selectedTransaction) return;
+      if (action === 'payout') {
+          toast({
+            title: "Payout Initiated (Simulated)",
+            description: `Payout released for ${selectedTransaction.designerName} on order ${selectedTransaction.orderId}.`,
+        });
+      } else if (action === 'refund') {
+           toast({
+            title: "Refund Initiated (Simulated)",
+            description: `Full refund issued to ${selectedTransaction.clientName} for order ${selectedTransaction.orderId}.`,
+            variant: 'destructive'
+        });
+      }
+      setSelectedTransaction(null);
+  }
 
   const getStatusBadgeVariant = (status: TransactionStatus) => {
     switch (status) {
@@ -164,6 +260,15 @@ export default function AdminPaymentsPage(): ReactElement {
      { title: "Released Payments", value: releasedPayments, icon: ArrowUp, trend: "+8.0%" },
      { title: "Advances Given", value: advancesGiven, icon: CircleArrowOutUpRight, trend: "0%" },
    ];
+  
+   const selectedLedger = useMemo(() => {
+     if (!selectedTransaction) return [];
+     return mockTransactions.filter(t => t.orderId === selectedTransaction.orderId).sort((a,b) => b.date.getTime() - a.date.getTime());
+   }, [selectedTransaction]);
+   
+   const selectedEscrowBalance = useMemo(() => {
+     return selectedLedger.reduce((acc, curr) => acc + curr.amount, 0);
+   }, [selectedLedger])
 
 
   return (
@@ -223,28 +328,21 @@ export default function AdminPaymentsPage(): ReactElement {
                   <TableCell><div className="text-xs space-y-0.5"><p className="flex items-center"><User className="mr-1.5 h-3 w-3"/>Client: {txn.clientName}</p>{txn.designerName && <p className="flex items-center text-muted-foreground"><User className="mr-1.5 h-3 w-3"/>Designer: {txn.designerName}</p>}</div></TableCell>
                   <TableCell className={`text-right font-medium ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>{txn.amount > 0 ? '+' : ''}₹{Math.abs(txn.amount).toLocaleString('en-IN')}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end items-center gap-1">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:text-green-700" onClick={() => handleReleasePayout(txn)}>
-                            <Send className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Release Payout to Designer</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleRefundClient(txn)}>
-                            <AlertTriangle className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Refund to Client</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
+                     <Dialog>
+                        <DialogTrigger asChild>
+                             <Button variant="outline" size="sm" onClick={() => setSelectedTransaction(txn)}>
+                                <Eye className="mr-2 h-4 w-4" /> Details
+                             </Button>
+                        </DialogTrigger>
+                        {selectedTransaction?.id === txn.id && (
+                            <TransactionDetailModal 
+                                transaction={selectedTransaction} 
+                                ledger={selectedLedger} 
+                                escrowBalance={selectedEscrowBalance} 
+                                onAction={handleAction}
+                            />
+                        )}
+                    </Dialog>
                   </TableCell>
                 </TableRow>
               ))}
@@ -257,3 +355,4 @@ export default function AdminPaymentsPage(): ReactElement {
   );
 }
 
+    
