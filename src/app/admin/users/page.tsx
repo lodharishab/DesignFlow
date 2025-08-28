@@ -358,7 +358,7 @@ export default function UserManagementPage(): ReactElement {
 
   const getUserViewUrl = (user: User) => {
     if (user.roles.includes('Designer')) {
-        return `/admin/designers/edit/${user.id}`; // Re-route designer view to edit
+        return `/admin/designers/view/${user.id}`;
     }
     // Default view page for clients, admins, guests
     return `/admin/users/view/${user.id}`;

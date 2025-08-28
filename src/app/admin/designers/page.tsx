@@ -31,7 +31,8 @@ import {
     CheckCircle2,
     AlertOctagon,
     Clock3,
-    TrendingUp // For Profile Readiness
+    TrendingUp, // For Profile Readiness
+    Eye
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
@@ -333,6 +334,11 @@ export default function AdminDesignersPage(): ReactElement {
                         <CheckCircle className="mr-1 h-3 w-3" /> Reactivate
                       </Button>
                     )}
+                     <Button variant="outline" size="icon" asChild className="hover:text-primary">
+                       <Link href={`/admin/designers/view/${designer.id}`} aria-label={`View ${designer.name}`}>
+                        <Eye className="h-4 w-4" />
+                      </Link>
+                    </Button>
                     <Button variant="outline" size="icon" asChild className="hover:text-primary">
                        <Link href={`/admin/designers/edit/${designer.id}`} aria-label={`Edit ${designer.name}`}>
                         <Edit3 className="h-4 w-4" />
