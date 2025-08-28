@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock } from 'lucide-react';
+import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DesignerDashboardPage() {
@@ -17,9 +17,36 @@ export default function DesignerDashboardPage() {
     color: 'text-green-500'
   };
 
+  const designerStats = [
+    { title: 'Total Orders', value: '12', icon: Briefcase, href: '/designer/orders', color: 'text-blue-500' },
+    { title: 'Completed Orders', value: '8', icon: CheckCircle, href: '/designer/orders', color: 'text-green-500' },
+    { title: 'Pending Orders', value: '4', icon: Clock, href: '/designer/orders', color: 'text-orange-500' },
+    { title: 'Total Earnings', value: '₹85,500', icon: IndianRupee, href: '#', color: 'text-purple-500' },
+    { title: 'Advance Requests', value: '1', icon: HandCoins, href: '#', color: 'text-yellow-500' },
+    { title: 'Portfolio Views', value: '1,204', icon: Eye, href: '/designer/portfolio', color: 'text-pink-500' },
+  ];
+
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold font-headline">Designer Dashboard</h1>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {designerStats.map(stat => (
+          <Link key={stat.title} href={stat.href}>
+            <Card className="shadow-lg hover:shadow-xl hover:border-primary/20 transition-all cursor-pointer">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground">View Details</p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="shadow-lg">
