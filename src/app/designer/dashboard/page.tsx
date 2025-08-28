@@ -1,13 +1,24 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye } from 'lucide-react';
+import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye, MessageSquare, Upload, PackageSearch } from 'lucide-react';
 import Link from 'next/link';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 export default function DesignerDashboardPage() {
   const assignedOrders = [
     { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', client: 'Priya S.', dueDate: 'July 25, 2024' },
     { id: 'ORD4011M', serviceName: 'Mobile App Icon Set', client: 'Mohan D.', dueDate: 'July 15, 2024' },
+  ];
+
+  const recentActiveOrders = [
+    { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', client: 'Priya S.', deadline: 'July 25, 2024', status: 'In Progress', progress: 60 },
+    { id: 'ORD4011M', serviceName: 'Mobile App Icon Set', client: 'Mohan D.', deadline: 'July 15, 2024', status: 'In Progress', progress: 25 },
+    { id: 'ORDABCDE', serviceName: 'Festival Social Media Posts', client: 'Ritu G.', deadline: 'July 18, 2024', status: 'Awaiting Client Review', progress: 90 },
+    { id: 'ORDFGHIJ', serviceName: 'Brochure for Print', client: 'Anil K.', deadline: 'July 22, 2024', status: 'In Progress', progress: 40 },
+    { id: 'ORDKLMNO', serviceName: 'Pitch Deck Presentation', client: 'Sunita M.', deadline: 'July 30, 2024', status: 'In Progress', progress: 10 },
   ];
 
   const applicationStatus = {
@@ -25,6 +36,15 @@ export default function DesignerDashboardPage() {
     { title: 'Advance Requests', value: '1', icon: HandCoins, href: '/designer/advances', color: 'text-yellow-500' },
     { title: 'Portfolio Views', value: '1,204', icon: Eye, href: '/designer/portfolio?view=analytics', color: 'text-pink-500' },
   ];
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'In Progress': return 'secondary';
+      case 'Awaiting Client Review': return 'outline';
+      default: return 'default';
+    }
+  };
+
 
   return (
     <div className="space-y-8">
@@ -47,44 +67,63 @@ export default function DesignerDashboardPage() {
           </Link>
         ))}
       </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="font-headline flex items-center">
-              <Briefcase className="mr-3 h-6 w-6 text-primary" />
-              Assigned Orders
-            </CardTitle>
-            <CardDescription>Manage your current design projects.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {assignedOrders.length > 0 ? (
-              <ul className="space-y-4">
-                {assignedOrders.map(order => (
-                  <li key={order.id} className="p-4 border rounded-lg bg-secondary/30">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-semibold">{order.serviceName}</h3>
-                        <p className="text-sm text-muted-foreground">Client: {order.client} | Due: {order.dueDate}</p>
+      
+      {/* Recent Active Orders Section */}
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="font-headline flex items-center">
+            <Briefcase className="mr-3 h-6 w-6 text-primary" />
+            Recent Active Orders
+          </CardTitle>
+          <CardDescription>An overview of your 5 most recent active projects.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {recentActiveOrders.length > 0 ? (
+            <div className="space-y-4">
+              {recentActiveOrders.map((order, index) => (
+                <React.Fragment key={order.id}>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex-grow space-y-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <Link href={`/designer/orders/${order.id}`} className="hover:underline">
+                            <h3 className="font-semibold text-md">{order.serviceName}</h3>
+                          </Link>
+                          <p className="text-sm text-muted-foreground">Client: {order.client} | Due: {order.deadline}</p>
+                        </div>
+                        <Badge variant={getStatusBadgeVariant(order.status)} className="whitespace-nowrap sm:hidden">{order.status}</Badge>
                       </div>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/designer/orders/${order.id}`}>Manage Order</Link>
-                      </Button>
+                      <div className="flex items-center gap-3">
+                        <Progress value={order.progress} className="h-2 w-full sm:w-1/2" />
+                        <span className="text-xs font-medium text-muted-foreground">{order.progress}%</span>
+                        <Badge variant={getStatusBadgeVariant(order.status)} className="whitespace-nowrap hidden sm:flex">{order.status}</Badge>
+                      </div>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-muted-foreground">You have no assigned orders.</p>
-            )}
-             <Button className="mt-6 w-full" asChild>
+                    <div className="flex gap-2 shrink-0 self-end sm:self-center">
+                      <Button variant="outline" size="sm"><Eye className="mr-1.5 h-4 w-4"/> View Order</Button>
+                      <Button variant="outline" size="sm"><MessageSquare className="mr-1.5 h-4 w-4"/> Message</Button>
+                      <Button variant="default" size="sm"><Upload className="mr-1.5 h-4 w-4"/> Upload</Button>
+                    </div>
+                  </div>
+                  {index < recentActiveOrders.length - 1 && <Separator />}
+                </React.Fragment>
+              ))}
+            </div>
+          ) : (
+             <div className="text-center py-8">
+                <PackageSearch className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-2" />
+                <p className="text-muted-foreground">You have no active orders at the moment.</p>
+              </div>
+          )}
+           <Button className="mt-6 w-full" asChild>
               <Link href="/designer/orders">
-                View All Orders <ArrowRight className="ml-2 h-4 w-4" />
+                View All My Orders <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-          </CardContent>
-        </Card>
+        </CardContent>
+      </Card>
 
+      <div className="grid gap-6 md:grid-cols-2">
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="font-headline flex items-center">
@@ -108,17 +147,16 @@ export default function DesignerDashboardPage() {
             </Button>
           </CardContent>
         </Card>
-      </div>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="font-headline flex items-center">
-            <Palette className="mr-3 h-6 w-6 text-primary" />
-            Your Portfolio
-          </CardTitle>
-          <CardDescription>Showcase your best work to attract clients and get approved for more services.</CardDescription>
-        </CardHeader>
-        <CardContent className="text-center">
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="font-headline flex items-center">
+              <Palette className="mr-3 h-6 w-6 text-primary" />
+              Your Portfolio
+            </CardTitle>
+            <CardDescription>Showcase your best work to attract clients and get approved for more services.</CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
             <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-4" data-ai-hint="indian art portfolio">
                 <Palette className="w-16 h-16 text-muted-foreground opacity-50" />
              </div>
