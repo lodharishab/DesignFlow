@@ -1,4 +1,6 @@
 
+"use client";
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye, MessageSquare, Upload, PackageSearch } from 'lucide-react';
@@ -6,6 +8,7 @@ import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import React from 'react';
 
 export default function DesignerDashboardPage() {
   const assignedOrders = [
@@ -23,8 +26,8 @@ export default function DesignerDashboardPage() {
 
   const applicationStatus = {
     serviceName: 'UI/UX Web Design (India)',
-    status: 'Approved', 
-    icon: CheckCircle, 
+    status: 'Approved',
+    icon: CheckCircle,
     color: 'text-green-500'
   };
 
@@ -67,7 +70,7 @@ export default function DesignerDashboardPage() {
           </Link>
         ))}
       </div>
-      
+
       {/* Recent Active Orders Section */}
       <Card className="shadow-lg">
         <CardHeader>
