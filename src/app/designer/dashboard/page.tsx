@@ -11,11 +11,6 @@ import { Separator } from '@/components/ui/separator';
 import React from 'react';
 
 export default function DesignerDashboardPage() {
-  const assignedOrders = [
-    { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', client: 'Priya S.', dueDate: 'July 25, 2024' },
-    { id: 'ORD4011M', serviceName: 'Mobile App Icon Set', client: 'Mohan D.', dueDate: 'July 15, 2024' },
-  ];
-
   const recentActiveOrders = [
     { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', client: 'Priya S.', deadline: 'July 25, 2024', status: 'In Progress', progress: 60 },
     { id: 'ORD4011M', serviceName: 'Mobile App Icon Set', client: 'Mohan D.', deadline: 'July 15, 2024', status: 'In Progress', progress: 25 },
@@ -47,7 +42,6 @@ export default function DesignerDashboardPage() {
       default: return 'default';
     }
   };
-
 
   return (
     <div className="space-y-8">
