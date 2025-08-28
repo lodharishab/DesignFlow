@@ -97,7 +97,7 @@ const navItems = [
     children: [
       { href: '/admin/users', icon: UsersRound, label: 'All Users' },
       { href: '/admin/users/clients', icon: UserIcon, label: 'Clients' },
-      { href: '/admin/users/designers', icon: Users, label: 'Designers' },
+      { href: '/admin/designers', icon: Users, label: 'Designers' },
       { href: '/admin/users/staff', icon: UserCog, label: 'Staff & Members' },
       { href: '/admin/users/staff/activity-logs', icon: History, label: 'Staff Activity Logs' },
     ]
@@ -150,7 +150,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
     navItems.forEach(item => {
       if (item.children && item.pathPrefix) {
         // Use a regex to check if the pathname starts with any of the specified paths
-        const pathRegex = new RegExp(`^(${item.pathPrefix})`);
+        const pathRegex = new RegExp(`^(${item.pathPrefix}|/admin/designers)`);
         if (pathRegex.test(pathname)) {
           initiallyOpen[item.label] = true;
         } else if (item.children.some(child => pathname.startsWith(child.href))) {
