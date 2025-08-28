@@ -19,11 +19,11 @@ export default function DesignerDashboardPage() {
 
   const designerStats = [
     { title: 'Total Orders', value: '12', icon: Briefcase, href: '/designer/orders', color: 'text-blue-500' },
-    { title: 'Completed Orders', value: '8', icon: CheckCircle, href: '/designer/orders', color: 'text-green-500' },
-    { title: 'Pending Orders', value: '4', icon: Clock, href: '/designer/orders', color: 'text-orange-500' },
-    { title: 'Total Earnings', value: '₹85,500', icon: IndianRupee, href: '#', color: 'text-purple-500' },
-    { title: 'Advance Requests', value: '1', icon: HandCoins, href: '#', color: 'text-yellow-500' },
-    { title: 'Portfolio Views', value: '1,204', icon: Eye, href: '/designer/portfolio', color: 'text-pink-500' },
+    { title: 'Completed Orders', value: '8', icon: CheckCircle, href: '/designer/orders?status=Completed', color: 'text-green-500' },
+    { title: 'Pending Orders', value: '4', icon: Clock, href: '/designer/orders?status=In Progress', color: 'text-orange-500' },
+    { title: 'Total Earnings', value: '₹85,500', icon: IndianRupee, href: '/designer/earnings', color: 'text-purple-500' },
+    { title: 'Advance Requests', value: '1', icon: HandCoins, href: '/designer/advances', color: 'text-yellow-500' },
+    { title: 'Portfolio Views', value: '1,204', icon: Eye, href: '/designer/portfolio?view=analytics', color: 'text-pink-500' },
   ];
 
   return (
