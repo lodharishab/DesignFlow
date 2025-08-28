@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === 'development') {
 
 export async function connectToDatabase(): Promise<{ client: MongoClient; db: Db }> {
   // If the DB is not enabled, throw an error to prevent connection attempts.
-  if (!isDbEnabled()) {
+  if (!isDbEnabled() || !MONGODB_URI) {
     throw new Error('Database is not enabled. Check MONGODB_URI.');
   }
 
@@ -52,7 +52,7 @@ export async function connectToDatabase(): Promise<{ client: MongoClient; db: Db
     }
   }
 
-  const client = new MongoClient(MONGODB_URI!, { // Non-null assertion is safe here due to isDbEnabled check
+  const client = new MongoClient(MONGODB_URI, {
     serverApi: {
       version: ServerApiVersion.v1,
       strict: true,
