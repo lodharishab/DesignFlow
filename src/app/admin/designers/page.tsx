@@ -64,6 +64,7 @@ interface Designer {
 }
 
 const initialDesignersData: Designer[] = [
+  { id: 'des_new_app', name: 'New Applicant', email: 'new.designer@example.com', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'person silhouette', status: 'Pending Approval', joinDate: new Date(), servicesApproved: 0, portfolioLink: 'https://example.com/newportfolio', profileCompletenessScore: 50 },
   { id: 'des001', name: 'Priya Sharma', email: 'priya.sharma@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman designer', status: 'Active', joinDate: new Date(2023, 5, 15), servicesApproved: 7, portfolioLink: 'https://example.com/priyasharma', profileCompletenessScore: 95 },
   { id: 'des002', name: 'Rohan Kapoor', email: 'rohan.kapoor@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man architect', status: 'Pending Approval', joinDate: new Date(2023, 8, 20), servicesApproved: 0, portfolioLink: 'https://example.com/rohankapoor', profileCompletenessScore: 60 },
   { id: 'des003', name: 'Aisha Khan', email: 'aisha.khan@example.in', avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman creative', status: 'Active', joinDate: new Date(2022, 11, 1), servicesApproved: 10, profileCompletenessScore: 88 },
