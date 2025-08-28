@@ -3,6 +3,7 @@
 import { Collection, ObjectId } from 'mongodb';
 import { connectToDatabase, isDbEnabled } from './mongodb';
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
+import { allPortfolioItemsData } from '@/app/portfolio/page'; // Import mock data
 
 // Type for database interaction, ensuring designerId is present and _id might not be (on creation)
 export interface PortfolioItemRecord extends Omit<PortfolioItem, '_id' | 'id'> {
@@ -26,9 +27,9 @@ async function getPortfolioCollection(): Promise<Collection<PortfolioItemRecord>
 export async function getPortfolioItemsByDesignerId(designerId: string): Promise<PortfolioItem[]> {
   const collection = await getPortfolioCollection();
   if (!collection) {
-      // In a real app, you might have mock data here as a fallback
-      console.log("DB not enabled. Returning empty array for getPortfolioItemsByDesignerId.");
-      return [];
+      console.log("DB not enabled. Returning mock portfolio items for designer.");
+      // Fallback to mock data if DB is not available
+      return allPortfolioItemsData.filter(item => item.designer?.id === designerId);
   }
   try {
     const items = await collection.find({ designerId }).sort({ projectDate: -1 }).toArray();
@@ -46,8 +47,8 @@ export async function getPortfolioItemsByDesignerId(designerId: string): Promise
 export async function getPortfolioItemById(itemId: string): Promise<PortfolioItem | null> {
     const collection = await getPortfolioCollection();
     if (!collection) {
-      console.log("DB not enabled. Returning null for getPortfolioItemById.");
-      return null;
+      console.log("DB not enabled. Searching mock portfolio items.");
+      return allPortfolioItemsData.find(item => item.id === itemId) || null;
     }
   try {
     // Assuming 'id' is the unique slug. If using MongoDB's _id, adjust query.
