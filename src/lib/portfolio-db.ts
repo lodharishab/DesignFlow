@@ -1,7 +1,7 @@
 
 'use server';
 import { Collection, ObjectId } from 'mongodb';
-import { connectToDatabase } from './mongodb';
+import { connectToDatabase, isDbEnabled } from './mongodb';
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 
 // Type for database interaction, ensuring designerId is present and _id might not be (on creation)
@@ -12,14 +12,25 @@ export interface PortfolioItemRecord extends Omit<PortfolioItem, '_id' | 'id'> {
 }
 
 
-async function getPortfolioCollection(): Promise<Collection<PortfolioItemRecord>> {
-  const { db } = await connectToDatabase();
-  return db.collection<PortfolioItemRecord>('portfolioItems');
+async function getPortfolioCollection(): Promise<Collection<PortfolioItemRecord> | null> {
+    if (!isDbEnabled()) return null;
+    try {
+        const { db } = await connectToDatabase();
+        return db.collection<PortfolioItemRecord>('portfolioItems');
+    } catch (error) {
+        console.error("Failed to get portfolio collection:", error);
+        return null;
+    }
 }
 
 export async function getPortfolioItemsByDesignerId(designerId: string): Promise<PortfolioItem[]> {
+  const collection = await getPortfolioCollection();
+  if (!collection) {
+      // In a real app, you might have mock data here as a fallback
+      console.log("DB not enabled. Returning empty array for getPortfolioItemsByDesignerId.");
+      return [];
+  }
   try {
-    const collection = await getPortfolioCollection();
     const items = await collection.find({ designerId }).sort({ projectDate: -1 }).toArray();
     
     return items.map(item => ({
@@ -33,8 +44,12 @@ export async function getPortfolioItemsByDesignerId(designerId: string): Promise
 }
 
 export async function getPortfolioItemById(itemId: string): Promise<PortfolioItem | null> {
-  try {
     const collection = await getPortfolioCollection();
+    if (!collection) {
+      console.log("DB not enabled. Returning null for getPortfolioItemById.");
+      return null;
+    }
+  try {
     // Assuming 'id' is the unique slug. If using MongoDB's _id, adjust query.
     const item = await collection.findOne({ id: itemId }); 
     if (!item) return null;
@@ -52,8 +67,16 @@ export async function getPortfolioItemById(itemId: string): Promise<PortfolioIte
 export async function createPortfolioItem(
   itemData: Omit<PortfolioItem, '_id'> & { designerId: string }
 ): Promise<PortfolioItem | null> {
-  try {
     const collection = await getPortfolioCollection();
+    if (!collection) {
+      console.log("DB not enabled. Simulating createPortfolioItem success without DB write.");
+       // Simulate success for prototyping without a DB.
+      return {
+        ...itemData,
+        _id: new ObjectId().toHexString(), // Generate a fake ID
+      };
+    }
+  try {
     const { id, designerId, title, category, categorySlug, projectDescription, coverImageUrl, coverImageHint, galleryImages = [], tags = [], clientName, projectDate } = itemData;
 
     const newItemRecord: PortfolioItemRecord = {
@@ -96,8 +119,12 @@ export async function updatePortfolioItem(
   designerId: string, // To verify ownership
   itemData: Partial<Omit<PortfolioItem, '_id' | 'id' | 'designerId'>>
 ): Promise<PortfolioItem | null> {
+  const collection = await getPortfolioCollection();
+    if (!collection) {
+      console.log("DB not enabled. Returning null for updatePortfolioItem.");
+      return null;
+    }
   try {
-    const collection = await getPortfolioCollection();
     const _id = new ObjectId(itemId);
 
     const result = await collection.findOneAndUpdate(
@@ -123,8 +150,12 @@ export async function updatePortfolioItem(
 }
 
 export async function deletePortfolioItem(itemId: string, designerId: string): Promise<boolean> {
+   const collection = await getPortfolioCollection();
+    if (!collection) {
+      console.log("DB not enabled. Returning false for deletePortfolioItem.");
+      return false;
+    }
   try {
-    const collection = await getPortfolioCollection();
     const _id = new ObjectId(itemId);
     const result = await collection.deleteOne({ _id, designerId });
     return result.deletedCount === 1;

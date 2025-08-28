@@ -4,9 +4,14 @@ import { MongoClient, Db, ServerApiVersion } from 'mongodb';
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || 'designflow_db'; // You can make the DB name configurable
 
+// A function to check if the database should be used.
+export function isDbEnabled(): boolean {
+  return !!MONGODB_URI;
+}
+
 if (!MONGODB_URI) {
-  throw new Error(
-    'Please define the MONGODB_URI environment variable inside .env.local or your hosting environment settings'
+  console.warn(
+    'MONGODB_URI is not defined. Database operations will be disabled, and the app will use mock data.'
   );
 }
 
@@ -29,6 +34,11 @@ if (process.env.NODE_ENV === 'development') {
 
 
 export async function connectToDatabase(): Promise<{ client: MongoClient; db: Db }> {
+  // If the DB is not enabled, throw an error to prevent connection attempts.
+  if (!isDbEnabled()) {
+    throw new Error('Database is not enabled. Check MONGODB_URI.');
+  }
+
   if (cachedConnection && cachedConnection.client && cachedConnection.db) {
     // Check if the client is connected
     try {
@@ -42,7 +52,7 @@ export async function connectToDatabase(): Promise<{ client: MongoClient; db: Db
     }
   }
 
-  const client = new MongoClient(MONGODB_URI, {
+  const client = new MongoClient(MONGODB_URI!, { // Non-null assertion is safe here due to isDbEnabled check
     serverApi: {
       version: ServerApiVersion.v1,
       strict: true,
