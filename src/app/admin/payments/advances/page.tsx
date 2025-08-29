@@ -11,12 +11,15 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
+import { initialOrdersData, type Order, type PaymentTransaction } from '@/components/admin/orders/orders-table-view';
 
 type AdvanceRequestStatus = 'Pending' | 'Approved' | 'Rejected';
 interface AdvanceRequest {
   id: string;
   designerName: string;
   designerId: string;
+  orderId: string; // Link to an order
+  milestoneId: string; // Link to a specific milestone
   amount: number;
   reason: string;
   status: AdvanceRequestStatus;
@@ -24,9 +27,9 @@ interface AdvanceRequest {
 }
 
 const mockAdvanceRequests: AdvanceRequest[] = [
-  { id: 'ADV001', designerName: 'Rohan Kapoor', designerId: 'des002', amount: 5000, reason: 'Software subscription renewal (Adobe CC)', status: 'Pending', requestDate: new Date(2024, 6, 19) },
-  { id: 'ADV002', designerName: 'Aisha Khan', designerId: 'des003', amount: 10000, reason: 'Hardware upgrade - Graphics tablet', status: 'Approved', requestDate: new Date(2024, 6, 15) },
-  { id: 'ADV003', designerName: 'Vikram Singh', designerId: 'des004', amount: 3000, reason: 'Marketing materials for personal brand', status: 'Rejected', requestDate: new Date(2024, 6, 12) },
+  { id: 'ADV001', designerName: 'Rohan Kapoor', designerId: 'des002', orderId: 'ORD7361P', milestoneId: 'm2_7361p', amount: 5000, reason: 'Software subscription renewal (Adobe CC)', status: 'Pending', requestDate: new Date(2024, 6, 19) },
+  { id: 'ADV002', designerName: 'Aisha Khan', designerId: 'des003', orderId: 'ORDXXXX2', milestoneId: 'm1_xxxx2', amount: 10000, reason: 'Hardware upgrade - Graphics tablet', status: 'Approved', requestDate: new Date(2024, 6, 15) },
+  { id: 'ADV003', designerName: 'Vikram Singh', designerId: 'des004', orderId: 'ORD6531A', milestoneId: 'm1_6531a', amount: 3000, reason: 'Marketing materials for personal brand', status: 'Rejected', requestDate: new Date(2024, 6, 12) },
 ];
 
 
@@ -34,14 +37,55 @@ export default function AdminAdvanceRequestsPage(): ReactElement {
     const { toast } = useToast();
     const router = useRouter();
     const [advanceRequests, setAdvanceRequests] = useState<AdvanceRequest[]>(mockAdvanceRequests);
+    const [orders, setOrders] = useState<Order[]>(initialOrdersData);
 
     const handleAdvanceRequestStatusChange = (requestId: string, newStatus: AdvanceRequestStatus) => {
+        const request = advanceRequests.find(req => req.id === requestId);
+        if (!request) return;
+
+        // Update the request status
         setAdvanceRequests(prevRequests =>
-        prevRequests.map(req => (req.id === requestId ? { ...req, status: newStatus } : req))
+            prevRequests.map(req => (req.id === requestId ? { ...req, status: newStatus } : req))
         );
+
+        if (newStatus === 'Approved') {
+            // Find and update the corresponding order and milestone
+            const orderIndex = orders.findIndex(o => o.id === request.orderId);
+            if (orderIndex !== -1) {
+                const updatedOrders = [...orders];
+                const orderToUpdate = { ...updatedOrders[orderIndex] };
+
+                // Update milestone status
+                if (orderToUpdate.milestones) {
+                    const milestoneIndex = orderToUpdate.milestones.findIndex(m => m.id === request.milestoneId);
+                    if (milestoneIndex !== -1) {
+                        orderToUpdate.milestones[milestoneIndex].status = 'Paid';
+                    }
+                }
+                
+                // Add payment transaction record
+                const newPayment: PaymentTransaction = {
+                    id: `payout_${request.id}`,
+                    date: new Date(),
+                    type: 'Payout',
+                    status: 'Completed',
+                    amount: -request.amount, // Payouts are negative amounts
+                    description: `Advance approved: ${request.reason}`
+                };
+                
+                if (!orderToUpdate.payments) {
+                    orderToUpdate.payments = [];
+                }
+                orderToUpdate.payments.push(newPayment);
+
+                updatedOrders[orderIndex] = orderToUpdate;
+                setOrders(updatedOrders);
+            }
+        }
+
         toast({
-        title: `Request ${newStatus}`,
-        description: `Advance request ${requestId} has been ${newStatus.toLowerCase()}.`,
+            title: `Request ${newStatus}`,
+            description: `Advance request ${requestId} has been ${newStatus.toLowerCase()}.`,
         });
     };
 
@@ -77,6 +121,7 @@ export default function AdminAdvanceRequestsPage(): ReactElement {
                             <TableRow>
                                 <TableHead>Request ID</TableHead>
                                 <TableHead>Designer</TableHead>
+                                <TableHead>Related Order</TableHead>
                                 <TableHead className="text-right">Amount</TableHead>
                                 <TableHead>Reason</TableHead>
                                 <TableHead>Date</TableHead>
@@ -90,6 +135,9 @@ export default function AdminAdvanceRequestsPage(): ReactElement {
                                 <TableCell className="font-medium">{req.id}</TableCell>
                                 <TableCell>
                                 <Link href={`/admin/designers/edit/${req.designerId}`} className="font-medium text-primary hover:underline">{req.designerName}</Link>
+                                </TableCell>
+                                <TableCell>
+                                    <Link href={`/admin/orders/details/${req.orderId}`} className="text-xs text-primary hover:underline">{req.orderId}</Link>
                                 </TableCell>
                                 <TableCell className="text-right font-medium">₹{req.amount.toLocaleString('en-IN')}</TableCell>
                                 <TableCell className="text-xs text-muted-foreground" title={req.reason}>{req.reason}</TableCell>

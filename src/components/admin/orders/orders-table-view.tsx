@@ -50,6 +50,23 @@ export interface OrderEvent {
   notes?: string;
 }
 
+export interface Milestone {
+  id: string;
+  title: string;
+  dueDate: Date;
+  amount: number;
+  status: 'Pending' | 'Delivered' | 'Paid';
+}
+
+export interface PaymentTransaction {
+    id: string;
+    date: Date;
+    type: 'Sale' | 'Payout' | 'Refund' | 'Fee';
+    status: 'Completed' | 'Pending' | 'Failed';
+    amount: number;
+    description: string;
+}
+
 export interface Order {
   id: string;
   clientName: string;
@@ -76,6 +93,8 @@ export interface Order {
   revisionsUsed: number;
   privateNotes?: string;
   privateNotesLastEdited?: Date;
+  milestones?: Milestone[];
+  payments?: PaymentTransaction[];
 }
 
 export const initialOrdersData: Order[] = [
@@ -103,6 +122,15 @@ export const initialOrdersData: Order[] = [
     revisionsUsed: 0,
     privateNotes: "Client seems very particular about the color palette. Make sure to provide at least 5-6 strong options in the first review. Also, check out behance.net/some-inspiration for the style she likes.",
     privateNotesLastEdited: new Date(),
+    milestones: [
+        { id: 'm1_7361p', title: 'Phase 1: Wireframes & UX Flow', dueDate: new Date(2024, 6, 8), amount: 8000, status: 'Paid' },
+        { id: 'm2_7361p', title: 'Phase 2: UI Design & Style Guide', dueDate: new Date(2024, 6, 20), amount: 12000, status: 'Delivered' },
+        { id: 'm3_7361p', title: 'Phase 3: Final Assets & Prototype', dueDate: new Date(2024, 6, 28), amount: 4999, status: 'Pending' },
+    ],
+    payments: [
+        { id: 'pay_Olcftg87sHjkl', date: new Date(2024, 6, 1), type: 'Sale', status: 'Completed', amount: 24999, description: 'Initial order payment' },
+        { id: 'payout_m1_7361p', date: new Date(2024, 6, 9), type: 'Payout', status: 'Completed', amount: -8000, description: 'Milestone 1 Payout' }
+    ]
   },
   {
     id: 'ORD1038K',
