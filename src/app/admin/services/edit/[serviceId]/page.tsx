@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save, XCircle, Briefcase, IndianRupee, Tag, FileText, ClockIcon, ImageIcon, Lightbulb, Loader2, PlusCircle, Trash2, Tags, X } from 'lucide-react';
+import { Save, XCircle, Briefcase, IndianRupee, Tag, FileText, ClockIcon, ImageIcon, Lightbulb, Loader2, PlusCircle, Trash2, Tags, X, ListChecks } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
@@ -22,8 +22,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { cn } from '@/lib/utils';
 
 interface ServiceTierAdmin {
   id: string;
@@ -33,6 +33,11 @@ interface ServiceTierAdmin {
   deliveryTimeMin: number;
   deliveryTimeMax: number;
   deliveryTimeUnit: 'days' | 'business_days' | 'weeks';
+}
+
+interface ChecklistItem {
+  id: string;
+  text: string;
 }
 
 interface AdminServiceModified {
@@ -45,6 +50,7 @@ interface AdminServiceModified {
   imageAiHint?: string;
   tags?: string[];
   tiers: ServiceTierAdmin[];
+  checklist?: ChecklistItem[]; // New field
 }
 
 const initialServicesData: AdminServiceModified[] = [
@@ -61,6 +67,12 @@ const initialServicesData: AdminServiceModified[] = [
       { id: 'tier1_1', name: 'Basic', price: 99, description: '1 Initial concept, 2 Rounds of revisions, Basic vector files (SVG, PNG).', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' },
       { id: 'tier1_2', name: 'Standard', price: 199, description: '3 Initial concepts, 3 Rounds of revisions, Full vector files (AI, EPS, SVG, PNG, JPG), Basic brand guide (colors, fonts).', deliveryTimeMin: 5, deliveryTimeMax: 7, deliveryTimeUnit: 'days' },
       { id: 'tier1_3', name: 'Premium', price: 299, description: '5 Initial concepts, Unlimited revisions, Full vector & source files, Detailed brand guidelines, Social media kit.', deliveryTimeMin: 7, deliveryTimeMax: 10, deliveryTimeUnit: 'days' },
+    ],
+    checklist: [
+      { id: 'chk1_1', text: 'Initial Concepts Delivery' },
+      { id: 'chk1_2', text: 'Revision Round 1 Feedback' },
+      { id: 'chk1_3', text: 'Final Logo Delivery' },
+      { id: 'chk1_4', text: 'Brand Guidelines Delivery (for Premium)' },
     ]
   },
   { 
@@ -75,6 +87,11 @@ const initialServicesData: AdminServiceModified[] = [
     tiers: [
       { id: 'tier2_1', name: 'Starter Pack', price: 49, description: '5 social media posts, 1 Platform choice, 1 Round of revisions.', deliveryTimeMin: 2, deliveryTimeMax: 3, deliveryTimeUnit: 'days' },
       { id: 'tier2_2', name: 'Growth Pack', price: 99, description: '10 social media posts, Up to 2 platforms, 2 Rounds of revisions, Source files.', deliveryTimeMin: 3, deliveryTimeMax: 5, deliveryTimeUnit: 'days' },
+    ],
+    checklist: [
+        { id: 'chk2_1', text: 'Content Calendar Approval' },
+        { id: 'chk2_2', text: 'First Batch of Posts Delivery' },
+        { id: 'chk2_3', text: 'Final Posts Delivery' },
     ]
   },
   { 
@@ -169,6 +186,11 @@ export default function AdminEditServicePage(): ReactElement {
   // Tags management
   const [currentTagInput, setCurrentTagInput] = useState('');
   const [tagsArray, setTagsArray] = useState<string[]>([]);
+  
+  // Checklist management
+  const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
+  const [newChecklistItem, setNewChecklistItem] = useState('');
+
 
   const [tiers, setTiers] = useState<ServiceTierAdmin[]>([]);
 
@@ -185,6 +207,7 @@ export default function AdminEditServicePage(): ReactElement {
         setImageUrl(foundService.imageUrl || '');
         setImageAiHint(foundService.imageAiHint || '');
         setTagsArray(foundService.tags || []);
+        setChecklist(foundService.checklist || []);
         setTiers(foundService.tiers.map(t => ({
           ...t, 
           price: Number(t.price), 
@@ -226,6 +249,25 @@ export default function AdminEditServicePage(): ReactElement {
   const handleRemoveTag = (tagToRemove: string) => {
     setTagsArray(tagsArray.filter(tag => tag !== tagToRemove));
   };
+  
+  const handleAddChecklistItem = () => {
+    if (newChecklistItem.trim()) {
+      setChecklist([...checklist, { id: `new_${Date.now()}`, text: newChecklistItem.trim() }]);
+      setNewChecklistItem('');
+    }
+  };
+
+  const handleChecklistItemKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddChecklistItem();
+    }
+  };
+  
+  const handleRemoveChecklistItem = (idToRemove: string) => {
+    setChecklist(checklist.filter(item => item.id !== idToRemove));
+  };
+
 
   const handleTierChange = (index: number, field: keyof ServiceTierAdmin, value: string | number) => {
     const newTiers = [...tiers];
@@ -275,7 +317,8 @@ export default function AdminEditServicePage(): ReactElement {
       imageUrl,
       imageAiHint,
       tags: tagsArray,
-      tiers
+      tiers,
+      checklist,
     };
     console.log("Saving updated service:", updatedService);
     
@@ -387,6 +430,41 @@ export default function AdminEditServicePage(): ReactElement {
                 )}
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle>Default Checklist</CardTitle>
+          <CardDescription>Define a standard list of deliverables or tasks for this service. This will be added to new orders.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+           {checklist.length > 0 && (
+            <ul className="space-y-2">
+              {checklist.map((item) => (
+                <li key={item.id} className="flex items-center justify-between p-2 bg-secondary/50 rounded-md">
+                   <div className="flex items-center">
+                    <ListChecks className="h-4 w-4 mr-3 text-primary" />
+                    <span className="text-sm">{item.text}</span>
+                   </div>
+                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleRemoveChecklistItem(item.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex items-center gap-2">
+            <Input 
+              id="newChecklistItem" 
+              placeholder="e.g., Final Logo Delivery" 
+              value={newChecklistItem}
+              onChange={(e) => setNewChecklistItem(e.target.value)}
+              onKeyDown={handleChecklistItemKeyDown}
+              disabled={isSaving || isDeleting}
+            />
+            <Button type="button" onClick={handleAddChecklistItem} disabled={isSaving || isDeleting || !newChecklistItem.trim()}>Add</Button>
           </div>
         </CardContent>
       </Card>

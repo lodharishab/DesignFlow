@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Save, XCircle, Briefcase, IndianRupee, Tag, FileText, ClockIcon, ImageIcon, Lightbulb, Loader2, Trash2, Tags, X } from 'lucide-react';
+import { PlusCircle, Save, XCircle, Briefcase, IndianRupee, Tag, FileText, ClockIcon, ImageIcon, Lightbulb, Loader2, Trash2, Tags, X, ListChecks } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface ServiceTierAdmin {
   id: string; 
@@ -23,6 +24,12 @@ interface ServiceTierAdmin {
   deliveryTimeMax: number;
   deliveryTimeUnit: 'days' | 'business_days' | 'weeks';
 }
+
+interface ChecklistItem {
+  id: string;
+  text: string;
+}
+
 
 const serviceCategories = [
   { id: 'cat001', name: 'Logo Design' },
@@ -57,6 +64,10 @@ export default function AdminAddServicePage(): ReactElement {
   // Tags management
   const [currentTagInput, setCurrentTagInput] = useState('');
   const [tagsArray, setTagsArray] = useState<string[]>([]);
+  
+  // Checklist management
+  const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
+  const [newChecklistItem, setNewChecklistItem] = useState('');
 
 
   // Tiers
@@ -86,6 +97,25 @@ export default function AdminAddServicePage(): ReactElement {
   const handleRemoveTag = (tagToRemove: string) => {
     setTagsArray(tagsArray.filter(tag => tag !== tagToRemove));
   };
+  
+  const handleAddChecklistItem = () => {
+    if (newChecklistItem.trim()) {
+      setChecklist([...checklist, { id: `new_${Date.now()}`, text: newChecklistItem.trim() }]);
+      setNewChecklistItem('');
+    }
+  };
+
+  const handleChecklistItemKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddChecklistItem();
+    }
+  };
+  
+  const handleRemoveChecklistItem = (idToRemove: string) => {
+    setChecklist(checklist.filter(item => item.id !== idToRemove));
+  };
+
 
   const handleTierChange = (index: number, field: keyof ServiceTierAdmin, value: string | number) => {
     const newTiers = [...tiers];
@@ -139,7 +169,8 @@ export default function AdminAddServicePage(): ReactElement {
       imageUrl,
       imageAiHint,
       tags: tagsArray, // Use the tagsArray directly
-      tiers
+      tiers,
+      checklist,
     };
     console.log("Saving new service:", newService);
 
@@ -230,6 +261,41 @@ export default function AdminAddServicePage(): ReactElement {
                 )}
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle>Default Checklist</CardTitle>
+          <CardDescription>Define a standard list of deliverables or tasks for this service. This will be added to new orders.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {checklist.length > 0 && (
+            <ul className="space-y-2">
+              {checklist.map((item) => (
+                <li key={item.id} className="flex items-center justify-between p-2 bg-secondary/50 rounded-md">
+                  <div className="flex items-center">
+                    <ListChecks className="h-4 w-4 mr-3 text-primary" />
+                    <span className="text-sm">{item.text}</span>
+                  </div>
+                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleRemoveChecklistItem(item.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex items-center gap-2">
+            <Input 
+              id="newChecklistItem" 
+              placeholder="e.g., Final Logo Delivery" 
+              value={newChecklistItem}
+              onChange={(e) => setNewChecklistItem(e.target.value)}
+              onKeyDown={handleChecklistItemKeyDown}
+              disabled={isSaving}
+            />
+            <Button type="button" onClick={handleAddChecklistItem} disabled={isSaving || !newChecklistItem.trim()}>Add</Button>
           </div>
         </CardContent>
       </Card>
