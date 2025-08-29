@@ -3,12 +3,47 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye, MessageSquare, Upload, PackageSearch, PlusCircle, Pencil, Send } from 'lucide-react';
+import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye, MessageSquare, Upload, PackageSearch, PlusCircle, Pencil, Send, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import React from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const mockNotifications = [
+    {
+        id: 'notif1',
+        icon: MessageSquare,
+        title: "New Message from Priya S.",
+        description: "Regarding order ORD7361P: 'Looks great! Can we try a different color?'",
+        time: "15m ago",
+        href: "/designer/orders/ORD7361P",
+    },
+    {
+        id: 'notif2',
+        icon: Briefcase,
+        title: "New Order Assigned",
+        description: "You've been assigned to order ORDXYZ123: 'Business Card Design'.",
+        time: "1h ago",
+        href: "/designer/orders/ORDXYZ123",
+    },
+    {
+        id: 'notif3',
+        icon: CheckCircle,
+        title: "Order Approved",
+        description: "Client has approved the final delivery for order ORDFGHIJ.",
+        time: "2 days ago",
+        href: "/designer/orders/ORDFGHIJ",
+    },
+];
 
 export default function DesignerDashboardPage() {
   const recentActiveOrders = [
@@ -46,8 +81,53 @@ export default function DesignerDashboardPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold font-headline">Designer Dashboard</h1>
-
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold font-headline">Designer Dashboard</h1>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <div className="relative">
+                    <Button variant="outline" size="icon">
+                        <Bell className="h-5 w-5" />
+                        <span className="sr-only">Notifications</span>
+                    </Button>
+                    {mockNotifications.length > 0 && (
+                        <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                            {mockNotifications.length}
+                        </Badge>
+                    )}
+                </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-80" align="end">
+                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {mockNotifications.length > 0 ? (
+                    <>
+                        {mockNotifications.map(notification => (
+                            <DropdownMenuItem key={notification.id} asChild className="p-3 cursor-pointer">
+                                <Link href={notification.href}>
+                                    <notification.icon className="h-5 w-5 mr-3 text-primary shrink-0" />
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-sm">{notification.title}</p>
+                                        <p className="text-xs text-muted-foreground">{notification.description}</p>
+                                        <p className="text-xs text-muted-foreground/70 mt-1">{notification.time}</p>
+                                    </div>
+                                </Link>
+                            </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="justify-center text-xs text-muted-foreground py-2 cursor-pointer">
+                            View All Notifications
+                        </DropdownMenuItem>
+                    </>
+                ) : (
+                    <div className="text-center text-sm text-muted-foreground p-4">
+                        No new notifications
+                    </div>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {designerStats.map(stat => (
