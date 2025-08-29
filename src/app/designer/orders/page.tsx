@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo, type ReactElement, ChangeEvent, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -31,10 +31,12 @@ import {
   Send,
   Star,
   ListChecks,
+  GitPullRequest,
+  BarChart,
 } from 'lucide-react';
 import { Progress } from "@/components/ui/progress"
 import Link from 'next/link';
-import { format, isPast, formatDistanceToNow } from 'date-fns';
+import { format, isPast, formatDistanceToNow, differenceInDays } from 'date-fns';
 import { initialOrdersData as allOrders, type Order as BaseOrder, type OrderStatus } from '@/components/admin/orders/orders-table-view';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
@@ -51,7 +53,7 @@ const designerOrderStatusFilters: { label: string; value: OrderStatus | 'All'; i
   { label: 'Completed', value: 'Completed', icon: CheckCircle2 },
 ];
 
-// Extend the Order interface to include milestones
+// Extend the Order interface for new features
 interface Milestone {
   id: string;
   title: string;
@@ -59,11 +61,21 @@ interface Milestone {
   amount: number;
   status: 'Pending' | 'Delivered' | 'Paid';
 }
-interface Order extends BaseOrder {
-  milestones?: Milestone[];
+
+interface Analytics {
+    completionDate: Date;
+    totalDeliveryTimeDays: number;
+    revisionsCount: number;
+    clientRating: number;
+    paymentReleaseDate: Date;
 }
 
-// Add mock milestone data to some orders
+interface Order extends BaseOrder {
+  milestones?: Milestone[];
+  analytics?: Analytics;
+}
+
+// Add mock milestone and analytics data to some orders
 const ordersWithMilestones: Order[] = allOrders.map(order => {
   if (order.id === 'ORD7361P') {
     return {
@@ -83,6 +95,19 @@ const ordersWithMilestones: Order[] = allOrders.map(order => {
               { id: 'm5', title: 'Final Icon Set (10 icons)', dueDate: new Date(2024, 6, 2), amount: 2499, status: 'Pending' },
           ]
       }
+  }
+  // Add analytics to a completed order
+  if (order.id === 'ORD2945S' && order.designerId === MOCK_DESIGNER_ID) {
+    return {
+        ...order,
+        analytics: {
+            completionDate: new Date(2024, 6, 12),
+            totalDeliveryTimeDays: differenceInDays(new Date(2024, 6, 12), order.orderDate),
+            revisionsCount: 1,
+            clientRating: 4.5,
+            paymentReleaseDate: new Date(2024, 6, 26),
+        }
+    }
   }
   return order;
 });
@@ -366,6 +391,10 @@ function OrderDetailsDrawer({ order, isOpen, onClose, onMilestoneAction }: { ord
                 {order.dueDate && <p><strong className="font-medium text-muted-foreground">Deadline:</strong> {format(order.dueDate, 'PPP')}</p>}
             </div>
 
+            {order.status === 'Completed' && order.analytics && (
+              <AnalyticsSummary analytics={order.analytics} />
+            )}
+            
             <MilestoneView order={order} onMilestoneAction={onMilestoneAction} />
         </div>
         <Separator className="mt-4"/>
@@ -439,6 +468,49 @@ function MilestoneView({ order, onMilestoneAction }: { order: Order, onMilestone
         ) : (
           <p className="text-sm text-muted-foreground italic text-center">This order is not milestone-based.</p>
         )}
+      </CardContent>
+    </Card>
+  )
+}
+
+function AnalyticsSummary({ analytics }: { analytics: Analytics }) {
+  return (
+    <Card className="bg-secondary/50">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg font-semibold flex items-center">
+            <BarChart className="mr-2 h-5 w-5 text-primary"/>
+            Project Analytics
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid grid-cols-2 gap-4 text-sm">
+        <div className="flex items-start space-x-3">
+          <Clock className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0"/>
+          <div>
+            <p className="font-medium">Delivery Time</p>
+            <p className="text-muted-foreground">{analytics.totalDeliveryTimeDays} days</p>
+          </div>
+        </div>
+         <div className="flex items-start space-x-3">
+          <GitPullRequest className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0"/>
+          <div>
+            <p className="font-medium">Revisions</p>
+            <p className="text-muted-foreground">{analytics.revisionsCount} round(s)</p>
+          </div>
+        </div>
+         <div className="flex items-start space-x-3">
+          <Star className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0"/>
+          <div>
+            <p className="font-medium">Client Rating</p>
+            <p className="text-muted-foreground">{analytics.clientRating}/5</p>
+          </div>
+        </div>
+         <div className="flex items-start space-x-3">
+          <IndianRupee className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0"/>
+          <div>
+            <p className="font-medium">Payment Released</p>
+            <p className="text-muted-foreground">{format(analytics.paymentReleaseDate, 'MMM d, yyyy')}</p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   )
