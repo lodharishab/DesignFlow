@@ -1,8 +1,9 @@
+
 "use client";
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye, MessageSquare, Upload, PackageSearch } from 'lucide-react';
+import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye, MessageSquare, Upload, PackageSearch, PlusCircle, Pencil, Send } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,14 @@ export default function DesignerDashboardPage() {
     { title: 'Total Earnings', value: '₹85,500', icon: IndianRupee, href: '/designer/earnings', color: 'text-purple-500' },
     { title: 'Advance Requests', value: '1', icon: HandCoins, href: '/designer/advances', color: 'text-yellow-500' },
     { title: 'Portfolio Views', value: '1,204', icon: Eye, href: '/designer/portfolio?view=analytics', color: 'text-pink-500' },
+  ];
+
+  const quickActions = [
+    { label: 'Add Portfolio Item', href: '/designer/portfolio/new', icon: PlusCircle, disabled: false },
+    { label: 'Create Service', href: '#', icon: Pencil, disabled: true },
+    { label: 'Request Advance', href: '#', icon: HandCoins, disabled: true },
+    { label: 'Message Clients', href: '#', icon: MessageSquare, disabled: true },
+    { label: 'View All Orders', href: '/designer/orders', icon: Briefcase, disabled: false },
   ];
 
   const getStatusBadgeVariant = (status: string) => {
@@ -56,6 +65,26 @@ export default function DesignerDashboardPage() {
           </Link>
         ))}
       </div>
+
+       {/* Quick Actions */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {quickActions.map(action => (
+          <Button key={action.label} variant="outline" asChild={!action.disabled} disabled={action.disabled} className="flex-col h-20 md:h-24 justify-center gap-1 shadow-sm hover:shadow-md hover:bg-accent hover:border-primary/20 transition-all">
+             {action.disabled ? (
+              <div className="flex flex-col items-center justify-center text-center">
+                  <action.icon className="h-6 w-6 mb-1 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">{action.label}</span>
+              </div>
+             ) : (
+              <Link href={action.href} className="flex flex-col items-center justify-center text-center">
+                  <action.icon className="h-6 w-6 mb-1 text-muted-foreground group-hover:text-primary" />
+                  <span className="text-xs text-muted-foreground group-hover:text-primary">{action.label}</span>
+              </Link>
+             )}
+          </Button>
+        ))}
+      </div>
+
 
       {/* Recent Active Orders Section */}
       <Card className="shadow-lg">
