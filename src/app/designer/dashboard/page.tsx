@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye, MessageSquare, Upload, PackageSearch, PlusCircle, Pencil, Send, Bell, Star } from 'lucide-react';
+import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye, MessageSquare, Upload, PackageSearch, PlusCircle, Pencil, Send, Bell, Star, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { format, isPast, formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const mockNotifications = [
     {
@@ -47,12 +49,17 @@ const mockNotifications = [
 
 export default function DesignerDashboardPage() {
   const recentActiveOrders = [
-    { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', client: 'Priya S.', deadline: 'July 25, 2024', status: 'In Progress', progress: 60 },
-    { id: 'ORD4011M', serviceName: 'Mobile App Icon Set', client: 'Mohan D.', deadline: 'July 15, 2024', status: 'In Progress', progress: 25 },
-    { id: 'ORDABCDE', serviceName: 'Festival Social Media Posts', client: 'Ritu G.', deadline: 'July 18, 2024', status: 'Awaiting Client Review', progress: 90 },
-    { id: 'ORDFGHIJ', serviceName: 'Brochure for Print', client: 'Anil K.', deadline: 'July 22, 2024', status: 'In Progress', progress: 40 },
-    { id: 'ORDKLMNO', serviceName: 'Pitch Deck Presentation', client: 'Sunita M.', deadline: 'July 30, 2024', status: 'In Progress', progress: 10 },
+    { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', client: 'Priya S.', deadline: new Date(new Date().setDate(new Date().getDate() + 5)), status: 'In Progress', progress: 60 },
+    { id: 'ORD4011M', serviceName: 'Mobile App Icon Set', client: 'Mohan D.', deadline: new Date(new Date().setDate(new Date().getDate() - 2)), status: 'In Progress', progress: 25 },
+    { id: 'ORDABCDE', serviceName: 'Festival Social Media Posts', client: 'Ritu G.', deadline: new Date(new Date().setDate(new Date().getDate() + 2)), status: 'Awaiting Client Review', progress: 90 },
+    { id: 'ORDFGHIJ', serviceName: 'Brochure for Print', client: 'Anil K.', deadline: new Date(new Date().setDate(new Date().getDate() + 8)), status: 'In Progress', progress: 40 },
+    { id: 'ORDKLMNO', serviceName: 'Pitch Deck Presentation', client: 'Sunita M.', deadline: new Date(new Date().setDate(new Date().getDate() + 15)), status: 'In Progress', progress: 10 },
   ];
+  
+  const upcomingDeadlines = recentActiveOrders
+    .filter(order => order.status === 'In Progress' || order.status === 'Awaiting Client Review')
+    .sort((a, b) => a.deadline.getTime() - b.deadline.getTime())
+    .slice(0, 3);
 
   const designerStats = [
     { title: 'Total Orders', value: '12', icon: Briefcase, href: '/designer/orders', color: 'text-blue-500' },
@@ -165,61 +172,99 @@ export default function DesignerDashboardPage() {
         ))}
       </div>
 
-
-      {/* Recent Active Orders Section */}
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="font-headline flex items-center">
-            <Briefcase className="mr-3 h-6 w-6 text-primary" />
-            Recent Active Orders
-          </CardTitle>
-          <CardDescription>An overview of your 5 most recent active projects.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {recentActiveOrders.length > 0 ? (
-            <div className="space-y-4">
-              {recentActiveOrders.map((order, index) => (
-                <React.Fragment key={order.id}>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <div className="flex-grow space-y-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <Link href={`/designer/orders/${order.id}`} className="hover:underline">
-                            <h3 className="font-semibold text-md">{order.serviceName}</h3>
-                          </Link>
-                          <p className="text-sm text-muted-foreground">Client: {order.client} | Due: {order.deadline}</p>
+      <div className="grid lg:grid-cols-3 gap-8 items-start">
+        {/* Main Content Area */}
+        <div className="lg:col-span-2">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="font-headline flex items-center">
+                <Briefcase className="mr-3 h-6 w-6 text-primary" />
+                Recent Active Orders
+              </CardTitle>
+              <CardDescription>An overview of your most recent active projects.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {recentActiveOrders.length > 0 ? (
+                <div className="space-y-4">
+                  {recentActiveOrders.slice(0, 5).map((order, index) => (
+                    <React.Fragment key={order.id}>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex-grow space-y-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <Link href={`/designer/orders/${order.id}`} className="hover:underline">
+                                <h3 className="font-semibold text-md">{order.serviceName}</h3>
+                              </Link>
+                              <p className="text-sm text-muted-foreground">Client: {order.client} | Due: {format(order.deadline, 'MMM d, yyyy')}</p>
+                            </div>
+                            <Badge variant={getStatusBadgeVariant(order.status)} className="whitespace-nowrap sm:hidden">{order.status}</Badge>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Progress value={order.progress} className="h-2 w-full sm:w-1/2" />
+                            <span className="text-xs font-medium text-muted-foreground">{order.progress}%</span>
+                            <Badge variant={getStatusBadgeVariant(order.status)} className="whitespace-nowrap hidden sm:flex">{order.status}</Badge>
+                          </div>
                         </div>
-                        <Badge variant={getStatusBadgeVariant(order.status)} className="whitespace-nowrap sm:hidden">{order.status}</Badge>
+                        <div className="flex gap-2 shrink-0 self-end sm:self-center">
+                          <Button variant="outline" size="sm"><Eye className="mr-1.5 h-4 w-4"/> View Order</Button>
+                          <Button variant="outline" size="sm"><MessageSquare className="mr-1.5 h-4 w-4"/> Message</Button>
+                          <Button variant="default" size="sm"><Upload className="mr-1.5 h-4 w-4"/> Upload</Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Progress value={order.progress} className="h-2 w-full sm:w-1/2" />
-                        <span className="text-xs font-medium text-muted-foreground">{order.progress}%</span>
-                        <Badge variant={getStatusBadgeVariant(order.status)} className="whitespace-nowrap hidden sm:flex">{order.status}</Badge>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 shrink-0 self-end sm:self-center">
-                      <Button variant="outline" size="sm"><Eye className="mr-1.5 h-4 w-4"/> View Order</Button>
-                      <Button variant="outline" size="sm"><MessageSquare className="mr-1.5 h-4 w-4"/> Message</Button>
-                      <Button variant="default" size="sm"><Upload className="mr-1.5 h-4 w-4"/> Upload</Button>
-                    </div>
+                      {index < recentActiveOrders.slice(0, 5).length - 1 && <Separator />}
+                    </React.Fragment>
+                  ))}
+                </div>
+              ) : (
+                 <div className="text-center py-8">
+                    <PackageSearch className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-2" />
+                    <p className="text-muted-foreground">You have no active orders at the moment.</p>
                   </div>
-                  {index < recentActiveOrders.length - 1 && <Separator />}
-                </React.Fragment>
-              ))}
-            </div>
-          ) : (
-             <div className="text-center py-8">
-                <PackageSearch className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-2" />
-                <p className="text-muted-foreground">You have no active orders at the moment.</p>
-              </div>
-          )}
-           <Button className="mt-6 w-full" asChild>
-              <Link href="/designer/orders">
-                View All My Orders <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-        </CardContent>
-      </Card>
+              )}
+               <Button className="mt-6 w-full" asChild>
+                  <Link href="/designer/orders">
+                    View All My Orders <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Sidebar Area */}
+        <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="font-headline text-lg flex items-center">
+                        <Clock className="mr-2 h-5 w-5 text-primary"/>
+                        Upcoming Deadlines
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {upcomingDeadlines.length > 0 ? (
+                        <ul className="space-y-4">
+                            {upcomingDeadlines.map(order => (
+                                <li key={order.id}>
+                                    <Link href={`/designer/orders/${order.id}`} className="block hover:bg-muted/50 p-2 rounded-md">
+                                        <p className="font-semibold text-sm">{order.serviceName}</p>
+                                        <p className="text-xs text-muted-foreground">Client: {order.client}</p>
+                                        <div className={cn(
+                                            "text-xs font-medium mt-1",
+                                            isPast(order.deadline) ? 'text-destructive' : 'text-muted-foreground'
+                                        )}>
+                                           {isPast(order.deadline) && <AlertTriangle className="inline-block h-3 w-3 mr-1"/>}
+                                           {formatDistanceToNow(order.deadline, { addSuffix: true })}
+                                        </div>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-sm text-muted-foreground text-center py-4">No upcoming deadlines.</p>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+      </div>
     </div>
   );
 }
