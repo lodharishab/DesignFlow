@@ -27,7 +27,9 @@ import {
   Star,
   GitPullRequest,
   IndianRupee as IndianRupeeIcon,
-  BarChart
+  BarChart,
+  Save,
+  BookMarked
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -150,6 +152,8 @@ function DesignerOrderDetailPageContent(): ReactElement {
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   const [deliverableDescription, setDeliverableDescription] = useState('');
   const [showRevisionModal, setShowRevisionModal] = useState(false);
+  const [privateNotes, setPrivateNotes] = useState('');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
 
   useEffect(() => {
     if (orderId) {
@@ -157,6 +161,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
       const foundOrder = ordersWithEnhancements.find(o => o.id === orderId && o.designerId === MOCK_DESIGNER_ID);
       if (foundOrder) {
         setOrder({...foundOrder, orderEvents: [...foundOrder.orderEvents].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime())});
+        setPrivateNotes(foundOrder.privateNotes || '');
         if (foundOrder.status === 'Revision Requested' && foundOrder.revisionsUsed >= foundOrder.revisionsAllowed) {
             setShowRevisionModal(true);
         }
@@ -239,6 +244,18 @@ function DesignerOrderDetailPageContent(): ReactElement {
   const handleContactAdmin = () => {
     toast({ title: "Action Required (Simulated)", description: "An admin would be notified to mediate this order." });
     setShowRevisionModal(false);
+  };
+
+  const handleSaveNotes = () => {
+    if (!order) return;
+    setIsSavingNotes(true);
+    // Simulate saving to Firestore
+    console.log("Saving private notes for order:", order.id, { privateNotes });
+    setTimeout(() => {
+        setOrder(prev => prev ? ({...prev, privateNotes, privateNotesLastEdited: new Date()}) : null);
+        toast({ title: "Notes Saved (Simulated)", description: "Your private notes have been updated." });
+        setIsSavingNotes(false);
+    }, 1000);
   };
 
   if (isLoading) {
@@ -394,58 +411,88 @@ function DesignerOrderDetailPageContent(): ReactElement {
           <MilestoneView order={order} />
       )}
       
-      <div className="grid lg:grid-cols-2 gap-8">
-        <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="font-headline text-xl flex items-center"><Upload className="mr-2 h-5 w-5 text-primary"/>
-                {order.status === 'Revision Requested' ? 'Submit Revisions' : 'Submit Deliverables'}
-                </CardTitle>
-                {order.status === 'Awaiting Client Review' && <CardDescription className="text-green-600">Deliverable(s) submitted. Waiting for client review.</CardDescription>}
-                {(order.status === 'Completed' || order.status === 'Cancelled' || showRevisionModal) && <CardDescription className="text-muted-foreground">This order is not currently awaiting a submission.</CardDescription>}
-            </CardHeader>
-            {canSubmitDeliverables && (
-                <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="deliverableFile">Upload File</Label>
-                        <Input id="deliverableFile" type="file" onChange={handleFileChange} disabled={isSubmittingDeliverable}/>
-                        {fileToUpload && <p className="text-xs text-muted-foreground">Selected: {fileToUpload.name}</p>}
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="deliverableDescription">Description/Notes for Client</Label>
-                        <Textarea 
-                            id="deliverableDescription" 
-                            value={deliverableDescription}
-                            onChange={(e) => setDeliverableDescription(e.target.value)}
-                            placeholder="e.g., First draft of logo concepts, Version 2 with color variations..."
-                            rows={3}
-                            disabled={isSubmittingDeliverable}
-                        />
-                    </div>
-                    <Button 
-                        onClick={handleSubmitDeliverable} 
-                        disabled={isSubmittingDeliverable || !fileToUpload || !deliverableDescription.trim()}
-                        className="w-full"
-                    >
-                        {isSubmittingDeliverable ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Paperclip className="mr-2 h-4 w-4" />}
-                        {isSubmittingDeliverable ? 'Submitting...' : 'Submit to Client'}
+      <div className="grid lg:grid-cols-2 gap-8 items-start">
+        <div className="space-y-8">
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="font-headline text-xl flex items-center"><Upload className="mr-2 h-5 w-5 text-primary"/>
+                    {order.status === 'Revision Requested' ? 'Submit Revisions' : 'Submit Deliverables'}
+                    </CardTitle>
+                    {order.status === 'Awaiting Client Review' && <CardDescription className="text-green-600">Deliverable(s) submitted. Waiting for client review.</CardDescription>}
+                    {(order.status === 'Completed' || order.status === 'Cancelled' || showRevisionModal) && <CardDescription className="text-muted-foreground">This order is not currently awaiting a submission.</CardDescription>}
+                </CardHeader>
+                {canSubmitDeliverables && (
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="deliverableFile">Upload File</Label>
+                            <Input id="deliverableFile" type="file" onChange={handleFileChange} disabled={isSubmittingDeliverable}/>
+                            {fileToUpload && <p className="text-xs text-muted-foreground">Selected: {fileToUpload.name}</p>}
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="deliverableDescription">Description/Notes for Client</Label>
+                            <Textarea 
+                                id="deliverableDescription" 
+                                value={deliverableDescription}
+                                onChange={(e) => setDeliverableDescription(e.target.value)}
+                                placeholder="e.g., First draft of logo concepts, Version 2 with color variations..."
+                                rows={3}
+                                disabled={isSubmittingDeliverable}
+                            />
+                        </div>
+                        <Button 
+                            onClick={handleSubmitDeliverable} 
+                            disabled={isSubmittingDeliverable || !fileToUpload || !deliverableDescription.trim()}
+                            className="w-full"
+                        >
+                            {isSubmittingDeliverable ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Paperclip className="mr-2 h-4 w-4" />}
+                            {isSubmittingDeliverable ? 'Submitting...' : 'Submit to Client'}
+                        </Button>
+                    </CardContent>
+                )}
+                {order.deliverables && order.deliverables.length > 0 && (
+                    <CardContent className={canSubmitDeliverables ? "pt-4" : ""}>
+                        <Separator className={canSubmitDeliverables ? "mb-4" : "hidden"} />
+                        <h5 className="text-sm font-medium text-muted-foreground mb-2">Submission History:</h5>
+                        <ul className="space-y-2 text-xs max-h-40 overflow-y-auto">
+                            {order.deliverables.map((file, idx) => (
+                            <li key={idx} className="p-2 border rounded-md bg-secondary/50 flex justify-between items-center">
+                                <span>{file.name} ({format(file.submittedAt, 'PPp')})</span>
+                                <Button variant="ghost" size="xs" asChild><Link href={file.url} target="_blank">Download</Link></Button>
+                            </li>
+                            ))}
+                        </ul>
+                    </CardContent>
+                )}
+            </Card>
+
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="font-headline text-xl flex items-center">
+                        <BookMarked className="mr-2 h-5 w-5 text-primary"/>
+                        Private Notes
+                    </CardTitle>
+                    <CardDescription>Only you and admins can see these notes.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Textarea 
+                        placeholder="Add notes for your reference, like client preferences, ideas, or to-do items..."
+                        rows={5}
+                        value={privateNotes}
+                        onChange={(e) => setPrivateNotes(e.target.value)}
+                        disabled={isSavingNotes}
+                    />
+                     {order.privateNotesLastEdited && (
+                        <p className="text-xs text-muted-foreground mt-2">Last saved: {format(order.privateNotesLastEdited, 'PPpp')}</p>
+                     )}
+                </CardContent>
+                <CardFooter>
+                    <Button onClick={handleSaveNotes} disabled={isSavingNotes}>
+                        {isSavingNotes ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                        {isSavingNotes ? 'Saving...' : 'Save Notes'}
                     </Button>
-                </CardContent>
-            )}
-            {order.deliverables && order.deliverables.length > 0 && (
-                <CardContent className={canSubmitDeliverables ? "pt-4" : ""}>
-                    <Separator className={canSubmitDeliverables ? "mb-4" : "hidden"} />
-                    <h5 className="text-sm font-medium text-muted-foreground mb-2">Submission History:</h5>
-                    <ul className="space-y-2 text-xs max-h-40 overflow-y-auto">
-                        {order.deliverables.map((file, idx) => (
-                        <li key={idx} className="p-2 border rounded-md bg-secondary/50 flex justify-between items-center">
-                            <span>{file.name} ({format(file.submittedAt, 'PPp')})</span>
-                            <Button variant="ghost" size="xs" asChild><Link href={file.url} target="_blank">Download</Link></Button>
-                        </li>
-                        ))}
-                    </ul>
-                </CardContent>
-            )}
-        </Card>
+                </CardFooter>
+            </Card>
+        </div>
 
         <Card className="shadow-lg">
             <CardHeader>

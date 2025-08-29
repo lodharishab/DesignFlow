@@ -73,6 +73,8 @@ export interface Order {
   revisionRequestDate?: Date;
   revisionsAllowed: number;
   revisionsUsed: number;
+  privateNotes?: string;
+  privateNotesLastEdited?: Date;
 }
 
 export const initialOrdersData: Order[] = [
@@ -98,6 +100,8 @@ export const initialOrdersData: Order[] = [
     clientBrief: "Need a modern and clean UI/UX for a new e-commerce platform selling Indian handicrafts. Focus on mobile-first design and easy navigation for a diverse audience. Include vernacular language support considerations.",
     revisionsAllowed: 3,
     revisionsUsed: 0,
+    privateNotes: "Client seems very particular about the color palette. Make sure to provide at least 5-6 strong options in the first review. Also, check out behance.net/some-inspiration for the style she likes.",
+    privateNotesLastEdited: new Date(),
   },
   {
     id: 'ORD1038K',
