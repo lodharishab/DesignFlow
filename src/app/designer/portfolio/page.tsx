@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, type ReactElement } from 'react';
+import { useState, useMemo, useEffect, type ReactElement } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -34,7 +34,7 @@ export default function DesignerPortfolioPage(): ReactElement {
     direction: 'descending',
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     getInitialData().then(data => {
       setPortfolioItems(data);
       setIsLoading(false);
@@ -143,7 +143,7 @@ export default function DesignerPortfolioPage(): ReactElement {
             </div>
             <div className="space-y-1">
                 <Label htmlFor="sortBy" className="text-xs">Sort By</Label>
-                <Select value={sortConfig.key} onValueChange={(v) => requestSort(v as SortablePortfolioKeys)}>
+                <Select value={sortConfig.key || ''} onValueChange={(v) => requestSort(v as SortablePortfolioKeys)}>
                   <SelectTrigger id="sortBy"><SelectValue /></SelectTrigger>
                   <SelectContent>
                       <SelectItem value="projectDate">Newest</SelectItem>
