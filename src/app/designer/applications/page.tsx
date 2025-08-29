@@ -1,17 +1,43 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Bell, Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, Film, Presentation, Loader2 } from 'lucide-react';
+import { Bell, Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, Film, Presentation, Loader2, AlertTriangle, Briefcase, Eye, Link as LinkIconLucide } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { designersData, type DesignerProfile } from '@/lib/designer-data';
 import type { Icon as LucideIconType } from 'lucide-react';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
-// Hardcoded for prototype - replace with actual auth user ID
+
+// --- Mock Data for Alerts ---
+type AlertPriority = 'High' | 'Medium' | 'Low';
+interface Alert {
+  id: string;
+  title: string;
+  description: string;
+  priority: AlertPriority;
+  timestamp: Date;
+  link: string;
+  linkText: string;
+  icon: LucideIconType;
+}
+
+const mockAlerts: Alert[] = [
+  { id: 'alert1', title: 'Action Required: Revision Request', description: "Client has requested revisions on order ORD9274R.", priority: 'High', timestamp: new Date(new Date().setHours(new Date().getHours() - 2)), link: '/designer/orders/ORD9274R', linkText: 'View Order', icon: AlertTriangle },
+  { id: 'alert2', title: 'New Order Assigned', description: "You have been assigned to order ORD4011M: Mobile App Icon Set.", priority: 'Medium', timestamp: new Date(new Date().setDate(new Date().getDate() - 1)), link: '/designer/orders/ORD4011M', linkText: 'View Order', icon: Briefcase },
+  { id: 'alert3', title: 'Profile Update Recommended', description: "Your bio is looking a bit short. A detailed bio attracts more clients.", priority: 'Low', timestamp: new Date(new Date().setDate(new Date().getDate() - 3)), link: '/designer/profile', linkText: 'Update Profile', icon: Palette },
+  { id: 'alert4', title: 'Order Complete: Awaiting Your Review', description: "Your work on ORD2945S has been approved by the client. Leave a review for your experience.", priority: 'Medium', timestamp: new Date(new Date().setDate(new Date().getDate() - 4)), link: '/designer/review/ORD2945S', linkText: 'Leave Review', icon: Eye },
+];
+
+
+// --- Component Code ---
 const CURRENT_DESIGNER_ID = 'des001'; 
 
 interface ServiceCategoryOption {
@@ -34,10 +60,24 @@ const availableServiceCategories: ServiceCategoryOption[] = [
   { id: 'cat008', name: 'Presentation Design', slug: 'presentations', icon: Presentation, description: 'Stay informed about pitch deck and presentation design tasks.' },
 ];
 
-// Simulate designer's approved services/specialties and current notification preferences
-// In a real app, this would come from the backend.
 interface NotificationPreferences {
   [categorySlug: string]: boolean;
+}
+
+const getPriorityBadgeVariant = (priority: AlertPriority): 'destructive' | 'secondary' | 'default' => {
+    switch (priority) {
+        case 'High': return 'destructive';
+        case 'Medium': return 'secondary';
+        case 'Low': return 'default';
+    }
+};
+
+const getPriorityIconColor = (priority: AlertPriority): string => {
+    switch (priority) {
+        case 'High': return 'text-destructive';
+        case 'Medium': return 'text-yellow-500';
+        case 'Low': return 'text-blue-500';
+    }
 }
 
 export default function DesignerServicesNotificationsPage() {
@@ -54,7 +94,6 @@ export default function DesignerServicesNotificationsPage() {
       // Simulate loading saved preferences or initializing based on specialties
       const initialPrefs: NotificationPreferences = {};
       availableServiceCategories.forEach(cat => {
-        // Example: auto-subscribe if the category name is among their specialties
         initialPrefs[cat.slug] = foundDesigner.specialties?.includes(cat.name) || false;
       });
       setNotificationPrefs(initialPrefs);
@@ -67,11 +106,6 @@ export default function DesignerServicesNotificationsPage() {
       ...prev,
       [categorySlug]: isSubscribed,
     }));
-    // Simulate instant save feedback for now, a real save button would be better for multiple changes
-    toast({
-      title: "Preference Updated (Simulated)",
-      description: `Notifications for ${availableServiceCategories.find(c=>c.slug === categorySlug)?.name || 'this category'} ${isSubscribed ? 'enabled' : 'disabled'}.`,
-    });
   };
   
   const handleSaveAllPreferences = () => {
@@ -107,17 +141,48 @@ export default function DesignerServicesNotificationsPage() {
           <Bell className="mr-3 h-8 w-8 text-primary" />
           My Service Alerts
         </h1>
-        <Button onClick={handleSaveAllPreferences} disabled={isSaving}>
-            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-            {isSaving ? 'Saving...' : 'Save All Preferences'}
-        </Button>
       </div>
       
+      {/* Recent Alerts Section */}
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle>Recent Alerts</CardTitle>
+          <CardDescription>
+            Important updates and actions required on your account and projects.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+            {mockAlerts.length > 0 ? (
+                <div className="space-y-4">
+                    {mockAlerts.map((alert) => (
+                        <div key={alert.id} className="p-4 border rounded-lg flex items-start gap-4">
+                           <alert.icon className={cn("h-6 w-6 mt-1 shrink-0", getPriorityIconColor(alert.priority))} />
+                           <div className="flex-grow">
+                                <div className="flex items-center justify-between">
+                                    <p className="font-semibold">{alert.title}</p>
+                                    <Badge variant={getPriorityBadgeVariant(alert.priority)}>{alert.priority}</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{alert.description}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(alert.timestamp, { addSuffix: true })}</p>
+                           </div>
+                           <Button asChild variant="outline" size="sm" className="self-center">
+                               <Link href={alert.link}><LinkIconLucide className="mr-2 h-3.5 w-3.5" /> {alert.linkText}</Link>
+                           </Button>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-muted-foreground text-center py-4">No recent alerts.</p>
+            )}
+        </CardContent>
+      </Card>
+      
+      {/* Subscription Management Section */}
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Manage Project Notifications</CardTitle>
           <CardDescription>
-            Subscribe to receive email notifications for new project opportunities in your preferred service categories. 
+            Subscribe to receive email notifications for new project opportunities in your approved service categories. 
             Your approved specialties may pre-select some categories.
           </CardDescription>
         </CardHeader>
@@ -139,12 +204,18 @@ export default function DesignerServicesNotificationsPage() {
                   disabled={isSaving}
                 />
                 <Label htmlFor={`switch-${category.slug}`} className="text-sm cursor-pointer">
-                  {notificationPrefs[category.slug] ? 'Subscribed' : 'Unsubscribed'}
+                  {notificationPrefs[category.slug] ? 'Subscribed' : 'Paused'}
                 </Label>
               </div>
             </div>
           ))}
         </CardContent>
+         <CardFooter>
+            <Button onClick={handleSaveAllPreferences} disabled={isSaving}>
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                {isSaving ? 'Saving...' : 'Save All Preferences'}
+            </Button>
+        </CardFooter>
       </Card>
     </div>
   );
