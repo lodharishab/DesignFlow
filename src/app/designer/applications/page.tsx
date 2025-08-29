@@ -64,11 +64,11 @@ interface NotificationPreferences {
   [categorySlug: string]: boolean;
 }
 
-const getPriorityBadgeVariant = (priority: AlertPriority): 'destructive' | 'secondary' | 'default' => {
+const getPriorityBadgeClasses = (priority: AlertPriority): string => {
     switch (priority) {
-        case 'High': return 'destructive';
-        case 'Medium': return 'secondary';
-        case 'Low': return 'default';
+        case 'High': return 'bg-destructive/20 text-destructive border-destructive/30 hover:bg-destructive/30';
+        case 'Medium': return 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30';
+        case 'Low': return 'bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/30';
     }
 };
 
@@ -160,7 +160,7 @@ export default function DesignerServicesNotificationsPage() {
                            <div className="flex-grow">
                                 <div className="flex items-center justify-between">
                                     <p className="font-semibold">{alert.title}</p>
-                                    <Badge variant={getPriorityBadgeVariant(alert.priority)}>{alert.priority}</Badge>
+                                    <Badge className={cn(getPriorityBadgeClasses(alert.priority))}>{alert.priority}</Badge>
                                 </div>
                                 <p className="text-sm text-muted-foreground">{alert.description}</p>
                                 <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(alert.timestamp, { addSuffix: true })}</p>
