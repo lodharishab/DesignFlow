@@ -26,6 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ClientOnly } from '@/components/shared/client-only';
 
 
 const mockHeaderNotifications = [
@@ -82,7 +83,7 @@ const mockDashboardNotifications = [
     ...mockHeaderNotifications.slice(1)
 ];
 
-export default function DesignerDashboardPage() {
+function DesignerDashboardPageContent() {
   const recentActiveOrders = [
     { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', client: 'Priya S.', deadline: new Date(new Date().setDate(new Date().getDate() + 5)), status: 'In Progress', progress: 60 },
     { id: 'ORD4011M', serviceName: 'Mobile App Icon Set', client: 'Mohan D.', deadline: new Date(new Date().setDate(new Date().getDate() - 2)), status: 'In Progress', progress: 25 },
@@ -338,4 +339,12 @@ export default function DesignerDashboardPage() {
 
     </div>
   );
+}
+
+export default function DesignerDashboardPage() {
+  return (
+    <ClientOnly>
+      <DesignerDashboardPageContent />
+    </ClientOnly>
+  )
 }
