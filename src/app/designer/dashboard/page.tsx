@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye, MessageSquare, Upload, PackageSearch, PlusCircle, Pencil, Send, Bell, Star, AlertTriangle, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import React from 'react';
 import {
