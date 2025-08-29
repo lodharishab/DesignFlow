@@ -184,166 +184,167 @@ export default function DesignerDashboardPage() {
         ))}
       </div>
 
-        {/* Profile Completeness Card */}
-        <Card className="shadow-lg">
-            <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex-grow flex items-center gap-4 w-full sm:w-auto">
-                    <div className="hidden sm:block">
-                        <UserCircle className="h-8 w-8 text-primary"/>
-                    </div>
-                    <div className="flex-grow">
-                        <Label htmlFor="profile-progress" className="text-md font-semibold">Profile Completeness</Label>
-                        <Progress value={profileCompleteness} className="h-2 mt-1" id="profile-progress" />
-                        <p className="text-xs text-muted-foreground mt-1">A complete profile attracts more clients.</p>
-                    </div>
-                     <span className="font-bold text-xl text-primary">{profileCompleteness}%</span>
-                </div>
-                <Button variant="outline" asChild className="w-full sm:w-auto shrink-0">
-                    <Link href="/designer/profile">
-                    <Pencil className="mr-2 h-4 w-4" /> Complete Your Profile
-                    </Link>
-                </Button>
-            </CardContent>
-        </Card>
+      {/* Profile Completeness Card */}
+      <Card className="shadow-lg">
+          <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex-grow flex items-center gap-4 w-full sm:w-auto">
+                  <div className="hidden sm:block">
+                      <UserCircle className="h-8 w-8 text-primary"/>
+                  </div>
+                  <div className="flex-grow">
+                      <Label htmlFor="profile-progress" className="text-md font-semibold">Profile Completeness</Label>
+                      <Progress value={profileCompleteness} className="h-2 mt-1" id="profile-progress" />
+                      <p className="text-xs text-muted-foreground mt-1">A complete profile attracts more clients.</p>
+                  </div>
+                    <span className="font-bold text-xl text-primary">{profileCompleteness}%</span>
+              </div>
+              <Button variant="outline" asChild className="w-full sm:w-auto shrink-0">
+                  <Link href="/designer/profile">
+                  <Pencil className="mr-2 h-4 w-4" /> Complete Your Profile
+                  </Link>
+              </Button>
+          </CardContent>
+      </Card>
+      
+      {/* Notifications & Deadlines grid */}
+      <div className="grid lg:grid-cols-2 gap-8">
+          <Card className="shadow-lg">
+          <CardHeader className="pb-2">
+              <CardTitle className="font-headline text-lg flex items-center">
+                  <Bell className="mr-2 h-5 w-5 text-primary"/>
+                  Recent Notifications
+              </CardTitle>
+          </CardHeader>
+          <CardContent>
+              {mockDashboardNotifications.length > 0 ? (
+                  <ul className="space-y-3">
+                      {mockDashboardNotifications.slice(0, 3).map(notification => (
+                          <li key={notification.id}>
+                              <Link href={notification.href} className="block hover:bg-muted/50 p-2 rounded-md">
+                                  <div className="flex items-start gap-3">
+                                      <notification.icon className="h-4 w-4 mt-1 shrink-0 text-muted-foreground" />
+                                      <div>
+                                          <p className="font-semibold text-sm leading-tight">{notification.title}</p>
+                                          <p className="text-xs text-muted-foreground">{notification.time}</p>
+                                      </div>
+                                  </div>
+                              </Link>
+                          </li>
+                      ))}
+                  </ul>
+              ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">No new notifications.</p>
+              )}
+          </CardContent>
+          <CardFooter>
+              <Button variant="outline" size="sm" className="w-full">View All Notifications</Button>
+          </CardFooter>
+          </Card>
 
-        {/* Recent Active Orders Card */}
-        <Card className="shadow-lg">
-        <CardHeader>
-            <CardTitle className="font-headline flex items-center">
-            <Briefcase className="mr-3 h-6 w-6 text-primary" />
-            Recent Active Orders
-            </CardTitle>
-            <CardDescription>An overview of your most recent active projects.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            {recentActiveOrders.length > 0 ? (
-            <div className="space-y-4">
-                {recentActiveOrders.slice(0, 5).map((order, index) => (
-                <React.Fragment key={order.id}>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <div className="flex-grow space-y-2">
-                        <div className="flex justify-between items-start">
-                        <div>
-                            <Link href={`/designer/orders/${order.id}`} className="hover:underline">
-                            <h3 className="font-semibold text-md">{order.serviceName}</h3>
-                            </Link>
-                            <p className="text-sm text-muted-foreground">Client: {order.client} | Due: {format(order.deadline, 'MMM d, yyyy')}</p>
-                        </div>
-                        <Badge variant={getStatusBadgeVariant(order.status)} className="whitespace-nowrap sm:hidden">{order.status}</Badge>
-                        </div>
-                        <div className="flex items-center gap-3">
-                        <Progress value={order.progress} className="h-2 w-full sm:w-1/2" />
-                        <span className="text-xs font-medium text-muted-foreground">{order.progress}%</span>
-                        <Badge variant={getStatusBadgeVariant(order.status)} className="whitespace-nowrap hidden sm:flex">{order.status}</Badge>
-                        </div>
-                    </div>
-                    <TooltipProvider>
-                    <div className="flex gap-2 shrink-0 self-end sm:self-center">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" asChild><Link href={`/designer/orders/${order.id}`}><Eye className="h-4 w-4"/></Link></Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>View Order</p></TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon"><MessageSquare className="h-4 w-4"/></Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Message Client</p></TooltipContent>
-                        </Tooltip>
-                            <Tooltip>
-                            <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon"><Upload className="h-4 w-4"/></Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Upload Files</p></TooltipContent>
-                        </Tooltip>
-                    </div>
-                    </TooltipProvider>
-                    </div>
-                    {index < recentActiveOrders.slice(0, 5).length - 1 && <Separator />}
-                </React.Fragment>
-                ))}
-            </div>
-            ) : (
-                <div className="text-center py-8">
-                <PackageSearch className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-2" />
-                <p className="text-muted-foreground">You have no active orders at the moment.</p>
-                </div>
-            )}
-            <Button className="mt-6 w-full" asChild>
-                <Link href="/designer/orders">
-                View All My Orders <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-            </Button>
-        </CardContent>
-        </Card>
+          <Card className="shadow-lg">
+          <CardHeader className="pb-2">
+              <CardTitle className="font-headline text-lg flex items-center">
+                  <Clock className="mr-2 h-5 w-5 text-primary"/>
+                  Upcoming Deadlines
+              </CardTitle>
+          </CardHeader>
+          <CardContent>
+              {upcomingDeadlines.length > 0 ? (
+                  <ul className="space-y-4">
+                      {upcomingDeadlines.map(order => (
+                          <li key={order.id}>
+                              <Link href={`/designer/orders/${order.id}`} className="block hover:bg-muted/50 p-2 rounded-md">
+                                  <p className="font-semibold text-sm">{order.serviceName}</p>
+                                  <p className="text-xs text-muted-foreground">Client: {order.client}</p>
+                                  <div className={cn(
+                                      "text-xs font-medium mt-1",
+                                      isPast(order.deadline) ? 'text-destructive' : 'text-muted-foreground'
+                                  )}>
+                                      {isPast(order.deadline) && <AlertTriangle className="inline-block h-3 w-3 mr-1"/>}
+                                      {formatDistanceToNow(order.deadline, { addSuffix: true })}
+                                  </div>
+                              </Link>
+                          </li>
+                      ))}
+                  </ul>
+              ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">No upcoming deadlines.</p>
+              )}
+          </CardContent>
+          </Card>
+      </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-            <Card className="shadow-lg">
-            <CardHeader className="pb-2">
-                <CardTitle className="font-headline text-lg flex items-center">
-                    <Bell className="mr-2 h-5 w-5 text-primary"/>
-                    Recent Notifications
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                {mockDashboardNotifications.length > 0 ? (
-                    <ul className="space-y-3">
-                        {mockDashboardNotifications.slice(0, 3).map(notification => (
-                            <li key={notification.id}>
-                                <Link href={notification.href} className="block hover:bg-muted/50 p-2 rounded-md">
-                                    <div className="flex items-start gap-3">
-                                        <notification.icon className="h-4 w-4 mt-1 shrink-0 text-muted-foreground" />
-                                        <div>
-                                            <p className="font-semibold text-sm leading-tight">{notification.title}</p>
-                                            <p className="text-xs text-muted-foreground">{notification.time}</p>
-                                        </div>
-                                    </div>
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">No new notifications.</p>
-                )}
-            </CardContent>
-            <CardFooter>
-                <Button variant="outline" size="sm" className="w-full">View All Notifications</Button>
-            </CardFooter>
-            </Card>
-
-            <Card className="shadow-lg">
-            <CardHeader className="pb-2">
-                <CardTitle className="font-headline text-lg flex items-center">
-                    <Clock className="mr-2 h-5 w-5 text-primary"/>
-                    Upcoming Deadlines
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                {upcomingDeadlines.length > 0 ? (
-                    <ul className="space-y-4">
-                        {upcomingDeadlines.map(order => (
-                            <li key={order.id}>
-                                <Link href={`/designer/orders/${order.id}`} className="block hover:bg-muted/50 p-2 rounded-md">
-                                    <p className="font-semibold text-sm">{order.serviceName}</p>
-                                    <p className="text-xs text-muted-foreground">Client: {order.client}</p>
-                                    <div className={cn(
-                                        "text-xs font-medium mt-1",
-                                        isPast(order.deadline) ? 'text-destructive' : 'text-muted-foreground'
-                                    )}>
-                                        {isPast(order.deadline) && <AlertTriangle className="inline-block h-3 w-3 mr-1"/>}
-                                        {formatDistanceToNow(order.deadline, { addSuffix: true })}
-                                    </div>
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">No upcoming deadlines.</p>
-                )}
-            </CardContent>
-            </Card>
-        </div>
+      {/* Recent Active Orders Card */}
+      <Card className="shadow-lg">
+      <CardHeader>
+          <CardTitle className="font-headline flex items-center">
+          <Briefcase className="mr-3 h-6 w-6 text-primary" />
+          Recent Active Orders
+          </CardTitle>
+          <CardDescription>An overview of your most recent active projects.</CardDescription>
+      </CardHeader>
+      <CardContent>
+          {recentActiveOrders.length > 0 ? (
+          <div className="space-y-4">
+              {recentActiveOrders.slice(0, 5).map((order, index) => (
+              <React.Fragment key={order.id}>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex-grow space-y-2">
+                      <div className="flex justify-between items-start">
+                      <div>
+                          <Link href={`/designer/orders/${order.id}`} className="hover:underline">
+                          <h3 className="font-semibold text-md">{order.serviceName}</h3>
+                          </Link>
+                          <p className="text-sm text-muted-foreground">Client: {order.client} | Due: {format(order.deadline, 'MMM d, yyyy')}</p>
+                      </div>
+                      <Badge variant={getStatusBadgeVariant(order.status)} className="whitespace-nowrap sm:hidden">{order.status}</Badge>
+                      </div>
+                      <div className="flex items-center gap-3">
+                      <Progress value={order.progress} className="h-2 w-full sm:w-1/2" />
+                      <span className="text-xs font-medium text-muted-foreground">{order.progress}%</span>
+                      <Badge variant={getStatusBadgeVariant(order.status)} className="whitespace-nowrap hidden sm:flex">{order.status}</Badge>
+                      </div>
+                  </div>
+                  <TooltipProvider>
+                  <div className="flex gap-2 shrink-0 self-end sm:self-center">
+                      <Tooltip>
+                          <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon" asChild><Link href={`/designer/orders/${order.id}`}><Eye className="h-4 w-4"/></Link></Button>
+                          </TooltipTrigger>
+                          <TooltipContent><p>View Order</p></TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                          <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon"><MessageSquare className="h-4 w-4"/></Button>
+                          </TooltipTrigger>
+                          <TooltipContent><p>Message Client</p></TooltipContent>
+                      </Tooltip>
+                          <Tooltip>
+                          <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon"><Upload className="h-4 w-4"/></Button>
+                          </TooltipTrigger>
+                          <TooltipContent><p>Upload Files</p></TooltipContent>
+                      </Tooltip>
+                  </div>
+                  </TooltipProvider>
+                  </div>
+                  {index < recentActiveOrders.slice(0, 5).length - 1 && <Separator />}
+              </React.Fragment>
+              ))}
+          </div>
+          ) : (
+              <div className="text-center py-8">
+              <PackageSearch className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-2" />
+              <p className="text-muted-foreground">You have no active orders at the moment.</p>
+              </div>
+          )}
+          <Button className="mt-6 w-full" asChild>
+              <Link href="/designer/orders">
+              View All My Orders <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+          </Button>
+      </CardContent>
+      </Card>
 
     </div>
   );
