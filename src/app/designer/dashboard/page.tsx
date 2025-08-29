@@ -7,7 +7,6 @@ import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRup
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import React from 'react';
 import {
   DropdownMenu,
@@ -17,8 +16,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from '@/components/ui/separator';
 import { format, isPast, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 const mockNotifications = [
     {
@@ -65,8 +72,8 @@ export default function DesignerDashboardPage() {
     { title: 'Total Orders', value: '12', icon: Briefcase, href: '/designer/orders', color: 'text-blue-500' },
     { title: 'Completed Orders', value: '8', icon: CheckCircle, href: '/designer/orders?status=Completed', color: 'text-green-500' },
     { title: 'Pending Orders', value: '4', icon: Clock, href: '/designer/orders?status=In Progress', color: 'text-orange-500' },
-    { title: 'Total Earnings', value: '₹85,500', icon: IndianRupee, href: '/designer/earnings', color: 'text-purple-500' },
-    { title: 'My Rating', value: '4.7/5', icon: Star, href: '/designer/reviews', color: 'text-yellow-500' },
+    { title: 'Total Earnings', value: '₹85,500', icon: IndianRupee, href: '#', color: 'text-purple-500' },
+    { title: 'My Rating', value: '4.7/5', icon: Star, href: '#', color: 'text-yellow-500' },
     { title: 'Portfolio Views', value: '1,204', icon: Eye, href: '/designer/portfolio?view=analytics', color: 'text-pink-500' },
   ];
 
@@ -205,11 +212,28 @@ export default function DesignerDashboardPage() {
                             <Badge variant={getStatusBadgeVariant(order.status)} className="whitespace-nowrap hidden sm:flex">{order.status}</Badge>
                           </div>
                         </div>
+                        <TooltipProvider>
                         <div className="flex gap-2 shrink-0 self-end sm:self-center">
-                          <Button variant="outline" size="sm"><Eye className="mr-1.5 h-4 w-4"/> View Order</Button>
-                          <Button variant="outline" size="sm"><MessageSquare className="mr-1.5 h-4 w-4"/> Message</Button>
-                          <Button variant="default" size="sm"><Upload className="mr-1.5 h-4 w-4"/> Upload</Button>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="outline" size="icon" asChild><Link href={`/designer/orders/${order.id}`}><Eye className="h-4 w-4"/></Link></Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>View Order</p></TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="outline" size="icon"><MessageSquare className="h-4 w-4"/></Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Message Client</p></TooltipContent>
+                            </Tooltip>
+                             <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="outline" size="icon"><Upload className="h-4 w-4"/></Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Upload Files</p></TooltipContent>
+                            </Tooltip>
                         </div>
+                        </TooltipProvider>
                       </div>
                       {index < recentActiveOrders.slice(0, 5).length - 1 && <Separator />}
                     </React.Fragment>
