@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/tooltip";
 
 
-const mockNotifications = [
+const mockHeaderNotifications = [
     {
         id: 'notif1',
         icon: MessageSquare,
@@ -53,6 +53,8 @@ const mockNotifications = [
         href: "/designer/orders/ORDFGHIJ",
     },
 ];
+
+const mockDashboardNotifications = [...mockHeaderNotifications]; // Use the same data for consistency
 
 export default function DesignerDashboardPage() {
   const recentActiveOrders = [
@@ -104,9 +106,9 @@ export default function DesignerDashboardPage() {
                         <Bell className="h-5 w-5" />
                         <span className="sr-only">Notifications</span>
                     </Button>
-                    {mockNotifications.length > 0 && (
+                    {mockHeaderNotifications.length > 0 && (
                         <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                            {mockNotifications.length}
+                            {mockHeaderNotifications.length}
                         </Badge>
                     )}
                 </div>
@@ -114,9 +116,9 @@ export default function DesignerDashboardPage() {
             <DropdownMenuContent className="w-80" align="end">
                 <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {mockNotifications.length > 0 ? (
+                {mockHeaderNotifications.length > 0 ? (
                     <>
-                        {mockNotifications.map(notification => (
+                        {mockHeaderNotifications.map(notification => (
                             <DropdownMenuItem key={notification.id} asChild className="p-3 cursor-pointer">
                                 <Link href={notification.href}>
                                     <notification.icon className="h-5 w-5 mr-3 text-primary shrink-0" />
@@ -256,8 +258,41 @@ export default function DesignerDashboardPage() {
 
         {/* Right Sidebar Area */}
         <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+             <Card className="shadow-lg">
+                <CardHeader className="pb-2">
+                    <CardTitle className="font-headline text-lg flex items-center">
+                        <Bell className="mr-2 h-5 w-5 text-primary"/>
+                        Recent Notifications
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {mockDashboardNotifications.length > 0 ? (
+                        <ul className="space-y-3">
+                            {mockDashboardNotifications.slice(0, 3).map(notification => (
+                                <li key={notification.id}>
+                                    <Link href={notification.href} className="block hover:bg-muted/50 p-2 rounded-md">
+                                        <div className="flex items-start gap-3">
+                                            <notification.icon className="h-4 w-4 mt-1 shrink-0 text-muted-foreground" />
+                                            <div>
+                                                <p className="font-semibold text-sm leading-tight">{notification.title}</p>
+                                                <p className="text-xs text-muted-foreground">{notification.time}</p>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-sm text-muted-foreground text-center py-4">No new notifications.</p>
+                    )}
+                </CardContent>
+                <CardFooter>
+                    <Button variant="outline" size="sm" className="w-full">View All Notifications</Button>
+                </CardFooter>
+            </Card>
+
             <Card className="shadow-lg">
-                <CardHeader>
+                <CardHeader className="pb-2">
                     <CardTitle className="font-headline text-lg flex items-center">
                         <Clock className="mr-2 h-5 w-5 text-primary"/>
                         Upcoming Deadlines
