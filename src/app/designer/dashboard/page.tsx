@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from '@/components/ui/button';
@@ -18,13 +17,6 @@ export default function DesignerDashboardPage() {
     { id: 'ORDFGHIJ', serviceName: 'Brochure for Print', client: 'Anil K.', deadline: 'July 22, 2024', status: 'In Progress', progress: 40 },
     { id: 'ORDKLMNO', serviceName: 'Pitch Deck Presentation', client: 'Sunita M.', deadline: 'July 30, 2024', status: 'In Progress', progress: 10 },
   ];
-
-  const applicationStatus = {
-    serviceName: 'UI/UX Web Design (India)',
-    status: 'Approved',
-    icon: CheckCircle,
-    color: 'text-green-500'
-  };
 
   const designerStats = [
     { title: 'Total Orders', value: '12', icon: Briefcase, href: '/designer/orders', color: 'text-blue-500' },
@@ -117,52 +109,6 @@ export default function DesignerDashboardPage() {
                 View All My Orders <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="font-headline flex items-center">
-              <FileText className="mr-3 h-6 w-6 text-primary" />
-              Service Alerts & Approvals
-            </CardTitle>
-            <CardDescription>Manage service notifications and track your approved specialities.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="p-4 border rounded-lg bg-secondary/30 mb-4">
-              <h4 className="font-semibold">Latest Approval Status:</h4>
-              <div className="flex items-center mt-1">
-                <applicationStatus.icon className={`mr-2 h-5 w-5 ${applicationStatus.color}`} />
-                <span>{applicationStatus.serviceName}: <span className={`${applicationStatus.color} font-medium`}>{applicationStatus.status}</span></span>
-              </div>
-            </div>
-            <Button className="w-full" asChild>
-              <Link href="/designer/services-notifications">
-                Manage Service Alerts <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="font-headline flex items-center">
-              <Palette className="mr-3 h-6 w-6 text-primary" />
-              Your Portfolio
-            </CardTitle>
-            <CardDescription>Showcase your best work to attract clients and get approved for more services.</CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-4" data-ai-hint="indian art portfolio">
-                <Palette className="w-16 h-16 text-muted-foreground opacity-50" />
-             </div>
-          <p className="text-muted-foreground mb-4">Keep your portfolio updated with your latest and greatest designs relevant to the Indian market.</p>
-          <Button size="lg" asChild>
-            <Link href="/designer/portfolio">
-              Manage Portfolio <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
         </CardContent>
       </Card>
     </div>
