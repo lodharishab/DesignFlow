@@ -2,7 +2,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye, MessageSquare, Upload, PackageSearch, PlusCircle, Pencil, Send, Bell, Star, AlertTriangle, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
@@ -66,7 +66,7 @@ const mockDashboardNotifications = [
         title: "Category Approved",
         description: "Your request for 'Packaging Design' has been approved. You can now receive alerts for these projects.",
         time: "5m ago",
-        href: "/designer/services-notifications",
+        href: "/designer/applications",
         isRead: false
     },
     {
@@ -76,7 +76,7 @@ const mockDashboardNotifications = [
         title: "Category Rejected",
         description: "Your request for 'Motion Graphics' was rejected. Please ensure your portfolio has relevant examples.",
         time: "30m ago",
-        href: "/designer/services-notifications",
+        href: "/designer/applications",
         isRead: false
     },
     ...mockHeaderNotifications.slice(1)
@@ -111,7 +111,7 @@ export default function DesignerDashboardPage() {
     { label: 'Add Portfolio Item', href: '/designer/portfolio/new', icon: PlusCircle, disabled: false },
     { label: 'Create Service', href: '#', icon: Pencil, disabled: true },
     { label: 'Request Advance', href: '#', icon: HandCoins, disabled: true },
-    { label: 'Message Clients', href: '#', icon: MessageSquare, disabled: true },
+    { label: 'Message Clients', href: '/designer/messages', icon: MessageSquare, disabled: false },
     { label: 'View All Orders', href: '/designer/orders', icon: Briefcase, disabled: false },
   ];
 
@@ -225,7 +225,9 @@ export default function DesignerDashboardPage() {
               )}
           </CardContent>
           <CardFooter>
-              <Button variant="outline" size="sm" className="w-full">View All Notifications</Button>
+              <Button variant="outline" size="sm" className="w-full" asChild>
+                <Link href="/designer/messages?tab=notifications">View All Notifications</Link>
+              </Button>
           </CardFooter>
           </Card>
 

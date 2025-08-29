@@ -41,7 +41,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
@@ -51,7 +51,6 @@ const navItems = [
   { href: '/designer/orders', icon: Briefcase, label: 'My Orders' },
   { href: '/designer/portfolio', icon: Palette, label: 'My Portfolio' },
   { href: '/designer/messages', icon: MessageSquare, label: 'Messaging' },
-  { href: '/designer/services-notifications', icon: Bell, label: 'My Service Alerts' },
   { href: '/designer/profile', icon: Settings, label: 'Profile & Settings' },
 ];
 
@@ -190,7 +189,8 @@ export default function DesignerLayout({
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild><Link href="/designer/profile">Profile</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/designer/profile">Profile & Settings</Link></DropdownMenuItem>
+                   <DropdownMenuItem asChild><Link href="/designer/applications">My Service Alerts</Link></DropdownMenuItem>
                   <DropdownMenuItem>Earnings</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>Log out</DropdownMenuItem>
