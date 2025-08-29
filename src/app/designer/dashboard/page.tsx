@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye, MessageSquare, Upload, PackageSearch, PlusCircle, Pencil, Send, Bell, Star, AlertTriangle } from 'lucide-react';
+import { Briefcase, FileText, Palette, ArrowRight, CheckCircle, Clock, IndianRupee, HandCoins, Eye, MessageSquare, Upload, PackageSearch, PlusCircle, Pencil, Send, Bell, Star, AlertTriangle, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -69,6 +69,8 @@ export default function DesignerDashboardPage() {
     .filter(order => order.status === 'In Progress' || order.status === 'Awaiting Client Review')
     .sort((a, b) => a.deadline.getTime() - b.deadline.getTime())
     .slice(0, 3);
+  
+  const profileCompleteness = 75; // Mock data for profile completion
 
   const designerStats = [
     { title: 'Total Orders', value: '12', icon: Briefcase, href: '/designer/orders', color: 'text-blue-500' },
@@ -258,6 +260,29 @@ export default function DesignerDashboardPage() {
 
         {/* Right Sidebar Area */}
         <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+            <Card className="shadow-lg">
+                <CardHeader className="pb-2">
+                    <CardTitle className="font-headline text-lg flex items-center">
+                        <UserCircle className="mr-2 h-5 w-5 text-primary"/>
+                        Profile Completeness
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center gap-4">
+                        <Progress value={profileCompleteness} className="h-2 flex-grow" />
+                        <span className="font-bold text-lg text-primary">{profileCompleteness}%</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">A complete profile attracts more clients.</p>
+                </CardContent>
+                <CardFooter>
+                    <Button variant="outline" size="sm" className="w-full" asChild>
+                      <Link href="/designer/profile">
+                        <Pencil className="mr-2 h-4 w-4" /> Complete Your Profile
+                      </Link>
+                    </Button>
+                </CardFooter>
+            </Card>
+
              <Card className="shadow-lg">
                 <CardHeader className="pb-2">
                     <CardTitle className="font-headline text-lg flex items-center">
