@@ -11,7 +11,10 @@ import {
   UserCircle,
   Brush,
   Settings, // Added for Profile/Settings
-  Bell // Added for Service Notifications
+  Bell, // Added for Service Notifications
+  MessageSquare,
+  CheckCircle,
+  AlertTriangle
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -34,7 +37,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 
 const navItems = [
@@ -45,12 +50,43 @@ const navItems = [
   { href: '/designer/profile', icon: Settings, label: 'Profile & Settings' }, // Using Settings icon
 ];
 
+const mockHeaderNotifications = [
+    {
+        id: 'notif1',
+        icon: MessageSquare,
+        title: "New Message from Priya S.",
+        description: "Regarding order ORD7361P: 'Looks great! Can we try a different color?'",
+        time: "15m ago",
+        href: "/designer/orders/ORD7361P",
+        isRead: false,
+    },
+    {
+        id: 'notif2',
+        icon: Briefcase,
+        title: "New Order Assigned",
+        description: "You've been assigned to order ORDXYZ123: 'Business Card Design'.",
+        time: "1h ago",
+        href: "/designer/orders/ORDXYZ123",
+        isRead: false,
+    },
+    {
+        id: 'notif3',
+        icon: CheckCircle,
+        title: "Order Approved",
+        description: "Client has approved the final delivery for order ORDFGHIJ.",
+        time: "2 days ago",
+        href: "/designer/orders/ORDFGHIJ",
+        isRead: true,
+    },
+];
+
 export default function DesignerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const unreadCount = mockHeaderNotifications.filter(n => !n.isRead).length;
 
   return (
     <SidebarProvider defaultOpen>
@@ -89,6 +125,45 @@ export default function DesignerLayout({
             <div className="flex-1" /> {/* Spacer */}
             <div className="flex items-center space-x-4">
               <ModeToggle />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <div className="relative">
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Bell className="h-5 w-5" />
+                            <span className="sr-only">Notifications</span>
+                        </Button>
+                        {unreadCount > 0 && (
+                            <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-xs" variant="destructive">
+                                {unreadCount}
+                            </Badge>
+                        )}
+                    </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-80" align="end">
+                    <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {mockHeaderNotifications.length > 0 ? (
+                        <>
+                            {mockHeaderNotifications.map(notification => (
+                                <DropdownMenuItem key={notification.id} asChild className="p-3 cursor-pointer">
+                                    <Link href={notification.href}>
+                                        <notification.icon className="h-5 w-5 mr-3 text-primary shrink-0" />
+                                        <div className="flex-grow">
+                                            <p className="font-semibold text-sm">{notification.title}</p>
+                                            <p className="text-xs text-muted-foreground">{notification.description}</p>
+                                            <p className="text-xs text-muted-foreground/70 mt-1">{notification.time}</p>
+                                        </div>
+                                    </Link>
+                                </DropdownMenuItem>
+                            ))}
+                        </>
+                    ) : (
+                        <div className="text-center text-sm text-muted-foreground p-4">
+                            No new notifications
+                        </div>
+                    )}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">

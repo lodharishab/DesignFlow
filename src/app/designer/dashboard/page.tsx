@@ -36,6 +36,7 @@ const mockHeaderNotifications = [
         description: "Regarding order ORD7361P: 'Looks great! Can we try a different color?'",
         time: "15m ago",
         href: "/designer/orders/ORD7361P",
+        isRead: false,
     },
     {
         id: 'notif2',
@@ -44,6 +45,7 @@ const mockHeaderNotifications = [
         description: "You've been assigned to order ORDXYZ123: 'Business Card Design'.",
         time: "1h ago",
         href: "/designer/orders/ORDXYZ123",
+        isRead: false,
     },
     {
         id: 'notif3',
@@ -52,10 +54,33 @@ const mockHeaderNotifications = [
         description: "Client has approved the final delivery for order ORDFGHIJ.",
         time: "2 days ago",
         href: "/designer/orders/ORDFGHIJ",
+        isRead: true,
     },
 ];
 
-const mockDashboardNotifications = [...mockHeaderNotifications]; // Use the same data for consistency
+const mockDashboardNotifications = [
+    {
+        id: 'cat_req_appr',
+        type: 'Service Category Request',
+        icon: CheckCircle,
+        title: "Category Approved",
+        description: "Your request for 'Packaging Design' has been approved. You can now receive alerts for these projects.",
+        time: "5m ago",
+        href: "/designer/services-notifications",
+        isRead: false
+    },
+    {
+        id: 'cat_req_rej',
+        type: 'Service Category Request',
+        icon: AlertTriangle,
+        title: "Category Rejected",
+        description: "Your request for 'Motion Graphics' was rejected. Please ensure your portfolio has relevant examples.",
+        time: "30m ago",
+        href: "/designer/services-notifications",
+        isRead: false
+    },
+    ...mockHeaderNotifications.slice(1)
+];
 
 export default function DesignerDashboardPage() {
   const recentActiveOrders = [
@@ -98,53 +123,16 @@ export default function DesignerDashboardPage() {
     }
   };
 
+  const getNotificationIconColor = (title: string) => {
+    if (title.includes('Approved')) return 'text-green-500';
+    if (title.includes('Rejected')) return 'text-red-500';
+    return 'text-primary';
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold font-headline">Designer Dashboard</h1>
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <div className="relative">
-                    <Button variant="outline" size="icon">
-                        <Bell className="h-5 w-5" />
-                        <span className="sr-only">Notifications</span>
-                    </Button>
-                    {mockHeaderNotifications.length > 0 && (
-                        <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                            {mockHeaderNotifications.length}
-                        </Badge>
-                    )}
-                </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-80" align="end">
-                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {mockHeaderNotifications.length > 0 ? (
-                    <>
-                        {mockHeaderNotifications.map(notification => (
-                            <DropdownMenuItem key={notification.id} asChild className="p-3 cursor-pointer">
-                                <Link href={notification.href}>
-                                    <notification.icon className="h-5 w-5 mr-3 text-primary shrink-0" />
-                                    <div className="flex-grow">
-                                        <p className="font-semibold text-sm">{notification.title}</p>
-                                        <p className="text-xs text-muted-foreground">{notification.description}</p>
-                                        <p className="text-xs text-muted-foreground/70 mt-1">{notification.time}</p>
-                                    </div>
-                                </Link>
-                            </DropdownMenuItem>
-                        ))}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="justify-center text-xs text-muted-foreground py-2 cursor-pointer">
-                            View All Notifications
-                        </DropdownMenuItem>
-                    </>
-                ) : (
-                    <div className="text-center text-sm text-muted-foreground p-4">
-                        No new notifications
-                    </div>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
       </div>
       
       {/* Stats Grid */}
@@ -222,7 +210,7 @@ export default function DesignerDashboardPage() {
                           <li key={notification.id}>
                               <Link href={notification.href} className="block hover:bg-muted/50 p-2 rounded-md">
                                   <div className="flex items-start gap-3">
-                                      <notification.icon className="h-4 w-4 mt-1 shrink-0 text-muted-foreground" />
+                                      <notification.icon className={cn("h-4 w-4 mt-1 shrink-0", getNotificationIconColor(notification.title))} />
                                       <div>
                                           <p className="font-semibold text-sm leading-tight">{notification.title}</p>
                                           <p className="text-xs text-muted-foreground">{notification.time}</p>
