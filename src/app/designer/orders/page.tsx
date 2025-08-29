@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo, type ReactElement, ChangeEvent, useCallba
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from '@/components/ui/badge';
+import { Badge } from "@/components/ui/badge";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
@@ -112,6 +112,18 @@ const ordersWithMilestones: Order[] = allOrders.map(order => {
   return order;
 });
 
+const getStatusBadgeVariant = (status: OrderStatus) => {
+    switch (status) {
+      case 'Completed': return 'default';
+      case 'In Progress': return 'secondary';
+      case 'Pending Assignment': return 'outline'; 
+      case 'Awaiting Client Review': return 'outline';
+      case 'Revision Requested': return 'secondary';
+      case 'Cancelled': return 'destructive';
+      default: return 'secondary';
+    }
+};
+
 export default function DesignerOrdersPage(): ReactElement {
   const [assignedOrders, setAssignedOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -200,18 +212,6 @@ export default function DesignerOrdersPage(): ReactElement {
     return filtered;
   }, [assignedOrders, statusFilter, searchTerm, sortConfig]);
 
-  const getStatusBadgeVariant = (status: OrderStatus) => {
-    switch (status) {
-      case 'Completed': return 'default';
-      case 'In Progress': return 'secondary';
-      case 'Pending Assignment': return 'outline'; 
-      case 'Awaiting Client Review': return 'outline';
-      case 'Revision Requested': return 'secondary';
-      case 'Cancelled': return 'destructive';
-      default: return 'secondary';
-    }
-  };
-
   const getStatusIcon = (status: OrderStatus) => {
     switch (status) {
       case 'In Progress': return <Clock className="mr-1.5 h-3.5 w-3.5" />;
@@ -228,30 +228,24 @@ export default function DesignerOrdersPage(): ReactElement {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-bold font-headline flex items-center">
           <Briefcase className="mr-3 h-8 w-8 text-primary" />
-          My Assigned Orders
+          Manage Your Projects
         </h1>
+         <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search Order, Client..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+        </div>
       </div>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-             <div>
-                <CardTitle>Manage Your Projects</CardTitle>
-                <CardDescription>Track progress, submit deliverables, and communicate with clients.</CardDescription>
-             </div>
-             <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search Order, Client..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-            </div>
-          </div>
           <div className="pt-4 flex flex-wrap gap-2">
             {designerOrderStatusFilters.map(filter => (
               <Button
@@ -284,7 +278,7 @@ export default function DesignerOrdersPage(): ReactElement {
                         Order ID {getSortIndicator('id')}
                     </Button>
                   </TableHead>
-                  <TableHead>
+                   <TableHead>
                      <Button variant="ghost" onClick={() => requestSort('serviceName')} className="px-1 text-xs sm:text-sm -ml-2">
                         Service {getSortIndicator('serviceName')}
                     </Button>
@@ -372,6 +366,18 @@ export default function DesignerOrdersPage(): ReactElement {
 
 function OrderDetailsDrawer({ order, isOpen, onClose, onMilestoneAction }: { order: Order | null; isOpen: boolean; onClose: () => void; onMilestoneAction: (orderId: string, milestoneId: string) => void; }) {
   if (!order) return null;
+
+  const getStatusBadgeVariant = (status: OrderStatus) => {
+    switch (status) {
+      case 'Completed': return 'default';
+      case 'In Progress': return 'secondary';
+      case 'Pending Assignment': return 'outline'; 
+      case 'Awaiting Client Review': return 'outline';
+      case 'Revision Requested': return 'secondary';
+      case 'Cancelled': return 'destructive';
+      default: return 'secondary';
+    }
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -515,3 +521,5 @@ function AnalyticsSummary({ analytics }: { analytics: Analytics }) {
     </Card>
   )
 }
+
+    
