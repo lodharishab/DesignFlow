@@ -47,7 +47,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, isPast, differenceInDays } from 'date-fns';
-import { initialOrdersData, type Order as BaseOrder, type OrderStatus, type OrderEvent, type PublicNoteHistoryItem } from '@/components/admin/orders/orders-table-view'; 
+import { initialOrdersData, type Order as BaseOrder, type OrderStatus, type OrderEvent } from '@/components/admin/orders/orders-table-view'; 
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -156,9 +156,6 @@ function DesignerOrderDetailPageContent(): ReactElement {
   const [showRevisionModal, setShowRevisionModal] = useState(false);
   const [privateNotes, setPrivateNotes] = useState('');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
-  const [sharedNotes, setSharedNotes] = useState('');
-  const [isSavingSharedNotes, setIsSavingSharedNotes] = useState(false);
-
 
   useEffect(() => {
     if (orderId) {
@@ -167,7 +164,6 @@ function DesignerOrderDetailPageContent(): ReactElement {
       if (foundOrder) {
         setOrder({...foundOrder, orderEvents: [...foundOrder.orderEvents].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime())});
         setPrivateNotes(foundOrder.privateNotes || '');
-        setSharedNotes(foundOrder.publicNotes || '');
         if (foundOrder.status === 'Revision Requested' && foundOrder.revisionsUsed >= foundOrder.revisionsAllowed) {
             setShowRevisionModal(true);
         }
@@ -263,30 +259,6 @@ function DesignerOrderDetailPageContent(): ReactElement {
         setIsSavingNotes(false);
     }, 1000);
   };
-
-  const handleSaveSharedNotes = () => {
-    if (!order) return;
-    setIsSavingSharedNotes(true);
-    console.log("Saving shared notes for order:", order.id, { sharedNotes });
-    
-    const newHistoryEntry: PublicNoteHistoryItem = {
-      text: sharedNotes,
-      editedBy: order.designerName || 'Designer',
-      timestamp: new Date(),
-    };
-
-    setTimeout(() => {
-      setOrder(prev => prev ? ({
-        ...prev, 
-        publicNotes: sharedNotes, 
-        publicNotesLastEdited: new Date(),
-        publicNotesHistory: [newHistoryEntry, ...(prev.publicNotesHistory || [])]
-      }) : null);
-      toast({ title: "Shared Notes Updated (Simulated)", description: "The shared project notes have been saved." });
-      setIsSavingSharedNotes(false);
-    }, 1000);
-  };
-
 
   if (isLoading) {
     return (
@@ -441,8 +413,6 @@ function DesignerOrderDetailPageContent(): ReactElement {
           <MilestoneView order={order} />
       )}
       
-      <SharedNotes order={order} sharedNotes={sharedNotes} setSharedNotes={setSharedNotes} isSaving={isSavingSharedNotes} onSave={handleSaveSharedNotes} />
-
       <div className="grid lg:grid-cols-2 gap-8 items-start">
         <div className="space-y-8">
             <Card className="shadow-lg">
@@ -665,59 +635,6 @@ function AnalyticsSummary({ analytics }: { analytics: Analytics }) {
           </div>
         </div>
       </CardContent>
-    </Card>
-  )
-}
-
-function SharedNotes({ order, sharedNotes, setSharedNotes, isSaving, onSave }: { order: Order; sharedNotes: string; setSharedNotes: (notes: string) => void; isSaving: boolean; onSave: () => void; }) {
-  const [showHistory, setShowHistory] = useState(false);
-  return (
-    <Card className="shadow-lg">
-        <CardHeader>
-            <CardTitle className="font-headline text-xl flex items-center">
-                <UsersIcon className="mr-2 h-5 w-5 text-primary"/>
-                Shared Project Notes
-            </CardTitle>
-            <CardDescription>Visible to both you and the client. Use for important project-wide information.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Textarea 
-                placeholder="e.g., Agreed on final color palette: #... and #... Client to provide final text by Friday."
-                rows={5}
-                value={sharedNotes}
-                onChange={(e) => setSharedNotes(e.target.value)}
-                disabled={isSaving}
-            />
-             {order.publicNotesLastEdited && (
-                <p className="text-xs text-muted-foreground mt-2">Last updated by {order.publicNotesHistory?.[0]?.editedBy || 'N/A'} - {formatDistanceToNow(order.publicNotesLastEdited, { addSuffix: true })}</p>
-             )}
-        </CardContent>
-        <CardFooter className="flex-wrap justify-between gap-2">
-            <Button onClick={onSave} disabled={isSaving}>
-                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                {isSaving ? 'Saving...' : 'Save Shared Notes'}
-            </Button>
-            {order.publicNotesHistory && order.publicNotesHistory.length > 0 && (
-                <Button variant="outline" onClick={() => setShowHistory(!showHistory)}>
-                    {showHistory ? 'Hide History' : 'Show History'}
-                </Button>
-            )}
-        </CardFooter>
-        {showHistory && order.publicNotesHistory && (
-            <CardContent className="border-t pt-4 mt-4">
-                <h4 className="text-sm font-semibold mb-2">Edit History</h4>
-                <ul className="space-y-3 text-xs max-h-40 overflow-y-auto">
-                    {order.publicNotesHistory.map((entry, index) => (
-                        <li key={index} className="border-l-2 pl-3">
-                            <p className="italic text-muted-foreground whitespace-pre-line">"{entry.text}"</p>
-                            <p className="font-medium mt-1">
-                                by {entry.editedBy} - {formatDistanceToNow(entry.timestamp, { addSuffix: true })}
-                            </p>
-                        </li>
-                    ))}
-                </ul>
-            </CardContent>
-        )}
     </Card>
   )
 }
