@@ -11,7 +11,7 @@ import {
   Brush,
   Settings,
   Bell,
-  MessageSquare, // For new parent item
+  MessageSquare,
   CheckCircle,
   AlertTriangle,
   ChevronDown
@@ -50,15 +50,8 @@ const navItems = [
   { href: '/designer/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/designer/orders', icon: Briefcase, label: 'My Orders' },
   { href: '/designer/portfolio', icon: Palette, label: 'My Portfolio' },
-  { 
-    label: 'Messaging & Notifications',
-    icon: MessageSquare,
-    pathPrefix: '/designer/messages', // Simplified prefix
-    children: [
-      { href: '/designer/messages', icon: MessageSquare, label: 'Chats' },
-      { href: '/designer/services-notifications', icon: Bell, label: 'Service Alerts' },
-    ]
-  },
+  { href: '/designer/messages', icon: MessageSquare, label: 'Messaging' },
+  { href: '/designer/services-notifications', icon: Bell, label: 'My Service Alerts' },
   { href: '/designer/profile', icon: Settings, label: 'Profile & Settings' },
 ];
 
@@ -99,22 +92,6 @@ export default function DesignerLayout({
 }) {
   const pathname = usePathname();
   const unreadCount = mockHeaderNotifications.filter(n => !n.isRead).length;
-  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    const initiallyOpen: Record<string, boolean> = {};
-    navItems.forEach(item => {
-      if (item.children && (pathname.startsWith(item.pathPrefix || '') || item.children.some(child => pathname.startsWith(child.href)))) {
-        initiallyOpen[item.label] = true;
-      }
-    });
-    setOpenSubmenus(initiallyOpen);
-  }, [pathname]);
-
-  const toggleSubmenu = (label: string) => {
-    setOpenSubmenus(prev => ({ ...prev, [label]: !prev[label] }));
-  };
-
 
   return (
     <SidebarProvider defaultOpen>
@@ -127,54 +104,8 @@ export default function DesignerLayout({
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {navItems.map((item) => {
-              if (item.children) {
-                const isParentActive = item.children.some(child => pathname.startsWith(child.href));
-                const isOpen = openSubmenus[item.label] || false;
-                
-                return (
-                  <SidebarMenuItem key={item.label}>
-                     <SidebarMenuButton
-                      onClick={() => toggleSubmenu(item.label)}
-                      isActive={isParentActive && !isOpen}
-                      tooltip={{ children: item.label, side: 'right', align: 'center' }}
-                      className="justify-between"
-                      aria-expanded={isOpen}
-                    >
-                      <span className="flex items-center gap-2">
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </span>
-                      <ChevronDown
-                        className={cn(
-                          "h-4 w-4 transition-transform duration-200",
-                          isOpen && "rotate-180"
-                        )}
-                      />
-                    </SidebarMenuButton>
-                     {isOpen && (
-                      <SidebarMenuSub>
-                        {item.children.map(child => {
-                           const isChildActive = pathname === child.href || pathname.startsWith(`${child.href}/`);
-                          return (
-                            <SidebarMenuSubItem key={child.label}>
-                              <SidebarMenuSubButton asChild isActive={isChildActive}>
-                                <Link href={child.href}>
-                                  {child.icon && <child.icon />}
-                                  <span>{child.label}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          );
-                        })}
-                      </SidebarMenuSub>
-                    )}
-                  </SidebarMenuItem>
-                );
-
-              } else {
-                return (
-                  <SidebarMenuItem key={item.label}>
+            {navItems.map((item) => (
+                <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
                       asChild
                       isActive={pathname.startsWith(item.href)} 
@@ -185,10 +116,8 @@ export default function DesignerLayout({
                         <span>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              }
-            })}
+                </SidebarMenuItem>
+            ))}
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
