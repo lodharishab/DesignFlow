@@ -22,6 +22,8 @@ export interface PortfolioItem {
   projectDescription: string;
   galleryImages: Array<{ url: string; hint: string; caption?: string }>;
   tags?: string[];
+  views?: number;
+  likes?: number;
   designer?: { 
     id: string;
     slug: string; 

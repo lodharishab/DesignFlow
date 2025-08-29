@@ -69,16 +69,25 @@ export async function createPortfolioItem(
   itemData: Omit<PortfolioItem, '_id'> & { designerId: string }
 ): Promise<PortfolioItem | null> {
     const collection = await getPortfolioCollection();
+
+    // Add views and likes to the new item data for sorting
+    const itemWithStats: Omit<PortfolioItem, '_id'> & { designerId: string } = {
+        ...itemData,
+        views: Math.floor(Math.random() * 500),
+        likes: Math.floor(Math.random() * 100),
+    };
+
     if (!collection) {
       console.log("DB not enabled. Simulating createPortfolioItem success without DB write.");
        // Simulate success for prototyping without a DB.
+      allPortfolioItemsData.unshift(itemWithStats as PortfolioItem); // Add to mock data source
       return {
-        ...itemData,
+        ...itemWithStats,
         _id: new ObjectId().toHexString(), // Generate a fake ID
       };
     }
   try {
-    const { id, designerId, title, category, categorySlug, projectDescription, coverImageUrl, coverImageHint, galleryImages = [], tags = [], clientName, projectDate } = itemData;
+    const { id, designerId, title, category, categorySlug, projectDescription, coverImageUrl, coverImageHint, galleryImages = [], tags = [], clientName, projectDate, views, likes } = itemWithStats;
 
     const newItemRecord: PortfolioItemRecord = {
       id, // slug
@@ -93,6 +102,8 @@ export async function createPortfolioItem(
       tags,
       clientName,
       projectDate,
+      views,
+      likes,
       // designer field is part of PortfolioItem but not PortfolioItemRecord for direct DB storage
       // It can be populated on retrieval by joining/looking up designerData
     };
