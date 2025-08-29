@@ -31,7 +31,8 @@ import {
   BarChart,
   Save,
   BookMarked,
-  Users as UsersIcon // for Shared Notes
+  Users as UsersIcon, // for Shared Notes
+  HandCoins // For Advance Request
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -43,29 +44,31 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, isPast, differenceInDays } from 'date-fns';
-import { initialOrdersData, type Order as BaseOrder, type OrderStatus, type OrderEvent } from '@/components/admin/orders/orders-table-view'; 
+import { initialOrdersData, type Order as BaseOrder, type OrderStatus, type OrderEvent, type Milestone } from '@/components/admin/orders/orders-table-view'; 
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 
 const MOCK_DESIGNER_ID = 'des002';
 
 // --- Start of interfaces and data enhancements for this page ---
-interface Milestone {
-  id: string;
-  title: string;
-  dueDate: Date;
-  amount: number;
-  status: 'Pending' | 'Delivered' | 'Paid';
-}
-
 interface Analytics {
     completionDate: Date;
     totalDeliveryTimeDays: number;
@@ -76,7 +79,6 @@ interface Analytics {
 
 // Extend the base Order interface for this page's specific needs
 interface Order extends BaseOrder {
-  milestones?: Milestone[];
   analytics?: Analytics;
 }
 
@@ -86,9 +88,9 @@ const ordersWithEnhancements: Order[] = initialOrdersData.map(order => {
     return {
       ...order,
       milestones: [
-        { id: 'm1', title: 'Phase 1: Wireframes & UX Flow', dueDate: new Date(2024, 6, 8), amount: 8000, status: 'Paid' },
-        { id: 'm2', title: 'Phase 2: UI Design & Style Guide', dueDate: new Date(2024, 6, 20), amount: 12000, status: 'Delivered' },
-        { id: 'm3', title: 'Phase 3: Final Assets & Prototype', dueDate: new Date(2024, 6, 28), amount: 4999, status: 'Pending' },
+        { id: 'm1_7361p', title: 'Phase 1: Wireframes & UX Flow', dueDate: new Date(2024, 6, 8), amount: 8000, status: 'Paid' },
+        { id: 'm2_7361p', title: 'Phase 2: UI Design & Style Guide', dueDate: new Date(2024, 6, 20), amount: 12000, status: 'Delivered' },
+        { id: 'm3_7361p', title: 'Phase 3: Final Assets & Prototype', dueDate: new Date(2024, 6, 28), amount: 4999, status: 'Pending' },
       ]
     };
   }
@@ -96,14 +98,16 @@ const ordersWithEnhancements: Order[] = initialOrdersData.map(order => {
       return {
           ...order,
           milestones: [
-              { id: 'm4', title: 'Initial Icon Concepts (5 icons)', dueDate: new Date(2024, 5, 28), amount: 2500, status: 'Paid' },
-              { id: 'm5', title: 'Final Icon Set (10 icons)', dueDate: new Date(2024, 6, 2), amount: 2499, status: 'Pending' },
+              { id: 'm4_4011m', title: 'Initial Icon Concepts (5 icons)', dueDate: new Date(2024, 5, 28), amount: 2500, status: 'Paid' },
+              { id: 'm5_4011m', title: 'Final Icon Set (10 icons)', dueDate: new Date(2024, 6, 2), amount: 2499, status: 'Pending' },
           ]
       }
   }
-  if (order.id === 'ORD2945S' && order.designerId === MOCK_DESIGNER_ID) {
+  // Let's assume order ORD2945S belongs to designer des002 now to test analytics
+  if (order.id === 'ORD2945S') {
     return {
         ...order,
+        designerId: MOCK_DESIGNER_ID, // Assign to current designer
         analytics: {
             completionDate: new Date(2024, 6, 12),
             totalDeliveryTimeDays: differenceInDays(new Date(2024, 6, 12), order.orderDate),
@@ -275,6 +279,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
   
   const canSubmitDeliverables = order.status === 'In Progress' || (order.status === 'Revision Requested' && !showRevisionModal);
   const unlimitedRevisions = order.revisionsAllowed >= 99;
+  const canRequestAdvance = order.totalAmount > 8000;
 
   return (
     <div className="space-y-8">
@@ -289,6 +294,9 @@ function DesignerOrderDetailPageContent(): ReactElement {
                         <Star className="mr-2 h-4 w-4"/> Leave Review
                     </Link>
                 </Button>
+            )}
+            {canRequestAdvance && (
+              <RequestAdvanceDialog order={order} />
             )}
              <Badge variant={getStatusBadgeVariant(order.status)} className="text-base px-4 py-2 self-start md:self-center">
                 {getStatusIcon(order.status)}
@@ -545,6 +553,82 @@ function DesignerOrderDetailPageContent(): ReactElement {
       </div>
     </div>
   );
+}
+
+function RequestAdvanceDialog({ order }: { order: Order }) {
+  const { toast } = useToast();
+  const [isOpen, setIsOpen] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [reason, setReason] = useState('');
+  const [milestoneId, setMilestoneId] = useState('');
+
+  const pendingMilestones = order.milestones?.filter(m => m.status === 'Pending') || [];
+
+  const handleRequestSubmit = () => {
+    if (!amount || !reason || !milestoneId) {
+      toast({ title: "Error", description: "Please fill all fields for the advance request.", variant: "destructive"});
+      return;
+    }
+    // Simulate sending request
+    console.log("Submitting advance request:", { orderId: order.id, milestoneId, amount, reason });
+    toast({ title: "Request Sent (Simulated)", description: `Advance request for ₹${amount} has been sent to admin for review.`});
+    setIsOpen(false);
+    setAmount('');
+    setReason('');
+    setMilestoneId('');
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <HandCoins className="mr-2 h-4 w-4" />
+          Request Advance
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Request Payment Advance</DialogTitle>
+          <DialogDescription>
+            Request an advance for a specific milestone on order {order.id}. This will be sent to an admin for approval.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="milestoneId">Select Milestone*</Label>
+             <Select value={milestoneId} onValueChange={setMilestoneId}>
+              <SelectTrigger id="milestoneId">
+                <SelectValue placeholder="Select a pending milestone..." />
+              </SelectTrigger>
+              <SelectContent>
+                {pendingMilestones.length > 0 ? (
+                  pendingMilestones.map(m => (
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.title} (Up to ₹{m.amount.toLocaleString('en-IN')})
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="none" disabled>No pending milestones</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="amount">Amount Requested (INR)*</Label>
+            <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g., 5000" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="reason">Reason for Request*</Label>
+            <Textarea id="reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g., To purchase software subscription required for the project."/>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+          <Button onClick={handleRequestSubmit} disabled={pendingMilestones.length === 0}>Submit Request</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
 }
 
 function MilestoneView({ order }: { order: Order }) {
