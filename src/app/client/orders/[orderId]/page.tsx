@@ -1,69 +1,27 @@
 
+
 "use client";
 
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, ShoppingBag, Calendar, FileText, MessageSquare, User, PackageSearch, IndianRupee, Star } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Calendar, FileText, MessageSquare, User, PackageSearch, IndianRupee, Star, Users as UsersIcon, Loader2, Save, History } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { initialOrdersData, type Order as BaseOrder, PublicNoteHistoryItem } from '@/components/admin/orders/orders-table-view';
+import { format, formatDistanceToNow } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 
 // Mock data structure for an order - replace with actual data fetching
-interface OrderDetail {
-  id: string;
-  serviceName: string;
-  serviceTier?: string;
-  status: string;
-  orderDate: string;
-  deliveryDate?: string;
-  totalAmount: string;
-  designerName?: string;
-  briefSummary?: string;
-  deliverables?: Array<{ name: string; url: string; date: string }>;
-  messages?: Array<{ sender: string; text: string; date: string }>;
-}
+interface OrderDetail extends BaseOrder {}
 
-const mockOrdersData: { [key: string]: OrderDetail } = {
-  'ORD7361P': {
-    id: 'ORD7361P',
-    serviceName: 'E-commerce Website UI/UX',
-    serviceTier: 'Premium',
-    status: 'In Progress',
-    orderDate: '2024-07-01',
-    deliveryDate: '2024-07-25',
-    totalAmount: '₹24,999.00',
-    designerName: 'Rohan K.',
-    briefSummary: 'Modern UI/UX for Indian handicrafts e-commerce. Mobile-first, vernacular support.',
-    deliverables: [{ name: 'Initial Wireframes v1.pdf', url: '#', date: '2024-07-10'}],
-    messages: [
-      { sender: 'Rohan K.', text: 'Hi Priya, I\'ve uploaded the initial wireframes for your review. Let me know your thoughts!', date: '2024-07-10 11:00 AM' },
-      { sender: 'Priya S.', text: 'Thanks Rohan! Looking good. I have a few comments on the homepage layout.', date: '2024-07-10 03:00 PM' },
-    ]
-  },
-  'ORD1038K': {
-    id: 'ORD1038K',
-    serviceName: 'Social Media Campaign Graphics',
-    serviceTier: 'Standard',
-    status: 'Pending Assignment',
-    orderDate: '2024-07-05',
-    totalAmount: '₹7,999.00',
-    briefSummary: 'Engaging graphics for Diwali campaign. Traditional yet modern theme.',
-  },
-   'ORD2945S': {
-    id: 'ORD2945S',
-    serviceName: 'Startup Logo & Brand Identity',
-    serviceTier: 'Premium',
-    status: 'Completed',
-    orderDate: '2024-06-20',
-    deliveryDate: '2024-07-10',
-    totalAmount: '₹19,999.00',
-    designerName: 'Aisha K.',
-    briefSummary: 'Brand identity for health-tech startup SwasthyaLink.',
-    deliverables: [{ name: 'Final_Brand_Guidelines.pdf', url: '#', date: '2024-07-10'}, { name: 'Logo_Assets.zip', url: '#', date: '2024-07-10'}]
-  }
-};
+const mockOrdersData: { [key: string]: OrderDetail } = initialOrdersData.reduce((acc, order) => {
+    acc[order.id] = order;
+    return acc;
+}, {} as { [key: string]: OrderDetail });
 
 
 export default function ClientOrderDetailPage() {
@@ -72,15 +30,42 @@ export default function ClientOrderDetailPage() {
   const orderId = params.orderId as string;
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+  const [sharedNotes, setSharedNotes] = useState('');
+  const [isSavingSharedNotes, setIsSavingSharedNotes] = useState(false);
 
   useEffect(() => {
     if (orderId) {
       // Simulate data fetching
       const foundOrder = mockOrdersData[orderId];
       setOrder(foundOrder || null);
+      setSharedNotes(foundOrder?.publicNotes || '');
       setIsLoading(false);
     }
   }, [orderId]);
+
+  const handleSaveSharedNotes = () => {
+    if (!order) return;
+    setIsSavingSharedNotes(true);
+    console.log("Saving shared notes for order:", order.id, { sharedNotes });
+    
+    const newHistoryEntry: PublicNoteHistoryItem = {
+      text: sharedNotes,
+      editedBy: order.clientName, // Assuming client is editing
+      timestamp: new Date(),
+    };
+
+    setTimeout(() => {
+      setOrder(prev => prev ? ({
+        ...prev, 
+        publicNotes: sharedNotes, 
+        publicNotesLastEdited: new Date(),
+        publicNotesHistory: [newHistoryEntry, ...(prev.publicNotesHistory || [])]
+      }) : null);
+      toast({ title: "Shared Notes Updated (Simulated)", description: "The shared project notes have been saved." });
+      setIsSavingSharedNotes(false);
+    }, 1000);
+  };
 
   if (isLoading) {
     return <div className="container mx-auto py-12 px-5 text-center">Loading order details...</div>;
@@ -148,16 +133,16 @@ export default function ClientOrderDetailPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
             <div>
               <p className="font-semibold text-muted-foreground flex items-center"><IndianRupee className="mr-1 h-4 w-4" />Total Amount</p>
-              <p className="text-lg font-bold text-primary">{order.totalAmount}</p>
+              <p className="text-lg font-bold text-primary">₹{order.totalAmount.toLocaleString('en-IN')}</p>
             </div>
             <div>
               <p className="font-semibold text-muted-foreground flex items-center"><Calendar className="mr-2 h-4 w-4" />Order Date</p>
-              <p>{order.orderDate}</p>
+              <p>{format(order.orderDate, 'PPp')}</p>
             </div>
             {order.deliveryDate && (
               <div>
                 <p className="font-semibold text-muted-foreground flex items-center"><Calendar className="mr-2 h-4 w-4" />Expected/Completed Date</p>
-                <p>{order.deliveryDate}</p>
+                <p>{format(new Date(order.deliveryDate), 'PPp')}</p>
               </div>
             )}
             {order.designerName && (
@@ -178,6 +163,10 @@ export default function ClientOrderDetailPage() {
             </>
           )}
 
+          <Separator/>
+          <SharedNotesClient order={order} sharedNotes={sharedNotes} setSharedNotes={setSharedNotes} isSaving={isSavingSharedNotes} onSave={handleSaveSharedNotes} />
+
+
           {order.deliverables && order.deliverables.length > 0 && (
             <>
               <Separator />
@@ -188,7 +177,7 @@ export default function ClientOrderDetailPage() {
                     <li key={index} className="p-3 border rounded-md flex justify-between items-center bg-secondary/30">
                       <div>
                         <Link href={del.url} className="font-medium hover:underline text-primary">{del.name}</Link>
-                        <p className="text-xs text-muted-foreground">Submitted: {del.date}</p>
+                        <p className="text-xs text-muted-foreground">Submitted: {format(new Date(del.submittedAt), 'PPp')}</p>
                       </div>
                       <Button variant="outline" size="sm">Download</Button>
                     </li>
@@ -201,13 +190,13 @@ export default function ClientOrderDetailPage() {
           <Separator />
           <div>
              <h3 className="text-lg font-semibold mb-3 flex items-center"><MessageSquare className="mr-2 h-5 w-5 text-primary" />Communication Log</h3>
-             {order.messages && order.messages.length > 0 ? (
+             {order.orderEvents && order.orderEvents.length > 0 ? (
                 <div className="space-y-4 max-h-80 overflow-y-auto p-1">
-                    {order.messages.map((msg, index) => (
-                        <div key={index} className={`p-3 rounded-lg ${msg.sender === order.designerName ? 'bg-muted' : 'bg-primary/10 ml-auto max-w-[85%]'}`}>
-                            <p className="text-xs font-semibold">{msg.sender}</p>
-                            <p className="text-sm">{msg.text}</p>
-                            <p className="text-xs text-muted-foreground text-right mt-1">{msg.date}</p>
+                    {order.orderEvents.map((msg, index) => (
+                        <div key={index} className={`p-3 rounded-lg ${msg.actor === order.designerName ? 'bg-muted max-w-[85%]' : 'bg-primary/10 ml-auto max-w-[85%] text-right'}`}>
+                            <p className="text-xs font-semibold">{msg.actor}</p>
+                            <p className="text-sm">{msg.event}</p>
+                            <p className="text-xs text-muted-foreground text-right mt-1">{format(new Date(msg.timestamp), 'PPpp')}</p>
                         </div>
                     ))}
                 </div>
@@ -224,4 +213,57 @@ export default function ClientOrderDetailPage() {
       </Card>
     </div>
   );
+}
+
+function SharedNotesClient({ order, sharedNotes, setSharedNotes, isSaving, onSave }: { order: OrderDetail; sharedNotes: string; setSharedNotes: (notes: string) => void; isSaving: boolean; onSave: () => void; }) {
+  const [showHistory, setShowHistory] = useState(false);
+  return (
+    <Card className="shadow-none border bg-secondary/30">
+        <CardHeader>
+            <CardTitle className="font-headline text-xl flex items-center">
+                <UsersIcon className="mr-2 h-5 w-5 text-primary"/>
+                Shared Project Notes
+            </CardTitle>
+            <CardDescription>Visible to both you and the designer. Use for important project-wide information.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Textarea 
+                placeholder="e.g., Please use the attached logo files. Our main brand color is #0A2540."
+                rows={5}
+                value={sharedNotes}
+                onChange={(e) => setSharedNotes(e.target.value)}
+                disabled={isSaving}
+            />
+             {order.publicNotesLastEdited && (
+                <p className="text-xs text-muted-foreground mt-2">Last updated by {order.publicNotesHistory?.[0]?.editedBy || 'N/A'} - {formatDistanceToNow(new Date(order.publicNotesLastEdited), { addSuffix: true })}</p>
+             )}
+        </CardContent>
+        <CardFooter className="flex-wrap justify-between gap-2">
+            <Button onClick={onSave} disabled={isSaving}>
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                {isSaving ? 'Saving...' : 'Save Shared Notes'}
+            </Button>
+            {order.publicNotesHistory && order.publicNotesHistory.length > 0 && (
+                <Button variant="outline" onClick={() => setShowHistory(!showHistory)}>
+                    {showHistory ? 'Hide History' : 'Show History'}
+                </Button>
+            )}
+        </CardFooter>
+        {showHistory && order.publicNotesHistory && (
+            <CardContent className="border-t pt-4 mt-4">
+                <h4 className="text-sm font-semibold mb-2">Edit History</h4>
+                <ul className="space-y-3 text-xs max-h-40 overflow-y-auto">
+                    {order.publicNotesHistory.map((entry, index) => (
+                        <li key={index} className="border-l-2 pl-3">
+                            <p className="italic text-muted-foreground whitespace-pre-line">"{entry.text}"</p>
+                            <p className="font-medium mt-1">
+                                by {entry.editedBy} - {formatDistanceToNow(new Date(entry.timestamp), { addSuffix: true })}
+                            </p>
+                        </li>
+                    ))}
+                </ul>
+            </CardContent>
+        )}
+    </Card>
+  )
 }

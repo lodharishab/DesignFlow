@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, type ReactElement, useMemo, Fragment, ChangeEvent } from 'react';
@@ -49,6 +50,12 @@ export interface OrderEvent {
   notes?: string;
 }
 
+export interface PublicNoteHistoryItem {
+  text: string;
+  editedBy: string;
+  timestamp: Date;
+}
+
 export interface Order {
   id: string;
   clientName: string;
@@ -75,6 +82,9 @@ export interface Order {
   revisionsUsed: number;
   privateNotes?: string;
   privateNotesLastEdited?: Date;
+  publicNotes?: string;
+  publicNotesHistory?: PublicNoteHistoryItem[];
+  publicNotesLastEdited?: Date;
 }
 
 export const initialOrdersData: Order[] = [
@@ -102,6 +112,12 @@ export const initialOrdersData: Order[] = [
     revisionsUsed: 0,
     privateNotes: "Client seems very particular about the color palette. Make sure to provide at least 5-6 strong options in the first review. Also, check out behance.net/some-inspiration for the style she likes.",
     privateNotesLastEdited: new Date(),
+    publicNotes: "Agreed to use 'Onest' for body copy and 'Oswald' for headings. Client will provide final copy for the 'About Us' page by EOD Friday. Awaiting high-res product images.",
+    publicNotesLastEdited: new Date(new Date().setDate(new Date().getDate() - 1)),
+    publicNotesHistory: [
+        { text: "Agreed to use 'Onest' for body copy and 'Oswald' for headings. Client will provide final copy for the 'About Us' page by EOD Friday. Awaiting high-res product images.", editedBy: 'Rohan Kapoor', timestamp: new Date(new Date().setDate(new Date().getDate() - 1)) },
+        { text: "Initial note: Client will provide high-res product images by tomorrow.", editedBy: 'Priya Sharma', timestamp: new Date(new Date().setDate(new Date().getDate() - 2)) },
+    ],
   },
   {
     id: 'ORD1038K',
