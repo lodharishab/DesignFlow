@@ -21,7 +21,8 @@ import {
   ArrowUpDown, 
   ChevronUp, 
   ChevronDown,
-  ListFilter
+  ListFilter,
+  Search // Import Search icon
 } from 'lucide-react';
 import Link from 'next/link';
 import { format, isPast, formatDistanceToNow } from 'date-fns';
@@ -44,6 +45,7 @@ export default function DesignerOrdersPage(): ReactElement {
   const [assignedOrders, setAssignedOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
+  const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: SortableDesignerOrderKeys | null; direction: 'ascending' | 'descending' }>({
     key: 'dueDate',
     direction: 'ascending',
@@ -80,7 +82,16 @@ export default function DesignerOrdersPage(): ReactElement {
       filtered = filtered.filter(order => order.status === statusFilter);
     }
 
-    if (sortConfig.key) {
+    if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      filtered = filtered.filter(order =>
+        order.id.toLowerCase().includes(lowerSearchTerm) ||
+        order.clientName.toLowerCase().includes(lowerSearchTerm) ||
+        order.serviceName.toLowerCase().includes(lowerSearchTerm)
+      );
+    }
+    
+    if (sortConfig.key !== null) {
       filtered.sort((a, b) => {
         const valA = a[sortConfig.key!];
         const valB = b[sortConfig.key!];
@@ -101,7 +112,7 @@ export default function DesignerOrdersPage(): ReactElement {
       });
     }
     return filtered;
-  }, [assignedOrders, statusFilter, sortConfig]);
+  }, [assignedOrders, statusFilter, searchTerm, sortConfig]);
 
   const getStatusBadgeVariant = (status: OrderStatus) => {
     switch (status) {
@@ -142,19 +153,30 @@ export default function DesignerOrdersPage(): ReactElement {
         <CardHeader>
           <CardTitle>Manage Your Projects</CardTitle>
           <CardDescription>Track progress, submit deliverables, and communicate with clients.</CardDescription>
-           <div className="pt-4 flex flex-wrap gap-2">
-            {designerOrderStatusFilters.map(filter => (
-              <Button
-                key={filter.value}
-                variant={statusFilter === filter.value ? 'default' : 'outline'}
-                onClick={() => setStatusFilter(filter.value)}
-                size="sm"
-              >
-                {filter.icon && <filter.icon className="mr-2 h-4 w-4" />}
-                {filter.label}
-              </Button>
-            ))}
-          </div>
+           <div className="pt-4 flex flex-col md:flex-row md:items-center gap-4">
+              <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search Order ID, Client, Service..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {designerOrderStatusFilters.map(filter => (
+                  <Button
+                    key={filter.value}
+                    variant={statusFilter === filter.value ? 'default' : 'outline'}
+                    onClick={() => setStatusFilter(filter.value)}
+                    size="sm"
+                  >
+                    {filter.icon && <filter.icon className="mr-2 h-4 w-4" />}
+                    {filter.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
         </CardHeader>
         <CardContent>
           {displayedOrders.length === 0 ? (
@@ -254,4 +276,3 @@ export default function DesignerOrdersPage(): ReactElement {
     </div>
   );
 }
-
