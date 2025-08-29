@@ -71,6 +71,8 @@ export interface Order {
   deliverables?: { name: string, url: string, submittedAt: Date }[];
   revisionNotes?: string;
   revisionRequestDate?: Date;
+  revisionsAllowed: number;
+  revisionsUsed: number;
 }
 
 export const initialOrdersData: Order[] = [
@@ -93,7 +95,9 @@ export const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 6, 1, 11, 0), event: 'Payment Successful (Razorpay)', actor: 'System' },
       { timestamp: new Date(2024, 6, 1, 10, 30), event: 'Order Placed', actor: 'Priya Sharma' },
     ].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),
-    clientBrief: "Need a modern and clean UI/UX for a new e-commerce platform selling Indian handicrafts. Focus on mobile-first design and easy navigation for a diverse audience. Include vernacular language support considerations."
+    clientBrief: "Need a modern and clean UI/UX for a new e-commerce platform selling Indian handicrafts. Focus on mobile-first design and easy navigation for a diverse audience. Include vernacular language support considerations.",
+    revisionsAllowed: 3,
+    revisionsUsed: 0,
   },
   {
     id: 'ORD1038K',
@@ -111,7 +115,9 @@ export const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 6, 5, 14, 5), event: 'Payment Successful (PhonePe)', actor: 'System' },
       { timestamp: new Date(2024, 6, 5, 14, 0), event: 'Order Placed', actor: 'Rajesh Kumar' },
     ].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),
-    clientBrief: "Require engaging graphics for a Diwali festival campaign on Instagram, Facebook, and WhatsApp. Theme: Traditional yet modern, vibrant colors. Target audience: Indian families."
+    clientBrief: "Require engaging graphics for a Diwali festival campaign on Instagram, Facebook, and WhatsApp. Theme: Traditional yet modern, vibrant colors. Target audience: Indian families.",
+    revisionsAllowed: 3,
+    revisionsUsed: 0,
   },
   {
     id: 'ORD2945S',
@@ -132,7 +138,9 @@ export const initialOrdersData: Order[] = [
         { timestamp: new Date(2024, 5, 20, 16, 45), event: 'Order Placed', actor: 'Sunita Rao' },
     ].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),
     deliverables: [{ name: 'BrandIdentity_Final.zip', url: '#', submittedAt: new Date(2024, 6, 12, 12, 0)}],
-    clientBrief: "Brand identity for a new health-tech startup in Bangalore. Name: 'SwasthyaLink'. Logo should evoke trust, technology, and wellness. Prefer blues and greens."
+    clientBrief: "Brand identity for a new health-tech startup in Bangalore. Name: 'SwasthyaLink'. Logo should evoke trust, technology, and wellness. Prefer blues and greens.",
+    revisionsAllowed: 99, // Unlimited
+    revisionsUsed: 1,
   },
   {
     id: 'ORD8872V',
@@ -148,7 +156,9 @@ export const initialOrdersData: Order[] = [
         { timestamp: new Date(2024, 6, 9, 10, 0), event: 'Order Cancelled by Client', actor: 'Vikram Mehta' },
         { timestamp: new Date(2024, 6, 8, 9, 15), event: 'Order Placed', actor: 'Vikram Mehta' },
     ].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),
-    clientBrief: "Need vibrant banners for Ganesh Chaturthi celebrations for our community. Traditional motifs with a modern touch."
+    clientBrief: "Need vibrant banners for Ganesh Chaturthi celebrations for our community. Traditional motifs with a modern touch.",
+    revisionsAllowed: 1,
+    revisionsUsed: 0,
   },
    {
     id: 'ORD6531A',
@@ -169,7 +179,9 @@ export const initialOrdersData: Order[] = [
         { timestamp: new Date(2024, 6, 10, 11, 20), event: 'Order Placed', actor: 'Anjali Iyer' },
     ].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),
     deliverables: [ { name: 'RestaurantMenu_Draft_v1.pdf', url: '#', submittedAt: new Date(2024, 6, 15, 17, 0)} ],
-    clientBrief: "Menu design for a new South Indian fusion restaurant in Chennai. Needs to be elegant, easy to read, and reflect a modern take on tradition."
+    clientBrief: "Menu design for a new South Indian fusion restaurant in Chennai. Needs to be elegant, easy to read, and reflect a modern take on tradition.",
+    revisionsAllowed: 3,
+    revisionsUsed: 0,
   },
   {
     id: 'ORD4011M',
@@ -189,7 +201,9 @@ export const initialOrdersData: Order[] = [
         { timestamp: new Date(2024, 5, 26, 10, 0), event: `Designer Assigned: ${designersData.find(d => d.slug === 'sunita-reddy')?.name}`, actor: 'Admin' },
         { timestamp: new Date(2024, 5, 25, 9, 0), event: 'Order Placed', actor: 'Mohan Das' },
     ].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),
-    clientBrief: "Need a set of 10 unique icons for a new travel app focusing on Indian destinations. Icons should be modern, flat, and easily recognizable."
+    clientBrief: "Need a set of 10 unique icons for a new travel app focusing on Indian destinations. Icons should be modern, flat, and easily recognizable.",
+    revisionsAllowed: 2,
+    revisionsUsed: 0,
   },
   {
     id: 'ORD9274R',
@@ -213,6 +227,8 @@ export const initialOrdersData: Order[] = [
     clientBrief: "Elegant and traditional Indian wedding invitation. Theme: Peacock feathers and gold accents. Need main invite, RSVP card, and Sangeet details card.",
     revisionNotes: "The color palette for the main invite needs to be warmer. Please explore options with more traditional gold tones rather than the muted gold. Also, can the peacock feather motif be slightly larger on the envelope?",
     revisionRequestDate: new Date(2024, 5, 7, 10, 0),
+    revisionsAllowed: 3,
+    revisionsUsed: 1,
   }
 ];
 
@@ -576,4 +592,3 @@ export function OrdersTableView({ fixedStatusFilter }: OrdersTableViewProps): Re
     </>
   );
 }
-

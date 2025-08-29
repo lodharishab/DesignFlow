@@ -24,7 +24,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   Eye,
-  Star
+  Star,
+  GitPullRequest, // Icon for revisions
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -168,6 +169,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
   }
   
   const canSubmitDeliverables = order.status === 'In Progress' || order.status === 'Revision Requested';
+  const unlimitedRevisions = order.revisionsAllowed >= 99;
 
   return (
     <div className="space-y-8">
@@ -224,10 +226,14 @@ function DesignerOrderDetailPageContent(): ReactElement {
                 </div>
               }
             </div>
+            <div className="space-y-1">
+                <h4 className="font-semibold text-foreground flex items-center"><GitPullRequest className="mr-2 h-4 w-4 text-muted-foreground"/>Revisions</h4>
+                <p>{unlimitedRevisions ? `Unlimited Revisions` : `${order.revisionsUsed} of ${order.revisionsAllowed} used`}</p>
+            </div>
             {order.serviceScope && order.serviceScope.length > 0 && (
-                <div className="md:col-span-2 lg:col-span-1 lg:row-span-2 space-y-1">
+                <div className="md:col-span-2 lg:col-span-3 space-y-1">
                     <h4 className="font-semibold text-foreground flex items-center"><ListChecks className="mr-2 h-4 w-4 text-muted-foreground"/>Service Scope</h4>
-                    <ul className="list-disc list-inside pl-1 space-y-0.5 text-muted-foreground">
+                    <ul className="list-disc list-inside pl-1 space-y-0.5 text-muted-foreground columns-1 sm:columns-2">
                         {order.serviceScope.map((item, idx) => <li key={idx}>{item}</li>)}
                     </ul>
                 </div>
