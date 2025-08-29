@@ -3,11 +3,10 @@
 
 import { useState, useEffect, useMemo, type ReactElement, ChangeEvent, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { 
   Briefcase, 
   User, 
@@ -23,27 +22,16 @@ import {
   ChevronDown,
   ListFilter,
   Search,
-  PanelLeftClose,
-  IndianRupee,
-  MessageSquare,
-  Upload,
-  HandCoins,
-  Send,
-  Star,
-  ListChecks,
-  GitPullRequest,
-  BarChart,
 } from 'lucide-react';
-import { Progress } from "@/components/ui/progress"
 import Link from 'next/link';
-import { format, isPast, formatDistanceToNow, differenceInDays } from 'date-fns';
-import { initialOrdersData as allOrders, type Order as BaseOrder, type OrderStatus } from '@/components/admin/orders/orders-table-view';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet';
-import { Separator } from '@/components/ui/separator';
+import { format, isPast, formatDistanceToNow } from 'date-fns';
+import { initialOrdersData, type Order as BaseOrder, type OrderStatus } from '@/components/admin/orders/orders-table-view';
 
 const MOCK_DESIGNER_ID = 'des002';
 
 type SortableDesignerOrderKeys = 'id' | 'serviceName' | 'clientName' | 'dueDate' | 'status';
+
+interface Order extends BaseOrder {}
 
 const designerOrderStatusFilters: { label: string; value: OrderStatus | 'All'; icon?: React.ElementType }[] = [
   { label: 'All My Orders', value: 'All', icon: ListFilter },
@@ -53,64 +41,6 @@ const designerOrderStatusFilters: { label: string; value: OrderStatus | 'All'; i
   { label: 'Completed', value: 'Completed', icon: CheckCircle2 },
 ];
 
-// Extend the Order interface for new features
-interface Milestone {
-  id: string;
-  title: string;
-  dueDate: Date;
-  amount: number;
-  status: 'Pending' | 'Delivered' | 'Paid';
-}
-
-interface Analytics {
-    completionDate: Date;
-    totalDeliveryTimeDays: number;
-    revisionsCount: number;
-    clientRating: number;
-    paymentReleaseDate: Date;
-}
-
-interface Order extends BaseOrder {
-  milestones?: Milestone[];
-  analytics?: Analytics;
-}
-
-// Add mock milestone and analytics data to some orders
-const ordersWithMilestones: Order[] = allOrders.map(order => {
-  if (order.id === 'ORD7361P') {
-    return {
-      ...order,
-      milestones: [
-        { id: 'm1', title: 'Phase 1: Wireframes & UX Flow', dueDate: new Date(2024, 6, 8), amount: 8000, status: 'Paid' },
-        { id: 'm2', title: 'Phase 2: UI Design & Style Guide', dueDate: new Date(2024, 6, 20), amount: 12000, status: 'Delivered' },
-        { id: 'm3', title: 'Phase 3: Final Assets & Prototype', dueDate: new Date(2024, 6, 28), amount: 4999, status: 'Pending' },
-      ]
-    };
-  }
-  if (order.id === 'ORD4011M') {
-      return {
-          ...order,
-          milestones: [
-              { id: 'm4', title: 'Initial Icon Concepts (5 icons)', dueDate: new Date(2024, 5, 28), amount: 2500, status: 'Paid' },
-              { id: 'm5', title: 'Final Icon Set (10 icons)', dueDate: new Date(2024, 6, 2), amount: 2499, status: 'Pending' },
-          ]
-      }
-  }
-  // Add analytics to a completed order
-  if (order.id === 'ORD2945S' && order.designerId === MOCK_DESIGNER_ID) {
-    return {
-        ...order,
-        analytics: {
-            completionDate: new Date(2024, 6, 12),
-            totalDeliveryTimeDays: differenceInDays(new Date(2024, 6, 12), order.orderDate),
-            revisionsCount: 1,
-            clientRating: 4.5,
-            paymentReleaseDate: new Date(2024, 6, 26),
-        }
-    }
-  }
-  return order;
-});
 
 const getStatusBadgeVariant = (status: OrderStatus) => {
     switch (status) {
@@ -126,7 +56,6 @@ const getStatusBadgeVariant = (status: OrderStatus) => {
 
 export default function DesignerOrdersPage(): ReactElement {
   const [assignedOrders, setAssignedOrders] = useState<Order[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -136,26 +65,10 @@ export default function DesignerOrdersPage(): ReactElement {
   });
 
   useEffect(() => {
-    const designerOrders = ordersWithMilestones.filter(order => order.designerId === MOCK_DESIGNER_ID);
-    setAssignedOrders(designerOrders);
+    const designerOrders = initialOrdersData.filter(order => order.designerId === MOCK_DESIGNER_ID);
+    setAssignedOrders(designerOrders as Order[]);
     setIsLoading(false);
   }, []);
-  
-  const handleSelectOrder = (order: Order) => {
-    setSelectedOrder(order);
-  }
-
-  const handleMilestoneAction = (orderId: string, milestoneId: string) => {
-    setSelectedOrder(prevOrder => {
-      if (!prevOrder || prevOrder.id !== orderId) return prevOrder;
-      
-      const updatedMilestones = prevOrder.milestones?.map(m => 
-        m.id === milestoneId ? { ...m, status: 'Delivered' as const } : m
-      );
-
-      return { ...prevOrder, milestones: updatedMilestones };
-    });
-  };
 
   const requestSort = (key: SortableDesignerOrderKeys) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -303,9 +216,11 @@ export default function DesignerOrdersPage(): ReactElement {
               </TableHeader>
               <TableBody>
                 {displayedOrders.map(order => (
-                  <TableRow key={order.id} onClick={() => handleSelectOrder(order)} className="cursor-pointer">
+                  <TableRow key={order.id}>
                     <TableCell className="font-medium text-primary hover:underline text-xs sm:text-sm">
-                      {order.id}
+                      <Link href={`/designer/orders/${order.id}`}>
+                        {order.id}
+                      </Link>
                     </TableCell>
                     <TableCell className="text-xs sm:text-sm">
                         {order.serviceName}
@@ -340,11 +255,11 @@ export default function DesignerOrdersPage(): ReactElement {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="outline" size="sm" asChild>
-                        <span onClick={(e) => { e.stopPropagation(); handleSelectOrder(order); }}>
-                          Details <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                        </span>
-                      </Button>
+                       <Button variant="outline" size="sm" asChild>
+                         <Link href={`/designer/orders/${order.id}`}>
+                           Details <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                         </Link>
+                       </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -353,173 +268,6 @@ export default function DesignerOrdersPage(): ReactElement {
           )}
         </CardContent>
       </Card>
-      
-       <OrderDetailsDrawer 
-          order={selectedOrder} 
-          isOpen={!!selectedOrder} 
-          onClose={() => setSelectedOrder(null)} 
-          onMilestoneAction={handleMilestoneAction}
-        />
     </div>
   );
 }
-
-function OrderDetailsDrawer({ order, isOpen, onClose, onMilestoneAction }: { order: Order | null; isOpen: boolean; onClose: () => void; onMilestoneAction: (orderId: string, milestoneId: string) => void; }) {
-  if (!order) return null;
-
-  const getStatusBadgeVariant = (status: OrderStatus) => {
-    switch (status) {
-      case 'Completed': return 'default';
-      case 'In Progress': return 'secondary';
-      case 'Pending Assignment': return 'outline'; 
-      case 'Awaiting Client Review': return 'outline';
-      case 'Revision Requested': return 'secondary';
-      case 'Cancelled': return 'destructive';
-      default: return 'secondary';
-    }
-  };
-
-  return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
-        <SheetHeader className="pr-12">
-          <SheetTitle className="font-headline text-xl">Order: {order.id}</SheetTitle>
-          <SheetDescription>
-            {order.serviceName} - {order.serviceTier}
-          </SheetDescription>
-        </SheetHeader>
-        <Separator className="my-4"/>
-        <div className="flex-grow overflow-y-auto pr-4 space-y-6">
-            <div className="space-y-3 text-sm">
-                <p><strong className="font-medium text-muted-foreground">Client:</strong> {order.clientName}</p>
-                <p><strong className="font-medium text-muted-foreground">Status:</strong> <Badge variant={getStatusBadgeVariant(order.status)}>{order.status}</Badge></p>
-                <p><strong className="font-medium text-muted-foreground">Total:</strong> ₹{order.totalAmount.toLocaleString('en-IN')}</p>
-                {order.dueDate && <p><strong className="font-medium text-muted-foreground">Deadline:</strong> {format(order.dueDate, 'PPP')}</p>}
-            </div>
-
-            {order.status === 'Completed' && order.analytics && (
-              <AnalyticsSummary analytics={order.analytics} />
-            )}
-            
-            <MilestoneView order={order} onMilestoneAction={onMilestoneAction} />
-        </div>
-        <Separator className="mt-4"/>
-        <div className="pt-4 grid grid-cols-2 gap-2">
-            <Button variant="outline"><MessageSquare className="mr-2 h-4 w-4"/>Message Client</Button>
-            <Button variant="outline"><Upload className="mr-2 h-4 w-4"/>Upload File</Button>
-            <Button className="col-span-2"><Send className="mr-2 h-4 w-4"/>Submit for Review</Button>
-            <Button variant="secondary" className="col-span-2"><HandCoins className="mr-2 h-4 w-4"/>Request Advance</Button>
-        </div>
-        <SheetClose asChild><Button variant="ghost" className="absolute top-4 right-4 h-8 w-8 p-0"><PanelLeftClose/></Button></SheetClose>
-      </SheetContent>
-    </Sheet>
-  );
-}
-
-function MilestoneView({ order, onMilestoneAction }: { order: Order, onMilestoneAction: (orderId: string, milestoneId: string) => void; }) {
-  const { milestones = [] } = order;
-
-  const getMilestoneStatusBadge = (status: Milestone['status']) => {
-    switch (status) {
-      case 'Paid': return <Badge variant="default">Paid</Badge>;
-      case 'Delivered': return <Badge variant="secondary">Delivered</Badge>;
-      case 'Pending': return <Badge variant="outline">Pending</Badge>;
-    }
-  };
-  
-  const totalAmount = milestones.reduce((acc, m) => acc + m.amount, 0);
-  const paidAmount = milestones.filter(m => m.status === 'Paid').reduce((acc, m) => acc + m.amount, 0);
-  const progressPercentage = totalAmount > 0 ? (paidAmount / totalAmount) * 100 : 0;
-
-
-  return (
-    <Card>
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold flex items-center"><ListChecks className="mr-2 h-5 w-5 text-primary"/>Milestones</CardTitle>
-        <Progress value={progressPercentage} className="mt-2 h-2" />
-        <CardDescription className="text-xs pt-1">
-          {progressPercentage.toFixed(0)}% of total payment released.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {milestones.length > 0 ? (
-          <div className="space-y-4">
-            {milestones.map(milestone => (
-              <div key={milestone.id} className="p-3 border rounded-md bg-background/50">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium text-sm">{milestone.title}</p>
-                    <p className="text-xs text-muted-foreground">Due: {format(milestone.dueDate, 'MMM d, yyyy')}</p>
-                    <p className="text-xs text-muted-foreground">Amount: ₹{milestone.amount.toLocaleString('en-IN')}</p>
-                  </div>
-                  {getMilestoneStatusBadge(milestone.status)}
-                </div>
-                {milestone.status === 'Pending' && (
-                  <div className="text-right mt-2">
-                    <Button size="sm" variant="outline" onClick={() => onMilestoneAction(order.id, milestone.id)}>
-                      Mark as Delivered
-                    </Button>
-                  </div>
-                )}
-                {milestone.status === 'Delivered' && (
-                  <div className="text-right mt-2">
-                    <Button size="sm" variant="outline" disabled>
-                      Payment Requested
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground italic text-center">This order is not milestone-based.</p>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-function AnalyticsSummary({ analytics }: { analytics: Analytics }) {
-  return (
-    <Card className="bg-secondary/50">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold flex items-center">
-            <BarChart className="mr-2 h-5 w-5 text-primary"/>
-            Project Analytics
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-4 text-sm">
-        <div className="flex items-start space-x-3">
-          <Clock className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0"/>
-          <div>
-            <p className="font-medium">Delivery Time</p>
-            <p className="text-muted-foreground">{analytics.totalDeliveryTimeDays} days</p>
-          </div>
-        </div>
-         <div className="flex items-start space-x-3">
-          <GitPullRequest className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0"/>
-          <div>
-            <p className="font-medium">Revisions</p>
-            <p className="text-muted-foreground">{analytics.revisionsCount} round(s)</p>
-          </div>
-        </div>
-         <div className="flex items-start space-x-3">
-          <Star className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0"/>
-          <div>
-            <p className="font-medium">Client Rating</p>
-            <p className="text-muted-foreground">{analytics.clientRating}/5</p>
-          </div>
-        </div>
-         <div className="flex items-start space-x-3">
-          <IndianRupee className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0"/>
-          <div>
-            <p className="font-medium">Payment Released</p>
-            <p className="text-muted-foreground">{format(analytics.paymentReleaseDate, 'MMM d, yyyy')}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-    

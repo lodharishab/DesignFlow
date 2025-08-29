@@ -27,6 +27,7 @@ import {
   Star,
   GitPullRequest,
   IndianRupee as IndianRupeeIcon,
+  BarChart
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -41,14 +42,77 @@ import {
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
-import { format, formatDistanceToNow, isPast } from 'date-fns';
-import { initialOrdersData, type Order, type OrderStatus, type OrderEvent } from '@/components/admin/orders/orders-table-view'; 
+import { format, formatDistanceToNow, isPast, differenceInDays } from 'date-fns';
+import { initialOrdersData, type Order as BaseOrder, type OrderStatus, type OrderEvent } from '@/components/admin/orders/orders-table-view'; 
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { Progress } from "@/components/ui/progress";
 
-const MOCK_DESIGNER_ID = 'des002'; // Bob The Builder from initialOrdersData example
+
+const MOCK_DESIGNER_ID = 'des002';
+
+// --- Start of interfaces and data enhancements for this page ---
+interface Milestone {
+  id: string;
+  title: string;
+  dueDate: Date;
+  amount: number;
+  status: 'Pending' | 'Delivered' | 'Paid';
+}
+
+interface Analytics {
+    completionDate: Date;
+    totalDeliveryTimeDays: number;
+    revisionsCount: number;
+    clientRating: number;
+    paymentReleaseDate: Date;
+}
+
+// Extend the base Order interface for this page's specific needs
+interface Order extends BaseOrder {
+  milestones?: Milestone[];
+  analytics?: Analytics;
+}
+
+// Add mock milestone and analytics data to some orders
+const ordersWithEnhancements: Order[] = initialOrdersData.map(order => {
+  if (order.id === 'ORD7361P') {
+    return {
+      ...order,
+      milestones: [
+        { id: 'm1', title: 'Phase 1: Wireframes & UX Flow', dueDate: new Date(2024, 6, 8), amount: 8000, status: 'Paid' },
+        { id: 'm2', title: 'Phase 2: UI Design & Style Guide', dueDate: new Date(2024, 6, 20), amount: 12000, status: 'Delivered' },
+        { id: 'm3', title: 'Phase 3: Final Assets & Prototype', dueDate: new Date(2024, 6, 28), amount: 4999, status: 'Pending' },
+      ]
+    };
+  }
+  if (order.id === 'ORD4011M') {
+      return {
+          ...order,
+          milestones: [
+              { id: 'm4', title: 'Initial Icon Concepts (5 icons)', dueDate: new Date(2024, 5, 28), amount: 2500, status: 'Paid' },
+              { id: 'm5', title: 'Final Icon Set (10 icons)', dueDate: new Date(2024, 6, 2), amount: 2499, status: 'Pending' },
+          ]
+      }
+  }
+  if (order.id === 'ORD2945S' && order.designerId === MOCK_DESIGNER_ID) {
+    return {
+        ...order,
+        analytics: {
+            completionDate: new Date(2024, 6, 12),
+            totalDeliveryTimeDays: differenceInDays(new Date(2024, 6, 12), order.orderDate),
+            revisionsCount: 1,
+            clientRating: 4.5,
+            paymentReleaseDate: new Date(2024, 6, 26),
+        }
+    }
+  }
+  return order;
+});
+// --- End of interfaces and data enhancements ---
+
 
 const getStatusBadgeVariant = (status: OrderStatus) => {
   switch (status) {
@@ -69,8 +133,7 @@ const getStatusIcon = (status: OrderStatus) => {
       case 'Completed': return <CheckCircle2 className="mr-1.5 h-4 w-4 text-green-500" />;
       default: return <Info className="mr-1.5 h-4 w-4" />;
     }
-  };
-
+};
 
 function DesignerOrderDetailPageContent(): ReactElement {
   const router = useRouter();
@@ -88,14 +151,12 @@ function DesignerOrderDetailPageContent(): ReactElement {
   const [deliverableDescription, setDeliverableDescription] = useState('');
   const [showRevisionModal, setShowRevisionModal] = useState(false);
 
-
   useEffect(() => {
     if (orderId) {
       setIsLoading(true);
-      const foundOrder = initialOrdersData.find(o => o.id === orderId && o.designerId === MOCK_DESIGNER_ID);
+      const foundOrder = ordersWithEnhancements.find(o => o.id === orderId && o.designerId === MOCK_DESIGNER_ID);
       if (foundOrder) {
         setOrder({...foundOrder, orderEvents: [...foundOrder.orderEvents].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime())});
-        // Check if a new revision request exceeds the limit
         if (foundOrder.status === 'Revision Requested' && foundOrder.revisionsUsed >= foundOrder.revisionsAllowed) {
             setShowRevisionModal(true);
         }
@@ -179,7 +240,6 @@ function DesignerOrderDetailPageContent(): ReactElement {
     toast({ title: "Action Required (Simulated)", description: "An admin would be notified to mediate this order." });
     setShowRevisionModal(false);
   };
-
 
   if (isLoading) {
     return (
@@ -326,6 +386,14 @@ function DesignerOrderDetailPageContent(): ReactElement {
         </AlertDialogContent>
       </AlertDialog>
 
+      {order.status === 'Completed' && order.analytics && (
+        <AnalyticsSummary analytics={order.analytics} />
+      )}
+
+      {order.milestones && order.milestones.length > 0 && (
+          <MilestoneView order={order} />
+      )}
+      
       <div className="grid lg:grid-cols-2 gap-8">
         <Card className="shadow-lg">
             <CardHeader>
@@ -407,8 +475,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
                         order.orderEvents.map((event, index) => (
                         <div key={index} className={cn(
                             "p-2.5 rounded-lg text-xs break-words",
-                            event.actor === (order.designerName || 'Designer') ? "bg-primary/10 text-primary-foreground ml-auto max-w-[85%]" : "bg-muted text-muted-foreground mr-auto max-w-[85%]",
-                             (event.actor === (order.designerName || 'Designer') ? "self-end text-right" : "self-start text-left")
+                            event.actor === (order.designerName || 'Designer') ? "bg-primary/10 ml-auto max-w-[85%] self-end text-right" : "bg-muted mr-auto max-w-[85%] self-start text-left"
                         )}>
                             <p className="font-medium">
                                 {event.event}
@@ -428,6 +495,98 @@ function DesignerOrderDetailPageContent(): ReactElement {
       </div>
     </div>
   );
+}
+
+function MilestoneView({ order }: { order: Order }) {
+  const { milestones = [] } = order;
+
+  const getMilestoneStatusBadge = (status: Milestone['status']) => {
+    switch (status) {
+      case 'Paid': return <Badge variant="default">Paid</Badge>;
+      case 'Delivered': return <Badge variant="secondary">Delivered</Badge>;
+      case 'Pending': return <Badge variant="outline">Pending</Badge>;
+    }
+  };
+  
+  const totalAmount = milestones.reduce((acc, m) => acc + m.amount, 0);
+  const paidAmount = milestones.filter(m => m.status === 'Paid').reduce((acc, m) => acc + m.amount, 0);
+  const progressPercentage = totalAmount > 0 ? (paidAmount / totalAmount) * 100 : 0;
+
+
+  return (
+    <Card>
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg font-semibold flex items-center"><ListChecks className="mr-2 h-5 w-5 text-primary"/>Milestones</CardTitle>
+        <Progress value={progressPercentage} className="mt-2 h-2" />
+        <CardDescription className="text-xs pt-1">
+          {progressPercentage.toFixed(0)}% of total payment released.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {milestones.length > 0 ? (
+          <div className="space-y-4">
+            {milestones.map(milestone => (
+              <div key={milestone.id} className="p-3 border rounded-md bg-background/50">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium text-sm">{milestone.title}</p>
+                    <p className="text-xs text-muted-foreground">Due: {format(milestone.dueDate, 'MMM d, yyyy')}</p>
+                    <p className="text-xs text-muted-foreground">Amount: ₹{milestone.amount.toLocaleString('en-IN')}</p>
+                  </div>
+                  {getMilestoneStatusBadge(milestone.status)}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground italic text-center">This order is not milestone-based.</p>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+function AnalyticsSummary({ analytics }: { analytics: Analytics }) {
+  return (
+    <Card className="bg-secondary/30">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg font-semibold flex items-center">
+            <BarChart className="mr-2 h-5 w-5 text-primary"/>
+            Project Analytics
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid grid-cols-2 gap-4 text-sm">
+        <div className="flex items-start space-x-3">
+          <Clock className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0"/>
+          <div>
+            <p className="font-medium">Delivery Time</p>
+            <p className="text-muted-foreground">{analytics.totalDeliveryTimeDays} days</p>
+          </div>
+        </div>
+         <div className="flex items-start space-x-3">
+          <GitPullRequest className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0"/>
+          <div>
+            <p className="font-medium">Revisions</p>
+            <p className="text-muted-foreground">{analytics.revisionsCount} round(s)</p>
+          </div>
+        </div>
+         <div className="flex items-start space-x-3">
+          <Star className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0"/>
+          <div>
+            <p className="font-medium">Client Rating</p>
+            <p className="text-muted-foreground">{analytics.clientRating}/5</p>
+          </div>
+        </div>
+         <div className="flex items-start space-x-3">
+          <IndianRupeeIcon className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0"/>
+          <div>
+            <p className="font-medium">Payment Released</p>
+            <p className="text-muted-foreground">{format(analytics.paymentReleaseDate, 'MMM d, yyyy')}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 export default function DesignerOrderDetailWrapper(): ReactElement {
