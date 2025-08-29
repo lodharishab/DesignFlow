@@ -151,32 +151,34 @@ export default function DesignerOrdersPage(): ReactElement {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Manage Your Projects</CardTitle>
-          <CardDescription>Track progress, submit deliverables, and communicate with clients.</CardDescription>
-           <div className="pt-4 flex flex-col md:flex-row md:items-center gap-4">
-              <div className="relative flex-grow">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+             <div>
+                <CardTitle>Manage Your Projects</CardTitle>
+                <CardDescription>Track progress, submit deliverables, and communicate with clients.</CardDescription>
+             </div>
+             <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search Order ID, Client, Service..."
+                  placeholder="Search Order, Client..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
                 />
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {designerOrderStatusFilters.map(filter => (
-                  <Button
-                    key={filter.value}
-                    variant={statusFilter === filter.value ? 'default' : 'outline'}
-                    onClick={() => setStatusFilter(filter.value)}
-                    size="sm"
-                  >
-                    {filter.icon && <filter.icon className="mr-2 h-4 w-4" />}
-                    {filter.label}
-                  </Button>
-                ))}
-              </div>
             </div>
+          </div>
+          <div className="pt-4 flex flex-wrap gap-2">
+            {designerOrderStatusFilters.map(filter => (
+              <Button
+                key={filter.value}
+                variant={statusFilter === filter.value ? 'default' : 'outline'}
+                onClick={() => setStatusFilter(filter.value)}
+                size="sm"
+              >
+                {filter.icon && <filter.icon className="mr-2 h-4 w-4" />}
+                {filter.label}
+              </Button>
+            ))}
+          </div>
         </CardHeader>
         <CardContent>
           {displayedOrders.length === 0 ? (
