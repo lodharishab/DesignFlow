@@ -25,8 +25,19 @@ import {
   AlertTriangle,
   Eye,
   Star,
-  GitPullRequest, // Icon for revisions
+  GitPullRequest,
+  IndianRupee as IndianRupeeIcon,
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
@@ -44,7 +55,7 @@ const getStatusBadgeVariant = (status: OrderStatus) => {
     case 'Completed': return 'default';
     case 'In Progress': return 'secondary';
     case 'Awaiting Client Review': return 'outline';
-    case 'Revision Requested': return 'secondary'; // Could be a different color like warning/orange
+    case 'Revision Requested': return 'secondary'; 
     case 'Cancelled': return 'destructive';
     default: return 'secondary';
   }
@@ -54,7 +65,7 @@ const getStatusIcon = (status: OrderStatus) => {
     switch (status) {
       case 'In Progress': return <Clock className="mr-1.5 h-4 w-4" />;
       case 'Awaiting Client Review': return <Eye className="mr-1.5 h-4 w-4" />;
-      case 'Revision Requested': return <AlertTriangle className="mr-1.5 h-4 w-4 text-orange-500" />; // Example color
+      case 'Revision Requested': return <AlertTriangle className="mr-1.5 h-4 w-4 text-orange-500" />;
       case 'Completed': return <CheckCircle2 className="mr-1.5 h-4 w-4 text-green-500" />;
       default: return <Info className="mr-1.5 h-4 w-4" />;
     }
@@ -75,6 +86,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   const [deliverableDescription, setDeliverableDescription] = useState('');
+  const [showRevisionModal, setShowRevisionModal] = useState(false);
 
 
   useEffect(() => {
@@ -82,8 +94,11 @@ function DesignerOrderDetailPageContent(): ReactElement {
       setIsLoading(true);
       const foundOrder = initialOrdersData.find(o => o.id === orderId && o.designerId === MOCK_DESIGNER_ID);
       if (foundOrder) {
-        // Ensure orderEvents are sorted chronologically (newest first for display)
         setOrder({...foundOrder, orderEvents: [...foundOrder.orderEvents].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime())});
+        // Check if a new revision request exceeds the limit
+        if (foundOrder.status === 'Revision Requested' && foundOrder.revisionsUsed >= foundOrder.revisionsAllowed) {
+            setShowRevisionModal(true);
+        }
       } else {
         toast({
           title: "Error",
@@ -143,7 +158,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
         deliverables: [...(prevOrder.deliverables || []), newDeliverable],
         orderEvents: [newEvent, ...prevOrder.orderEvents],
         status: 'Awaiting Client Review',
-        revisionNotes: order.status === 'Revision Requested' ? undefined : prevOrder.revisionNotes, // Clear revision notes after submitting revisions
+        revisionNotes: order.status === 'Revision Requested' ? undefined : prevOrder.revisionNotes,
         revisionRequestDate: order.status === 'Revision Requested' ? undefined : prevOrder.revisionRequestDate,
     }) : null);
 
@@ -154,6 +169,17 @@ function DesignerOrderDetailPageContent(): ReactElement {
         setIsSubmittingDeliverable(false);
     }, 1500);
   };
+
+  const handleExtraPaymentRequest = () => {
+    toast({ title: "Action Required (Simulated)", description: "A request for extra payment would be sent to the client." });
+    setShowRevisionModal(false);
+  };
+  
+  const handleContactAdmin = () => {
+    toast({ title: "Action Required (Simulated)", description: "An admin would be notified to mediate this order." });
+    setShowRevisionModal(false);
+  };
+
 
   if (isLoading) {
     return (
@@ -168,7 +194,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
     return <p>Order not found or not accessible.</p>;
   }
   
-  const canSubmitDeliverables = order.status === 'In Progress' || order.status === 'Revision Requested';
+  const canSubmitDeliverables = order.status === 'In Progress' || (order.status === 'Revision Requested' && !showRevisionModal);
   const unlimitedRevisions = order.revisionsAllowed >= 99;
 
   return (
@@ -249,7 +275,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
               </div>
             </>
           )}
-           {order.status === 'Revision Requested' && order.revisionNotes && (
+           {order.status === 'Revision Requested' && order.revisionNotes && !showRevisionModal && (
             <>
               <Separator />
               <Card className="bg-destructive/10 border-destructive/50">
@@ -272,6 +298,34 @@ function DesignerOrderDetailPageContent(): ReactElement {
         </CardContent>
       </Card>
 
+      <AlertDialog open={showRevisionModal} onOpenChange={setShowRevisionModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
+              <AlertTriangle className="mr-2 h-6 w-6 text-orange-500" />
+              Revision Limit Exceeded
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              The client has requested a revision, but the included {order.revisionsAllowed} revision(s) for this tier have already been used. Please choose how to proceed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4 space-y-2">
+            <p className="font-semibold">Client's Request:</p>
+            <blockquote className="border-l-2 pl-4 italic text-muted-foreground">
+                {order.revisionNotes || "No specific notes provided."}
+            </blockquote>
+          </div>
+          <AlertDialogFooter>
+            <Button variant="outline" onClick={handleContactAdmin}>
+              Contact Admin to Mediate
+            </Button>
+            <Button onClick={handleExtraPaymentRequest}>
+              <IndianRupeeIcon className="mr-2 h-4 w-4" /> Request Extra Payment
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="grid lg:grid-cols-2 gap-8">
         <Card className="shadow-lg">
             <CardHeader>
@@ -279,7 +333,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
                 {order.status === 'Revision Requested' ? 'Submit Revisions' : 'Submit Deliverables'}
                 </CardTitle>
                 {order.status === 'Awaiting Client Review' && <CardDescription className="text-green-600">Deliverable(s) submitted. Waiting for client review.</CardDescription>}
-                {(order.status === 'Completed' || order.status === 'Cancelled') && <CardDescription className="text-muted-foreground">This order is {order.status.toLowerCase()} and no further submissions are possible.</CardDescription>}
+                {(order.status === 'Completed' || order.status === 'Cancelled' || showRevisionModal) && <CardDescription className="text-muted-foreground">This order is not currently awaiting a submission.</CardDescription>}
             </CardHeader>
             {canSubmitDeliverables && (
                 <CardContent className="space-y-4">
