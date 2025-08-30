@@ -4,6 +4,7 @@
 import * as React from 'react';
 import { useState, type ReactElement } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import { MessageSquare, Bell, PackageSearch, Briefcase, UserCircle, Palette, Lin
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Icon as LucideIconType } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 type NotificationType = 'New Order' | 'Revision Request' | 'Order Approved' | 'Category Approved' | 'Category Rejected' | 'Message';
 type NotificationPriority = 'High' | 'Medium' | 'Low';
@@ -37,6 +39,9 @@ const mockNotifications: Notification[] = [
 
 
 function NotificationsTab() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [notifications, setNotifications] = useState(mockNotifications);
 
   const getPriorityBadgeVariant = (priority: NotificationPriority): 'destructive' | 'secondary' | 'default' => {
     switch (priority) {
@@ -54,18 +59,50 @@ function NotificationsTab() {
           case 'Category Approved': return Palette;
           default: return Bell;
       }
-  }
-
-  const getNotificationLink = (notification: Notification) => {
+  };
+  
+  const getNotificationLink = (notification: Notification): string | null => {
     if (notification.relatedOrderId) return `/designer/orders/${notification.relatedOrderId}`;
     if (notification.relatedPortfolioId) return `/designer/portfolio/edit/${notification.relatedPortfolioId}`;
-    return '#';
+    return null; // Return null if no link
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
+    // 1. Log the interaction (simulated)
+    console.log('Logging notification interaction (simulated):', {
+      notificationId: notification.id,
+      designerId: 'current_user_id_placeholder', // In real app, get this from auth context
+      timestamp: new Date().toISOString(),
+    });
+
+    // 2. Mark notification as read (simulated)
+    setNotifications(prev => 
+      prev.map(n => n.id === notification.id ? { ...n, isRead: true } : n)
+    );
+    
+    // 3. Navigate if a link exists
+    const link = getNotificationLink(notification);
+    if (link) {
+      router.push(link);
+    } else {
+        toast({
+            title: "Informational Alert",
+            description: "This notification is for your information and has no direct action.",
+        });
+    }
   };
 
   return (
      <div className="space-y-4">
-        {mockNotifications.map(notification => (
-           <Card key={notification.id} className={cn("transition-all hover:shadow-md", !notification.isRead && "bg-primary/5 border-primary/20")}>
+        {notifications.map(notification => (
+           <Card 
+                key={notification.id} 
+                className={cn(
+                    "transition-all hover:shadow-md cursor-pointer", 
+                    !notification.isRead && "bg-primary/5 border-primary/20"
+                )}
+                onClick={() => handleNotificationClick(notification)}
+            >
                <CardContent className="p-4 flex items-start gap-4">
                    <div className={cn("p-2 rounded-full mt-1", !notification.isRead ? "bg-primary/10" : "bg-muted")}>
                        {React.createElement(getNotificationIcon(notification.type), { className: cn("h-5 w-5", !notification.isRead ? "text-primary" : "text-muted-foreground") })}
@@ -78,9 +115,10 @@ function NotificationsTab() {
                        <p className="text-sm text-muted-foreground mt-0.5">{notification.message}</p>
                        <div className="flex justify-between items-center mt-2">
                             <p className="text-xs text-muted-foreground">{formatDistanceToNow(notification.createdAt, { addSuffix: true })}</p>
-                            <Button size="sm" variant="ghost" asChild>
-                                <Link href={getNotificationLink(notification)}><LinkIconLucide className="mr-1.5 h-3.5 w-3.5" /> View Details</Link>
-                            </Button>
+                            {/* The whole card is clickable now, so the button is less necessary but can be kept for visual cue */}
+                            <div className="flex items-center text-xs text-primary font-medium">
+                              <LinkIconLucide className="mr-1.5 h-3.5 w-3.5" /> View Details
+                            </div>
                        </div>
                    </div>
                </CardContent>
