@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo, ChangeEvent, FormEvent } from 'react';
+import { useState, type ReactElement, useMemo, ChangeEvent, FormEvent, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +27,9 @@ import {
     Loader2,
     PieChart as PieChartIcon,
     LineChart as LineChartIcon,
-    Users as UsersIcon
+    Users as UsersIcon,
+    FileCsv,
+    FileSpreadsheet
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import Link from 'next/link';
@@ -47,6 +49,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, Tooltip as RechartsTooltip, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 
 type TransactionStatus = 'Completed' | 'Pending' | 'On Hold' | 'Processing' | 'Cancelled';
@@ -314,6 +324,31 @@ export default function DesignerEarningsPage(): ReactElement {
       setIsSubmittingAdvance(false);
     }, 1500);
   };
+  
+  const handleExportCsv = useCallback(() => {
+    const headers = ["ID", "Order ID", "Date", "Type", "Status", "Amount", "Description"];
+    const rows = displayedTransactions.map(txn => [
+      txn.id,
+      txn.orderId,
+      format(txn.date, "yyyy-MM-dd HH:mm:ss"),
+      txn.type,
+      txn.status,
+      txn.amount.toString(),
+      `"${txn.description.replace(/"/g, '""')}"` // Handle quotes in description
+    ]);
+    
+    let csvContent = "data:text/csv;charset=utf-8," 
+      + headers.join(",") + "\n" 
+      + rows.map(e => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "transaction_history.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [displayedTransactions]);
 
 
   return (
@@ -481,7 +516,25 @@ export default function DesignerEarningsPage(): ReactElement {
                         <CardTitle className="flex items-center"><History className="mr-2 h-5 w-5"/>Transaction History</CardTitle>
                         <CardDescription>A log of all your earnings, fees, and payouts.</CardDescription>
                     </div>
-                    <Button variant="outline"><Download className="mr-2 h-4 w-4"/>Export Report (Soon)</Button>
+                     <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline"><Download className="mr-2 h-4 w-4" /> Export Report</Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleExportCsv}>
+                            <FileCsv className="mr-2 h-4 w-4" />
+                            Export as CSV
+                        </DropdownMenuItem>
+                         <DropdownMenuItem disabled>
+                            <FileText className="mr-2 h-4 w-4" />
+                            Export as PDF (Soon)
+                        </DropdownMenuItem>
+                         <DropdownMenuItem disabled>
+                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                            Export as Excel (Soon)
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
                 <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="relative">
