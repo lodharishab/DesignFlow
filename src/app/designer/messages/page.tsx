@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, Bell, PackageSearch, Briefcase, UserCircle, Palette, Link as LinkIconLucide, AlertTriangle, Search, Calendar as CalendarIcon, Archive, ArchiveRestore } from "lucide-react";
+import { MessageSquare, Bell, PackageSearch, Briefcase, UserCircle, Palette, Link as LinkIconLucide, AlertTriangle, Search, Calendar as CalendarIcon, Archive, ArchiveRestore, Mail, MailOpen } from "lucide-react";
 import { format, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Icon as LucideIconType } from 'lucide-react';
@@ -139,43 +139,47 @@ function NotificationsTab() {
           description: `The notification has been moved to your ${archive ? 'archive' : 'inbox'}.`,
       });
   };
+  
+  const handleToggleRead = (e: React.MouseEvent, notificationId: string, isRead: boolean) => {
+    e.stopPropagation(); // Prevent card click
+    setNotifications(prev => 
+      prev.map(n => n.id === notificationId ? { ...n, isRead } : n)
+    );
+    toast({
+        title: `Notification marked as ${isRead ? 'read' : 'unread'}`,
+    });
+  };
 
   return (
      <div className="space-y-4">
-        <Card>
-            <CardHeader className="pb-4">
-                <CardTitle>Filter Notifications</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="relative lg:col-span-3">
+       <div className="p-2 border rounded-lg bg-card space-y-2">
+            <div className="flex flex-wrap items-center gap-2 px-2 pt-2">
+                <Button variant={statusFilter === 'All' ? 'secondary' : 'ghost'} size="sm" className="rounded-full" onClick={() => setStatusFilter('All')}>Inbox</Button>
+                <Button variant={statusFilter === 'Unread' ? 'secondary' : 'ghost'} size="sm" className="rounded-full" onClick={() => setStatusFilter('Unread')}>Unread</Button>
+                <Button variant={statusFilter === 'Archived' ? 'secondary' : 'ghost'} size="sm" className="rounded-full" onClick={() => setStatusFilter('Archived')}>Archived</Button>
+            </div>
+            <div className="p-2 flex flex-wrap items-center gap-2 border-t">
+                <div className="relative flex-grow min-w-[200px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search title or message..." className="pl-9" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    <Input placeholder="Search notifications..." className="pl-9 h-9" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
-                <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as any)}>
-                    <SelectTrigger><SelectValue placeholder="Filter by type" /></SelectTrigger>
+                 <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as any)}>
+                    <SelectTrigger className="h-9 w-full sm:w-auto min-w-[150px]"><SelectValue placeholder="Filter by type" /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="All">All Types</SelectItem>
                         {uniqueNotificationTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
                     </SelectContent>
                 </Select>
                  <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as any)}>
-                    <SelectTrigger><SelectValue placeholder="Filter by priority" /></SelectTrigger>
+                    <SelectTrigger className="h-9 w-full sm:w-auto min-w-[150px]"><SelectValue placeholder="Filter by priority" /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="All">All Priorities</SelectItem>
                         {uniquePriorities.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                     </SelectContent>
                 </Select>
-                <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
-                    <SelectTrigger><SelectValue placeholder="Filter by status" /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="All">Inbox</SelectItem>
-                        <SelectItem value="Unread">Unread</SelectItem>
-                        <SelectItem value="Archived">Archived</SelectItem>
-                    </SelectContent>
-                </Select>
                 <Popover>
                     <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !dateRange && "text-muted-foreground")}>
+                    <Button variant="outline" className={cn("h-9 w-full sm:w-auto min-w-[150px] justify-start text-left font-normal", !dateRange && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {dateRange?.from ? (dateRange.to ? `${format(dateRange.from, "LLL dd, y")} - ${format(dateRange.to, "LLL dd, y")}` : format(dateRange.from, "LLL dd, y")) : <span>Pick a date range</span>}
                     </Button>
@@ -184,8 +188,8 @@ function NotificationsTab() {
                     <Calendar mode="range" selected={dateRange} onSelect={setDateRange} numberOfMonths={2} />
                     </PopoverContent>
                 </Popover>
-            </CardContent>
-        </Card>
+            </div>
+       </div>
         
         {filteredNotifications.length > 0 ? (
           <TooltipProvider>
@@ -194,38 +198,53 @@ function NotificationsTab() {
                 <Card 
                     key={notification.id} 
                     className={cn(
-                      "transition-all hover:shadow-md cursor-pointer relative group", 
+                      "transition-all hover:shadow-md cursor-pointer group", 
                       !notification.isRead && statusFilter !== 'Archived' && "bg-primary/5 border-primary/20"
                     )}
                     onClick={() => handleNotificationClick(notification)}
                 >
-                  <CardContent className="p-4 flex items-start gap-4">
-                      <div className={cn("p-2 rounded-full mt-1", !notification.isRead ? "bg-primary/10" : "bg-muted")}>
+                  <CardContent className="p-3 flex items-start gap-3">
+                      <div className={cn("p-1.5 rounded-full mt-1", !notification.isRead ? "bg-primary/10" : "bg-muted")}>
                           {React.createElement(getNotificationIcon(notification.type), { className: cn("h-5 w-5", !notification.isRead ? "text-primary" : "text-muted-foreground") })}
                       </div>
                       <div className="flex-grow">
-                          <div className="flex justify-between items-center mb-1">
-                              <p className="font-semibold pr-12">{notification.title}</p>
-                              <Badge variant={getPriorityBadgeVariant(notification.priority)}>{notification.priority}</Badge>
-                          </div>
+                          <p className="font-semibold pr-12">{notification.title}</p>
                           <p className="text-sm text-muted-foreground">{notification.message}</p>
-                          <p className="text-xs text-muted-foreground mt-2">{formatDistanceToNow(notification.createdAt, { addSuffix: true })}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(notification.createdAt, { addSuffix: true })}</p>
                       </div>
-                      <Tooltip>
-                          <TooltipTrigger asChild>
-                              <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute top-2 right-2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                  onClick={(e) => handleArchiveToggle(e, notification.id, !notification.isArchived)}
-                              >
-                                  {notification.isArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
-                              </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{notification.isArchived ? 'Unarchive' : 'Archive'}</p>
-                          </TooltipContent>
-                      </Tooltip>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <Badge variant={getPriorityBadgeVariant(notification.priority)}>{notification.priority}</Badge>
+                         <div className="flex items-center bg-background/50 rounded-full border opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm mt-auto">
+                           <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={(e) => handleToggleRead(e, notification.id, !notification.isRead)}
+                                >
+                                    {notification.isRead ? <Mail className="h-4 w-4" /> : <MailOpen className="h-4 w-4" />}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>{notification.isRead ? 'Mark as Unread' : 'Mark as Read'}</p></TooltipContent>
+                           </Tooltip>
+                           <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7"
+                                      onClick={(e) => handleArchiveToggle(e, notification.id, !notification.isArchived)}
+                                  >
+                                      {notification.isArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{notification.isArchived ? 'Unarchive' : 'Archive'}</p>
+                              </TooltipContent>
+                           </Tooltip>
+                         </div>
+                      </div>
                   </CardContent>
                 </Card>
               ))}
