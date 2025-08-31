@@ -24,9 +24,12 @@ import {
     Search,
     HandCoins,
     Upload,
-    Loader2
+    Loader2,
+    PieChart as PieChartIcon,
+    LineChart as LineChartIcon,
+    Users as UsersIcon
 } from "lucide-react";
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,6 +44,9 @@ import { initialOrdersData, type Order } from '@/components/admin/orders/orders-
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, Tooltip as RechartsTooltip, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 
 
 type TransactionStatus = 'Completed' | 'Pending' | 'On Hold' | 'Processing' | 'Cancelled';
@@ -64,7 +70,13 @@ const mockTransactions: Transaction[] = [
     { id: 'txn_a_vs01', orderId: 'ORD6531A', date: new Date(), type: 'Advance', status: 'Processing', amount: -2000, description: 'Advance for software' },
     { id: 'txn_e_rk01', orderId: 'ORD7361P', date: new Date(), type: 'Earning', status: 'On Hold', amount: 24999, description: 'E-commerce Website UI/UX' },
     { id: 'txn_refund_rk01', orderId: 'ORDREF01', date: new Date(), type: 'Refund', status: 'Completed', amount: -1000, description: 'Partial Refund for ORDABC' },
-    { id: 'txn_e_old', orderId: 'ORDOLD01', date: new Date(new Date().setMonth(new Date().getMonth() - 2)), type: 'Earning', status: 'Completed', amount: 15000, description: 'Old Project Earning'},
+    // Adding more historical data for charts
+    { id: 'txn_e_old1', orderId: 'ORDOLD01', date: subMonths(new Date(), 1), type: 'Earning', status: 'Completed', amount: 15000, description: 'Old Project Earning'},
+    { id: 'txn_e_old2', orderId: 'ORDOLD02', date: subMonths(new Date(), 2), type: 'Earning', status: 'Completed', amount: 22000, description: 'Another Old Project'},
+    { id: 'txn_e_old3', orderId: 'ORDOLD03', date: subMonths(new Date(), 2), type: 'Earning', status: 'Completed', amount: 8000, description: 'Small Old Project'},
+    { id: 'txn_e_old4', orderId: 'ORDOLD04', date: subMonths(new Date(), 3), type: 'Earning', status: 'Completed', amount: 35000, description: 'Large Old Project'},
+    { id: 'txn_e_old5', orderId: 'ORDOLD05', date: subMonths(new Date(), 4), type: 'Earning', status: 'Completed', amount: 12000, description: 'Archived Project Earning'},
+    { id: 'txn_e_old6', orderId: 'ORDOLD06', date: subMonths(new Date(), 5), type: 'Earning', status: 'Completed', amount: 18000, description: 'Very Old Project'},
 ];
 
 const allTransactionStatuses: TransactionStatus[] = ['Completed', 'Pending', 'On Hold', 'Processing', 'Cancelled'];
@@ -167,6 +179,93 @@ export default function DesignerEarningsPage(): ReactElement {
     { title: "Upcoming Payouts", value: `₹${upcomingPayouts.toLocaleString('en-IN')}`, icon: Wallet, color: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-100 dark:bg-purple-900/30" },
     { title: "Refunds/Deductions", value: `₹${refundsDeductions.toLocaleString('en-IN')}`, icon: Receipt, color: "text-red-600 dark:text-red-400", bgColor: "bg-red-100 dark:bg-red-900/30" },
   ];
+  
+  // --- Chart Data Processing ---
+  const lineChartData = useMemo(() => {
+    const monthlyData: { [key: string]: number } = {};
+    const sixMonthsAgo = subMonths(new Date(), 5);
+
+    transactions
+      .filter(t => t.type === 'Earning' && t.status === 'Completed' && t.date >= sixMonthsAgo)
+      .forEach(t => {
+        const month = format(t.date, 'MMM yyyy');
+        if (!monthlyData[month]) {
+          monthlyData[month] = 0;
+        }
+        monthlyData[month] += t.amount;
+      });
+
+    return Object.entries(monthlyData)
+      .map(([month, earnings]) => ({ month, earnings }))
+      .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
+  }, [transactions]);
+  
+  const lineChartConfig: ChartConfig = {
+    earnings: {
+      label: "Earnings (₹)",
+      color: "hsl(var(--chart-1))",
+    },
+  };
+  
+  const pieChartData = useMemo(() => {
+    const categoryData: { [key: string]: number } = {};
+    transactions
+      .filter(t => t.type === 'Earning' && t.status === 'Completed')
+      .forEach(t => {
+        const order = initialOrdersData.find(o => o.id === t.orderId);
+        if (order) {
+          const category = order.serviceName; // Using service name for simplicity
+          if (!categoryData[category]) {
+            categoryData[category] = 0;
+          }
+          categoryData[category] += t.amount;
+        }
+      });
+    return Object.entries(categoryData).map(([name, value], index) => ({
+        name,
+        value,
+        fill: `hsl(var(--chart-${(index % 5) + 1}))`,
+    }));
+  }, [transactions]);
+  
+  const pieChartConfig: ChartConfig = useMemo(() => {
+    const config: ChartConfig = {};
+    pieChartData.forEach((entry) => {
+        config[entry.name] = {
+            label: entry.name,
+            color: entry.fill
+        };
+    });
+    return config;
+  }, [pieChartData]);
+  
+  const barChartData = useMemo(() => {
+    const clientData: { [key: string]: number } = {};
+    transactions
+      .filter(t => t.type === 'Earning' && t.status === 'Completed')
+      .forEach(t => {
+        const order = initialOrdersData.find(o => o.id === t.orderId);
+        if (order) {
+          const client = order.clientName;
+          if (!clientData[client]) {
+            clientData[client] = 0;
+          }
+          clientData[client] += t.amount;
+        }
+      });
+
+    return Object.entries(clientData)
+      .map(([name, revenue]) => ({ name, revenue }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+  }, [transactions]);
+  
+   const barChartConfig: ChartConfig = {
+    revenue: {
+      label: "Revenue (₹)",
+      color: "hsl(var(--chart-2))",
+    },
+  };
 
   const activeOrdersForAdvance = useMemo(() => {
     return initialOrdersData.filter(order => order.designerId === MOCK_DESIGNER_ID && order.status === 'In Progress');
@@ -237,7 +336,7 @@ export default function DesignerEarningsPage(): ReactElement {
           </Card>
         ))}
       </div>
-
+      
        <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center"><HandCoins className="mr-2 h-5 w-5"/>Advances</CardTitle>
@@ -313,6 +412,64 @@ export default function DesignerEarningsPage(): ReactElement {
               </form>
             </TabsContent>
           </Tabs>
+        </CardContent>
+      </Card>
+      
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center"><PieChartIcon className="mr-2 h-5 w-5" />Earnings Insights</CardTitle>
+          <CardDescription>Visualize your earnings from different perspectives.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid lg:grid-cols-2 gap-8">
+            <Card className="shadow-inner bg-secondary/30">
+                <CardHeader>
+                    <CardTitle className="text-lg font-headline flex items-center"><LineChartIcon className="mr-2 h-5 w-5" />Earnings Trend (Last 6 Months)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={lineChartConfig} className="h-[250px] w-full">
+                        <LineChart data={lineChartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                            <CartesianGrid vertical={false} />
+                            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)} />
+                            <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                            <RechartsTooltip content={<ChartTooltipContent />} />
+                            <Line dataKey="earnings" type="monotone" stroke="var(--color-earnings)" strokeWidth={2} dot={true} />
+                        </LineChart>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+             <Card className="shadow-inner bg-secondary/30">
+                <CardHeader>
+                    <CardTitle className="text-lg font-headline flex items-center"><PieChartIcon className="mr-2 h-5 w-5" />Earnings by Service Category</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center">
+                    <ChartContainer config={pieChartConfig} className="h-[250px] w-full">
+                        <PieChart>
+                            <RechartsTooltip content={<ChartTooltipContent hideLabel />} />
+                            <Pie data={pieChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={90} strokeWidth={2}>
+                                {pieChartData.map((entry) => (
+                                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                                ))}
+                            </Pie>
+                        </PieChart>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+             <Card className="lg:col-span-2 shadow-inner bg-secondary/30">
+                <CardHeader>
+                    <CardTitle className="text-lg font-headline flex items-center"><UsersIcon className="mr-2 h-5 w-5" />Top 5 Clients by Revenue</CardTitle>
+                </CardHeader>
+                <CardContent>
+                     <ChartContainer config={barChartConfig} className="h-[250px] w-full">
+                        <BarChart data={barChartData} layout="vertical" margin={{ left: 10, right: 10 }}>
+                            <CartesianGrid horizontal={false} />
+                            <XAxis type="number" hide />
+                            <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={10} width={120} />
+                            <RechartsTooltip content={<ChartTooltipContent />} />
+                            <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
+                        </BarChart>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
         </CardContent>
       </Card>
 
@@ -436,4 +593,3 @@ export default function DesignerEarningsPage(): ReactElement {
     </div>
   );
 }
-
