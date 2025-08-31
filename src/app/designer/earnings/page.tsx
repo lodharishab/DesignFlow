@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo } from 'react';
+import { useState, type ReactElement, useMemo, ChangeEvent } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -16,14 +16,24 @@ import {
     History,
     FileText,
     Download,
-    Calendar,
+    Calendar as CalendarIcon,
     CircleHelp,
     PiggyBank,
     Receipt,
-    Wallet
+    Wallet,
+    Search
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import Link from 'next/link';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Calendar } from '@/components/ui/calendar';
+import type { DateRange } from 'react-day-picker';
+import { cn } from '@/lib/utils';
+
 
 type TransactionStatus = 'Completed' | 'Pending' | 'On Hold' | 'Processing' | 'Cancelled';
 type TransactionType = 'Earning' | 'Payout' | 'Fee' | 'Advance' | 'Refund';
@@ -49,9 +59,16 @@ const mockTransactions: Transaction[] = [
     { id: 'txn_e_old', orderId: 'ORDOLD01', date: new Date(new Date().setMonth(new Date().getMonth() - 2)), type: 'Earning', status: 'Completed', amount: 15000, description: 'Old Project Earning'},
 ];
 
+const allTransactionStatuses: TransactionStatus[] = ['Completed', 'Pending', 'On Hold', 'Processing', 'Cancelled'];
 
 export default function DesignerEarningsPage(): ReactElement {
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'All' | TransactionStatus>('All');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const getStatusBadgeVariant = (status: TransactionStatus) => {
     switch (status) {
@@ -75,6 +92,22 @@ export default function DesignerEarningsPage(): ReactElement {
     }
   }
 
+  const displayedTransactions = useMemo(() => {
+    return transactions.filter(txn => {
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        const searchMatch = !searchTerm || 
+                            txn.id.toLowerCase().includes(lowerSearchTerm) ||
+                            txn.orderId.toLowerCase().includes(lowerSearchTerm);
+        const statusMatch = statusFilter === 'All' || txn.status === statusFilter;
+        const dateMatch = !dateRange || (dateRange.from && dateRange.to && txn.date >= dateRange.from && txn.date <= dateRange.to) ||
+                          (dateRange.from && !dateRange.to && txn.date >= dateRange.from) ||
+                          (!dateRange.from && dateRange.to && txn.date <= dateRange.to);
+
+        return searchMatch && statusMatch && dateMatch;
+    }).sort((a,b) => b.date.getTime() - a.date.getTime());
+  }, [transactions, searchTerm, statusFilter, dateRange]);
+
+
   // Calculate stats for the new cards
   const totalEarnings = useMemo(() => transactions.filter(t => t.type === 'Earning' && t.status === 'Completed').reduce((acc, t) => acc + t.amount, 0), [transactions]);
   const thisMonthEarnings = useMemo(() => {
@@ -90,7 +123,7 @@ export default function DesignerEarningsPage(): ReactElement {
 
   const statCards = [
     { title: "Total Earnings", value: `₹${totalEarnings.toLocaleString('en-IN')}`, icon: PiggyBank, color: "text-green-600 dark:text-green-400", bgColor: "bg-green-100 dark:bg-green-900/30" },
-    { title: "This Month’s Earnings", value: `₹${thisMonthEarnings.toLocaleString('en-IN')}`, icon: Calendar, color: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-100 dark:bg-blue-900/30" },
+    { title: "This Month’s Earnings", value: `₹${thisMonthEarnings.toLocaleString('en-IN')}`, icon: CalendarIcon, color: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-100 dark:bg-blue-900/30" },
     { title: "Pending Payouts", value: `₹${pendingPayouts.toLocaleString('en-IN')}`, icon: Hourglass, color: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-100 dark:bg-orange-900/30" },
     { title: "Upcoming Payouts", value: `₹${upcomingPayouts.toLocaleString('en-IN')}`, icon: Wallet, color: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-100 dark:bg-purple-900/30" },
     { title: "Refunds/Deductions", value: `₹${refundsDeductions.toLocaleString('en-IN')}`, icon: Receipt, color: "text-red-600 dark:text-red-400", bgColor: "bg-red-100 dark:bg-red-900/30" },
@@ -117,48 +150,123 @@ export default function DesignerEarningsPage(): ReactElement {
         ))}
       </div>
 
-      <Card className="shadow-lg">
-        <CardHeader className="flex flex-row justify-between items-center">
-            <div>
-                <CardTitle className="flex items-center"><History className="mr-2 h-5 w-5"/>Transaction History</CardTitle>
-                <CardDescription>A log of all your earnings, fees, and payouts.</CardDescription>
-            </div>
-            <Button variant="outline"><Download className="mr-2 h-4 w-4"/>Export Report (Soon)</Button>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">Type</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Details</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Amount (INR)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.map((txn) => (
-                <TableRow key={txn.id}>
-                  <TableCell className="w-12">{getTypeIcon(txn.type)}</TableCell>
-                  <TableCell className="text-xs sm:text-sm">{format(txn.date, 'MMM d, yyyy')}</TableCell>
-                  <TableCell>
-                    <p className="font-medium">{txn.description}</p>
-                    <Link href={`/designer/orders/${txn.orderId}`} className="text-xs text-primary hover:underline flex items-center">
-                        Order: {txn.orderId} <LinkIcon className="ml-1 h-3 w-3"/>
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadgeVariant(txn.status)} className="capitalize">{txn.status}</Badge>
-                  </TableCell>
-                  <TableCell className={`text-right font-medium ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {txn.amount > 0 ? '+' : ''}₹{Math.abs(txn.amount).toLocaleString('en-IN')}
-                  </TableCell>
+      <Dialog onOpenChange={(open) => !open && setSelectedTransaction(null)}>
+        <Card className="shadow-lg">
+            <CardHeader>
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                    <div>
+                        <CardTitle className="flex items-center"><History className="mr-2 h-5 w-5"/>Transaction History</CardTitle>
+                        <CardDescription>A log of all your earnings, fees, and payouts.</CardDescription>
+                    </div>
+                    <Button variant="outline"><Download className="mr-2 h-4 w-4"/>Export Report (Soon)</Button>
+                </div>
+                <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="Search by Order/Txn ID" className="pl-9" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    </div>
+                    <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+                        <SelectTrigger><SelectValue placeholder="Filter by status"/></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All">All Statuses</SelectItem>
+                            {allTransactionStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                     <Popover>
+                        <PopoverTrigger asChild>
+                        <Button variant="outline" className={cn("justify-start text-left font-normal", !dateRange && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {dateRange?.from ? (dateRange.to ? `${format(dateRange.from, "LLL dd, y")} - ${format(dateRange.to, "LLL dd, y")}` : format(dateRange.from, "LLL dd, y")) : <span>Pick a date range</span>}
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar mode="range" selected={dateRange} onSelect={setDateRange} numberOfMonths={2} />
+                        </PopoverContent>
+                    </Popover>
+                </div>
+            </CardHeader>
+            <CardContent>
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead className="w-12">Type</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Details</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Amount (INR)</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                {displayedTransactions.map((txn) => (
+                    <DialogTrigger asChild key={txn.id}>
+                        <TableRow onClick={() => setSelectedTransaction(txn)} className="cursor-pointer">
+                            <TableCell className="w-12">{getTypeIcon(txn.type)}</TableCell>
+                            <TableCell className="text-xs sm:text-sm">{format(txn.date, 'MMM d, yyyy')}</TableCell>
+                            <TableCell>
+                                <p className="font-medium">{txn.description}</p>
+                                <Link href={`/designer/orders/${txn.orderId}`} onClick={(e) => e.stopPropagation()} className="text-xs text-primary hover:underline flex items-center">
+                                    Order: {txn.orderId} <LinkIcon className="ml-1 h-3 w-3"/>
+                                </Link>
+                            </TableCell>
+                            <TableCell>
+                                <Badge variant={getStatusBadgeVariant(txn.status)} className="capitalize">{txn.status}</Badge>
+                            </TableCell>
+                            <TableCell className={`text-right font-medium ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {txn.amount > 0 ? '+' : ''}₹{Math.abs(txn.amount).toLocaleString('en-IN')}
+                            </TableCell>
+                        </TableRow>
+                    </DialogTrigger>
+                ))}
+                </TableBody>
+            </Table>
+            {displayedTransactions.length === 0 && (
+                <div className="text-center py-10 text-muted-foreground">No transactions match your filters.</div>
+            )}
+            </CardContent>
+        </Card>
+        
+        {selectedTransaction && (
+             <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle className="font-headline">Transaction Details</DialogTitle>
+                    <DialogDescription>
+                        Details for Transaction ID: {selectedTransaction.id}
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3 py-4 text-sm">
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Amount:</span>
+                        <span className={`font-semibold ${selectedTransaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {selectedTransaction.amount > 0 ? '+' : ''}₹{Math.abs(selectedTransaction.amount).toLocaleString('en-IN')}
+                        </span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Date:</span>
+                        <span>{format(selectedTransaction.date, 'PPpp')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Type:</span>
+                        <Badge variant={selectedTransaction.type === 'Earning' ? 'default' : 'secondary'} className="capitalize">{selectedTransaction.type}</Badge>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Status:</span>
+                        <Badge variant={getStatusBadgeVariant(selectedTransaction.status)} className="capitalize">{selectedTransaction.status}</Badge>
+                    </div>
+                    <div>
+                        <p className="text-muted-foreground">Description:</p>
+                        <p>{selectedTransaction.description}</p>
+                    </div>
+                    <div>
+                        <p className="text-muted-foreground">Related Order:</p>
+                        <Link href={`/designer/orders/${selectedTransaction.orderId}`} className="text-primary hover:underline flex items-center">
+                            {selectedTransaction.orderId} <LinkIcon className="ml-1 h-3 w-3"/>
+                        </Link>
+                    </div>
+                </div>
+            </DialogContent>
+        )}
+
+      </Dialog>
     </div>
   );
 }
