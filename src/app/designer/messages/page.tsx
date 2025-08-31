@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, Bell, PackageSearch, Briefcase, UserCircle, Palette, Link as LinkIconLucide, AlertTriangle, Search, Calendar as CalendarIcon, Archive, Unarchive } from "lucide-react";
+import { MessageSquare, Bell, PackageSearch, Briefcase, UserCircle, Palette, Link as LinkIconLucide, AlertTriangle, Search, Calendar as CalendarIcon, Archive, ArchiveRestore } from "lucide-react";
 import { format, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Icon as LucideIconType } from 'lucide-react';
@@ -223,7 +223,7 @@ function NotificationsTab() {
                                 className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100"
                                 onClick={(e) => handleArchiveToggle(e, notification.id, !notification.isArchived)}
                             >
-                                {notification.isArchived ? <Unarchive className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                                {notification.isArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -291,4 +291,3 @@ export default function DesignerMessagesPage(): ReactElement {
         </div>
     );
 }
-
