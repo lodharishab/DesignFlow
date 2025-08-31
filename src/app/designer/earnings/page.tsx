@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo, ChangeEvent } from 'react';
+import { useState, type ReactElement, useMemo, ChangeEvent, FormEvent } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,10 @@ import {
     PiggyBank,
     Receipt,
     Wallet,
-    Search
+    Search,
+    HandCoins,
+    Upload,
+    Loader2
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import Link from 'next/link';
@@ -33,6 +36,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Calendar } from '@/components/ui/calendar';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
+import { useToast } from "@/hooks/use-toast";
+import { initialOrdersData, type Order } from '@/components/admin/orders/orders-table-view';
+import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 type TransactionStatus = 'Completed' | 'Pending' | 'On Hold' | 'Processing' | 'Cancelled';
@@ -61,9 +69,34 @@ const mockTransactions: Transaction[] = [
 
 const allTransactionStatuses: TransactionStatus[] = ['Completed', 'Pending', 'On Hold', 'Processing', 'Cancelled'];
 
+const MOCK_DESIGNER_ID = 'des002'; // For filtering orders
+
+type AdvanceRequestStatus = 'Pending' | 'Approved' | 'Rejected';
+interface AdvanceRequest {
+  id: string;
+  orderId: string;
+  orderName: string;
+  amount: number;
+  reason: string;
+  status: AdvanceRequestStatus;
+  requestDate: Date;
+  repaidAmount: number;
+}
+
+const mockAdvanceRequests: AdvanceRequest[] = [
+  { id: 'ADV001', orderId: 'ORD7361P', orderName: 'E-commerce Website UI/UX', amount: 5000, reason: 'Software subscription renewal (Adobe CC)', status: 'Approved', requestDate: new Date(2024, 6, 19), repaidAmount: 2500 },
+  { id: 'ADV002', orderId: 'ORD1038K', orderName: 'Social Media Campaign Graphics', amount: 1000, reason: 'Stock photo subscription', status: 'Pending', requestDate: new Date(2024, 7, 1), repaidAmount: 0 },
+  { id: 'ADV003', orderId: 'ORD6531A', orderName: 'Restaurant Menu Design', amount: 3000, reason: 'Marketing materials for personal brand', status: 'Rejected', requestDate: new Date(2024, 6, 12), repaidAmount: 0 },
+];
+
+
 export default function DesignerEarningsPage(): ReactElement {
+  const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [advanceRequests, setAdvanceRequests] = useState<AdvanceRequest[]>(mockAdvanceRequests);
+  const [isSubmittingAdvance, setIsSubmittingAdvance] = useState(false);
+  const [advanceForm, setAdvanceForm] = useState({ orderId: '', amount: '', reason: '', attachment: null as File | null });
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -79,6 +112,14 @@ export default function DesignerEarningsPage(): ReactElement {
       case 'Cancelled': return 'destructive';
       default: return 'outline';
     }
+  };
+
+  const getAdvanceStatusBadgeVariant = (status: AdvanceRequestStatus) => {
+      switch (status) {
+        case 'Approved': return 'default';
+        case 'Pending': return 'secondary';
+        case 'Rejected': return 'destructive';
+      }
   };
 
   const getTypeIcon = (type: TransactionType) => {
@@ -108,7 +149,6 @@ export default function DesignerEarningsPage(): ReactElement {
   }, [transactions, searchTerm, statusFilter, dateRange]);
 
 
-  // Calculate stats for the new cards
   const totalEarnings = useMemo(() => transactions.filter(t => t.type === 'Earning' && t.status === 'Completed').reduce((acc, t) => acc + t.amount, 0), [transactions]);
   const thisMonthEarnings = useMemo(() => {
     const now = new Date();
@@ -120,7 +160,6 @@ export default function DesignerEarningsPage(): ReactElement {
   const upcomingPayouts = useMemo(() => transactions.filter(t => t.type === 'Payout' && t.status === 'Processing').reduce((acc, t) => acc + Math.abs(t.amount), 0), [transactions]);
   const refundsDeductions = useMemo(() => transactions.filter(t => t.type === 'Refund' || t.type === 'Fee').reduce((acc, t) => acc + Math.abs(t.amount), 0), [transactions]);
 
-
   const statCards = [
     { title: "Total Earnings", value: `₹${totalEarnings.toLocaleString('en-IN')}`, icon: PiggyBank, color: "text-green-600 dark:text-green-400", bgColor: "bg-green-100 dark:bg-green-900/30" },
     { title: "This Month’s Earnings", value: `₹${thisMonthEarnings.toLocaleString('en-IN')}`, icon: CalendarIcon, color: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-100 dark:bg-blue-900/30" },
@@ -128,6 +167,55 @@ export default function DesignerEarningsPage(): ReactElement {
     { title: "Upcoming Payouts", value: `₹${upcomingPayouts.toLocaleString('en-IN')}`, icon: Wallet, color: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-100 dark:bg-purple-900/30" },
     { title: "Refunds/Deductions", value: `₹${refundsDeductions.toLocaleString('en-IN')}`, icon: Receipt, color: "text-red-600 dark:text-red-400", bgColor: "bg-red-100 dark:bg-red-900/30" },
   ];
+
+  const activeOrdersForAdvance = useMemo(() => {
+    return initialOrdersData.filter(order => order.designerId === MOCK_DESIGNER_ID && order.status === 'In Progress');
+  }, []);
+
+  const handleAdvanceFormChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setAdvanceForm(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleAdvanceOrderSelect = (value: string) => {
+    setAdvanceForm(prev => ({...prev, orderId: value}));
+  };
+
+  const handleAdvanceFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAdvanceForm(prev => ({ ...prev, attachment: e.target.files![0] }));
+    }
+  };
+
+  const handleSubmitAdvanceRequest = (e: FormEvent) => {
+    e.preventDefault();
+    if (!advanceForm.orderId || !advanceForm.amount || !advanceForm.reason) {
+      toast({ title: "Error", description: "Please select an order and fill in the amount and reason.", variant: "destructive" });
+      return;
+    }
+    setIsSubmittingAdvance(true);
+    // Simulate API call
+    console.log("Submitting advance request:", advanceForm);
+    setTimeout(() => {
+      const orderName = activeOrdersForAdvance.find(o => o.id === advanceForm.orderId)?.serviceName || 'Unknown Order';
+      const newRequest: AdvanceRequest = {
+        id: `ADV${Date.now().toString().slice(-4)}`,
+        orderId: advanceForm.orderId,
+        orderName,
+        amount: parseFloat(advanceForm.amount),
+        reason: advanceForm.reason,
+        status: 'Pending',
+        requestDate: new Date(),
+        repaidAmount: 0,
+      };
+      setAdvanceRequests(prev => [newRequest, ...prev]);
+      toast({ title: "Advance Request Submitted", description: "Your request has been sent for admin review." });
+      // Reset form
+      setAdvanceForm({ orderId: '', amount: '', reason: '', attachment: null });
+      setIsSubmittingAdvance(false);
+    }, 1500);
+  };
+
 
   return (
     <div className="space-y-8">
@@ -149,6 +237,84 @@ export default function DesignerEarningsPage(): ReactElement {
           </Card>
         ))}
       </div>
+
+       <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center"><HandCoins className="mr-2 h-5 w-5"/>Advances</CardTitle>
+          <CardDescription>Request an advance on an active project or track your existing requests.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="tracker">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="tracker">Advance Tracker</TabsTrigger>
+              <TabsTrigger value="request">Request Advance</TabsTrigger>
+            </TabsList>
+            <TabsContent value="tracker" className="mt-4">
+              <div className="space-y-4">
+                {advanceRequests.map(req => (
+                  <Card key={req.id} className="bg-secondary/30">
+                    <CardContent className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div className="flex-grow">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold">₹{req.amount.toLocaleString('en-IN')}</p>
+                          <Badge variant={getAdvanceStatusBadgeVariant(req.status)}>{req.status}</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">Order: {req.orderName} ({req.orderId})</p>
+                        <p className="text-xs text-muted-foreground mt-1">Requested: {format(req.requestDate, 'PP')}</p>
+                      </div>
+                      <div className="w-full sm:w-1/3">
+                         <Label className="text-xs">Repayment Progress</Label>
+                         <Progress value={(req.repaidAmount / req.amount) * 100} className="h-2 mt-1"/>
+                         <p className="text-xs text-muted-foreground text-right mt-1">₹{req.repaidAmount.toLocaleString('en-IN')} / ₹{req.amount.toLocaleString('en-IN')}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+            <TabsContent value="request" className="mt-4">
+              <form onSubmit={handleSubmitAdvanceRequest} className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="orderId">Select Order*</Label>
+                    <Select value={advanceForm.orderId} onValueChange={handleAdvanceOrderSelect} required>
+                      <SelectTrigger id="orderId"><SelectValue placeholder="Choose an active order..." /></SelectTrigger>
+                      <SelectContent>
+                        {activeOrdersForAdvance.length > 0 ? activeOrdersForAdvance.map(order => (
+                          <SelectItem key={order.id} value={order.id}>{order.serviceName} ({order.id})</SelectItem>
+                        )) : (
+                          <SelectItem value="none" disabled>No active orders eligible for advance.</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="amount">Amount Requested (INR)*</Label>
+                    <Input id="amount" type="number" placeholder="e.g., 5000" value={advanceForm.amount} onChange={handleAdvanceFormChange} required/>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reason">Reason for Request*</Label>
+                  <Textarea id="reason" placeholder="e.g., Need to purchase a software subscription for this project." value={advanceForm.reason} onChange={handleAdvanceFormChange} required/>
+                </div>
+                 <div className="space-y-2">
+                  <Label htmlFor="attachment">Attachment (Optional)</Label>
+                  <div className="flex items-center gap-2">
+                    <Upload className="h-4 w-4 text-muted-foreground" />
+                    <Input id="attachment" type="file" onChange={handleAdvanceFileChange} />
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button type="submit" disabled={isSubmittingAdvance || activeOrdersForAdvance.length === 0}>
+                    {isSubmittingAdvance && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                    {isSubmittingAdvance ? 'Submitting...' : 'Submit Request'}
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
 
       <Dialog onOpenChange={(open) => !open && setSelectedTransaction(null)}>
         <Card className="shadow-lg">
@@ -270,3 +436,4 @@ export default function DesignerEarningsPage(): ReactElement {
     </div>
   );
 }
+
