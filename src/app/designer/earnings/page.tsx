@@ -28,7 +28,9 @@ import {
     PieChart as PieChartIcon,
     LineChart as LineChartIcon,
     Users as UsersIcon,
-    Eye
+    Eye,
+    Expand,
+    Minimize
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import Link from 'next/link';
@@ -123,6 +125,9 @@ export default function DesignerEarningsPage(): ReactElement {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | TransactionStatus>('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  
+  // State for chart expansion
+  const [expandedChart, setExpandedChart] = useState<string | null>(null);
 
   const getStatusBadgeVariant = (status: TransactionStatus) => {
     switch (status) {
@@ -345,6 +350,10 @@ export default function DesignerEarningsPage(): ReactElement {
     document.body.removeChild(link);
   }, [displayedTransactions]);
 
+  const handleChartClick = (chartId: string) => {
+    setExpandedChart(prev => (prev === chartId ? null : chartId));
+  };
+
 
   return (
     <div className="space-y-8">
@@ -368,92 +377,122 @@ export default function DesignerEarningsPage(): ReactElement {
       </div>
       
       <Card className="shadow-lg">
-          <CardHeader>
-              <CardTitle className="flex items-center"><PieChartIcon className="mr-2 h-5 w-5" />Earnings Insights</CardTitle>
-              <CardDescription>Visualize your earnings from different perspectives.</CardDescription>
-          </CardHeader>
-          <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <Card className="shadow-inner bg-secondary/30">
-                      <CardHeader>
-                          <CardTitle className="text-base font-headline">Earnings Trend (Last 6 Months)</CardTitle>
-                          <CardDescription className="text-xs text-green-600">+15% vs previous period</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                          <ChartContainer config={lineChartConfig} className="h-[250px] w-full">
-                              <LineChart data={lineChartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
-                                  <CartesianGrid vertical={false} />
-                                  <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-                                  <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `₹${Number(value)/1000}k`} />
-                                  <RechartsTooltip 
-                                      cursor={false}
-                                      content={<ChartTooltipContent 
-                                          indicator="line" 
-                                          formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`}
-                                      />} 
-                                  />
-                                  <Line dataKey="earnings" type="monotone" stroke="var(--color-earnings)" strokeWidth={2} dot={true} />
-                              </LineChart>
-                          </ChartContainer>
-                      </CardContent>
-                  </Card>
-                  <Card className="shadow-inner bg-secondary/30">
-                      <CardHeader>
-                          <CardTitle className="text-base font-headline">Earnings by Service Category</CardTitle>
-                          <CardDescription className="text-xs">Breakdown of revenue sources.</CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex items-center justify-center">
-                          <ChartContainer config={pieChartConfig} className="h-[250px] w-full">
-                              <PieChart>
-                                  <RechartsTooltip 
-                                      content={<ChartTooltipContent 
-                                          nameKey="name" 
-                                          formatter={(value, name, item) => {
-                                              const total = pieChartData.reduce((acc, curr) => acc + curr.value, 0);
-                                              const percentage = total > 0 ? (Number(value) / total * 100).toFixed(0) : 0;
-                                              return `₹${Number(value).toLocaleString('en-IN')} (${percentage}%)`;
-                                          }}
-                                      />} 
-                                  />
-                                  <Pie data={pieChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} strokeWidth={2}>
-                                      <LabelList dataKey="name" className="fill-background text-xs" stroke="none" formatter={(value: string) => pieChartConfig[value]?.label} />
-                                  </Pie>
-                                  <ChartLegend content={<ChartLegendContent />} />
-                              </PieChart>
-                          </ChartContainer>
-                      </CardContent>
-                  </Card>
-                   <Card className="shadow-inner bg-secondary/30">
-                      <CardHeader>
-                          <CardTitle className="text-base font-headline">Top 5 Clients by Revenue</CardTitle>
-                          <CardDescription className="text-xs">Your highest-value clients.</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                          <ChartContainer config={barChartConfig} className="h-[250px] w-full">
-                              <BarChart data={barChartData} layout="vertical" margin={{ left: 0, right: 30 }}>
-                                  <CartesianGrid horizontal={false} />
-                                  <XAxis type="number" hide />
-                                  <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={5} width={80} />
-                                  <RechartsTooltip 
-                                      cursor={false} 
-                                      content={<ChartTooltipContent 
-                                          indicator="dot" 
-                                          formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`}
-                                      />} 
-                                  />
-                                  <Bar dataKey="revenue" radius={4}>
-                                      <LabelList dataKey="revenue" position="right" offset={8} className="fill-foreground text-xs" formatter={(value: number) => `₹${(value/1000).toFixed(1)}k`} />
-                                      {barChartData.map((entry, index) => (
-                                          <Cell key={`cell-${index}`} fill={index === 0 ? "hsl(var(--chart-1))" : "hsl(var(--chart-2))"} />
-                                      ))}
-                                  </Bar>
-                              </BarChart>
-                          </ChartContainer>
-                      </CardContent>
-                  </Card>
-              </div>
-          </CardContent>
+        <CardHeader>
+            <CardTitle className="flex items-center"><PieChartIcon className="mr-2 h-5 w-5" />Earnings Insights</CardTitle>
+            <CardDescription>Visualize your earnings from different perspectives.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Chart 1: Line Chart */}
+                <div className={cn("relative group transition-all duration-300 ease-in-out", expandedChart === 'trend' ? 'lg:col-span-3' : 'lg:col-span-1', !expandedChart || expandedChart === 'trend' ? 'block' : 'hidden')}>
+                    <Card className="shadow-inner bg-secondary/30 h-full cursor-pointer" onClick={() => handleChartClick('trend')}>
+                        <CardHeader>
+                            <CardTitle className="text-base font-headline">Earnings Trend (Last 6 Months)</CardTitle>
+                            <CardDescription className="text-xs text-green-600">+15% vs previous period</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ChartContainer config={lineChartConfig} className={cn("h-[250px] w-full", expandedChart === 'trend' && "h-[400px]")}>
+                                <LineChart data={lineChartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                                    <CartesianGrid vertical={false} />
+                                    <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                                    <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `₹${Number(value)/1000}k`} />
+                                    <RechartsTooltip 
+                                        cursor={false}
+                                        content={<ChartTooltipContent 
+                                            indicator="line" 
+                                            formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`}
+                                        />} 
+                                    />
+                                    <Line dataKey="earnings" type="monotone" stroke="var(--color-earnings)" strokeWidth={2} dot={true} />
+                                </LineChart>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <span className="text-white font-bold flex items-center text-lg">
+                           {expandedChart === 'trend' ? <Minimize className="mr-2 h-5 w-5"/> : <Expand className="mr-2 h-5 w-5"/>}
+                           {expandedChart === 'trend' ? 'Click to Collapse' : 'Click to Expand'}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Chart 2: Pie Chart */}
+                <div className={cn("relative group transition-all duration-300 ease-in-out", expandedChart === 'category' ? 'lg:col-span-3' : 'lg:col-span-1', !expandedChart || expandedChart === 'category' ? 'block' : 'hidden')}>
+                    <Card className="shadow-inner bg-secondary/30 h-full cursor-pointer" onClick={() => handleChartClick('category')}>
+                        <CardHeader>
+                            <CardTitle className="text-base font-headline">Earnings by Service Category</CardTitle>
+                            <CardDescription className="text-xs">Breakdown of revenue sources.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex items-center justify-center">
+                            <ChartContainer config={pieChartConfig} className={cn("h-[250px] w-full", expandedChart === 'category' && "h-[400px]")}>
+                                <PieChart>
+                                    <RechartsTooltip 
+                                        content={<ChartTooltipContent 
+                                            nameKey="name" 
+                                            formatter={(value, name, item) => {
+                                                const total = pieChartData.reduce((acc, curr) => acc + curr.value, 0);
+                                                const percentage = total > 0 ? (Number(value) / total * 100).toFixed(0) : 0;
+                                                return `₹${Number(value).toLocaleString('en-IN')} (${percentage}%)`;
+                                            }}
+                                        />} 
+                                    />
+                                    <Pie data={pieChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={expandedChart === 'category' ? 80 : 50} outerRadius={expandedChart === 'category' ? 120 : 80} paddingAngle={2} strokeWidth={2}>
+                                        <LabelList dataKey="name" className="fill-background text-xs" stroke="none" formatter={(value: string) => pieChartConfig[value]?.label} />
+                                    </Pie>
+                                    <ChartLegend content={<ChartLegendContent />} />
+                                </PieChart>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <span className="text-white font-bold flex items-center text-lg">
+                            {expandedChart === 'category' ? <Minimize className="mr-2 h-5 w-5"/> : <Expand className="mr-2 h-5 w-5"/>}
+                           {expandedChart === 'category' ? 'Click to Collapse' : 'Click to Expand'}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Chart 3: Bar Chart */}
+                <div className={cn("relative group transition-all duration-300 ease-in-out", expandedChart === 'clients' ? 'lg:col-span-3' : 'lg:col-span-1', !expandedChart || expandedChart === 'clients' ? 'block' : 'hidden')}>
+                    <Card className="shadow-inner bg-secondary/30 h-full cursor-pointer" onClick={() => handleChartClick('clients')}>
+                        <CardHeader>
+                            <CardTitle className="text-base font-headline">Top 5 Clients by Revenue</CardTitle>
+                            <CardDescription className="text-xs">Your highest-value clients.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ChartContainer config={barChartConfig} className={cn("h-[250px] w-full", expandedChart === 'clients' && "h-[400px]")}>
+                                <BarChart data={barChartData} layout="vertical" margin={{ left: 0, right: 40 }}>
+                                    <CartesianGrid horizontal={false} />
+                                    <XAxis type="number" hide />
+                                    <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={5} width={80} />
+                                    <RechartsTooltip 
+                                        cursor={false} 
+                                        content={<ChartTooltipContent 
+                                            indicator="dot" 
+                                            formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`}
+                                        />} 
+                                    />
+                                    <Bar dataKey="revenue" radius={4}>
+                                        <LabelList dataKey="revenue" position="right" offset={8} className="fill-foreground text-xs" formatter={(value: number) => `₹${(value/1000).toFixed(1)}k`} />
+                                        {barChartData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={index === 0 ? "hsl(var(--chart-1))" : "hsl(var(--chart-2))"} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <span className="text-white font-bold flex items-center text-lg">
+                             {expandedChart === 'clients' ? <Minimize className="mr-2 h-5 w-5"/> : <Expand className="mr-2 h-5 w-5"/>}
+                           {expandedChart === 'clients' ? 'Click to Collapse' : 'Click to Expand'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </CardContent>
       </Card>
+
 
       <Dialog onOpenChange={(open) => !open && setSelectedTransaction(null)}>
         <Card className="shadow-lg">
@@ -676,3 +715,4 @@ export default function DesignerEarningsPage(): ReactElement {
     </div>
   );
 }
+
