@@ -367,171 +367,93 @@ export default function DesignerEarningsPage(): ReactElement {
         ))}
       </div>
       
-       <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center"><HandCoins className="mr-2 h-5 w-5"/>Advances</CardTitle>
-          <CardDescription>Request an advance on an active project or track your existing requests.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="tracker">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="tracker">Advance Tracker</TabsTrigger>
-              <TabsTrigger value="request">Request Advance</TabsTrigger>
-            </TabsList>
-            <TabsContent value="tracker" className="mt-4">
-              <div className="space-y-4">
-                {advanceRequests.map(req => (
-                  <Card key={req.id} className="bg-secondary/30">
-                    <CardContent className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                      <div className="flex-grow">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold">₹{req.amount.toLocaleString('en-IN')}</p>
-                          <Badge variant={getAdvanceStatusBadgeVariant(req.status)}>{req.status}</Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">Order: {req.orderName} ({req.orderId})</p>
-                        <p className="text-xs text-muted-foreground mt-1">Requested: {format(req.requestDate, 'PP')}</p>
-                      </div>
-                      <div className="w-full sm:w-1/3">
-                         <Label className="text-xs">Repayment Progress</Label>
-                         <Progress value={(req.repaidAmount / req.amount) * 100} className="h-2 mt-1"/>
-                         <p className="text-xs text-muted-foreground text-right mt-1">₹{req.repaidAmount.toLocaleString('en-IN')} / ₹{req.amount.toLocaleString('en-IN')}</p>
-                      </div>
-                    </CardContent>
+      <Card className="shadow-lg">
+          <CardHeader>
+              <CardTitle className="flex items-center"><PieChartIcon className="mr-2 h-5 w-5" />Earnings Insights</CardTitle>
+              <CardDescription>Visualize your earnings from different perspectives.</CardDescription>
+          </CardHeader>
+          <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <Card className="shadow-inner bg-secondary/30">
+                      <CardHeader>
+                          <CardTitle className="text-base font-headline">Earnings Trend (Last 6 Months)</CardTitle>
+                          <CardDescription className="text-xs text-green-600">+15% vs previous period</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                          <ChartContainer config={lineChartConfig} className="h-[250px] w-full">
+                              <LineChart data={lineChartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                                  <CartesianGrid vertical={false} />
+                                  <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                                  <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `₹${Number(value)/1000}k`} />
+                                  <RechartsTooltip 
+                                      cursor={false}
+                                      content={<ChartTooltipContent 
+                                          indicator="line" 
+                                          formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`}
+                                      />} 
+                                  />
+                                  <Line dataKey="earnings" type="monotone" stroke="var(--color-earnings)" strokeWidth={2} dot={true} />
+                              </LineChart>
+                          </ChartContainer>
+                      </CardContent>
                   </Card>
-                ))}
+                  <Card className="shadow-inner bg-secondary/30">
+                      <CardHeader>
+                          <CardTitle className="text-base font-headline">Earnings by Service Category</CardTitle>
+                          <CardDescription className="text-xs">Breakdown of revenue sources.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex items-center justify-center">
+                          <ChartContainer config={pieChartConfig} className="h-[250px] w-full">
+                              <PieChart>
+                                  <RechartsTooltip 
+                                      content={<ChartTooltipContent 
+                                          nameKey="name" 
+                                          formatter={(value, name, item) => {
+                                              const total = pieChartData.reduce((acc, curr) => acc + curr.value, 0);
+                                              const percentage = total > 0 ? (Number(value) / total * 100).toFixed(0) : 0;
+                                              return `₹${Number(value).toLocaleString('en-IN')} (${percentage}%)`;
+                                          }}
+                                      />} 
+                                  />
+                                  <Pie data={pieChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} strokeWidth={2}>
+                                      <LabelList dataKey="name" className="fill-background text-xs" stroke="none" formatter={(value: string) => pieChartConfig[value]?.label} />
+                                  </Pie>
+                                  <ChartLegend content={<ChartLegendContent />} />
+                              </PieChart>
+                          </ChartContainer>
+                      </CardContent>
+                  </Card>
+                   <Card className="shadow-inner bg-secondary/30">
+                      <CardHeader>
+                          <CardTitle className="text-base font-headline">Top 5 Clients by Revenue</CardTitle>
+                          <CardDescription className="text-xs">Your highest-value clients.</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                          <ChartContainer config={barChartConfig} className="h-[250px] w-full">
+                              <BarChart data={barChartData} layout="vertical" margin={{ left: 0, right: 30 }}>
+                                  <CartesianGrid horizontal={false} />
+                                  <XAxis type="number" hide />
+                                  <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={5} width={80} />
+                                  <RechartsTooltip 
+                                      cursor={false} 
+                                      content={<ChartTooltipContent 
+                                          indicator="dot" 
+                                          formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`}
+                                      />} 
+                                  />
+                                  <Bar dataKey="revenue" radius={4}>
+                                      <LabelList dataKey="revenue" position="right" offset={8} className="fill-foreground text-xs" formatter={(value: number) => `₹${(value/1000).toFixed(1)}k`} />
+                                      {barChartData.map((entry, index) => (
+                                          <Cell key={`cell-${index}`} fill={index === 0 ? "hsl(var(--chart-1))" : "hsl(var(--chart-2))"} />
+                                      ))}
+                                  </Bar>
+                              </BarChart>
+                          </ChartContainer>
+                      </CardContent>
+                  </Card>
               </div>
-            </TabsContent>
-            <TabsContent value="request" className="mt-4">
-              <form onSubmit={handleSubmitAdvanceRequest} className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="orderId">Select Order*</Label>
-                    <Select value={advanceForm.orderId} onValueChange={handleAdvanceOrderSelect} required>
-                      <SelectTrigger id="orderId"><SelectValue placeholder="Choose an active order..." /></SelectTrigger>
-                      <SelectContent>
-                        {activeOrdersForAdvance.length > 0 ? activeOrdersForAdvance.map(order => (
-                          <SelectItem key={order.id} value={order.id}>{order.serviceName} ({order.id})</SelectItem>
-                        )) : (
-                          <SelectItem value="none" disabled>No active orders eligible for advance.</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="amount">Amount Requested (INR)*</Label>
-                    <Input id="amount" type="number" placeholder="e.g., 5000" value={advanceForm.amount} onChange={handleAdvanceFormChange} required/>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="reason">Reason for Request*</Label>
-                  <Textarea id="reason" placeholder="e.g., Need to purchase a software subscription for this project." value={advanceForm.reason} onChange={handleAdvanceFormChange} required/>
-                </div>
-                 <div className="space-y-2">
-                  <Label htmlFor="attachment">Attachment (Optional)</Label>
-                  <div className="flex items-center gap-2">
-                    <Upload className="h-4 w-4 text-muted-foreground" />
-                    <Input id="attachment" type="file" onChange={handleAdvanceFileChange} />
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={isSubmittingAdvance || activeOrdersForAdvance.length === 0}>
-                    {isSubmittingAdvance && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                    {isSubmittingAdvance ? 'Submitting...' : 'Submit Request'}
-                  </Button>
-                </div>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
+          </CardContent>
       </Card>
-      
-        <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="flex items-center"><PieChartIcon className="mr-2 h-5 w-5" />Earnings Insights</CardTitle>
-                <CardDescription>Visualize your earnings from different perspectives.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <Card className="shadow-inner bg-secondary/30">
-                        <CardHeader>
-                            <CardTitle className="text-base font-headline">Earnings Trend (Last 6 Months)</CardTitle>
-                            <CardDescription className="text-xs text-green-600">+15% vs previous period</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ChartContainer config={lineChartConfig} className="h-[250px] w-full">
-                                <LineChart data={lineChartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-                                    <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => `₹${value/1000}k`} />
-                                    <RechartsTooltip 
-                                        cursor={false}
-                                        content={<ChartTooltipContent 
-                                            indicator="line" 
-                                            formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`}
-                                        />} 
-                                    />
-                                    <Line dataKey="earnings" type="monotone" stroke="var(--color-earnings)" strokeWidth={2} dot={true} />
-                                </LineChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
-                    <Card className="shadow-inner bg-secondary/30">
-                        <CardHeader>
-                            <CardTitle className="text-base font-headline">Earnings by Service</CardTitle>
-                            <CardDescription className="text-xs">Breakdown of revenue sources.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex items-center justify-center">
-                            <ChartContainer config={pieChartConfig} className="h-[250px] w-full">
-                                <PieChart>
-                                    <RechartsTooltip 
-                                        content={<ChartTooltipContent 
-                                            nameKey="name" 
-                                            formatter={(value, name, item) => {
-                                                const total = pieChartData.reduce((acc, curr) => acc + curr.value, 0);
-                                                const percentage = total > 0 ? (Number(value) / total * 100).toFixed(0) : 0;
-                                                return `₹${Number(value).toLocaleString('en-IN')} (${percentage}%)`;
-                                            }}
-                                        />} 
-                                    />
-                                    <Pie data={pieChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} strokeWidth={2}>
-                                        <LabelList dataKey="name" className="fill-background text-xs" stroke="none" formatter={(value: string) => pieChartConfig[value]?.label} />
-                                    </Pie>
-                                    <ChartLegend content={<ChartLegendContent />} />
-                                </PieChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
-                     <Card className="shadow-inner bg-secondary/30">
-                        <CardHeader>
-                            <CardTitle className="text-base font-headline">Top 5 Clients</CardTitle>
-                            <CardDescription className="text-xs">Your highest-value clients.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ChartContainer config={barChartConfig} className="h-[250px] w-full">
-                                <BarChart data={barChartData} layout="vertical" margin={{ left: 0, right: 30 }}>
-                                    <CartesianGrid horizontal={false} />
-                                    <XAxis type="number" hide />
-                                    <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={5} width={80} />
-                                    <RechartsTooltip 
-                                        cursor={false} 
-                                        content={<ChartTooltipContent 
-                                            indicator="dot" 
-                                            formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`}
-                                        />} 
-                                    />
-                                    <Bar dataKey="revenue" radius={4}>
-                                        <LabelList dataKey="revenue" position="right" offset={8} className="fill-foreground text-xs" formatter={(value: number) => `₹${(value/1000).toFixed(1)}k`} />
-                                        {barChartData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={index === 0 ? "hsl(var(--chart-1))" : "hsl(var(--chart-2))"} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
-                </div>
-            </CardContent>
-        </Card>
 
       <Dialog onOpenChange={(open) => !open && setSelectedTransaction(null)}>
         <Card className="shadow-lg">
@@ -673,6 +595,84 @@ export default function DesignerEarningsPage(): ReactElement {
             </DialogContent>
         )}
       </Dialog>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center"><HandCoins className="mr-2 h-5 w-5"/>Advances</CardTitle>
+          <CardDescription>Request an advance on an active project or track your existing requests.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="tracker">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="tracker">Advance Tracker</TabsTrigger>
+              <TabsTrigger value="request">Request Advance</TabsTrigger>
+            </TabsList>
+            <TabsContent value="tracker" className="mt-4">
+              <div className="space-y-4">
+                {advanceRequests.map(req => (
+                  <Card key={req.id} className="bg-secondary/30">
+                    <CardContent className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div className="flex-grow">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold">₹{req.amount.toLocaleString('en-IN')}</p>
+                          <Badge variant={getAdvanceStatusBadgeVariant(req.status)}>{req.status}</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">Order: {req.orderName} ({req.orderId})</p>
+                        <p className="text-xs text-muted-foreground mt-1">Requested: {format(req.requestDate, 'PP')}</p>
+                      </div>
+                      <div className="w-full sm:w-1/3">
+                         <Label className="text-xs">Repayment Progress</Label>
+                         <Progress value={(req.repaidAmount / req.amount) * 100} className="h-2 mt-1"/>
+                         <p className="text-xs text-muted-foreground text-right mt-1">₹{req.repaidAmount.toLocaleString('en-IN')} / ₹{req.amount.toLocaleString('en-IN')}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+            <TabsContent value="request" className="mt-4">
+              <form onSubmit={handleSubmitAdvanceRequest} className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="orderId">Select Order*</Label>
+                    <Select value={advanceForm.orderId} onValueChange={handleAdvanceOrderSelect} required>
+                      <SelectTrigger id="orderId"><SelectValue placeholder="Choose an active order..." /></SelectTrigger>
+                      <SelectContent>
+                        {activeOrdersForAdvance.length > 0 ? activeOrdersForAdvance.map(order => (
+                          <SelectItem key={order.id} value={order.id}>{order.serviceName} ({order.id})</SelectItem>
+                        )) : (
+                          <SelectItem value="none" disabled>No active orders eligible for advance.</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="amount">Amount Requested (INR)*</Label>
+                    <Input id="amount" type="number" placeholder="e.g., 5000" value={advanceForm.amount} onChange={handleAdvanceFormChange} required/>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reason">Reason for Request*</Label>
+                  <Textarea id="reason" placeholder="e.g., Need to purchase a software subscription for this project." value={advanceForm.reason} onChange={handleAdvanceFormChange} required/>
+                </div>
+                 <div className="space-y-2">
+                  <Label htmlFor="attachment">Attachment (Optional)</Label>
+                  <div className="flex items-center gap-2">
+                    <Upload className="h-4 w-4 text-muted-foreground" />
+                    <Input id="attachment" type="file" onChange={handleAdvanceFileChange} />
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button type="submit" disabled={isSubmittingAdvance || activeOrdersForAdvance.length === 0}>
+                    {isSubmittingAdvance && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                    {isSubmittingAdvance ? 'Submitting...' : 'Submit Request'}
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }
