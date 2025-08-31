@@ -27,9 +27,7 @@ import {
     Loader2,
     PieChart as PieChartIcon,
     LineChart as LineChartIcon,
-    Users as UsersIcon,
-    FileCsv,
-    FileSpreadsheet
+    Users as UsersIcon
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import Link from 'next/link';
@@ -522,7 +520,7 @@ export default function DesignerEarningsPage(): ReactElement {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={handleExportCsv}>
-                            <FileCsv className="mr-2 h-4 w-4" />
+                            <FileText className="mr-2 h-4 w-4" />
                             Export as CSV
                         </DropdownMenuItem>
                          <DropdownMenuItem disabled>
@@ -530,7 +528,7 @@ export default function DesignerEarningsPage(): ReactElement {
                             Export as PDF (Soon)
                         </DropdownMenuItem>
                          <DropdownMenuItem disabled>
-                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                            <FileText className="mr-2 h-4 w-4" />
                             Export as Excel (Soon)
                         </DropdownMenuItem>
                       </DropdownMenuContent>
