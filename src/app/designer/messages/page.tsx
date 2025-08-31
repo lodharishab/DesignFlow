@@ -146,9 +146,9 @@ function NotificationsTab() {
             <CardHeader className="pb-4">
                 <CardTitle>Filter Notifications</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="relative lg:col-span-3">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input placeholder="Search title or message..." className="pl-9" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
                 <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as any)}>
@@ -189,50 +189,47 @@ function NotificationsTab() {
         
         {filteredNotifications.length > 0 ? (
           <TooltipProvider>
-            {filteredNotifications.map(notification => (
-            <Card 
+            <div className="space-y-3">
+              {filteredNotifications.map(notification => (
+                <Card 
                     key={notification.id} 
                     className={cn(
-                        "transition-all hover:shadow-md cursor-pointer relative group", 
-                        !notification.isRead && "bg-primary/5 border-primary/20"
+                      "transition-all hover:shadow-md cursor-pointer relative group", 
+                      !notification.isRead && statusFilter !== 'Archived' && "bg-primary/5 border-primary/20"
                     )}
                     onClick={() => handleNotificationClick(notification)}
                 >
-                <CardContent className="p-4 flex items-start gap-4">
-                    <div className={cn("p-2 rounded-full mt-1", !notification.isRead ? "bg-primary/10" : "bg-muted")}>
-                        {React.createElement(getNotificationIcon(notification.type), { className: cn("h-5 w-5", !notification.isRead ? "text-primary" : "text-muted-foreground") })}
-                    </div>
-                    <div className="flex-grow">
-                        <div className="flex justify-between items-center">
-                            <p className="font-semibold">{notification.title}</p>
-                            <Badge variant={getPriorityBadgeVariant(notification.priority)}>{notification.priority}</Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-0.5">{notification.message}</p>
-                        <div className="flex justify-between items-center mt-2">
-                                <p className="text-xs text-muted-foreground">{formatDistanceToNow(notification.createdAt, { addSuffix: true })}</p>
-                                <div className="flex items-center text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                                <LinkIconLucide className="mr-1.5 h-3.5 w-3.5" /> View Details
-                                </div>
-                        </div>
-                    </div>
-                     <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100"
-                                onClick={(e) => handleArchiveToggle(e, notification.id, !notification.isArchived)}
-                            >
-                                {notification.isArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                           <p>{notification.isArchived ? 'Unarchive' : 'Archive'}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </CardContent>
-            </Card>
-            ))}
+                  <CardContent className="p-4 flex items-start gap-4">
+                      <div className={cn("p-2 rounded-full mt-1", !notification.isRead ? "bg-primary/10" : "bg-muted")}>
+                          {React.createElement(getNotificationIcon(notification.type), { className: cn("h-5 w-5", !notification.isRead ? "text-primary" : "text-muted-foreground") })}
+                      </div>
+                      <div className="flex-grow">
+                          <div className="flex justify-between items-center mb-1">
+                              <p className="font-semibold pr-12">{notification.title}</p>
+                              <Badge variant={getPriorityBadgeVariant(notification.priority)}>{notification.priority}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{notification.message}</p>
+                          <p className="text-xs text-muted-foreground mt-2">{formatDistanceToNow(notification.createdAt, { addSuffix: true })}</p>
+                      </div>
+                      <Tooltip>
+                          <TooltipTrigger asChild>
+                              <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute top-2 right-2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={(e) => handleArchiveToggle(e, notification.id, !notification.isArchived)}
+                              >
+                                  {notification.isArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                              </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{notification.isArchived ? 'Unarchive' : 'Archive'}</p>
+                          </TooltipContent>
+                      </Tooltip>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </TooltipProvider>
         ) : (
              <Card className="text-center py-16 shadow-lg border-dashed">
