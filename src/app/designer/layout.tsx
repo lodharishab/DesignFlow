@@ -13,7 +13,7 @@ import {
   Bell,
   MessageSquare,
   CheckCircle,
-  AlertTriangle,
+  IndianRupee, // For Earnings
   ChevronDown
 } from 'lucide-react';
 import { 
@@ -41,7 +41,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
@@ -51,7 +51,16 @@ const navItems = [
   { href: '/designer/orders', icon: Briefcase, label: 'My Orders' },
   { href: '/designer/portfolio', icon: Palette, label: 'My Portfolio' },
   { href: '/designer/messages', icon: MessageSquare, label: 'Messaging' },
-  { href: '/designer/profile', icon: Settings, label: 'Profile & Settings' },
+  { 
+    label: 'Earnings', 
+    icon: IndianRupee, 
+    pathPrefix: '/designer/earnings',
+    children: [
+        { href: '/designer/earnings', icon: LayoutDashboard, label: 'Overview & Ledger' },
+        { href: '/designer/settings/payment', icon: Settings, label: 'Payout Settings' },
+    ]
+  },
+  { href: '/designer/profile', icon: UserCircle, label: 'Profile' },
 ];
 
 const mockHeaderNotifications = [
@@ -91,6 +100,21 @@ export default function DesignerLayout({
 }) {
   const pathname = usePathname();
   const unreadCount = mockHeaderNotifications.filter(n => !n.isRead).length;
+  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
+
+   useEffect(() => {
+    const initiallyOpen: Record<string, boolean> = {};
+    navItems.forEach(item => {
+      if (item.children && item.pathPrefix && pathname.startsWith(item.pathPrefix)) {
+        initiallyOpen[item.label] = true;
+      }
+    });
+    setOpenSubmenus(initiallyOpen);
+  }, [pathname]);
+
+  const toggleSubmenu = (label: string) => {
+    setOpenSubmenus(prev => ({ ...prev, [label]: !prev[label] }));
+  };
 
   return (
     <SidebarProvider defaultOpen>
@@ -104,18 +128,51 @@ export default function DesignerLayout({
         <SidebarContent>
           <SidebarMenu>
             {navItems.map((item) => (
+              item.children ? (
+                <SidebarMenuItem key={item.label}>
+                  <SidebarMenuButton
+                    onClick={() => toggleSubmenu(item.label)}
+                    isActive={pathname.startsWith(item.pathPrefix!) && !openSubmenus[item.label]}
+                    tooltip={{ children: item.label, side: 'right', align: 'center' }}
+                    className="justify-between"
+                  >
+                    <span className="flex items-center gap-2">
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                    </span>
+                    <ChevronDown
+                      className={cn("h-4 w-4 transition-transform duration-200", openSubmenus[item.label] && "rotate-180")}
+                    />
+                  </SidebarMenuButton>
+                  {openSubmenus[item.label] && (
+                    <SidebarMenuSub>
+                      {item.children.map(child => (
+                        <SidebarMenuSubItem key={child.label}>
+                          <SidebarMenuSubButton asChild isActive={pathname === child.href}>
+                            <Link href={child.href}>
+                              {child.icon && <child.icon />}
+                              <span>{child.label}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  )}
+                </SidebarMenuItem>
+              ) : (
                 <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
                       asChild
-                      isActive={pathname.startsWith(item.href)} 
+                      isActive={pathname.startsWith(item.href!)} 
                       tooltip={{ children: item.label, side: 'right', align: 'center' }}
                     >
-                      <Link href={item.href}>
+                      <Link href={item.href!}>
                         <item.icon className="mr-2 h-4 w-4" />
                         <span>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
+              )
             ))}
           </SidebarMenu>
         </SidebarContent>
@@ -191,7 +248,7 @@ export default function DesignerLayout({
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild><Link href="/designer/profile">Profile & Settings</Link></DropdownMenuItem>
                    <DropdownMenuItem asChild><Link href="/designer/applications">My Service Alerts</Link></DropdownMenuItem>
-                  <DropdownMenuItem>Earnings</DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/designer/earnings">Earnings</Link></DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>Log out</DropdownMenuItem>
                 </DropdownMenuContent>
