@@ -15,9 +15,14 @@ import {
     Hourglass, 
     History,
     FileText,
-    Download
+    Download,
+    Calendar,
+    CircleHelp,
+    PiggyBank,
+    Receipt,
+    Wallet
 } from "lucide-react";
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 import Link from 'next/link';
 
 type TransactionStatus = 'Completed' | 'Pending' | 'On Hold' | 'Processing' | 'Cancelled';
@@ -34,12 +39,14 @@ interface Transaction {
 }
 
 const mockTransactions: Transaction[] = [
-    { id: 'txn_e_ps01', orderId: 'ORD2945S', date: new Date(2024, 6, 12), type: 'Earning', status: 'Completed', amount: 19999, description: 'Startup Logo & Brand Identity' },
-    { id: 'txn_f_ps01', orderId: 'ORD2945S', date: new Date(2024, 6, 14), type: 'Fee', status: 'Completed', amount: -1999.90, description: 'Platform Fee (10%)' },
-    { id: 'txn_p_ps01', orderId: 'ORD2945S', date: new Date(2024, 6, 14), type: 'Payout', status: 'Completed', amount: -17999.10, description: 'Payout to bank account' },
-    { id: 'txn_e_vs01', orderId: 'ORD6531A', date: new Date(2024, 6, 18), type: 'Earning', status: 'On Hold', amount: 6999, description: 'Restaurant Menu Design' },
-    { id: 'txn_a_vs01', orderId: 'ORD6531A', date: new Date(2024, 6, 19), type: 'Advance', status: 'Processing', amount: -2000, description: 'Advance for software' },
-    { id: 'txn_e_rk01', orderId: 'ORD7361P', date: new Date(2024, 6, 20), type: 'Earning', status: 'On Hold', amount: 24999, description: 'E-commerce Website UI/UX' },
+    { id: 'txn_e_ps01', orderId: 'ORD2945S', date: new Date(), type: 'Earning', status: 'Completed', amount: 19999, description: 'Startup Logo & Brand Identity' },
+    { id: 'txn_f_ps01', orderId: 'ORD2945S', date: new Date(), type: 'Fee', status: 'Completed', amount: -1999.90, description: 'Platform Fee (10%)' },
+    { id: 'txn_p_ps01', orderId: 'ORD2945S', date: new Date(), type: 'Payout', status: 'Completed', amount: -17999.10, description: 'Payout to bank account' },
+    { id: 'txn_e_vs01', orderId: 'ORD6531A', date: new Date(), type: 'Earning', status: 'On Hold', amount: 6999, description: 'Restaurant Menu Design' },
+    { id: 'txn_a_vs01', orderId: 'ORD6531A', date: new Date(), type: 'Advance', status: 'Processing', amount: -2000, description: 'Advance for software' },
+    { id: 'txn_e_rk01', orderId: 'ORD7361P', date: new Date(), type: 'Earning', status: 'On Hold', amount: 24999, description: 'E-commerce Website UI/UX' },
+    { id: 'txn_refund_rk01', orderId: 'ORDREF01', date: new Date(), type: 'Refund', status: 'Completed', amount: -1000, description: 'Partial Refund for ORDABC' },
+    { id: 'txn_e_old', orderId: 'ORDOLD01', date: new Date(new Date().setMonth(new Date().getMonth() - 2)), type: 'Earning', status: 'Completed', amount: 15000, description: 'Old Project Earning'},
 ];
 
 
@@ -62,19 +69,31 @@ export default function DesignerEarningsPage(): ReactElement {
         case 'Earning': return <ArrowUp className="text-green-500"/>;
         case 'Payout': return <ArrowDown className="text-blue-500"/>;
         case 'Fee': return <ArrowDown className="text-red-500"/>;
-        case 'Advance': return <ArrowDown className="text-orange-500"/>;
+        case 'Advance': return <ArrowDown className="text-orange-500"/>
+        case 'Refund': return <ArrowDown className="text-destructive"/>;
         default: return <IndianRupee/>;
     }
   }
 
-  const lifetimeEarnings = transactions.filter(t => t.type === 'Earning').reduce((acc, t) => acc + t.amount, 0);
-  const pendingPayout = transactions.filter(t => t.type === 'Earning' && t.status === 'On Hold').reduce((acc, t) => acc + t.amount * 0.9, 0); // Assuming 10% fee
-  const lastPayout = transactions.find(t => t.type === 'Payout' && t.status === 'Completed')?.amount || 0;
+  // Calculate stats for the new cards
+  const totalEarnings = useMemo(() => transactions.filter(t => t.type === 'Earning' && t.status === 'Completed').reduce((acc, t) => acc + t.amount, 0), [transactions]);
+  const thisMonthEarnings = useMemo(() => {
+    const now = new Date();
+    const start = startOfMonth(now);
+    const end = endOfMonth(now);
+    return transactions.filter(t => t.type === 'Earning' && t.status === 'Completed' && t.date >= start && t.date <= end).reduce((acc, t) => acc + t.amount, 0);
+  }, [transactions]);
+  const pendingPayouts = useMemo(() => transactions.filter(t => t.type === 'Earning' && t.status === 'On Hold').reduce((acc, t) => acc + t.amount, 0), [transactions]);
+  const upcomingPayouts = useMemo(() => transactions.filter(t => t.type === 'Payout' && t.status === 'Processing').reduce((acc, t) => acc + Math.abs(t.amount), 0), [transactions]);
+  const refundsDeductions = useMemo(() => transactions.filter(t => t.type === 'Refund' || t.type === 'Fee').reduce((acc, t) => acc + Math.abs(t.amount), 0), [transactions]);
+
 
   const statCards = [
-    { title: "Lifetime Earnings", value: `₹${lifetimeEarnings.toLocaleString('en-IN')}`, icon: IndianRupee },
-    { title: "Pending Payout", value: `₹${pendingPayout.toLocaleString('en-IN')}`, icon: Hourglass },
-    { title: "Last Payout", value: `₹${Math.abs(lastPayout).toLocaleString('en-IN')}`, icon: ArrowDown },
+    { title: "Total Earnings", value: `₹${totalEarnings.toLocaleString('en-IN')}`, icon: PiggyBank, color: "text-green-600 dark:text-green-400", bgColor: "bg-green-100 dark:bg-green-900/30" },
+    { title: "This Month’s Earnings", value: `₹${thisMonthEarnings.toLocaleString('en-IN')}`, icon: Calendar, color: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-100 dark:bg-blue-900/30" },
+    { title: "Pending Payouts", value: `₹${pendingPayouts.toLocaleString('en-IN')}`, icon: Hourglass, color: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-100 dark:bg-orange-900/30" },
+    { title: "Upcoming Payouts", value: `₹${upcomingPayouts.toLocaleString('en-IN')}`, icon: Wallet, color: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-100 dark:bg-purple-900/30" },
+    { title: "Refunds/Deductions", value: `₹${refundsDeductions.toLocaleString('en-IN')}`, icon: Receipt, color: "text-red-600 dark:text-red-400", bgColor: "bg-red-100 dark:bg-red-900/30" },
   ];
 
   return (
@@ -83,17 +102,16 @@ export default function DesignerEarningsPage(): ReactElement {
           <BarChart3 className="mr-3 h-8 w-8 text-primary" />
           Earnings &amp; Payouts
         </h1>
-
-      <div className="grid gap-6 md:grid-cols-3">
+      
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {statCards.map(stat => (
-          <Card key={stat.title} className="shadow-md">
+          <Card key={stat.title} className={`${stat.bgColor} border-none shadow-md hover:shadow-lg transition-shadow`}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+              <stat.icon className={`h-5 w-5 ${stat.color}`} />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.title === 'Pending Payout' ? 'After platform fees' : 'Gross amount'}</p>
             </CardContent>
           </Card>
         ))}
