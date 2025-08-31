@@ -27,7 +27,8 @@ import {
     Loader2,
     PieChart as PieChartIcon,
     LineChart as LineChartIcon,
-    Users as UsersIcon
+    Users as UsersIcon,
+    Eye
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import Link from 'next/link';
@@ -568,28 +569,34 @@ export default function DesignerEarningsPage(): ReactElement {
                     <TableHead>Details</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Amount (INR)</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
                 {displayedTransactions.map((txn) => (
-                    <DialogTrigger asChild key={txn.id}>
-                        <TableRow onClick={() => setSelectedTransaction(txn)} className="cursor-pointer">
-                            <TableCell className="w-12">{getTypeIcon(txn.type)}</TableCell>
-                            <TableCell className="text-xs sm:text-sm">{format(txn.date, 'MMM d, yyyy')}</TableCell>
-                            <TableCell>
-                                <p className="font-medium">{txn.description}</p>
-                                <Link href={`/designer/orders/${txn.orderId}`} onClick={(e) => e.stopPropagation()} className="text-xs text-primary hover:underline flex items-center">
-                                    Order: {txn.orderId} <LinkIcon className="ml-1 h-3 w-3"/>
-                                </Link>
-                            </TableCell>
-                            <TableCell>
-                                <Badge variant={getStatusBadgeVariant(txn.status)} className="capitalize">{txn.status}</Badge>
-                            </TableCell>
-                            <TableCell className={`text-right font-medium ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {txn.amount > 0 ? '+' : ''}₹{Math.abs(txn.amount).toLocaleString('en-IN')}
-                            </TableCell>
-                        </TableRow>
-                    </DialogTrigger>
+                    <TableRow key={txn.id}>
+                        <TableCell className="w-12">{getTypeIcon(txn.type)}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{format(txn.date, 'MMM d, yyyy')}</TableCell>
+                        <TableCell>
+                            <p className="font-medium">{txn.description}</p>
+                            <Link href={`/designer/orders/${txn.orderId}`} onClick={(e) => e.stopPropagation()} className="text-xs text-primary hover:underline flex items-center">
+                                Order: {txn.orderId} <LinkIcon className="ml-1 h-3 w-3"/>
+                            </Link>
+                        </TableCell>
+                        <TableCell>
+                            <Badge variant={getStatusBadgeVariant(txn.status)} className="capitalize">{txn.status}</Badge>
+                        </TableCell>
+                        <TableCell className={`text-right font-medium ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {txn.amount > 0 ? '+' : ''}₹{Math.abs(txn.amount).toLocaleString('en-IN')}
+                        </TableCell>
+                        <TableCell className="text-right">
+                           <DialogTrigger asChild>
+                                <Button variant="outline" size="sm" onClick={() => setSelectedTransaction(txn)}>
+                                    <Eye className="mr-2 h-4 w-4" /> Details
+                                </Button>
+                            </DialogTrigger>
+                        </TableCell>
+                    </TableRow>
                 ))}
                 </TableBody>
             </Table>
@@ -639,8 +646,8 @@ export default function DesignerEarningsPage(): ReactElement {
                 </div>
             </DialogContent>
         )}
-
       </Dialog>
     </div>
   );
 }
+
