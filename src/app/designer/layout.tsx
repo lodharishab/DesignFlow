@@ -52,7 +52,7 @@ const navItems = [
   { href: '/designer/orders', icon: Briefcase, label: 'My Orders' },
   { href: '/designer/portfolio', icon: Palette, label: 'My Portfolio' },
   { href: '/designer/messages', icon: MessageSquare, label: 'Messaging' },
-  { href: '/designer/reviews', icon: Star, label: 'My Reviews' },
+  { href: '/designer/reviews', icon: Star, label: 'My Reviews', notificationCount: 2 }, // Added notification count
   { 
     label: 'Earnings', 
     icon: IndianRupee, 
@@ -168,9 +168,14 @@ export default function DesignerLayout({
                       isActive={pathname.startsWith(item.href!)} 
                       tooltip={{ children: item.label, side: 'right', align: 'center' }}
                     >
-                      <Link href={item.href!}>
-                        <item.icon className="mr-2 h-4 w-4" />
-                        <span>{item.label}</span>
+                      <Link href={item.href!} className="flex justify-between items-center w-full">
+                         <span className="flex items-center gap-2">
+                            <item.icon className="mr-2 h-4 w-4" />
+                            <span>{item.label}</span>
+                        </span>
+                        {item.notificationCount && item.notificationCount > 0 && (
+                            <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs">{item.notificationCount}</Badge>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
