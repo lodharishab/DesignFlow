@@ -5,7 +5,7 @@ import { useMemo, useState, type ReactElement } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Clock, CheckCheck, GitCommitHorizontal, ShieldAlert, Cloud, MessageSquare, Reply, UserCircle, Link as LinkIconLucide } from 'lucide-react';
+import { Star, Clock, CheckCheck, GitCommitHorizontal, ShieldAlert, Cloud, MessageSquare, Reply, UserCircle, Link as LinkIconLucide, MoreHorizontal, FileText, Translate, Award } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -13,6 +13,14 @@ import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 
 // --- KPI Data & Component ---
@@ -225,14 +233,34 @@ export default function DesignerReviewsPage(): ReactElement {
                     <p className="text-xs text-muted-foreground">
                       {formatDistanceToNow(review.reviewDate, { addSuffix: true })}
                     </p>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" disabled>
-                        <Reply className="mr-2 h-4 w-4" /> Reply
-                      </Button>
-                       <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" disabled={review.isReported}>
-                         <ShieldAlert className="mr-2 h-4 w-4" /> {review.isReported ? 'Reported' : 'Report Issue'}
-                      </Button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-7 px-2">
+                           <MoreHorizontal className="h-4 w-4" />
+                           <span className="ml-2">Actions</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Manage Review</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem disabled>
+                          <Award className="mr-2 h-4 w-4" /> Feature on Profile
+                        </DropdownMenuItem>
+                         <DropdownMenuItem disabled>
+                          <FileText className="mr-2 h-4 w-4" /> AI Summarize
+                        </DropdownMenuItem>
+                         <DropdownMenuItem disabled>
+                          <Translate className="mr-2 h-4 w-4" /> Translate
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled>
+                          <Reply className="mr-2 h-4 w-4" /> Public Reply
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                         <DropdownMenuItem disabled={review.isReported} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                          <ShieldAlert className="mr-2 h-4 w-4" /> {review.isReported ? 'Reported' : 'Report Issue'}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                  </div>
               </div>
             )) : (
@@ -244,4 +272,3 @@ export default function DesignerReviewsPage(): ReactElement {
     </div>
   );
 }
-
