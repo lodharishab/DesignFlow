@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet, Mail } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -25,7 +25,7 @@ import { Badge } from '@/components/ui/badge';
 
 interface PayoutMethod {
   id: string;
-  type: 'Bank Account' | 'UPI';
+  type: 'Bank Account' | 'UPI' | 'PayPal';
   details: string;
   isPrimary: boolean;
   status: 'Verified' | 'Pending';
@@ -41,27 +41,62 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
   const [methods, setMethods] = useState<PayoutMethod[]>(mockPayoutMethods);
   const [isSaving, setIsSaving] = useState(false);
   
+  // State for Bank Transfer form
   const [accountHolderName, setAccountHolderName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [ifscCode, setIfscCode] = useState('');
 
+  // State for UPI form
+  const [upiId, setUpiId] = useState('');
+  
+  // State for PayPal form
+  const [paypalEmail, setPaypalEmail] = useState('');
+
+
   const primaryMethod = methods.find(m => m.isPrimary);
 
-  const handleSaveChanges = (e: FormEvent) => {
+  const handleBankSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!accountHolderName || !accountNumber || !ifscCode) {
         toast({ title: "Missing Information", description: "Please fill all the bank account fields.", variant: "destructive" });
         return;
     }
     setIsSaving(true);
-    // Simulate API call
-    console.log("Saving payout details:", { accountHolderName, accountNumber, ifscCode });
+    console.log("Saving new Bank Account:", { accountHolderName, accountNumber, ifscCode });
     setTimeout(() => {
-      toast({
-        title: "Payout Details Saved (Simulated)",
-        description: "Your bank account details have been securely saved.",
-      });
+      toast({ title: "Bank Account Added (Simulated)", description: "Your bank account details have been added and are pending verification.", });
       setIsSaving(false);
+      setMethods(prev => [...prev, {id: `meth_${Date.now()}`, type: 'Bank Account', details: `**** **** **** ${accountNumber.slice(-4)}`, isPrimary: prev.length === 0, status: 'Pending'}]);
+    }, 1500);
+  };
+  
+   const handleUpiSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!upiId.trim()) {
+      toast({ title: "Missing Information", description: "Please enter your UPI ID.", variant: "destructive" });
+      return;
+    }
+    setIsSaving(true);
+    console.log("Saving new UPI ID:", { upiId });
+    setTimeout(() => {
+      toast({ title: "UPI ID Added (Simulated)", description: "Your UPI ID has been added and is pending verification." });
+      setIsSaving(false);
+       setMethods(prev => [...prev, {id: `meth_${Date.now()}`, type: 'UPI', details: upiId, isPrimary: prev.length === 0, status: 'Pending'}]);
+    }, 1500);
+  };
+  
+  const handlePaypalSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!paypalEmail.trim()) {
+      toast({ title: "Missing Information", description: "Please enter your PayPal email.", variant: "destructive" });
+      return;
+    }
+    setIsSaving(true);
+    console.log("Saving new PayPal Email:", { paypalEmail });
+    setTimeout(() => {
+      toast({ title: "PayPal Added (Simulated)", description: "Your PayPal email has been added." });
+      setIsSaving(false);
+      setMethods(prev => [...prev, {id: `meth_${Date.now()}`, type: 'PayPal', details: paypalEmail, isPrimary: prev.length === 0, status: 'Verified'}]);
     }, 1500);
   };
   
@@ -89,7 +124,6 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
                    <Badge variant={getStatusBadgeVariant(primaryMethod.status)}>{primaryMethod.status}</Badge>
                 </div>
               </div>
-              <Button variant="outline">Manage Methods</Button>
             </div>
           ) : (
             <p className="text-muted-foreground">No primary payout method has been set up.</p>
@@ -101,7 +135,7 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center"><Banknote className="mr-2 h-5 w-5"/>Manage Payout Methods</CardTitle>
-          <CardDescription>Add and manage your bank account or UPI for receiving payments.</CardDescription>
+          <CardDescription>View your saved payout methods. You can only have one primary method.</CardDescription>
         </CardHeader>
         <CardContent>
             {methods.map(method => (
@@ -140,36 +174,69 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
       </Card>
       
       <Card className="shadow-lg">
-        <form onSubmit={handleSaveChanges}>
-            <CardHeader>
-                <CardTitle className="flex items-center"><IndianRupee className="mr-2 h-5 w-5"/>Add Bank Account</CardTitle>
-                <CardDescription>Enter your Indian bank account details for direct payouts. All information is encrypted.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="accountHolderName">Account Holder Name (as per bank records)</Label>
-                    <Input id="accountHolderName" value={accountHolderName} onChange={(e) => setAccountHolderName(e.target.value)} placeholder="e.g., Priya Sharma" required/>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="accountNumber">Account Number</Label>
-                    <Input id="accountNumber" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Enter your bank account number" required/>
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="ifscCode">IFSC Code</Label>
-                    <Input id="ifscCode" value={ifscCode} onChange={(e) => setIfscCode(e.target.value)} placeholder="Enter your bank's IFSC code" required/>
-                </div>
-                <div className="flex items-center space-x-2 pt-2">
-                    <ShieldCheck className="h-5 w-5 text-green-600" />
-                    <p className="text-xs text-muted-foreground">Your financial information is encrypted and stored securely.</p>
-                </div>
-            </CardContent>
-            <CardFooter>
-                 <Button type="submit" disabled={isSaving}>
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    {isSaving ? 'Saving...' : 'Save Bank Account'}
-                </Button>
-            </CardFooter>
-        </form>
+          <CardHeader>
+              <CardTitle className="flex items-center">Add New Payout Method</CardTitle>
+              <CardDescription>Add a new method to receive your earnings.</CardDescription>
+          </CardHeader>
+          <CardContent>
+              <Tabs defaultValue="bank" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="bank"><IndianRupee className="mr-2 h-4 w-4"/>Bank Account</TabsTrigger>
+                      <TabsTrigger value="upi"><Wallet className="mr-2 h-4 w-4"/>UPI</TabsTrigger>
+                      <TabsTrigger value="paypal"><Mail className="mr-2 h-4 w-4"/>PayPal</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="bank" className="mt-6">
+                      <form onSubmit={handleBankSubmit} className="space-y-4">
+                           <div className="space-y-2">
+                              <Label htmlFor="accountHolderName">Account Holder Name (as per bank records)*</Label>
+                              <Input id="accountHolderName" value={accountHolderName} onChange={(e) => setAccountHolderName(e.target.value)} placeholder="e.g., Priya Sharma" required disabled={isSaving}/>
+                          </div>
+                          <div className="space-y-2">
+                              <Label htmlFor="accountNumber">Account Number*</Label>
+                              <Input id="accountNumber" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Enter your bank account number" required disabled={isSaving}/>
+                          </div>
+                          <div className="space-y-2">
+                              <Label htmlFor="ifscCode">IFSC Code*</Label>
+                              <Input id="ifscCode" value={ifscCode} onChange={(e) => setIfscCode(e.target.value)} placeholder="Enter your bank's IFSC code" required disabled={isSaving}/>
+                          </div>
+                           <div className="flex justify-end pt-2">
+                                <Button type="submit" disabled={isSaving}>
+                                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                  {isSaving ? 'Saving...' : 'Save Bank Account'}
+                              </Button>
+                           </div>
+                      </form>
+                  </TabsContent>
+                  <TabsContent value="upi" className="mt-6">
+                       <form onSubmit={handleUpiSubmit} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="upiId">UPI ID*</Label>
+                            <Input id="upiId" value={upiId} onChange={(e) => setUpiId(e.target.value)} placeholder="e.g., yourname@okhdfc" required disabled={isSaving}/>
+                          </div>
+                           <div className="flex justify-end pt-2">
+                                <Button type="submit" disabled={isSaving}>
+                                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                  {isSaving ? 'Saving...' : 'Save UPI ID'}
+                              </Button>
+                           </div>
+                       </form>
+                  </TabsContent>
+                  <TabsContent value="paypal" className="mt-6">
+                        <form onSubmit={handlePaypalSubmit} className="space-y-4">
+                           <div className="space-y-2">
+                              <Label htmlFor="paypalEmail">PayPal Email Address*</Label>
+                              <Input id="paypalEmail" type="email" value={paypalEmail} onChange={(e) => setPaypalEmail(e.target.value)} placeholder="e.g., you@example.com" required disabled={isSaving}/>
+                           </div>
+                           <div className="flex justify-end pt-2">
+                              <Button type="submit" disabled={isSaving}>
+                                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                {isSaving ? 'Saving...' : 'Save PayPal'}
+                            </Button>
+                           </div>
+                       </form>
+                  </TabsContent>
+              </Tabs>
+          </CardContent>
       </Card>
 
     </div>
