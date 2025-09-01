@@ -10,9 +10,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Briefcase, CalendarDays, Tag, UserCircle, PackageSearch, Lightbulb, ExternalLink, Tags } from 'lucide-react';
+import { ArrowLeft, Briefcase, CalendarDays, Tag, UserCircle, PackageSearch, Lightbulb, ExternalLink, Tags, ThumbsUp, Star } from 'lucide-react';
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
+import { cn } from '@/lib/utils';
 
 interface PortfolioItemDetailClientContentProps {
   initialItem: PortfolioItem | null; // Allow null if item might not be found server-side initially
@@ -22,6 +24,7 @@ export function PortfolioItemDetailClientContent({ initialItem }: PortfolioItemD
   const router = useRouter();
   // Initialize state with the server-passed prop.
   const [item, setItem] = useState<PortfolioItem | null>(initialItem);
+  const [featuredReviews, setFeaturedReviews] = useState<DesignerReview[]>([]);
   // isLoading is true initially only if initialItem is null (e.g. during Suspense fallback)
   const [isLoading, setIsLoading] = useState<boolean>(!initialItem); 
 
@@ -30,6 +33,10 @@ export function PortfolioItemDetailClientContent({ initialItem }: PortfolioItemD
   useEffect(() => {
     if (initialItem) {
       setItem(initialItem);
+      // Filter reviews that are featured. In a real app, you might link reviews to projects.
+      // For this prototype, we'll just show any of the designer's featured reviews.
+      const reviews = mockDesignerReviews.filter(review => review.isFeatured);
+      setFeaturedReviews(reviews);
       setIsLoading(false); // Data is ready
     } else if (!isLoading) { 
       // This condition implies initialItem was null and we are not in an initial loading state,
@@ -182,6 +189,45 @@ export function PortfolioItemDetailClientContent({ initialItem }: PortfolioItemD
               </div>
             </>
           )}
+
+           {/* Featured Reviews Section */}
+          {featuredReviews.length > 0 && (
+            <>
+              <Separator className="my-8 md:my-12" />
+              <h2 className="text-2xl md:text-3xl font-bold font-headline text-center mb-8">Client Feedback</h2>
+              <div className="space-y-6 max-w-2xl mx-auto">
+                {featuredReviews.map(review => (
+                  <Card key={review.id} className="shadow-md bg-secondary/30">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="h-11 w-11">
+                          <AvatarImage src={review.clientAvatarUrl} alt={review.clientName} data-ai-hint={review.clientAvatarHint} />
+                          <AvatarFallback>{review.clientName.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-grow">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-semibold">{review.clientName}</p>
+                              <p className="text-xs text-muted-foreground">For: {review.serviceName}</p>
+                            </div>
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} className={cn("h-4 w-4", i < review.rating ? 'text-yellow-400 fill-current' : 'text-muted-foreground/30')} />
+                              ))}
+                            </div>
+                          </div>
+                          <blockquote className="text-sm italic text-foreground mt-2 border-l-2 border-primary/50 pl-3">
+                            {review.reviewText || "Excellent work and collaboration!"}
+                          </blockquote>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
+
         </Card>
       </div>
     </>

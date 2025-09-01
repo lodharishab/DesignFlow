@@ -144,7 +144,7 @@ export function DesignerProfileClientContent({ initialDesigner }: DesignerProfil
                     <section>
                       <h2 className="text-3xl font-bold font-headline flex items-center mb-8">
                         <ThumbsUp className="mr-3 h-7 w-7 text-primary" />
-                        Featured Reviews
+                        What Clients Are Saying
                       </h2>
                        <div className="space-y-6">
                         {featuredReviews.map(review => (
