@@ -8,11 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2 } from 'lucide-react';
+import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { designersData, type DesignerProfile } from '@/lib/designer-data'; // Assuming this is your mock data source
+import { designersData, type DesignerProfile } from '@/lib/designer-data';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 // Hardcoded for prototype - replace with actual auth user ID
 const CURRENT_DESIGNER_ID = 'des001'; 
@@ -36,6 +39,12 @@ export default function DesignerProfilePage() {
     { platform: 'Dribbble', url: '' },
     { platform: 'LinkedIn', url: '' },
   ]);
+
+  // New state for review settings
+  const [autoRequestReviews, setAutoRequestReviews] = useState(true);
+  const [reviewRequestDelay, setReviewRequestDelay] = useState('24h');
+  const [isSavingReviewSettings, setIsSavingReviewSettings] = useState(false);
+
 
   useEffect(() => {
     const foundDesigner = designersData.find(d => d.id === CURRENT_DESIGNER_ID);
@@ -76,10 +85,22 @@ export default function DesignerProfilePage() {
         description: "Your profile information has been saved.",
       });
       setIsSaving(false);
-      // Here you might want to update the mock designersData if this were a real app with client-side state persistence
-      // Or re-fetch data if it were coming from a backend.
     }, 1000);
   };
+  
+   const handleReviewSettingsSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setIsSavingReviewSettings(true);
+    console.log("Saving review settings:", { autoRequestReviews, reviewRequestDelay });
+    setTimeout(() => {
+        toast({
+            title: "Review Settings Saved",
+            description: `Review requests will be sent ${reviewRequestDelay === 'immediate' ? 'immediately' : `after ${reviewRequestDelay}`}.`
+        });
+        setIsSavingReviewSettings(false);
+    }, 1000);
+  };
+
 
   if (isLoading) {
     return (
@@ -196,6 +217,56 @@ export default function DesignerProfilePage() {
             <Button type="submit" disabled={isSaving}>
               {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
               {isSaving ? 'Saving...' : 'Save Profile Changes'}
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
+       
+      <form onSubmit={handleReviewSettingsSubmit}>
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center"><Star className="mr-2 h-5 w-5 text-muted-foreground" />Automated Review Requests</CardTitle>
+            <CardDescription>Automate asking clients for reviews after an order is completed.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+              <Label htmlFor="auto-review-switch" className="flex flex-col space-y-1">
+                <span>Auto-send review requests</span>
+                <span className="font-normal leading-snug text-muted-foreground">
+                  When enabled, we'll automatically email clients to ask for a review after you mark an order as complete.
+                </span>
+              </Label>
+              <Switch
+                id="auto-review-switch"
+                checked={autoRequestReviews}
+                onCheckedChange={setAutoRequestReviews}
+                disabled={isSavingReviewSettings}
+              />
+            </div>
+            {autoRequestReviews && (
+              <div className="space-y-2 pl-4 border-l-2 ml-2">
+                <Label htmlFor="review-delay">Send Request After</Label>
+                 <Select
+                  value={reviewRequestDelay}
+                  onValueChange={setReviewRequestDelay}
+                  disabled={isSavingReviewSettings}
+                >
+                  <SelectTrigger className="w-[180px]" id="review-delay">
+                    <SelectValue placeholder="Select delay" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="immediate">Immediately</SelectItem>
+                    <SelectItem value="24h">24 Hours</SelectItem>
+                    <SelectItem value="3d">3 Days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="justify-end border-t pt-6">
+              <Button type="submit" disabled={isSavingReviewSettings}>
+                {isSavingReviewSettings ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                {isSavingReviewSettings ? 'Saving...' : 'Save Review Settings'}
             </Button>
           </CardFooter>
         </Card>
