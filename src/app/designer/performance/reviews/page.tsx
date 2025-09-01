@@ -5,11 +5,15 @@ import { useMemo, useState, type ReactElement } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Clock, CheckCheck, GitCommitHorizontal, ShieldAlert, Cloud, MessageSquare } from 'lucide-react';
+import { Star, Clock, CheckCheck, GitCommitHorizontal, ShieldAlert, Cloud, MessageSquare, Reply, UserCircle, Link as LinkIconLucide } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { formatDistanceToNow } from 'date-fns';
+import Link from 'next/link';
+
 
 // --- KPI Data & Component ---
 const kpiData = [
@@ -174,6 +178,8 @@ function ReviewTagCloud() {
 
 
 export default function DesignerReviewsPage(): ReactElement {
+  const [reviews, setReviews] = useState<DesignerReview[]>(mockDesignerReviews);
+
   return (
     <div className="space-y-8">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -185,12 +191,57 @@ export default function DesignerReviewsPage(): ReactElement {
         <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Client Feedback</CardTitle>
-          <CardDescription>This is a placeholder page. The full reviews list will be implemented here.</CardDescription>
+          <CardDescription>A list of all reviews you have received from clients.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground italic">Full reviews list coming soon...</p>
+          <div className="space-y-6">
+            {reviews.length > 0 ? reviews.map(review => (
+              <div key={review.id} className="p-4 border rounded-lg bg-secondary/30">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={review.clientAvatarUrl} alt={review.clientName} data-ai-hint={review.clientAvatarHint}/>
+                      <AvatarFallback>{review.clientName.substring(0,1)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold">{review.clientName}</p>
+                      <Link href={`/designer/orders/${review.orderId}`} className="text-xs text-primary hover:underline">
+                        For: {review.serviceName}
+                      </Link>
+                    </div>
+                  </div>
+                   <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className={cn("h-4 w-4", i < review.rating ? 'text-yellow-400 fill-current' : 'text-muted-foreground/30')} />
+                      ))}
+                    </div>
+                </div>
+                {review.reviewText && (
+                  <blockquote className="mt-3 text-sm italic text-foreground border-l-2 pl-3 ml-3">
+                    "{review.reviewText}"
+                  </blockquote>
+                )}
+                 <div className="flex justify-between items-center mt-3">
+                    <p className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(review.reviewDate, { addSuffix: true })}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" disabled>
+                        <Reply className="mr-2 h-4 w-4" /> Reply
+                      </Button>
+                       <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" disabled={review.isReported}>
+                         <ShieldAlert className="mr-2 h-4 w-4" /> {review.isReported ? 'Reported' : 'Report Issue'}
+                      </Button>
+                    </div>
+                 </div>
+              </div>
+            )) : (
+              <p className="text-muted-foreground text-center py-8">You have not received any reviews yet.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
   );
 }
+
