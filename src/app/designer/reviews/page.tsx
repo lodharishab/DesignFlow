@@ -29,7 +29,7 @@ import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, LineChart, Line, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, LabelList } from "recharts";
 
 const uniqueCategories = Array.from(new Set(mockDesignerReviews.map(r => r.category))).sort();
 
@@ -49,12 +49,12 @@ const kpiData = [
     { title: 'On-Time Delivery', value: 95, unit: '%', icon: Clock, description: 'Based on meeting original deadlines' },
     { title: 'Completion Rate', value: 98, unit: '%', icon: CheckCheck, description: 'Percentage of started orders completed' },
     { title: 'Avg. Revisions', value: 1.2, icon: GitCommitHorizontal, description: 'Average revision rounds per order' },
-    { title: 'Dispute Rate', value: 2, unit: '%', icon: ShieldAlert, description: 'Percentage of orders with disputes' },
+    { title: 'Median Response Time', value: 1.8, unit: 'hrs', icon: MessageSquare, description: 'Median time to first reply' },
 ];
 
 function KpiCard({ title, value, unit, icon: Icon, description }: { title: string, value: number, unit?: string, icon: React.ElementType, description: string }) {
     const isPercentage = unit === '%';
-    const isGood = isPercentage ? value >= 90 : (title === 'Avg. Revisions' ? value <= 1.5 : (title === 'Dispute Rate' ? value < 3 : false));
+    const isGood = isPercentage ? value >= 90 : (title === 'Avg. Revisions' ? value <= 1.5 : (title === 'Dispute Rate' ? value < 3 : (title === 'Median Response Time' ? value < 2 : false)));
     const isWarning = isPercentage ? (value >= 70 && value < 90) : (title === 'Dispute Rate' ? (value >= 3 && value < 5) : false);
     const isBad = isPercentage ? value < 70 : (title === 'Dispute Rate' ? value >= 5 : false);
     
@@ -78,8 +78,11 @@ function KpiCard({ title, value, unit, icon: Icon, description }: { title: strin
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                <div className={cn("text-3xl font-bold", valueColor)}>
-                    {value}{unit}
+                <div className={cn("text-3xl font-bold flex items-baseline gap-2", valueColor)}>
+                   <span>{value}{unit}</span>
+                   {title === 'Median Response Time' && isGood && (
+                      <Badge className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-300/50">Fast Responder</Badge>
+                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">{description}</p>
             </CardContent>
@@ -299,7 +302,7 @@ function AnalyticsCard() {
                                                 <CartesianGrid vertical={false} />
                                                 <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0,6)} />
                                                 <YAxis domain={[1, 5]} tickCount={5} />
-                                                <ChartTooltip content={<ChartTooltipContent />} />
+                                                <RechartsTooltip content={<ChartTooltipContent />} />
                                                 <Line type="monotone" dataKey="rating" stroke="var(--color-rating)" strokeWidth={2} dot={{r:4}} />
                                             </LineChart>
                                         </ChartContainer>
