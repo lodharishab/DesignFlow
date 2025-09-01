@@ -26,11 +26,6 @@ import { useToast } from "@/hooks/use-toast";
 import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { ChartConfig } from "@/components/ui/chart";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, Line, LineChart, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, LabelList, XAxis, YAxis } from "recharts";
-
 
 const uniqueCategories = Array.from(new Set(mockDesignerReviews.map(r => r.category))).sort();
 
@@ -55,9 +50,9 @@ const kpiData = [
 
 function KpiCard({ title, value, unit, icon: Icon, description }: { title: string, value: number, unit?: string, icon: React.ElementType, description: string }) {
     const isPercentage = unit === '%';
-    const isGood = isPercentage ? value >= 90 : (title === 'Avg. Revisions' ? value <= 1.5 : (title === 'Dispute Rate' ? value < 3 : (title === 'Median Response Time' ? value < 2 : false)));
-    const isWarning = isPercentage ? (value >= 70 && value < 90) : (title === 'Dispute Rate' ? (value >= 3 && value < 5) : false);
-    const isBad = isPercentage ? value < 70 : (title === 'Dispute Rate' ? value >= 5 : false);
+    const isGood = isPercentage ? value >= 90 : (title === 'Avg. Revisions' ? value <= 1.5 : (title === 'Median Response Time' ? value < 2 : false));
+    const isWarning = isPercentage ? (value >= 70 && value < 90) : false;
+    const isBad = isPercentage ? value < 70 : false;
     
     const valueColor = cn(
         isGood && 'text-green-600 dark:text-green-500',
@@ -153,146 +148,6 @@ function ReportReviewDialog({ review, onReportSubmit }: { review: DesignerReview
                 </DialogFooter>
             </form>
         </DialogContent>
-    );
-}
-
-const starDistributionChartConfig = {
-  count: {
-    label: "Count",
-  },
-  "5": {
-    label: "5 Stars",
-    color: "hsl(var(--chart-5))",
-  },
-  "4": {
-    label: "4 Stars",
-    color: "hsl(var(--chart-4))",
-  },
-  "3": {
-    label: "3 Stars",
-    color: "hsl(var(--chart-3))",
-  },
-  "2": {
-    label: "2 Stars",
-    color: "hsl(var(--chart-2))",
-  },
-  "1": {
-    label: "1 Star",
-    color: "hsl(var(--chart-1))",
-  },
-} satisfies ChartConfig
-
-function AnalyticsCard() {
-    const [timeframe, setTimeframe] = useState("lifetime");
-
-    const filteredData = useMemo(() => {
-        const now = new Date();
-        let startDate = new Date();
-        if (timeframe === "30d") startDate = sub(now, { days: 30 });
-        else if (timeframe === "6m") startDate = sub(now, { months: 6 });
-        else if (timeframe === "lifetime") startDate = new Date(0);
-
-        return mockDesignerReviews.filter(r => r.reviewDate >= startDate);
-    }, [timeframe]);
-    
-    const analytics = useMemo(() => {
-        if (filteredData.length === 0) {
-            return {
-                averageRating: 0,
-                totalReviews: 0,
-                starDistribution: [
-                    { rating: 5, count: 0 }, { rating: 4, count: 0 },
-                    { rating: 3, count: 0 }, { rating: 2, count: 0 }, { rating: 1, count: 0 },
-                ],
-                ratingTrend: [],
-            };
-        }
-        
-        const totalReviews = filteredData.length;
-        const totalRating = filteredData.reduce((sum, r) => sum + r.rating, 0);
-        const averageRating = totalRating / totalReviews;
-
-        const starDistribution = [5, 4, 3, 2, 1].map(star => ({
-            rating: star,
-            count: filteredData.filter(r => r.rating === star).length,
-        }));
-        
-        const ratingTrend = filteredData
-            .map(r => ({ date: format(r.reviewDate, 'MMM d'), rating: r.rating }))
-            .slice(0, 10) // show last 10 reviews trend
-            .reverse();
-        
-        return { averageRating, totalReviews, starDistribution, ratingTrend };
-
-    }, [filteredData]);
-    
-    return (
-        <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle>Reviews Analytics</CardTitle>
-                <CardDescription>Your performance overview based on client feedback.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Tabs value={timeframe} onValueChange={setTimeframe} className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="30d">Last 30 Days</TabsTrigger>
-                        <TabsTrigger value="6m">Last 6 Months</TabsTrigger>
-                        <TabsTrigger value="lifetime">Lifetime</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value={timeframe} className="mt-4">
-                        {analytics.totalReviews === 0 ? (
-                            <div className="text-center py-10 text-muted-foreground">
-                                No reviews in this period.
-                            </div>
-                        ) : (
-                            <div className="space-y-8">
-                                <div className="grid md:grid-cols-2 gap-8">
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-6">
-                                            <div className="text-center">
-                                                <p className="text-4xl font-bold text-primary">{analytics.averageRating.toFixed(2)}</p>
-                                                <p className="text-sm text-muted-foreground">Average Rating</p>
-                                            </div>
-                                            <div className="text-center">
-                                                <p className="text-4xl font-bold text-primary">{analytics.totalReviews}</p>
-                                                <p className="text-sm text-muted-foreground">Total Reviews</p>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h4 className="font-semibold mb-2">Star Distribution</h4>
-                                            <ChartContainer config={starDistributionChartConfig} className="h-[200px] w-full">
-                                                <BarChart data={analytics.starDistribution} layout="vertical" margin={{ left: -10 }}>
-                                                    <XAxis type="number" hide />
-                                                    <YAxis dataKey="rating" type="category" tickLine={false} axisLine={false} tickMargin={5} width={50} tick={({y, payload}) => <text y={y} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" className="text-xs">{payload.value}★</text>} />
-                                                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                                                    <Bar dataKey="count" layout="vertical" radius={4}>
-                                                        {analytics.starDistribution.map((entry) => (
-                                                            <Cell key={`cell-${entry.rating}`} fill={starDistributionChartConfig[entry.rating]?.color} />
-                                                        ))}
-                                                    </Bar>
-                                                </BarChart>
-                                            </ChartContainer>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold mb-2">Recent Rating Trend</h4>
-                                        <ChartContainer config={{rating: {label: 'Rating', color: 'hsl(var(--chart-1))'}}} className="h-[250px] w-full">
-                                            <LineChart data={analytics.ratingTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                                                <CartesianGrid vertical={false} />
-                                                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0,6)} />
-                                                <YAxis domain={[1, 5]} tickCount={5} />
-                                                <RechartsTooltip content={<ChartTooltipContent />} />
-                                                <Line type="monotone" dataKey="rating" stroke="var(--color-rating)" strokeWidth={2} dot={{r:4}} />
-                                            </LineChart>
-                                        </ChartContainer>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </TabsContent>
-                </Tabs>
-            </CardContent>
-        </Card>
     );
 }
 
@@ -431,8 +286,6 @@ export default function DesignerReviewsPage(): ReactElement {
        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {kpiData.map(kpi => <KpiCard key={kpi.title} {...kpi} />)}
       </div>
-
-      <AnalyticsCard />
 
       <Card className="shadow-lg">
         <CardHeader>
