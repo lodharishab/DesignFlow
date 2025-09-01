@@ -4,7 +4,7 @@
 import { useMemo, useState, type ReactElement } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { PieChart as PieChartIcon, ArrowLeft, BarChart2 } from "lucide-react";
+import { PieChart as PieChartIcon, ArrowLeft, BarChart2, Award } from "lucide-react";
 import Link from 'next/link';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis, Legend, Cell, LabelList } from "recharts";
 import type { ChartConfig } from "@/components/ui/chart";
@@ -13,6 +13,7 @@ import { format, sub } from 'date-fns';
 import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 
 const categoryChartConfig = {
@@ -34,10 +35,9 @@ function AnalyticsCard() {
 
     const filteredData = useMemo(() => {
         const now = new Date();
-        let startDate = new Date();
+        let startDate = new Date(0); // Default to all time
         if (timeframe === "30d") startDate = sub(now, { days: 30 });
         else if (timeframe === "6m") startDate = sub(now, { months: 6 });
-        else if (timeframe === "lifetime") startDate = new Date(0);
 
         return mockDesignerReviews.filter(r => r.reviewDate >= startDate);
     }, [timeframe]);
@@ -66,8 +66,8 @@ function AnalyticsCard() {
         
         const ratingTrend = filteredData
             .map(r => ({ date: format(r.reviewDate, 'MMM d'), rating: r.rating }))
-            .slice(0, 10) // show last 10 reviews trend
-            .reverse();
+            .slice(-10) // show last 10 reviews trend
+            .sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         
         return { averageRating, totalReviews, starDistribution, ratingTrend };
 
@@ -166,6 +166,23 @@ export default function DesignerReportsPage(): ReactElement {
 
   return (
     <div className="space-y-8">
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center text-lg"><Award className="mr-2 h-5 w-5"/>Your Quality Score</CardTitle>
+                <CardDescription>
+                    This score is a summary of your client ratings, on-time delivery, and dispute history.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center gap-4">
+                    <Progress value={85} className="h-3 flex-grow" />
+                    <span className="text-xl font-bold text-primary">85%</span>
+                </div>
+                <p className="text-sm text-center font-medium text-green-600 dark:text-green-500 mt-2">
+                    You are 85% ready for Top Tier status
+                </p>
+            </CardContent>
+        </Card>
         <AnalyticsCard />
         <Card className="shadow-lg">
             <CardHeader>
@@ -198,3 +215,4 @@ export default function DesignerReportsPage(): ReactElement {
     </div>
   );
 }
+
