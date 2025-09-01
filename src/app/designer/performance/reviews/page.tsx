@@ -29,7 +29,7 @@ import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, Line, LineChart, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, LabelList } from "recharts";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, LabelList, XAxis, YAxis } from "recharts";
 
 const uniqueCategories = Array.from(new Set(mockDesignerReviews.map(r => r.category))).sort();
 
