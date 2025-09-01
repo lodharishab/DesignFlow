@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, type ReactElement } from 'react';
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare, MoreVertical, ThumbsUp } from 'lucide-react';
+import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare, MoreVertical, ThumbsUp, Upload, FileText as FileTextIcon } from 'lucide-react';
 import { format, formatDistanceToNow, sub } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +22,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Separator } from '@/components/ui/separator';
 import { useToast } from "@/hooks/use-toast";
 import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data'; // Import from new location
+import { Textarea } from '@/components/ui/textarea';
+import { Loader2 } from 'lucide-react';
 
 
 const uniqueCategories = Array.from(new Set(mockDesignerReviews.map(r => r.category))).sort();
@@ -28,6 +31,77 @@ const uniqueCategories = Array.from(new Set(mockDesignerReviews.map(r => r.categ
 type SortableReviewKeys = 'reviewDate' | 'rating' | 'clientName';
 type DateFilter = 'All' | '1m' | '3m' | '1y';
 
+const reportReasons = [
+    "Spam or Fake",
+    "Inappropriate or Offensive Content",
+    "Unfair Rating (violates policy)",
+    "Review for Wrong Order",
+    "Other",
+];
+
+function ReportReviewDialog({ review, onReportSubmit }: { review: DesignerReview, onReportSubmit: (reviewId: string) => void }) {
+    const { toast } = useToast();
+    const [reason, setReason] = useState('');
+    const [comments, setComments] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!reason) {
+            toast({ title: "Reason Required", description: "Please select a reason for reporting this review.", variant: "destructive" });
+            return;
+        }
+        setIsSubmitting(true);
+        console.log("Submitting report:", { reviewId: review.id, reason, comments });
+        setTimeout(() => {
+            onReportSubmit(review.id);
+            toast({ title: "Report Submitted", description: "Our team will review your report shortly." });
+            setIsSubmitting(false);
+        }, 1500);
+    };
+
+    return (
+        <DialogContent>
+            <form onSubmit={handleSubmit}>
+                <DialogHeader>
+                    <DialogTitle>Report Review</DialogTitle>
+                    <DialogDescription>
+                        Reporting review for order {review.orderId}. Please provide details below.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="report-reason">Reason for Reporting*</Label>
+                        <Select value={reason} onValueChange={setReason} required>
+                            <SelectTrigger id="report-reason"><SelectValue placeholder="Select a reason..." /></SelectTrigger>
+                            <SelectContent>
+                                {reportReasons.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="report-comments">Additional Comments (Optional)</Label>
+                        <Textarea id="report-comments" value={comments} onChange={(e) => setComments(e.target.value)} placeholder="Provide more context for your report..." />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="report-evidence">Upload Evidence (Optional)</Label>
+                        <Input id="report-evidence" type="file" />
+                        <p className="text-xs text-muted-foreground">e.g., screenshots of conversation, final file delivery proof.</p>
+                    </div>
+                </div>
+                <DialogFooter>
+                     <DialogClose asChild>
+                        <Button type="button" variant="outline">Cancel</Button>
+                     </DialogClose>
+                     <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isSubmitting ? "Submitting..." : "Submit Report"}
+                     </Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+    );
+}
 
 export default function DesignerReviewsPage(): ReactElement {
   const { toast } = useToast();
@@ -38,6 +112,7 @@ export default function DesignerReviewsPage(): ReactElement {
   const [summarizedReviews, setSummarizedReviews] = useState<Record<string, string>>({});
   const [translatedReview, setTranslatedReview] = useState<{ id: string; text: string } | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
+  const [isReporting, setIsReporting] = useState<string | null>(null); // Track which review is being reported
 
   // Filtering and sorting states
   const [searchTerm, setSearchTerm] = useState('');
@@ -108,6 +183,10 @@ export default function DesignerReviewsPage(): ReactElement {
     }
   };
 
+  const handleReportReviewSubmit = (reviewId: string) => {
+      setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, isReported: true } : r));
+      setIsReporting(null); // Close the dialog
+  };
 
   const filteredReviews = useMemo(() => {
     let filtered = reviews
@@ -233,7 +312,8 @@ export default function DesignerReviewsPage(): ReactElement {
                     key={review.id} 
                     className={cn(
                       "transition-all hover:shadow-md group", 
-                      review.isFeatured && "border-yellow-400/50 bg-yellow-500/5"
+                      review.isFeatured && "border-yellow-400/50 bg-yellow-500/5",
+                      review.isReported && "border-orange-400/50 bg-orange-500/5"
                     )}
                 >
                   <div className="p-4 flex flex-col sm:flex-row gap-4">
@@ -254,27 +334,36 @@ export default function DesignerReviewsPage(): ReactElement {
                               <Star key={i} className={cn("h-5 w-5", i < review.rating ? 'text-yellow-400 fill-current' : 'text-muted-foreground/30')} />
                             ))}
                           </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => setSelectedReview(review)}><Eye className="mr-2 h-4 w-4"/>View Details</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleToggleFeatured(review.id)}>
-                                    <Star className="mr-2 h-4 w-4"/>
-                                    {review.isFeatured ? 'Unfeature Review' : 'Feature on Profile'}
-                                </DropdownMenuItem>
-                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleSummarizeReview(review.id, review.reviewText)}>
-                                    <Sparkles className="mr-2 h-4 w-4" />{summarizedReviews[review.id] ? 'Show Full Text' : 'Summarize'}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleTranslateReview(review)}>
-                                    <Languages className="mr-2 h-4 w-4" />Translate
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive"><ShieldAlert className="mr-2 h-4 w-4"/>Report Review</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <Dialog onOpenChange={(open) => !open && setIsReporting(null)}>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => setSelectedReview(review)}><Eye className="mr-2 h-4 w-4"/>View Details</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleToggleFeatured(review.id)}>
+                                        <Star className="mr-2 h-4 w-4"/>
+                                        {review.isFeatured ? 'Unfeature Review' : 'Feature on Profile'}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => handleSummarizeReview(review.id, review.reviewText)}>
+                                        <Sparkles className="mr-2 h-4 w-4" />{summarizedReviews[review.id] ? 'Show Full Text' : 'Summarize'}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleTranslateReview(review)}>
+                                        <Languages className="mr-2 h-4 w-4" />Translate
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DialogTrigger asChild>
+                                        <DropdownMenuItem className="text-destructive" onClick={() => setIsReporting(review.id)} disabled={review.isReported}>
+                                            <ShieldAlert className="mr-2 h-4 w-4"/>Report Review
+                                        </DropdownMenuItem>
+                                    </DialogTrigger>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            {isReporting === review.id && (
+                                <ReportReviewDialog review={review} onReportSubmit={handleReportReviewSubmit} />
+                            )}
+                          </Dialog>
                       </div>
                        <p className="text-sm italic text-foreground mt-2">
                         {summarizedReviews[review.id]
@@ -286,7 +375,10 @@ export default function DesignerReviewsPage(): ReactElement {
                        </p>
                        <div className="text-xs text-muted-foreground mt-3 pt-2 border-t flex items-center justify-between">
                           <p>For: <Link href={`/designer/orders/${review.orderId}`} className="text-primary hover:underline">{review.serviceName}</Link></p>
-                          {review.isFeatured && <Badge variant="secondary" className="border-yellow-500/50 text-yellow-700 dark:text-yellow-400"><Star className="mr-1 h-3 w-3"/>Featured</Badge>}
+                          <div className="flex items-center gap-2">
+                            {review.isReported && <Badge variant="destructive" className="bg-orange-500/80"><ShieldAlert className="mr-1 h-3 w-3"/>Reported</Badge>}
+                            {review.isFeatured && <Badge variant="secondary" className="border-yellow-500/50 text-yellow-700 dark:text-yellow-400"><Star className="mr-1 h-3 w-3"/>Featured</Badge>}
+                          </div>
                        </div>
                     </div>
                   </div>
