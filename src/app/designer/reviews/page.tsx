@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, ThumbsUp, EyeOff, Edit, PackageSearch } from 'lucide-react';
+import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare } from 'lucide-react';
 import { format, formatDistanceToNow, sub } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,12 @@ import { cn } from '@/lib/utils';
 import type { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from "@/hooks/use-toast";
+
 
 // Mock data adapted for a designer's view
 interface DesignerReview {
@@ -47,6 +53,7 @@ type DateFilter = 'All' | '1m' | '3m' | '1y';
 
 export default function DesignerReviewsPage(): ReactElement {
   const [reviews, setReviews] = useState<DesignerReview[]>(mockDesignerReviews);
+  const [selectedReview, setSelectedReview] = useState<DesignerReview | null>(null);
   
   // Filtering and sorting states
   const [searchTerm, setSearchTerm] = useState('');
@@ -163,15 +170,22 @@ export default function DesignerReviewsPage(): ReactElement {
             </div>
             <div className="space-y-1">
                 <Label htmlFor="dateFilter" className="text-xs">Filter by Date</Label>
-                <Select value={dateFilter} onValueChange={(value) => setDateFilter(value as DateFilter)}>
-                  <SelectTrigger id="dateFilter"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All">All Time</SelectItem>
-                    <SelectItem value="1m">Last Month</SelectItem>
-                    <SelectItem value="3m">Last 3 Months</SelectItem>
-                    <SelectItem value="1y">Last Year</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Popover>
+                    <PopoverTrigger asChild>
+                    <Button id="dateFilter" variant="outline" className={cn("w-full justify-start text-left font-normal", !dateFilter && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateFilter !== 'All' ? `Last ${dateFilter === '1m' ? 'month' : dateFilter === '3m' ? '3 months' : 'year'}` : 'All Time'}
+                    </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <div className="flex flex-col p-1">
+                           <Button variant="ghost" className="justify-start" onClick={() => setDateFilter('All')}>All Time</Button>
+                           <Button variant="ghost" className="justify-start" onClick={() => setDateFilter('1m')}>Last Month</Button>
+                           <Button variant="ghost" className="justify-start" onClick={() => setDateFilter('3m')}>Last 3 Months</Button>
+                           <Button variant="ghost" className="justify-start" onClick={() => setDateFilter('1y')}>Last Year</Button>
+                        </div>
+                    </PopoverContent>
+                </Popover>
             </div>
            </div>
         </CardHeader>
@@ -188,7 +202,11 @@ export default function DesignerReviewsPage(): ReactElement {
                 </div>
             ) : (
               filteredReviews.map(review => (
-                <Card key={review.id} className="p-4 bg-secondary/30">
+                <Card 
+                    key={review.id} 
+                    className="p-4 bg-secondary/30 hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => setSelectedReview(review)}
+                >
                   <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex items-start gap-3 sm:w-1/3 md:w-1/4">
                        <Avatar className="h-10 w-10">
@@ -208,7 +226,7 @@ export default function DesignerReviewsPage(): ReactElement {
                             ))}
                           </div>
                       </div>
-                       <p className="text-sm italic text-foreground mt-2">{review.reviewText ? `"${review.reviewText}"` : 'No written comment provided.'}</p>
+                       <p className="text-sm italic text-foreground mt-2 line-clamp-2">{review.reviewText ? `"${review.reviewText}"` : 'No written comment provided.'}</p>
                        <div className="text-xs text-muted-foreground mt-3 pt-2 border-t">
                           For: <Link href={`/designer/orders/${review.orderId}`} className="text-primary hover:underline">{review.serviceName}</Link>
                        </div>
@@ -220,6 +238,71 @@ export default function DesignerReviewsPage(): ReactElement {
           </div>
         </CardContent>
       </Card>
+      
+       <Sheet open={!!selectedReview} onOpenChange={(open) => !open && setSelectedReview(null)}>
+        <SheetContent className="w-[400px] sm:w-[540px] flex flex-col p-0">
+          {selectedReview && (
+            <>
+              <SheetHeader className="p-6">
+                <SheetTitle className="font-headline text-2xl">Review Details</SheetTitle>
+                <SheetDescription>
+                  Full review from {selectedReview.clientName} for order {selectedReview.orderId}.
+                </SheetDescription>
+              </SheetHeader>
+              <div className="px-6 pb-6 space-y-6 overflow-y-auto flex-grow">
+                <div className="flex items-center space-x-4">
+                   <Avatar className="h-16 w-16">
+                      <AvatarImage src={selectedReview.clientAvatarUrl} alt={selectedReview.clientName} data-ai-hint={selectedReview.clientAvatarHint} />
+                      <AvatarFallback>{selectedReview.clientName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-lg font-semibold">{selectedReview.clientName}</p>
+                       <p className="text-sm text-muted-foreground">{format(selectedReview.reviewDate, 'MMMM d, yyyy')}</p>
+                    </div>
+                </div>
+                 <Separator />
+                 <div>
+                    <Label className="text-xs uppercase text-muted-foreground">Rating</Label>
+                     <div className="flex items-center mt-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className={cn("h-6 w-6", i < selectedReview.rating ? 'text-yellow-400 fill-current' : 'text-muted-foreground/30')} />
+                        ))}
+                    </div>
+                 </div>
+                 <div>
+                    <Label className="text-xs uppercase text-muted-foreground">Service</Label>
+                    <p className="font-medium text-foreground">{selectedReview.serviceName}</p>
+                    <Link href={`/designer/orders/${selectedReview.orderId}`} className="text-sm text-primary hover:underline">View Order Details</Link>
+                 </div>
+                 <div>
+                    <Label className="text-xs uppercase text-muted-foreground">Full Comment</Label>
+                    <p className="text-foreground leading-relaxed mt-1 italic">
+                        {selectedReview.reviewText ? `"${selectedReview.reviewText}"` : "No written comment was provided."}
+                    </p>
+                 </div>
+              </div>
+              <SheetFooter className="p-6 border-t bg-background flex-row justify-between">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline">Actions</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem><Bookmark className="mr-2 h-4 w-4"/>Mark as Featured</DropdownMenuItem>
+                        <DropdownMenuItem><ShieldAlert className="mr-2 h-4 w-4"/>Report Review</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem disabled><Languages className="mr-2 h-4 w-4"/>Translate (Soon)</DropdownMenuItem>
+                        <DropdownMenuItem disabled><Sparkles className="mr-2 h-4 w-4"/>Summarize (Soon)</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                <Button onClick={() => setSelectedReview(null)}>
+                    <XIcon className="mr-2 h-4 w-4" /> Close
+                </Button>
+              </SheetFooter>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
     </div>
   );
 }
