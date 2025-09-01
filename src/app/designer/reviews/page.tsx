@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare } from 'lucide-react';
+import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare, MoreVertical, ThumbsUp } from 'lucide-react';
 import { format, formatDistanceToNow, sub } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,32 +18,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/sheet';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from "@/hooks/use-toast";
+import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data'; // Import from new location
 
-
-// Mock data adapted for a designer's view
-interface DesignerReview {
-  id: string;
-  orderId: string;
-  clientName: string;
-  clientAvatarUrl: string;
-  clientAvatarHint: string;
-  serviceName: string;
-  category: string;
-  rating: number; // 1-5
-  reviewText?: string;
-  reviewDate: Date;
-}
-
-const mockDesignerReviews: DesignerReview[] = [
-  { id: 'rev001', orderId: 'ORD2945S', clientName: 'Sunita Rao', clientAvatarUrl: 'https://placehold.co/100x100.png', clientAvatarHint: 'woman corporate', serviceName: 'Startup Logo & Brand Identity', category: 'Logo & Branding', rating: 5, reviewText: 'Priya was absolutely amazing! She understood the vision for SwasthyaLink perfectly and delivered a brand identity that exceeded all our expectations. The process was smooth and collaborative. Highly recommend!', reviewDate: new Date(2024, 6, 14) },
-  { id: 'rev002', orderId: 'ORDXXXX1', clientName: 'Arun Kumar', clientAvatarUrl: 'https://placehold.co/100x100.png', clientAvatarHint: 'man startup founder', serviceName: 'E-commerce Website UI/UX', category: 'Web UI/UX', rating: 4, reviewText: 'The UI design was clean and modern. There were some minor delays but the end result was great and Priya was very responsive to feedback.', reviewDate: new Date(2024, 6, 12) },
-  { id: 'rev004', orderId: 'ORDXXXX3', clientName: 'Vijay Patil', clientAvatarUrl: 'https://placehold.co/100x100.png', clientAvatarHint: 'man small business owner', serviceName: 'Modern Logo Design', category: 'Logo & Branding', rating: 5, reviewText: 'Fantastic work on the logo. Quick turnaround and very creative.', reviewDate: new Date(2024, 6, 10) },
-   { id: 'rev005', orderId: 'ORDYYYY1', clientName: 'Rina Desai', clientAvatarUrl: 'https://placehold.co/100x100.png', clientAvatarHint: 'woman professional', serviceName: 'Social Media Campaign Graphics', category: 'Social Media Graphics', rating: 5, reviewText: 'The festival creatives were vibrant and perfect for our target audience. We saw a great engagement boost. Will definitely work with Priya again!', reviewDate: new Date(2024, 5, 18) },
-   { id: 'rev006', orderId: 'ORDZZZZ2', clientName: 'Amit Singh', clientAvatarUrl: 'https://placehold.co/100x100.png', clientAvatarHint: 'man entrepreneur', serviceName: 'Business Card Design', category: 'Print Design', rating: 4, reviewText: 'The business cards were high quality and delivered on time. The design was professional and exactly what we asked for.', reviewDate: new Date(2024, 4, 25) },
-];
 
 const uniqueCategories = Array.from(new Set(mockDesignerReviews.map(r => r.category))).sort();
 
@@ -52,6 +31,7 @@ type DateFilter = 'All' | '1m' | '3m' | '1y';
 
 
 export default function DesignerReviewsPage(): ReactElement {
+  const { toast } = useToast();
   const [reviews, setReviews] = useState<DesignerReview[]>(mockDesignerReviews);
   const [selectedReview, setSelectedReview] = useState<DesignerReview | null>(null);
   
@@ -80,6 +60,21 @@ export default function DesignerReviewsPage(): ReactElement {
     return sortConfig.direction === 'ascending' ?
       <ChevronUp className="ml-1 h-4 w-4" /> :
       <ChevronDown className="ml-1 h-4 w-4" />;
+  };
+
+  const handleToggleFeatured = (reviewId: string) => {
+    setReviews(prevReviews =>
+      prevReviews.map(review =>
+        review.id === reviewId ? { ...review, isFeatured: !review.isFeatured } : review
+      )
+    );
+    const review = reviews.find(r => r.id === reviewId);
+    if(review){
+        toast({
+            title: `Review ${!review.isFeatured ? 'Featured' : 'Unfeatured'}`,
+            description: `This review will ${!review.isFeatured ? 'now appear on your public profile' : 'no longer appear on your public profile'}.`
+        });
+    }
   };
 
   const filteredReviews = useMemo(() => {
@@ -139,7 +134,7 @@ export default function DesignerReviewsPage(): ReactElement {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Client Feedback</CardTitle>
-          <CardDescription>Here's what clients are saying about your work.</CardDescription>
+          <CardDescription>Here's what clients are saying about your work. You can feature your favorite reviews on your public profile.</CardDescription>
            <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="space-y-1">
                 <Label htmlFor="search" className="text-xs">Search Client/Service</Label>
@@ -204,10 +199,12 @@ export default function DesignerReviewsPage(): ReactElement {
               filteredReviews.map(review => (
                 <Card 
                     key={review.id} 
-                    className="p-4 bg-secondary/30 hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => setSelectedReview(review)}
+                    className={cn(
+                      "transition-all hover:shadow-md group", 
+                      review.isFeatured && "border-yellow-400/50 bg-yellow-500/5"
+                    )}
                 >
-                  <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="p-4 flex flex-col sm:flex-row gap-4">
                     <div className="flex items-start gap-3 sm:w-1/3 md:w-1/4">
                        <Avatar className="h-10 w-10">
                           <AvatarImage src={review.clientAvatarUrl} alt={review.clientName} data-ai-hint={review.clientAvatarHint} />
@@ -219,16 +216,29 @@ export default function DesignerReviewsPage(): ReactElement {
                         </div>
                     </div>
                     <div className="flex-grow">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start justify-between">
                          <div className="flex items-center">
                             {[...Array(5)].map((_, i) => (
                               <Star key={i} className={cn("h-5 w-5", i < review.rating ? 'text-yellow-400 fill-current' : 'text-muted-foreground/30')} />
                             ))}
                           </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setSelectedReview(review)}>View Details</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleToggleFeatured(review.id)}>
+                                    <Star className="mr-2 h-4 w-4"/>
+                                    {review.isFeatured ? 'Unfeature Review' : 'Feature on Profile'}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                       </div>
                        <p className="text-sm italic text-foreground mt-2 line-clamp-2">{review.reviewText ? `"${review.reviewText}"` : 'No written comment provided.'}</p>
-                       <div className="text-xs text-muted-foreground mt-3 pt-2 border-t">
-                          For: <Link href={`/designer/orders/${review.orderId}`} className="text-primary hover:underline">{review.serviceName}</Link>
+                       <div className="text-xs text-muted-foreground mt-3 pt-2 border-t flex items-center justify-between">
+                          <p>For: <Link href={`/designer/orders/${review.orderId}`} className="text-primary hover:underline">{review.serviceName}</Link></p>
+                          {review.isFeatured && <Badge variant="secondary" className="border-yellow-500/50 text-yellow-700 dark:text-yellow-400"><Star className="mr-1 h-3 w-3"/>Featured</Badge>}
                        </div>
                     </div>
                   </div>
@@ -287,7 +297,10 @@ export default function DesignerReviewsPage(): ReactElement {
                         <Button variant="outline">Actions</Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem><Bookmark className="mr-2 h-4 w-4"/>Mark as Featured</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleToggleFeatured(selectedReview.id)}>
+                            <Star className="mr-2 h-4 w-4"/>
+                            {selectedReview.isFeatured ? 'Unfeature Review' : 'Feature Review'}
+                        </DropdownMenuItem>
                         <DropdownMenuItem><ShieldAlert className="mr-2 h-4 w-4"/>Report Review</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem disabled><Languages className="mr-2 h-4 w-4"/>Translate (Soon)</DropdownMenuItem>

@@ -9,12 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Briefcase, MapPin, CalendarDays, ExternalLink, Star, Palette, Users, MessageSquare, PackageSearch } from 'lucide-react';
+import { Mail, Briefcase, MapPin, CalendarDays, ExternalLink, Star, Palette, Users, MessageSquare, PackageSearch, ThumbsUp } from 'lucide-react';
 import { PortfolioItemCard, type PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { allPortfolioItemsData } from '@/app/portfolio/page'; 
 import { type DesignerProfile } from '@/lib/designer-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
+import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data'; // Import review data
+import { cn } from '@/lib/utils';
 
 interface DesignerProfileClientContentProps {
   initialDesigner: DesignerProfile | null;
@@ -23,10 +25,9 @@ interface DesignerProfileClientContentProps {
 export function DesignerProfileClientContent({ initialDesigner }: DesignerProfileClientContentProps) {
   const params = useParams();
   const router = useRouter();
-  // Initialize state with server-passed prop
   const [designer, setDesigner] = useState<DesignerProfile | null>(initialDesigner);
   const [designerPortfolio, setDesignerPortfolio] = useState<PortfolioItem[]>([]);
-  //isLoading can be true initially if initialDesigner is null (e.g. during suspense fallback)
+  const [featuredReviews, setFeaturedReviews] = useState<DesignerReview[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(!initialDesigner); 
 
   const designerSlug = params.designerSlug as string;
@@ -36,10 +37,13 @@ export function DesignerProfileClientContent({ initialDesigner }: DesignerProfil
       setDesigner(initialDesigner);
       const portfolio = allPortfolioItemsData.filter(item => item.designer?.id === initialDesigner.id);
       setDesignerPortfolio(portfolio);
-      setIsLoading(false); // Data is ready
+
+      // Filter for featured reviews for this designer
+      const reviews = mockDesignerReviews.filter(review => review.isFeatured);
+      setFeaturedReviews(reviews);
+
+      setIsLoading(false);
     } else if (!isLoading && !initialDesigner) { 
-      // This condition means server passed null, and we are not already loading
-      // This is a more robust way to handle notFound on client if server couldn't find it
       notFound();
     }
   }, [initialDesigner, isLoading]);
@@ -50,8 +54,6 @@ export function DesignerProfileClientContent({ initialDesigner }: DesignerProfil
   }
 
   if (!designer) {
-    // This should ideally be caught by notFound() earlier, but as a fallback
-    // Or if initialDesigner was null and the effect for notFound() hasn't run / been caught by Suspense
     return (
       <div className="flex-grow container mx-auto py-12 px-5 text-center">
         <Users className="mx-auto h-24 w-24 text-muted-foreground opacity-50" />
@@ -134,27 +136,71 @@ export function DesignerProfileClientContent({ initialDesigner }: DesignerProfil
                   </Card>
               </div>
 
-              {/* Right Column: Portfolio */}
-              <div className="lg:col-span-2 space-y-8">
-                  <h2 className="text-3xl font-bold font-headline flex items-center">
-                      <Palette className="mr-3 h-7 w-7 text-primary" />
-                      Portfolio
-                  </h2>
-                  {designerPortfolio.length > 0 ? (
-                      <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                      {designerPortfolio.map(item => (
-                          <PortfolioItemCard key={item.id} item={item} />
-                      ))}
+              {/* Right Column: Portfolio & Reviews */}
+              <div className="lg:col-span-2 space-y-12">
+                  
+                  {/* Featured Reviews Section */}
+                  {featuredReviews.length > 0 && (
+                    <section>
+                      <h2 className="text-3xl font-bold font-headline flex items-center mb-8">
+                        <ThumbsUp className="mr-3 h-7 w-7 text-primary" />
+                        Featured Reviews
+                      </h2>
+                       <div className="space-y-6">
+                        {featuredReviews.map(review => (
+                          <Card key={review.id} className="shadow-md bg-secondary/30">
+                            <CardContent className="p-6">
+                              <div className="flex items-start gap-4">
+                                <Avatar className="h-11 w-11">
+                                  <AvatarImage src={review.clientAvatarUrl} alt={review.clientName} data-ai-hint={review.clientAvatarHint} />
+                                  <AvatarFallback>{review.clientName.substring(0, 2)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-grow">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <p className="font-semibold">{review.clientName}</p>
+                                      <p className="text-xs text-muted-foreground">For: {review.serviceName}</p>
+                                    </div>
+                                    <div className="flex items-center">
+                                      {[...Array(5)].map((_, i) => (
+                                        <Star key={i} className={cn("h-4 w-4", i < review.rating ? 'text-yellow-400 fill-current' : 'text-muted-foreground/30')} />
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <blockquote className="text-sm italic text-foreground mt-2 border-l-2 border-primary/50 pl-3">
+                                    {review.reviewText || "Excellent work and collaboration!"}
+                                  </blockquote>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
                       </div>
-                  ) : (
-                      <Card className="text-center py-12 shadow-sm border-dashed">
-                          <CardContent className="space-y-3">
-                              <Briefcase className="mx-auto h-16 w-16 text-muted-foreground opacity-50" />
-                              <p className="text-lg font-semibold">Portfolio Coming Soon</p>
-                              <p className="text-muted-foreground">{designer.name} is currently curating their best work. Check back later!</p>
-                          </CardContent>
-                      </Card>
+                    </section>
                   )}
+
+                  {/* Portfolio Section */}
+                  <section>
+                      <h2 className="text-3xl font-bold font-headline flex items-center mb-8">
+                          <Palette className="mr-3 h-7 w-7 text-primary" />
+                          Portfolio
+                      </h2>
+                      {designerPortfolio.length > 0 ? (
+                          <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                          {designerPortfolio.map(item => (
+                              <PortfolioItemCard key={item.id} item={item} />
+                          ))}
+                          </div>
+                      ) : (
+                          <Card className="text-center py-12 shadow-sm border-dashed">
+                              <CardContent className="space-y-3">
+                                  <Briefcase className="mx-auto h-16 w-16 text-muted-foreground opacity-50" />
+                                  <p className="text-lg font-semibold">Portfolio Coming Soon</p>
+                                  <p className="text-muted-foreground">{designer.name} is currently curating their best work. Check back later!</p>
+                              </CardContent>
+                          </Card>
+                      )}
+                  </section>
               </div>
           </div>
       </div>
