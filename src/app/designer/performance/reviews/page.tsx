@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, type ReactElement } from 'react';
@@ -11,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, subDays } from 'date-fns';
 import Link from 'next/link';
 import {
   DropdownMenu,
@@ -23,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 
 // --- KPI Data & Component ---
@@ -186,9 +186,35 @@ function ReviewTagCloud() {
 
 // --- END Tag Cloud ---
 
+type RatingFilter = 'all' | '5' | '3-4' | '1-2';
+type StatusFilter = 'all' | 'featured' | 'needsAction';
+type DateFilter = 'all' | '30d';
 
 export default function DesignerReviewsPage(): ReactElement {
   const [reviews, setReviews] = useState<DesignerReview[]>(mockDesignerReviews);
+  const { toast } = useToast();
+
+  const [ratingFilter, setRatingFilter] = useState<RatingFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
+
+  const filteredReviews = useMemo(() => {
+    const thirtyDaysAgo = subDays(new Date(), 30);
+    return reviews.filter(review => {
+      const ratingMatch = ratingFilter === 'all' || 
+                           (ratingFilter === '5' && review.rating === 5) ||
+                           (ratingFilter === '3-4' && review.rating >= 3 && review.rating <= 4) ||
+                           (ratingFilter === '1-2' && review.rating <= 2);
+      
+      const statusMatch = statusFilter === 'all' ||
+                          (statusFilter === 'featured' && review.isFeatured) ||
+                          (statusFilter === 'needsAction' && !review.isFeatured);
+                          
+      const dateMatch = dateFilter === 'all' || (dateFilter === '30d' && review.reviewDate >= thirtyDaysAgo);
+
+      return ratingMatch && statusMatch && dateMatch;
+    });
+  }, [reviews, ratingFilter, statusFilter, dateFilter]);
 
   const handleFeatureToggle = (reviewId: string, checked: boolean) => {
     setReviews(prevReviews => 
@@ -199,6 +225,20 @@ export default function DesignerReviewsPage(): ReactElement {
         description: `This review will ${checked ? 'now appear' : 'no longer appear'} on your public portfolio.`,
     });
   };
+
+  const FilterChip = ({
+    label, value, filterState, setFilterState, children
+  }: { label: string; value: string; filterState: string; setFilterState: React.Dispatch<React.SetStateAction<any>>; children?: React.ReactNode }) => (
+    <Button 
+      variant={filterState === value ? "default" : "outline"} 
+      size="sm"
+      className="h-8"
+      onClick={() => setFilterState(prev => (prev === value ? 'all' : value))}
+    >
+      {children}
+      {label}
+    </Button>
+  );
 
   return (
     <div className="space-y-8">
@@ -214,8 +254,22 @@ export default function DesignerReviewsPage(): ReactElement {
           <CardDescription>A list of all reviews you have received from clients. You can feature them on your portfolio.</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 p-3 border rounded-lg bg-muted/50 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-medium mr-2">Filter by:</p>
+                <FilterChip label="⭐ 5" value="5" filterState={ratingFilter} setFilterState={setRatingFilter}/>
+                <FilterChip label="⭐ 3-4" value="3-4" filterState={ratingFilter} setFilterState={setRatingFilter}/>
+                <FilterChip label="⭐ 1-2" value="1-2" filterState={ratingFilter} setFilterState={setRatingFilter}/>
+              </div>
+               <Separator />
+               <div className="flex flex-wrap items-center gap-2">
+                <FilterChip label="Last 30 Days" value="30d" filterState={dateFilter} setFilterState={setDateFilter}/>
+                <FilterChip label="Needs Action" value="needsAction" filterState={statusFilter} setFilterState={setStatusFilter}/>
+                <FilterChip label="Featured" value="featured" filterState={statusFilter} setFilterState={setStatusFilter}/>
+              </div>
+          </div>
           <div className="space-y-6">
-            {reviews.length > 0 ? reviews.map(review => (
+            {filteredReviews.length > 0 ? filteredReviews.map(review => (
               <div key={review.id} className="p-4 border rounded-lg bg-secondary/30">
                 <div className="flex justify-between items-start">
                   <div className="flex items-start gap-3">
@@ -266,17 +320,25 @@ export default function DesignerReviewsPage(): ReactElement {
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Manage Review</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem disabled>
-                            <Award className="mr-2 h-4 w-4" /> Feature on Profile
+                             <DropdownMenuItem asChild>
+                               <Link href={`#`} className="flex items-center">
+                                <Award className="mr-2 h-4 w-4" /> Feature on Profile
+                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem disabled>
-                            <FileText className="mr-2 h-4 w-4" /> AI Summarize
+                             <DropdownMenuItem asChild>
+                               <Link href={`#`} className="flex items-center">
+                                 <FileText className="mr-2 h-4 w-4" /> AI Summarize
+                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem disabled>
-                            <Languages className="mr-2 h-4 w-4" /> Translate
+                             <DropdownMenuItem asChild>
+                               <Link href={`#`} className="flex items-center">
+                                <Languages className="mr-2 h-4 w-4" /> Translate
+                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem disabled>
-                            <Reply className="mr-2 h-4 w-4" /> Public Reply
+                            <DropdownMenuItem asChild>
+                               <Link href={`#`} className="flex items-center">
+                                 <Reply className="mr-2 h-4 w-4" /> Public Reply
+                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem disabled={review.isReported} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
@@ -288,7 +350,7 @@ export default function DesignerReviewsPage(): ReactElement {
                  </div>
               </div>
             )) : (
-              <p className="text-muted-foreground text-center py-8">You have not received any reviews yet.</p>
+              <p className="text-muted-foreground text-center py-8">No reviews match your current filters.</p>
             )}
           </div>
         </CardContent>
