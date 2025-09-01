@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, type ReactElement } from 'react';
@@ -17,7 +16,7 @@ import type { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from "@/hooks/use-toast";
@@ -35,6 +34,11 @@ export default function DesignerReviewsPage(): ReactElement {
   const [reviews, setReviews] = useState<DesignerReview[]>(mockDesignerReviews);
   const [selectedReview, setSelectedReview] = useState<DesignerReview | null>(null);
   
+  // State for dynamic features
+  const [summarizedReviews, setSummarizedReviews] = useState<Record<string, string>>({});
+  const [translatedReview, setTranslatedReview] = useState<{ id: string; text: string } | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+
   // Filtering and sorting states
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -76,6 +80,34 @@ export default function DesignerReviewsPage(): ReactElement {
         });
     }
   };
+  
+  const handleTranslateReview = (review: DesignerReview) => {
+    setIsTranslating(true);
+    setTranslatedReview({ id: review.id, text: 'Translating...' });
+    setTimeout(() => {
+        setTranslatedReview({
+            id: review.id,
+            text: `(Simulated Translation) ${review.reviewText || 'Excellent work and collaboration!'}`
+        });
+        setIsTranslating(false);
+    }, 1000);
+  };
+  
+  const handleSummarizeReview = (reviewId: string, reviewText?: string) => {
+    if (summarizedReviews[reviewId]) {
+        // If already summarized, remove the summary to show original text
+        const newSummaries = { ...summarizedReviews };
+        delete newSummaries[reviewId];
+        setSummarizedReviews(newSummaries);
+    } else {
+        // Create a summary
+        const summary = reviewText 
+            ? reviewText.split('. ')[0] + '.' 
+            : 'A positive collaboration experience.';
+        setSummarizedReviews(prev => ({ ...prev, [reviewId]: summary }));
+    }
+  };
+
 
   const filteredReviews = useMemo(() => {
     let filtered = reviews
@@ -227,15 +259,31 @@ export default function DesignerReviewsPage(): ReactElement {
                                 <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => setSelectedReview(review)}>View Details</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setSelectedReview(review)}><Eye className="mr-2 h-4 w-4"/>View Details</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleToggleFeatured(review.id)}>
                                     <Star className="mr-2 h-4 w-4"/>
                                     {review.isFeatured ? 'Unfeature Review' : 'Feature on Profile'}
                                 </DropdownMenuItem>
+                                 <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleSummarizeReview(review.id, review.reviewText)}>
+                                    <Sparkles className="mr-2 h-4 w-4" />{summarizedReviews[review.id] ? 'Show Full Text' : 'Summarize'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleTranslateReview(review)}>
+                                    <Languages className="mr-2 h-4 w-4" />Translate
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive"><ShieldAlert className="mr-2 h-4 w-4"/>Report Review</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                       </div>
-                       <p className="text-sm italic text-foreground mt-2 line-clamp-2">{review.reviewText ? `"${review.reviewText}"` : 'No written comment provided.'}</p>
+                       <p className="text-sm italic text-foreground mt-2">
+                        {summarizedReviews[review.id]
+                            ? `"${summarizedReviews[review.id]}"`
+                            : review.reviewText 
+                                ? `"${review.reviewText}"` 
+                                : <span className="text-muted-foreground">No written comment provided.</span>
+                        }
+                       </p>
                        <div className="text-xs text-muted-foreground mt-3 pt-2 border-t flex items-center justify-between">
                           <p>For: <Link href={`/designer/orders/${review.orderId}`} className="text-primary hover:underline">{review.serviceName}</Link></p>
                           {review.isFeatured && <Badge variant="secondary" className="border-yellow-500/50 text-yellow-700 dark:text-yellow-400"><Star className="mr-1 h-3 w-3"/>Featured</Badge>}
@@ -301,10 +349,15 @@ export default function DesignerReviewsPage(): ReactElement {
                             <Star className="mr-2 h-4 w-4"/>
                             {selectedReview.isFeatured ? 'Unfeature Review' : 'Feature Review'}
                         </DropdownMenuItem>
-                        <DropdownMenuItem><ShieldAlert className="mr-2 h-4 w-4"/>Report Review</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleSummarizeReview(selectedReview.id, selectedReview.reviewText)}>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            {summarizedReviews[selectedReview.id] ? 'Show Full Text' : 'Summarize'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleTranslateReview(selectedReview)}>
+                            <Languages className="mr-2 h-4 w-4" />Translate
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled><Languages className="mr-2 h-4 w-4"/>Translate (Soon)</DropdownMenuItem>
-                        <DropdownMenuItem disabled><Sparkles className="mr-2 h-4 w-4"/>Summarize (Soon)</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive"><ShieldAlert className="mr-2 h-4 w-4"/>Report Review</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <Button onClick={() => setSelectedReview(null)}>
@@ -316,6 +369,32 @@ export default function DesignerReviewsPage(): ReactElement {
         </SheetContent>
       </Sheet>
 
+      <Dialog open={!!translatedReview} onOpenChange={(open) => !open && setTranslatedReview(null)}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Translate Review</DialogTitle>
+                <DialogDescription>
+                    Simulated translation of the review.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+                {isTranslating ? (
+                    <div className="flex items-center justify-center h-24">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+                    </div>
+                ) : (
+                    <blockquote className="border-l-2 pl-4 italic text-muted-foreground">
+                        {translatedReview?.text}
+                    </blockquote>
+                )}
+            </div>
+             <DialogFooter>
+                <DialogClose asChild>
+                    <Button variant="outline">Close</Button>
+                </DialogClose>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
