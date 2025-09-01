@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet, Mail, SlidersHorizontal, RefreshCw, Calendar, Globe, History, Download, FileText, ArrowRight } from 'lucide-react';
+import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet, Mail, SlidersHorizontal, RefreshCw, Calendar, Globe, History, Download, FileText, ArrowRight, Bell } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -31,6 +31,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { Switch } from '@/components/ui/switch';
 
 
 interface PayoutMethod {
@@ -50,7 +51,7 @@ const mockPayoutHistory = [
     { id: 'po_1', date: new Date(2024, 6, 15), amount: 12500.50, method: 'Bank Transfer', status: 'Completed' },
     { id: 'po_2', date: new Date(2024, 6, 1), amount: 8200.00, method: 'Bank Transfer', status: 'Completed' },
     { id: 'po_3', date: new Date(2024, 5, 15), amount: 15300.00, method: 'Bank Transfer', status: 'Completed' },
-    { id: 'po_4', date: new Date(2024, 5, 1), amount: 5500.75, method: 'Bank Transfer', status: 'Failed' },
+    { id: 'po_4', date: new Date(2024, 5, 1), amount: 5500.75, method: 'Failed' },
 ];
 
 export default function DesignerPaymentSettingsPage(): ReactElement {
@@ -75,6 +76,13 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
   const [preferredCurrency, setPreferredCurrency] = useState('INR');
   const [isSavingPrefs, setIsSavingPrefs] = useState(false);
 
+  // State for Notification Preferences
+  const [notificationPrefs, setNotificationPrefs] = useState({
+    payoutFailed: true,
+    reVerification: true,
+    payoutTriggered: false,
+  });
+  const [isSavingNotifications, setIsSavingNotifications] = useState(false);
 
   const primaryMethod = methods.find(m => m.isPrimary);
 
@@ -157,6 +165,20 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
     }, 1000);
   };
 
+  const handleNotificationPrefChange = (pref: keyof typeof notificationPrefs, checked: boolean) => {
+    setNotificationPrefs(prev => ({...prev, [pref]: checked}));
+  }
+
+  const handleSaveNotifications = (e: FormEvent) => {
+      e.preventDefault();
+      setIsSavingNotifications(true);
+      console.log("Saving notification preferences:", notificationPrefs);
+      setTimeout(() => {
+          toast({ title: "Notification Settings Saved" });
+          setIsSavingNotifications(false);
+      }, 1000);
+  };
+
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold font-headline flex items-center">
@@ -227,51 +249,6 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
       </Card>
 
       <Card className="shadow-lg">
-        <CardHeader>
-            <CardTitle className="flex items-center"><SlidersHorizontal className="mr-2 h-5 w-5"/>Payout Preferences</CardTitle>
-            <CardDescription>Control how and when you receive your payouts.</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSavePreferences}>
-            <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="payout-frequency" className="flex items-center"><Calendar className="mr-2 h-4 w-4"/>Payout Frequency</Label>
-                        <Select value={payoutFrequency} onValueChange={setPayoutFrequency}>
-                            <SelectTrigger id="payout-frequency"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="bi-weekly">Bi-weekly (Every 2 weeks)</SelectItem>
-                                <SelectItem value="weekly">Weekly</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="payout-threshold" className="flex items-center"><IndianRupee className="mr-2 h-4 w-4"/>Minimum Payout Threshold (INR)</Label>
-                        <Input id="payout-threshold" type="number" value={payoutThreshold} onChange={(e) => setPayoutThreshold(e.target.value)} placeholder="e.g., 500" />
-                        <p className="text-xs text-muted-foreground">Payouts will only be processed once your balance exceeds this amount.</p>
-                    </div>
-                </div>
-                <div className="space-y-2 md:w-1/2 md:pr-3">
-                    <Label htmlFor="preferred-currency" className="flex items-center"><Globe className="mr-2 h-4 w-4"/>Preferred Currency</Label>
-                    <Select value={preferredCurrency} onValueChange={setPreferredCurrency}>
-                        <SelectTrigger id="preferred-currency"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="INR">INR (Indian Rupee)</SelectItem>
-                            <SelectItem value="USD" disabled>USD (US Dollar) - Coming Soon</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </CardContent>
-            <CardFooter>
-                 <Button type="submit" disabled={isSavingPrefs}>
-                    {isSavingPrefs ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    {isSavingPrefs ? 'Saving...' : 'Save Preferences'}
-                </Button>
-            </CardFooter>
-        </form>
-      </Card>
-      
-      <Card className="shadow-lg">
           <CardHeader>
               <CardTitle className="flex items-center">Add New Payout Method</CardTitle>
               <CardDescription>Add a new method to receive your earnings.</CardDescription>
@@ -335,6 +312,107 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
                   </TabsContent>
               </Tabs>
           </CardContent>
+      </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+            <CardTitle className="flex items-center"><SlidersHorizontal className="mr-2 h-5 w-5"/>Payout Preferences</CardTitle>
+            <CardDescription>Control how and when you receive your payouts.</CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSavePreferences}>
+            <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="payout-frequency" className="flex items-center"><Calendar className="mr-2 h-4 w-4"/>Payout Frequency</Label>
+                        <Select value={payoutFrequency} onValueChange={setPayoutFrequency}>
+                            <SelectTrigger id="payout-frequency"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="monthly">Monthly</SelectItem>
+                                <SelectItem value="bi-weekly">Bi-weekly (Every 2 weeks)</SelectItem>
+                                <SelectItem value="weekly">Weekly</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="payout-threshold" className="flex items-center"><IndianRupee className="mr-2 h-4 w-4"/>Minimum Payout Threshold (INR)</Label>
+                        <Input id="payout-threshold" type="number" value={payoutThreshold} onChange={(e) => setPayoutThreshold(e.target.value)} placeholder="e.g., 500" />
+                        <p className="text-xs text-muted-foreground">Payouts will only be processed once your balance exceeds this amount.</p>
+                    </div>
+                </div>
+                <div className="space-y-2 md:w-1/2 md:pr-3">
+                    <Label htmlFor="preferred-currency" className="flex items-center"><Globe className="mr-2 h-4 w-4"/>Preferred Currency</Label>
+                    <Select value={preferredCurrency} onValueChange={setPreferredCurrency}>
+                        <SelectTrigger id="preferred-currency"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="INR">INR (Indian Rupee)</SelectItem>
+                            <SelectItem value="USD" disabled>USD (US Dollar) - Coming Soon</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </CardContent>
+            <CardFooter>
+                 <Button type="submit" disabled={isSavingPrefs}>
+                    {isSavingPrefs ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    {isSavingPrefs ? 'Saving...' : 'Save Preferences'}
+                </Button>
+            </CardFooter>
+        </form>
+      </Card>
+      
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center"><Bell className="mr-2 h-5 w-5"/>Notification Settings</CardTitle>
+          <CardDescription>Manage alerts related to your payouts.</CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSaveNotifications}>
+            <CardContent className="space-y-4">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <Label htmlFor="payoutFailed" className="text-base">Payout Failures</Label>
+                        <p className="text-sm text-muted-foreground">
+                            Get an immediate notification if a payout to your account fails.
+                        </p>
+                    </div>
+                    <Switch
+                        id="payoutFailed"
+                        checked={notificationPrefs.payoutFailed}
+                        onCheckedChange={(checked) => handleNotificationPrefChange('payoutFailed', checked)}
+                    />
+                </div>
+                 <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <Label htmlFor="reVerification" className="text-base">Re-verification Requests</Label>
+                        <p className="text-sm text-muted-foreground">
+                            Notify me if my payout method requires re-verification.
+                        </p>
+                    </div>
+                    <Switch
+                        id="reVerification"
+                        checked={notificationPrefs.reVerification}
+                        onCheckedChange={(checked) => handleNotificationPrefChange('reVerification', checked)}
+                    />
+                </div>
+                 <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <Label htmlFor="payoutTriggered" className="text-base">Payout Triggered</Label>
+                        <p className="text-sm text-muted-foreground">
+                           Send an alert when a payout is processed based on your threshold/frequency.
+                        </p>
+                    </div>
+                    <Switch
+                         id="payoutTriggered"
+                        checked={notificationPrefs.payoutTriggered}
+                        onCheckedChange={(checked) => handleNotificationPrefChange('payoutTriggered', checked)}
+                    />
+                </div>
+            </CardContent>
+            <CardFooter>
+                <Button type="submit" disabled={isSavingNotifications}>
+                    {isSavingNotifications ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
+                    {isSavingNotifications ? 'Saving...' : 'Save Notification Settings'}
+                </Button>
+            </CardFooter>
+        </form>
       </Card>
 
       <Card className="shadow-lg">
