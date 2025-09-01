@@ -4,8 +4,8 @@
 import { useState, useMemo, type ReactElement } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare, MoreVertical, ThumbsUp, Upload, Eye, BarChart2, Clock, CheckCheck, GitCommitHorizontal } from 'lucide-react';
@@ -45,14 +45,28 @@ const kpiData = [
     { title: 'On-Time Delivery', value: 95, unit: '%', icon: Clock, description: 'Based on meeting original deadlines' },
     { title: 'Completion Rate', value: 98, unit: '%', icon: CheckCheck, description: 'Percentage of started orders completed' },
     { title: 'Avg. Revisions', value: 1.2, icon: GitCommitHorizontal, description: 'Average revision rounds per order' },
-    { title: 'Median Response Time', value: 1.8, unit: 'hrs', icon: MessageSquare, description: 'Median time to first reply' },
+    { title: 'Dispute Rate', value: 1, unit: '%', icon: ShieldAlert, description: 'Percentage of orders with disputes' },
 ];
 
 function KpiCard({ title, value, unit, icon: Icon, description }: { title: string, value: number, unit?: string, icon: React.ElementType, description: string }) {
     const isPercentage = unit === '%';
-    const isGood = isPercentage ? value >= 90 : (title === 'Avg. Revisions' ? value <= 1.5 : (title === 'Median Response Time' ? value < 2 : false));
-    const isWarning = isPercentage ? (value >= 70 && value < 90) : false;
-    const isBad = isPercentage ? value < 70 : false;
+    let isGood = false, isWarning = false, isBad = false;
+
+    if (title.includes('Rate')) { // For On-Time, Completion, Dispute
+        if(title === 'Dispute Rate') {
+             isGood = value <= 1;
+             isWarning = value > 1 && value <= 3;
+             isBad = value > 3;
+        } else {
+             isGood = value >= 90;
+             isWarning = value >= 70 && value < 90;
+             isBad = value < 70;
+        }
+    } else { // For Avg Revisions
+        isGood = value <= 1.5;
+        isWarning = value > 1.5 && value <= 2.5;
+        isBad = value > 2.5;
+    }
     
     const valueColor = cn(
         isGood && 'text-green-600 dark:text-green-500',
@@ -76,9 +90,6 @@ function KpiCard({ title, value, unit, icon: Icon, description }: { title: strin
             <CardContent>
                 <div className={cn("text-3xl font-bold flex items-baseline gap-2", valueColor)}>
                    <span>{value}{unit}</span>
-                   {title === 'Median Response Time' && isGood && (
-                      <Badge className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-300/50">Fast Responder</Badge>
-                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">{description}</p>
             </CardContent>
@@ -283,7 +294,7 @@ export default function DesignerReviewsPage(): ReactElement {
 
   return (
     <div className="space-y-8">
-       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {kpiData.map(kpi => <KpiCard key={kpi.title} {...kpi} />)}
       </div>
 
