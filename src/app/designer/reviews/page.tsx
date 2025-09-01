@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare, MoreVertical, ThumbsUp, Upload, FileText as FileTextIcon, Eye, BarChart2 } from 'lucide-react';
+import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare, MoreVertical, ThumbsUp, Upload, FileText as FileTextIcon, Eye, BarChart2, Clock, CheckCheck, GitCommitHorizontal } from 'lucide-react';
 import { format, formatDistanceToNow, sub, startOfToday, endOfDay } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,6 +43,50 @@ const reportReasons = [
     "Review for Wrong Order",
     "Other",
 ];
+
+// --- KPI Data & Component ---
+const kpiData = [
+    { title: 'On-Time Delivery', value: 95, unit: '%', icon: Clock, description: 'Based on meeting original deadlines' },
+    { title: 'Completion Rate', value: 98, unit: '%', icon: CheckCheck, description: 'Percentage of started orders completed' },
+    { title: 'Avg. Revisions', value: 1.2, icon: GitCommitHorizontal, description: 'Average revision rounds per order' },
+    { title: 'Dispute Rate', value: 2, unit: '%', icon: ShieldAlert, description: 'Percentage of orders with disputes' },
+];
+
+function KpiCard({ title, value, unit, icon: Icon, description }: { title: string, value: number, unit?: string, icon: React.ElementType, description: string }) {
+    const isPercentage = unit === '%';
+    const isGood = isPercentage ? value >= 90 : (title === 'Avg. Revisions' ? value <= 1.5 : (title === 'Dispute Rate' ? value < 3 : false));
+    const isWarning = isPercentage ? (value >= 70 && value < 90) : (title === 'Dispute Rate' ? (value >= 3 && value < 5) : false);
+    const isBad = isPercentage ? value < 70 : (title === 'Dispute Rate' ? value >= 5 : false);
+    
+    const valueColor = cn(
+        isGood && 'text-green-600 dark:text-green-500',
+        isWarning && 'text-yellow-600 dark:text-yellow-500',
+        isBad && 'text-red-600 dark:text-red-500',
+    );
+    const iconColor = cn(
+        isGood && 'text-green-500',
+        isWarning && 'text-yellow-500',
+        isBad && 'text-red-500',
+    );
+    
+    return (
+        <Card className="shadow-sm">
+            <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center justify-between">
+                    <span>{title}</span>
+                    <Icon className={cn("h-4 w-4 text-muted-foreground", iconColor)} />
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className={cn("text-3xl font-bold", valueColor)}>
+                    {value}{unit}
+                </div>
+                <p className="text-xs text-muted-foreground">{description}</p>
+            </CardContent>
+        </Card>
+    );
+}
+// --- END KPI Data & Component ---
 
 function ReportReviewDialog({ review, onReportSubmit }: { review: DesignerReview, onReportSubmit: (reviewId: string) => void }) {
     const { toast } = useToast();
@@ -385,6 +429,10 @@ export default function DesignerReviewsPage(): ReactElement {
         </h1>
       </div>
       
+       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {kpiData.map(kpi => <KpiCard key={kpi.title} {...kpi} />)}
+      </div>
+
       <AnalyticsCard />
 
       <Card className="shadow-lg">
