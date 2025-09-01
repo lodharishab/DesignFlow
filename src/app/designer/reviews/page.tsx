@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare, MoreVertical, ThumbsUp, Upload, FileText as FileTextIcon, Eye, BarChart2, Clock, CheckCheck, GitCommitHorizontal } from 'lucide-react';
+import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare, MoreVertical, ThumbsUp, Upload, FileText as FileTextIcon, Eye, BarChart2, Clock, CheckCheck, GitCommitHorizontal, GitCompareArrows } from 'lucide-react';
 import { format, formatDistanceToNow, sub, startOfToday, endOfDay } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,7 +29,7 @@ import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, LineChart, Line, Cell } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, LineChart, Line, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts";
 
 const uniqueCategories = Array.from(new Set(mockDesignerReviews.map(r => r.category))).sort();
 
@@ -179,7 +179,7 @@ const starDistributionChartConfig = {
 } satisfies ChartConfig
 
 function AnalyticsCard() {
-    const [timeframe, setTimeframe] = useState("30d");
+    const [timeframe, setTimeframe] = useState("lifetime");
 
     const filteredData = useMemo(() => {
         const now = new Date();
@@ -201,6 +201,7 @@ function AnalyticsCard() {
                     { rating: 3, count: 0 }, { rating: 2, count: 0 }, { rating: 1, count: 0 },
                 ],
                 ratingTrend: [],
+                categoryPerformance: [],
             };
         }
         
@@ -217,10 +218,31 @@ function AnalyticsCard() {
             .map(r => ({ date: format(r.reviewDate, 'MMM d'), rating: r.rating }))
             .slice(0, 10) // show last 10 reviews trend
             .reverse();
+            
+        const categoryPerformanceMap: Record<string, { totalRating: number, totalRevisions: number, count: number }> = {};
+        filteredData.forEach(review => {
+            if (!categoryPerformanceMap[review.category]) {
+                categoryPerformanceMap[review.category] = { totalRating: 0, totalRevisions: 0, count: 0 };
+            }
+            categoryPerformanceMap[review.category].totalRating += review.rating;
+            categoryPerformanceMap[review.category].totalRevisions += review.revisions;
+            categoryPerformanceMap[review.category].count += 1;
+        });
+
+        const categoryPerformance = Object.entries(categoryPerformanceMap).map(([category, data]) => ({
+            category,
+            avgRating: data.totalRating / data.count,
+            avgRevisions: data.totalRevisions / data.count,
+        }));
         
-        return { averageRating, totalReviews, starDistribution, ratingTrend };
+        return { averageRating, totalReviews, starDistribution, ratingTrend, categoryPerformance };
 
     }, [filteredData]);
+
+    const categoryChartConfig = {
+        avgRating: { label: "Avg. Rating", color: "hsl(var(--chart-1))" },
+        avgRevisions: { label: "Avg. Revisions", color: "hsl(var(--chart-2))" },
+    } satisfies ChartConfig;
     
     return (
         <Card className="shadow-lg">
@@ -241,44 +263,61 @@ function AnalyticsCard() {
                                 No reviews in this period.
                             </div>
                         ) : (
-                            <div className="grid md:grid-cols-2 gap-8">
-                                <div className="space-y-6">
-                                     <div className="flex items-center gap-6">
-                                        <div className="text-center">
-                                            <p className="text-4xl font-bold text-primary">{analytics.averageRating.toFixed(2)}</p>
-                                            <p className="text-sm text-muted-foreground">Average Rating</p>
+                            <div className="space-y-8">
+                                <div className="grid md:grid-cols-2 gap-8">
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-6">
+                                            <div className="text-center">
+                                                <p className="text-4xl font-bold text-primary">{analytics.averageRating.toFixed(2)}</p>
+                                                <p className="text-sm text-muted-foreground">Average Rating</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-4xl font-bold text-primary">{analytics.totalReviews}</p>
+                                                <p className="text-sm text-muted-foreground">Total Reviews</p>
+                                            </div>
                                         </div>
-                                        <div className="text-center">
-                                            <p className="text-4xl font-bold text-primary">{analytics.totalReviews}</p>
-                                            <p className="text-sm text-muted-foreground">Total Reviews</p>
+                                        <div>
+                                            <h4 className="font-semibold mb-2">Star Distribution</h4>
+                                            <ChartContainer config={starDistributionChartConfig} className="h-[200px] w-full">
+                                                <BarChart data={analytics.starDistribution} layout="vertical" margin={{ left: -10 }}>
+                                                    <XAxis type="number" hide />
+                                                    <YAxis dataKey="rating" type="category" tickLine={false} axisLine={false} tickMargin={5} width={50} tick={({y, payload}) => <text y={y} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" className="text-xs">{payload.value}★</text>} />
+                                                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                                                    <Bar dataKey="count" layout="vertical" radius={4}>
+                                                        {analytics.starDistribution.map((entry) => (
+                                                            <Cell key={`cell-${entry.rating}`} fill={starDistributionChartConfig[entry.rating]?.color} />
+                                                        ))}
+                                                    </Bar>
+                                                </BarChart>
+                                            </ChartContainer>
                                         </div>
                                     </div>
                                     <div>
-                                        <h4 className="font-semibold mb-2">Star Distribution</h4>
-                                        <ChartContainer config={starDistributionChartConfig} className="h-[200px] w-full">
-                                            <BarChart data={analytics.starDistribution} layout="vertical" margin={{ left: -10 }}>
-                                                <XAxis type="number" hide />
-                                                <YAxis dataKey="rating" type="category" tickLine={false} axisLine={false} tickMargin={5} width={50} tick={({y, payload}) => <text y={y} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" className="text-xs">{payload.value}★</text>} />
-                                                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                                                <Bar dataKey="count" layout="vertical" radius={4}>
-                                                    {analytics.starDistribution.map((entry) => (
-                                                        <Cell key={`cell-${entry.rating}`} fill={starDistributionChartConfig[entry.rating]?.color} />
-                                                    ))}
-                                                </Bar>
-                                            </BarChart>
+                                        <h4 className="font-semibold mb-2">Recent Rating Trend</h4>
+                                        <ChartContainer config={{rating: {label: 'Rating', color: 'hsl(var(--chart-1))'}}} className="h-[250px] w-full">
+                                            <LineChart data={analytics.ratingTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                                                <CartesianGrid vertical={false} />
+                                                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0,6)} />
+                                                <YAxis domain={[1, 5]} tickCount={5} />
+                                                <ChartTooltip content={<ChartTooltipContent />} />
+                                                <Line type="monotone" dataKey="rating" stroke="var(--color-rating)" strokeWidth={2} dot={{r:4}} />
+                                            </LineChart>
                                         </ChartContainer>
                                     </div>
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold mb-2">Recent Rating Trend</h4>
-                                    <ChartContainer config={{rating: {label: 'Rating', color: 'hsl(var(--chart-1))'}}} className="h-[250px] w-full">
-                                        <LineChart data={analytics.ratingTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                                             <CartesianGrid vertical={false} />
-                                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0,6)} />
-                                            <YAxis domain={[1, 5]} tickCount={5} />
-                                            <ChartTooltip content={<ChartTooltipContent />} />
-                                            <Line type="monotone" dataKey="rating" stroke="var(--color-rating)" strokeWidth={2} dot={{r:4}} />
-                                        </LineChart>
+                                    <h4 className="font-semibold mb-2 mt-4">Performance by Category</h4>
+                                     <ChartContainer config={categoryChartConfig} className="h-[300px] w-full">
+                                        <BarChart data={analytics.categoryPerformance} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                                            <CartesianGrid vertical={false} />
+                                            <XAxis dataKey="category" tickLine={false} axisLine={false} tickMargin={8} />
+                                            <YAxis yAxisId="left" orientation="left" stroke="#8884d8" domain={[0, 5]} tickCount={6} />
+                                            <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" domain={[0, 'dataMax + 1']} tickCount={4} />
+                                            <RechartsTooltip content={<ChartTooltipContent />} />
+                                            <Legend />
+                                            <Bar yAxisId="left" dataKey="avgRating" fill="var(--color-avgRating)" name="Avg. Rating" radius={4} />
+                                            <Bar yAxisId="right" dataKey="avgRevisions" fill="var(--color-avgRevisions)" name="Avg. Revisions" radius={4} />
+                                        </BarChart>
                                     </ChartContainer>
                                 </div>
                             </div>
