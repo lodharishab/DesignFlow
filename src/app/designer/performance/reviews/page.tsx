@@ -5,7 +5,7 @@ import { useMemo, useState, type ReactElement } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Clock, CheckCheck, GitCommitHorizontal, ShieldAlert, Cloud, MessageSquare, Reply, UserCircle, Link as LinkIconLucide, MoreHorizontal, FileText, Translate, Award } from 'lucide-react';
+import { Star, Clock, CheckCheck, GitCommitHorizontal, ShieldAlert, Cloud, MessageSquare, Reply, UserCircle, Link as LinkIconLucide, MoreHorizontal, FileText, Languages, Award } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -250,7 +250,7 @@ export default function DesignerReviewsPage(): ReactElement {
                           <FileText className="mr-2 h-4 w-4" /> AI Summarize
                         </DropdownMenuItem>
                          <DropdownMenuItem disabled>
-                          <Translate className="mr-2 h-4 w-4" /> Translate
+                          <Languages className="mr-2 h-4 w-4" /> Translate
                         </DropdownMenuItem>
                         <DropdownMenuItem disabled>
                           <Reply className="mr-2 h-4 w-4" /> Public Reply
