@@ -67,6 +67,9 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
       toast({ title: "Bank Account Added (Simulated)", description: "Your bank account details have been added and are pending verification.", });
       setIsSaving(false);
       setMethods(prev => [...prev, {id: `meth_${Date.now()}`, type: 'Bank Account', details: `**** **** **** ${accountNumber.slice(-4)}`, isPrimary: prev.length === 0, status: 'Pending'}]);
+      setAccountHolderName('');
+      setAccountNumber('');
+      setIfscCode('');
     }, 1500);
   };
   
@@ -82,6 +85,7 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
       toast({ title: "UPI ID Added (Simulated)", description: "Your UPI ID has been added and is pending verification." });
       setIsSaving(false);
        setMethods(prev => [...prev, {id: `meth_${Date.now()}`, type: 'UPI', details: upiId, isPrimary: prev.length === 0, status: 'Pending'}]);
+       setUpiId('');
     }, 1500);
   };
   
@@ -97,8 +101,21 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
       toast({ title: "PayPal Added (Simulated)", description: "Your PayPal email has been added." });
       setIsSaving(false);
       setMethods(prev => [...prev, {id: `meth_${Date.now()}`, type: 'PayPal', details: paypalEmail, isPrimary: prev.length === 0, status: 'Verified'}]);
+      setPaypalEmail('');
     }, 1500);
   };
+
+  const handleDeleteMethod = (methodId: string) => {
+    const methodToRemove = methods.find(m => m.id === methodId);
+    if (!methodToRemove) return;
+    
+    setMethods(prev => prev.filter(m => m.id !== methodId));
+    toast({
+        title: "Method Removed",
+        description: `Your ${methodToRemove.type} has been removed.`,
+        variant: "destructive"
+    });
+  }
   
   const getStatusBadgeVariant = (status: PayoutMethod['status']) => {
     return status === 'Verified' ? 'default' : 'secondary';
@@ -113,7 +130,7 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
 
       <Card className="shadow-lg bg-secondary/50">
         <CardHeader>
-          <CardTitle className="flex items-center text-lg"><Wallet className="mr-2 h-5 w-5"/>Current Payout Method</CardTitle>
+          <CardTitle className="flex items-center text-lg"><Wallet className="mr-2 h-5 w-5"/>Current Primary Payout Method</CardTitle>
         </CardHeader>
         <CardContent>
           {primaryMethod ? (
@@ -158,12 +175,12 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
                                 <AlertDialogHeader>
                                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    This action will remove the payout method. You will need to add and verify a new one to receive payments.
+                                    This action will remove the payout method: {method.type} - {method.details}. You will need to add and verify a new one to receive payments.
                                 </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction>Remove</AlertDialogAction>
+                                <AlertDialogAction onClick={() => handleDeleteMethod(method.id)}>Remove</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
