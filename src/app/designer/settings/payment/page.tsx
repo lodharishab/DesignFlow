@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet, Mail, SlidersHorizontal, RefreshCw, Calendar, Globe, History, Download, FileText, ArrowRight, Bell } from 'lucide-react';
+import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet, Mail, SlidersHorizontal, RefreshCw, Calendar, Globe, History, Download, FileText, ArrowRight, Bell, CircleHelp } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -246,6 +246,14 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
                 </div>
             ))}
         </CardContent>
+         <CardFooter className="pt-4 border-t">
+            <Button variant="link" asChild className="p-0 h-auto text-xs text-muted-foreground">
+                <Link href="/contact-support?topic=payouts">
+                    <CircleHelp className="mr-1.5 h-3.5 w-3.5" />
+                    Having issues with your payouts? Contact Support.
+                </Link>
+            </Button>
+        </CardFooter>
       </Card>
 
       <Card className="shadow-lg">
