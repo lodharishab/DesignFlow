@@ -4,7 +4,7 @@
 import { useMemo, useState, type ReactElement, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { PieChart as PieChartIcon, ArrowLeft, BarChart2, Award, FileText, Calendar as CalendarIcon, Check, FileDown, Settings, Bell, MoreHorizontal } from "lucide-react";
+import { PieChart as PieChartIcon, ArrowLeft, BarChart2, Award, FileText, Calendar as CalendarIcon, Check, Settings, Bell, MoreHorizontal, Download } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis, Legend, Cell, LabelList } from "recharts";
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
@@ -357,8 +357,8 @@ function ScheduleReportDialog({ onSchedule }: { onSchedule: () => void }) {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-          <DialogClose asChild><Button onClick={onSchedule}>Confirm Schedule</Button></DialogClose>
+          <Button type="button" variant="secondary">Cancel</Button>
+          <Button type="button" onClick={onSchedule}>Confirm Schedule</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -435,7 +435,7 @@ export default function DesignerReportsPage(): ReactElement {
             case 'category':
                 return (
                     <Card className="shadow-lg">
-                        <CardHeader className="flex flex-row items-center justify-between">
+                        <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
                             <div>
                                 <CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/>Performance by Category</CardTitle>
                                 <CardDescription>
