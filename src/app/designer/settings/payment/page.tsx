@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee } from 'lucide-react';
+import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -45,6 +45,8 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
   const [accountNumber, setAccountNumber] = useState('');
   const [ifscCode, setIfscCode] = useState('');
 
+  const primaryMethod = methods.find(m => m.isPrimary);
+
   const handleSaveChanges = (e: FormEvent) => {
     e.preventDefault();
     if (!accountHolderName || !accountNumber || !ifscCode) {
@@ -73,6 +75,28 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
         <Settings className="mr-3 h-8 w-8 text-primary" />
         Payout Settings
       </h1>
+
+      <Card className="shadow-lg bg-secondary/50">
+        <CardHeader>
+          <CardTitle className="flex items-center text-lg"><Wallet className="mr-2 h-5 w-5"/>Current Payout Method</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {primaryMethod ? (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <p className="font-semibold text-xl">{primaryMethod.type}: <span className="font-mono">{primaryMethod.details}</span></p>
+                <div className="flex items-center gap-2 mt-1">
+                   <Badge variant={getStatusBadgeVariant(primaryMethod.status)}>{primaryMethod.status}</Badge>
+                </div>
+              </div>
+              <Button variant="outline">Manage Methods</Button>
+            </div>
+          ) : (
+            <p className="text-muted-foreground">No primary payout method has been set up.</p>
+          )}
+        </CardContent>
+      </Card>
+
 
       <Card className="shadow-lg">
         <CardHeader>
