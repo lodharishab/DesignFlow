@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet, Mail, SlidersHorizontal, RefreshCw, Calendar, Globe } from 'lucide-react';
+import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet, Mail, SlidersHorizontal, RefreshCw, Calendar, Globe, History, Download, FileText, ArrowRight } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -22,6 +22,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { format } from 'date-fns';
+import Link from 'next/link';
 
 
 interface PayoutMethod {
@@ -35,6 +44,13 @@ interface PayoutMethod {
 const mockPayoutMethods: PayoutMethod[] = [
   { id: 'meth_1', type: 'Bank Account', details: '**** **** **** 5678', isPrimary: true, status: 'Verified' },
   { id: 'meth_2', type: 'UPI', details: 'designer@okhdfc', isPrimary: false, status: 'Pending' },
+];
+
+const mockPayoutHistory = [
+    { id: 'po_1', date: new Date(2024, 6, 15), amount: 12500.50, method: 'Bank Transfer', status: 'Completed' },
+    { id: 'po_2', date: new Date(2024, 6, 1), amount: 8200.00, method: 'Bank Transfer', status: 'Completed' },
+    { id: 'po_3', date: new Date(2024, 5, 15), amount: 15300.00, method: 'Bank Transfer', status: 'Completed' },
+    { id: 'po_4', date: new Date(2024, 5, 1), amount: 5500.75, method: 'Bank Transfer', status: 'Failed' },
 ];
 
 export default function DesignerPaymentSettingsPage(): ReactElement {
@@ -166,9 +182,6 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
             <p className="text-muted-foreground">No primary payout method has been set up.</p>
           )}
         </CardContent>
-        <CardFooter>
-            <Button variant="outline">Manage Methods</Button>
-        </CardFooter>
       </Card>
 
 
@@ -212,7 +225,7 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
             ))}
         </CardContent>
       </Card>
-      
+
       <Card className="shadow-lg">
         <CardHeader>
             <CardTitle className="flex items-center"><SlidersHorizontal className="mr-2 h-5 w-5"/>Payout Preferences</CardTitle>
@@ -322,6 +335,55 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
                   </TabsContent>
               </Tabs>
           </CardContent>
+      </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center"><History className="mr-2 h-5 w-5"/>Payout History</CardTitle>
+          <CardDescription>A mini-statement of your recent payouts.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Method</TableHead>
+                        <TableHead>Status</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {mockPayoutHistory.map(payout => (
+                        <TableRow key={payout.id}>
+                            <TableCell>{format(payout.date, 'MMM d, yyyy')}</TableCell>
+                            <TableCell className="font-medium">₹{payout.amount.toLocaleString('en-IN')}</TableCell>
+                            <TableCell>{payout.method}</TableCell>
+                            <TableCell>
+                                <Badge variant={payout.status === 'Completed' ? 'default' : 'destructive'}>
+                                    {payout.status}
+                                </Badge>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </CardContent>
+        <CardFooter className="flex justify-between items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download Report</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem><FileText className="mr-2 h-4 w-4"/>Export as CSV</DropdownMenuItem>
+                <DropdownMenuItem disabled><FileText className="mr-2 h-4 w-4"/>Export as PDF (Soon)</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button asChild>
+                <Link href="/designer/earnings">
+                    View Full Ledger <ArrowRight className="ml-2 h-4 w-4"/>
+                </Link>
+            </Button>
+        </CardFooter>
       </Card>
 
     </div>
