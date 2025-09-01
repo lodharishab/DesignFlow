@@ -14,6 +14,7 @@ import {
   MessageSquare,
   CheckCircle,
   IndianRupee, // For Earnings
+  Star, // For Reviews
   ChevronDown
 } from 'lucide-react';
 import { 
@@ -51,6 +52,7 @@ const navItems = [
   { href: '/designer/orders', icon: Briefcase, label: 'My Orders' },
   { href: '/designer/portfolio', icon: Palette, label: 'My Portfolio' },
   { href: '/designer/messages', icon: MessageSquare, label: 'Messaging' },
+  { href: '/designer/reviews', icon: Star, label: 'My Reviews' },
   { 
     label: 'Earnings', 
     icon: IndianRupee, 
