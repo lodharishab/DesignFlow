@@ -4,18 +4,26 @@
 import { useMemo, useState, type ReactElement } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { PieChart as PieChartIcon, ArrowLeft, BarChart2, Award, FileText } from "lucide-react";
-import Link from 'next/link';
+import { PieChart as PieChartIcon, ArrowLeft, BarChart2, Award, FileText, Calendar as CalendarIcon, Check, FileDown, Settings } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis, Legend, Cell, LabelList } from "recharts";
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
-import { format, sub } from 'date-fns';
+import { format, sub, startOfDay, endOfDay } from 'date-fns';
 import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from '@/components/ui/checkbox';
+import type { DateRange } from 'react-day-picker';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { Calendar } from '@/components/ui/calendar';
+import { useToast } from '@/hooks/use-toast';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Loader2 } from 'lucide-react';
 
 
 const categoryChartConfig = {
@@ -161,6 +169,171 @@ function PlaceholderCard({ title }: { title: string }) {
     )
 }
 
+interface ReportConfig {
+  metrics: {
+    ratings: boolean;
+    revenue: boolean;
+    repeatClients: boolean;
+    revisions: boolean;
+  };
+  dateRange?: DateRange;
+}
+
+function CustomReportDialog() {
+  const { toast } = useToast();
+  const [reportConfig, setReportConfig] = useState<ReportConfig['metrics']>({
+    ratings: true, revenue: false, repeatClients: false, revisions: true,
+  });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: sub(new Date(), { days: 29 }),
+    to: new Date(),
+  });
+  const [generatedReport, setGeneratedReport] = useState<any | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleMetricChange = (metric: keyof ReportConfig['metrics'], checked: boolean) => {
+    setReportConfig(prev => ({ ...prev, [metric]: checked }));
+  };
+
+  const handleGenerateReport = () => {
+    setIsGenerating(true);
+    setGeneratedReport(null);
+    console.log("Generating report with config:", { ...reportConfig, dateRange });
+    setTimeout(() => {
+      // Mock data generation
+      const mockData = [
+        { name: 'Week 1', Ratings: 4.8, Revenue: 2400 },
+        { name: 'Week 2', Ratings: 4.5, Revenue: 1398 },
+        { name: 'Week 3', Ratings: 4.9, Revenue: 9800 },
+        { name: 'Week 4', Ratings: 4.7, Revenue: 3908 },
+      ];
+      setGeneratedReport({
+        data: mockData,
+        config: {
+          Ratings: { label: 'Avg. Rating', color: 'hsl(var(--chart-1))' },
+          Revenue: { label: 'Revenue (₹)', color: 'hsl(var(--chart-2))' },
+        }
+      });
+      toast({ title: "Report Generated", description: "Your custom report preview is ready." });
+      setIsGenerating(false);
+    }, 1500);
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline"><Settings className="mr-2 h-4 w-4" /> Generate Custom Report</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Create Custom Performance Report</DialogTitle>
+          <DialogDescription>Select metrics and a date range to generate a personalized report.</DialogDescription>
+        </DialogHeader>
+        <div className="grid md:grid-cols-2 gap-6 py-4">
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <Label className="font-semibold">Select Metrics</Label>
+                    <div className="grid grid-cols-2 gap-2 p-3 border rounded-md">
+                        {Object.keys(reportConfig).map((metric) => (
+                        <div key={metric} className="flex items-center space-x-2">
+                            <Checkbox
+                            id={metric}
+                            checked={reportConfig[metric as keyof typeof reportConfig]}
+                            onCheckedChange={(checked) => handleMetricChange(metric as keyof typeof reportConfig, !!checked)}
+                            />
+                            <Label htmlFor={metric} className="text-sm font-normal capitalize">
+                            {metric.replace(/([A-Z])/g, ' $1')}
+                            </Label>
+                        </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Label className="font-semibold">Select Date Range</Label>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                            variant={"outline"}
+                            className={cn("w-full justify-start text-left font-normal", !dateRange && "text-muted-foreground")}
+                            >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {dateRange?.from ? (
+                                dateRange.to ? (
+                                <>
+                                    {format(dateRange.from, "LLL dd, y")} -{" "}
+                                    {format(dateRange.to, "LLL dd, y")}
+                                </>
+                                ) : (
+                                format(dateRange.from, "LLL dd, y")
+                                )
+                            ) : (
+                                <span>Pick a date</span>
+                            )}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                            initialFocus
+                            mode="range"
+                            defaultMonth={dateRange?.from}
+                            selected={dateRange}
+                            onSelect={setDateRange}
+                            numberOfMonths={2}
+                            />
+                        </PopoverContent>
+                    </Popover>
+                </div>
+                <Button onClick={handleGenerateReport} disabled={isGenerating}>
+                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <BarChart2 className="mr-2 h-4 w-4"/>}
+                    {isGenerating ? 'Generating...' : 'Generate Report'}
+                </Button>
+            </div>
+            <div className="border-l pl-6">
+                <h3 className="font-semibold mb-2">Report Preview</h3>
+                {generatedReport ? (
+                    <div className="space-y-4">
+                         <ChartContainer config={generatedReport.config} className="h-[200px] w-full">
+                            <BarChart data={generatedReport.data}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <Legend />
+                                <Bar dataKey="Ratings" fill="var(--color-Ratings)" radius={4} />
+                                <Bar dataKey="Revenue" fill="var(--color-Revenue)" radius={4} />
+                            </BarChart>
+                        </ChartContainer>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Period</TableHead>
+                                    <TableHead className="text-right">Ratings</TableHead>
+                                    <TableHead className="text-right">Revenue</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {generatedReport.data.map((row: any) => (
+                                    <TableRow key={row.name}>
+                                        <TableCell>{row.name}</TableCell>
+                                        <TableCell className="text-right">{row.Ratings}</TableCell>
+                                        <TableCell className="text-right">₹{row.Revenue.toLocaleString()}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                ) : (
+                    <div className="h-full flex items-center justify-center text-sm text-muted-foreground bg-muted/50 rounded-md">
+                        <p>Your report preview will appear here.</p>
+                    </div>
+                )}
+            </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
 export default function DesignerReportsPage(): ReactElement {
     const [reportView, setReportView] = useState<ReportView>('category');
 
@@ -230,23 +403,26 @@ export default function DesignerReportsPage(): ReactElement {
 
   return (
     <div className="space-y-8">
-        <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="flex items-center text-lg"><Award className="mr-2 h-5 w-5"/>Your Quality Score</CardTitle>
-                <CardDescription>
-                    This score is a summary of your client ratings, on-time delivery, and dispute history.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex items-center gap-4">
-                    <Progress value={85} className="h-3 flex-grow" />
-                    <span className="text-xl font-bold text-primary">85%</span>
-                </div>
-                <p className="text-sm text-center font-medium text-green-600 dark:text-green-500 mt-2">
-                    You are 85% ready for Top Tier status
-                </p>
-            </CardContent>
-        </Card>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <Card className="shadow-lg flex-grow">
+                <CardHeader>
+                    <CardTitle className="flex items-center text-lg"><Award className="mr-2 h-5 w-5"/>Your Quality Score</CardTitle>
+                    <CardDescription>
+                        A summary of your client ratings, on-time delivery, and dispute history.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center gap-4">
+                        <Progress value={85} className="h-3 flex-grow" />
+                        <span className="text-xl font-bold text-primary">85%</span>
+                    </div>
+                    <p className="text-sm text-center font-medium text-green-600 dark:text-green-500 mt-2">
+                        You are 85% ready for Top Tier status
+                    </p>
+                </CardContent>
+            </Card>
+            <CustomReportDialog />
+        </div>
         <AnalyticsCard />
 
         <Card>
