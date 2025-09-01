@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet, Mail } from 'lucide-react';
+import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet, Mail, SlidersHorizontal, RefreshCw, Calendar, Globe } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -21,6 +21,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 interface PayoutMethod {
@@ -51,6 +52,12 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
   
   // State for PayPal form
   const [paypalEmail, setPaypalEmail] = useState('');
+  
+  // State for Payout Preferences
+  const [payoutFrequency, setPayoutFrequency] = useState('monthly');
+  const [payoutThreshold, setPayoutThreshold] = useState('500');
+  const [preferredCurrency, setPreferredCurrency] = useState('INR');
+  const [isSavingPrefs, setIsSavingPrefs] = useState(false);
 
 
   const primaryMethod = methods.find(m => m.isPrimary);
@@ -120,6 +127,19 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
   const getStatusBadgeVariant = (status: PayoutMethod['status']) => {
     return status === 'Verified' ? 'default' : 'secondary';
   };
+  
+  const handleSavePreferences = (e: FormEvent) => {
+    e.preventDefault();
+    setIsSavingPrefs(true);
+    console.log("Saving preferences:", { payoutFrequency, payoutThreshold, preferredCurrency });
+    setTimeout(() => {
+        toast({
+            title: "Preferences Saved (Simulated)",
+            description: "Your payout preferences have been updated."
+        });
+        setIsSavingPrefs(false);
+    }, 1000);
+  };
 
   return (
     <div className="space-y-8">
@@ -146,6 +166,9 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
             <p className="text-muted-foreground">No primary payout method has been set up.</p>
           )}
         </CardContent>
+        <CardFooter>
+            <Button variant="outline">Manage Methods</Button>
+        </CardFooter>
       </Card>
 
 
@@ -188,6 +211,51 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
                 </div>
             ))}
         </CardContent>
+      </Card>
+      
+      <Card className="shadow-lg">
+        <CardHeader>
+            <CardTitle className="flex items-center"><SlidersHorizontal className="mr-2 h-5 w-5"/>Payout Preferences</CardTitle>
+            <CardDescription>Control how and when you receive your payouts.</CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSavePreferences}>
+            <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="payout-frequency" className="flex items-center"><Calendar className="mr-2 h-4 w-4"/>Payout Frequency</Label>
+                        <Select value={payoutFrequency} onValueChange={setPayoutFrequency}>
+                            <SelectTrigger id="payout-frequency"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="monthly">Monthly</SelectItem>
+                                <SelectItem value="bi-weekly">Bi-weekly (Every 2 weeks)</SelectItem>
+                                <SelectItem value="weekly">Weekly</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="payout-threshold" className="flex items-center"><IndianRupee className="mr-2 h-4 w-4"/>Minimum Payout Threshold (INR)</Label>
+                        <Input id="payout-threshold" type="number" value={payoutThreshold} onChange={(e) => setPayoutThreshold(e.target.value)} placeholder="e.g., 500" />
+                        <p className="text-xs text-muted-foreground">Payouts will only be processed once your balance exceeds this amount.</p>
+                    </div>
+                </div>
+                <div className="space-y-2 md:w-1/2 md:pr-3">
+                    <Label htmlFor="preferred-currency" className="flex items-center"><Globe className="mr-2 h-4 w-4"/>Preferred Currency</Label>
+                    <Select value={preferredCurrency} onValueChange={setPreferredCurrency}>
+                        <SelectTrigger id="preferred-currency"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="INR">INR (Indian Rupee)</SelectItem>
+                            <SelectItem value="USD" disabled>USD (US Dollar) - Coming Soon</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </CardContent>
+            <CardFooter>
+                 <Button type="submit" disabled={isSavingPrefs}>
+                    {isSavingPrefs ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    {isSavingPrefs ? 'Saving...' : 'Save Preferences'}
+                </Button>
+            </CardFooter>
+        </form>
       </Card>
       
       <Card className="shadow-lg">
