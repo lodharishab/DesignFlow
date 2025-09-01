@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare, MoreVertical, ThumbsUp, Upload, FileText as FileTextIcon } from 'lucide-react';
+import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare, MoreVertical, ThumbsUp, Upload, FileText as FileTextIcon, Eye } from 'lucide-react';
 import { format, formatDistanceToNow, sub } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/sheet';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from "@/hooks/use-toast";
