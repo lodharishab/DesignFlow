@@ -16,7 +16,9 @@ import {
   IndianRupee, // For Earnings
   Star, // For Reviews
   ChevronDown,
-  Activity // For new Performance page
+  Activity, // For new Performance page
+  ShieldAlert,
+  FileWarning
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -53,7 +55,17 @@ const navItems = [
   { href: '/designer/orders', icon: Briefcase, label: 'My Orders' },
   { href: '/designer/portfolio', icon: Palette, label: 'My Portfolio' },
   { href: '/designer/messages', icon: MessageSquare, label: 'Messaging' },
-  { href: '/designer/performance/reviews', icon: Activity, label: 'Performance', notificationCount: 2, pathPrefix: '/designer/performance' },
+  { 
+    label: 'Performance', 
+    icon: Activity, 
+    pathPrefix: '/designer/performance',
+    notificationCount: 2,
+    children: [
+        { href: '/designer/performance/reviews', icon: Star, label: 'Reviews' },
+        { href: '/designer/performance/reports', icon: FileWarning, label: 'Reports' },
+        { href: '/designer/performance/disputes', icon: ShieldAlert, label: 'Disputes' },
+    ]
+  },
   { 
     label: 'Earnings', 
     icon: IndianRupee, 
@@ -143,9 +155,14 @@ export default function DesignerLayout({
                       <item.icon className="h-4 w-4" />
                       <span>{item.label}</span>
                     </span>
-                    <ChevronDown
-                      className={cn("h-4 w-4 transition-transform duration-200", openSubmenus[item.label] && "rotate-180")}
-                    />
+                    <div className="flex items-center gap-2">
+                      {item.notificationCount && item.notificationCount > 0 && (
+                          <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs">{item.notificationCount}</Badge>
+                      )}
+                      <ChevronDown
+                        className={cn("h-4 w-4 transition-transform duration-200", openSubmenus[item.label] && "rotate-180")}
+                      />
+                    </div>
                   </SidebarMenuButton>
                   {openSubmenus[item.label] && (
                     <SidebarMenuSub>
@@ -174,9 +191,6 @@ export default function DesignerLayout({
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                         </span>
-                        {item.notificationCount && item.notificationCount > 0 && (
-                            <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs">{item.notificationCount}</Badge>
-                        )}
                       </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
