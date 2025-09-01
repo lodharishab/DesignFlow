@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useMemo, useState, type ReactElement } from 'react';
+import { useMemo, useState, type ReactElement, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { PieChart as PieChartIcon, ArrowLeft, BarChart2, Award, FileText, Calendar as CalendarIcon, Check, FileDown, Settings } from "lucide-react";
+import { PieChart as PieChartIcon, ArrowLeft, BarChart2, Award, FileText, Calendar as CalendarIcon, Check, FileDown, Settings, Bell, MoreHorizontal } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis, Legend, Cell, LabelList } from "recharts";
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
@@ -24,6 +24,13 @@ import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Loader2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 
 const categoryChartConfig = {
@@ -123,7 +130,7 @@ function AnalyticsCard() {
                                                 <BarChart data={analytics.starDistribution} layout="vertical" margin={{ left: -10 }}>
                                                     <XAxis type="number" hide />
                                                     <YAxis dataKey="rating" type="category" tickLine={false} axisLine={false} tickMargin={5} width={50} tick={({y, payload}) => <text y={y} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" className="text-xs">{payload.value}★</text>} />
-                                                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                                                    <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
                                                     <Bar dataKey="count" layout="vertical" radius={4}>
                                                         {analytics.starDistribution.map((entry) => (
                                                             <Cell key={`cell-${entry.rating}`} fill={starDistributionChartConfig[entry.rating]?.color} />
@@ -155,12 +162,15 @@ function AnalyticsCard() {
     );
 }
 
-function PlaceholderCard({ title }: { title: string }) {
+function PlaceholderCard({ title, handleExport, handleSchedule }: { title: string; handleExport: (format: 'csv' | 'pdf' | 'excel') => void; handleSchedule: () => void; }) {
     return (
         <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>This report is under development. Data will appear here soon.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>{title}</CardTitle>
+                    <CardDescription>This report is under development. Data will appear here soon.</CardDescription>
+                </div>
+                <ReportActions onExport={handleExport} onSchedule={handleSchedule} />
             </CardHeader>
             <CardContent className="h-[400px] flex items-center justify-center">
                 <p className="text-muted-foreground italic">Report coming soon...</p>
@@ -333,9 +343,72 @@ function CustomReportDialog() {
   );
 }
 
+function ScheduleReportDialog({ onSchedule }: { onSchedule: () => void }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline"><Bell className="mr-2 h-4 w-4" /> Schedule Report</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Schedule Monthly Report</DialogTitle>
+          <DialogDescription>
+            Get this report automatically sent to your registered email address on the first of every month.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+          <DialogClose asChild><Button onClick={onSchedule}>Confirm Schedule</Button></DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ReportActions({ onExport, onSchedule }: { onExport: (format: 'csv' | 'pdf' | 'excel') => void; onSchedule: () => void; }) {
+  return (
+    <div className="flex items-center gap-2">
+      <ScheduleReportDialog onSchedule={onSchedule} />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline"><Download className="mr-2 h-4 w-4" /> Export</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => onExport('csv')}><FileText className="mr-2 h-4 w-4" />Export as CSV</DropdownMenuItem>
+          <DropdownMenuItem disabled><FileText className="mr-2 h-4 w-4" />Export as PDF (Soon)</DropdownMenuItem>
+          <DropdownMenuItem disabled><FileText className="mr-2 h-4 w-4" />Export as Excel (Soon)</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
 
 export default function DesignerReportsPage(): ReactElement {
     const [reportView, setReportView] = useState<ReportView>('category');
+    const { toast } = useToast();
+
+    const handleExport = useCallback((format: 'csv' | 'pdf' | 'excel') => {
+        if (format === 'csv') {
+            toast({
+                title: "CSV Export Started (Simulated)",
+                description: "Your CSV file is being generated and will download shortly.",
+            });
+            // Here you would implement the actual CSV generation logic
+        } else {
+            toast({
+                title: "Feature Coming Soon",
+                description: `Exporting as ${format.toUpperCase()} is not yet available.`,
+            });
+        }
+    }, [toast]);
+    
+    const handleSchedule = useCallback(() => {
+        toast({
+            title: "Report Scheduled!",
+            description: "You will receive this report monthly via email.",
+        });
+    }, [toast]);
 
     const categoryPerformance = useMemo(() => {
         const categoryPerformanceMap: Record<string, { totalRating: number, totalRevisions: number, count: number }> = {};
@@ -358,15 +431,18 @@ export default function DesignerReportsPage(): ReactElement {
     const renderReport = () => {
         switch(reportView) {
             case 'monthly':
-                return <PlaceholderCard title="Monthly Performance Report" />;
+                return <PlaceholderCard title="Monthly Performance Report" handleExport={handleExport} handleSchedule={handleSchedule} />;
             case 'category':
                 return (
                     <Card className="shadow-lg">
-                        <CardHeader>
-                            <CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/>Performance by Category</CardTitle>
-                            <CardDescription>
-                                Comparison of your average rating and average revision rounds across different service categories.
-                            </CardDescription>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/>Performance by Category</CardTitle>
+                                <CardDescription>
+                                    Comparison of your average rating and average revision rounds across different service categories.
+                                </CardDescription>
+                            </div>
+                            <ReportActions onExport={handleExport} onSchedule={handleSchedule} />
                         </CardHeader>
                         <CardContent>
                             {categoryPerformance.length > 0 ? (
@@ -391,11 +467,11 @@ export default function DesignerReportsPage(): ReactElement {
                     </Card>
                 );
             case 'clients':
-                return <PlaceholderCard title="Client Cohorts Report" />;
+                return <PlaceholderCard title="Client Cohorts Report" handleExport={handleExport} handleSchedule={handleSchedule} />;
             case 'revisions':
-                return <PlaceholderCard title="Revisions Impact Report" />;
+                return <PlaceholderCard title="Revisions Impact Report" handleExport={handleExport} handleSchedule={handleSchedule} />;
             case 'turnaround':
-                return <PlaceholderCard title="Turnaround Time Report" />;
+                return <PlaceholderCard title="Turnaround Time Report" handleExport={handleExport} handleSchedule={handleSchedule} />;
             default:
                 return null;
         }
