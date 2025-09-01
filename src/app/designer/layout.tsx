@@ -15,7 +15,8 @@ import {
   CheckCircle,
   IndianRupee, // For Earnings
   Star, // For Reviews
-  ChevronDown
+  ChevronDown,
+  Activity // For new Performance page
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -42,7 +43,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
@@ -52,7 +53,7 @@ const navItems = [
   { href: '/designer/orders', icon: Briefcase, label: 'My Orders' },
   { href: '/designer/portfolio', icon: Palette, label: 'My Portfolio' },
   { href: '/designer/messages', icon: MessageSquare, label: 'Messaging' },
-  { href: '/designer/reviews', icon: Star, label: 'My Reviews', notificationCount: 2 }, // Added notification count
+  { href: '/designer/performance/reviews', icon: Activity, label: 'Performance', notificationCount: 2, pathPrefix: '/designer/performance' },
   { 
     label: 'Earnings', 
     icon: IndianRupee, 
@@ -165,7 +166,7 @@ export default function DesignerLayout({
                 <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
                       asChild
-                      isActive={pathname.startsWith(item.href!)} 
+                      isActive={pathname.startsWith(item.pathPrefix || item.href!)} 
                       tooltip={{ children: item.label, side: 'right', align: 'center' }}
                     >
                       <Link href={item.href!} className="flex justify-between items-center w-full">

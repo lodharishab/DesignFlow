@@ -464,13 +464,6 @@ export default function DesignerReviewsPage(): ReactElement {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold font-headline flex items-center">
-          <Star className="mr-3 h-8 w-8 text-primary" />
-          My Reviews
-        </h1>
-      </div>
-      
        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {kpiData.map(kpi => <KpiCard key={kpi.title} {...kpi} />)}
       </div>
