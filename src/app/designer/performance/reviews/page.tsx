@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare, MoreVertical, ThumbsUp, Upload, FileText as FileTextIcon, Eye, BarChart2, Clock, CheckCheck, GitCommitHorizontal, GitCompareArrows } from 'lucide-react';
+import { Star, ListFilter, Search, ArrowUpDown, ChevronDown, ChevronUp, Calendar as CalendarIcon, PackageSearch, Bookmark, ShieldAlert, Languages, Sparkles, X as XIcon, MessageSquare, MoreVertical, ThumbsUp, Upload, Eye, BarChart2, Clock, CheckCheck, GitCommitHorizontal } from 'lucide-react';
 import { format, formatDistanceToNow, sub, startOfToday, endOfDay } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,13 +23,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from "@/hooks/use-toast";
-import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data'; // Import from new location
+import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, LabelList, XAxis, YAxis } from "recharts";
+
 
 const uniqueCategories = Array.from(new Set(mockDesignerReviews.map(r => r.category))).sort();
 
@@ -204,7 +205,6 @@ function AnalyticsCard() {
                     { rating: 3, count: 0 }, { rating: 2, count: 0 }, { rating: 1, count: 0 },
                 ],
                 ratingTrend: [],
-                categoryPerformance: [],
             };
         }
         
@@ -221,31 +221,10 @@ function AnalyticsCard() {
             .map(r => ({ date: format(r.reviewDate, 'MMM d'), rating: r.rating }))
             .slice(0, 10) // show last 10 reviews trend
             .reverse();
-            
-        const categoryPerformanceMap: Record<string, { totalRating: number, totalRevisions: number, count: number }> = {};
-        filteredData.forEach(review => {
-            if (!categoryPerformanceMap[review.category]) {
-                categoryPerformanceMap[review.category] = { totalRating: 0, totalRevisions: 0, count: 0 };
-            }
-            categoryPerformanceMap[review.category].totalRating += review.rating;
-            categoryPerformanceMap[review.category].totalRevisions += review.revisions;
-            categoryPerformanceMap[review.category].count += 1;
-        });
-
-        const categoryPerformance = Object.entries(categoryPerformanceMap).map(([category, data]) => ({
-            category,
-            avgRating: data.totalRating / data.count,
-            avgRevisions: data.totalRevisions / data.count,
-        }));
         
-        return { averageRating, totalReviews, starDistribution, ratingTrend, categoryPerformance };
+        return { averageRating, totalReviews, starDistribution, ratingTrend };
 
     }, [filteredData]);
-
-    const categoryChartConfig = {
-        avgRating: { label: "Avg. Rating", color: "hsl(var(--chart-1))" },
-        avgRevisions: { label: "Avg. Revisions", color: "hsl(var(--chart-2))" },
-    } satisfies ChartConfig;
     
     return (
         <Card className="shadow-lg">
@@ -307,21 +286,6 @@ function AnalyticsCard() {
                                             </LineChart>
                                         </ChartContainer>
                                     </div>
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold mb-2 mt-4">Performance by Category</h4>
-                                     <ChartContainer config={categoryChartConfig} className="h-[300px] w-full">
-                                        <BarChart data={analytics.categoryPerformance} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                                            <CartesianGrid vertical={false} />
-                                            <XAxis dataKey="category" tickLine={false} axisLine={false} tickMargin={8} />
-                                            <YAxis yAxisId="left" orientation="left" stroke="#8884d8" domain={[0, 5]} tickCount={6} />
-                                            <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" domain={[0, 'dataMax + 1']} tickCount={4} />
-                                            <RechartsTooltip content={<ChartTooltipContent />} />
-                                            <Legend />
-                                            <Bar yAxisId="left" dataKey="avgRating" fill="var(--color-avgRating)" name="Avg. Rating" radius={4} />
-                                            <Bar yAxisId="right" dataKey="avgRevisions" fill="var(--color-avgRevisions)" name="Avg. Revisions" radius={4} />
-                                        </BarChart>
-                                    </ChartContainer>
                                 </div>
                             </div>
                         )}
