@@ -4,7 +4,7 @@
 import { useMemo, useState, type ReactElement } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { PieChart as PieChartIcon, ArrowLeft, BarChart2, Award } from "lucide-react";
+import { PieChart as PieChartIcon, ArrowLeft, BarChart2, Award, FileText } from "lucide-react";
 import Link from 'next/link';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis, Legend, Cell, LabelList } from "recharts";
 import type { ChartConfig } from "@/components/ui/chart";
@@ -14,6 +14,8 @@ import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 
 const categoryChartConfig = {
@@ -29,6 +31,8 @@ const starDistributionChartConfig = {
   "2": { label: "2 Stars", color: "hsl(var(--chart-2))" },
   "1": { label: "1 Star", color: "hsl(var(--chart-1))" },
 } satisfies ChartConfig;
+
+type ReportView = 'monthly' | 'category' | 'clients' | 'revisions' | 'turnaround';
 
 function AnalyticsCard() {
     const [timeframe, setTimeframe] = useState("lifetime");
@@ -143,8 +147,22 @@ function AnalyticsCard() {
     );
 }
 
+function PlaceholderCard({ title }: { title: string }) {
+    return (
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>This report is under development. Data will appear here soon.</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px] flex items-center justify-center">
+                <p className="text-muted-foreground italic">Report coming soon...</p>
+            </CardContent>
+        </Card>
+    )
+}
 
 export default function DesignerReportsPage(): ReactElement {
+    const [reportView, setReportView] = useState<ReportView>('category');
 
     const categoryPerformance = useMemo(() => {
         const categoryPerformanceMap: Record<string, { totalRating: number, totalRevisions: number, count: number }> = {};
@@ -163,6 +181,52 @@ export default function DesignerReportsPage(): ReactElement {
             avgRevisions: parseFloat((data.totalRevisions / data.count).toFixed(2)),
         }));
     }, []);
+
+    const renderReport = () => {
+        switch(reportView) {
+            case 'monthly':
+                return <PlaceholderCard title="Monthly Performance Report" />;
+            case 'category':
+                return (
+                    <Card className="shadow-lg">
+                        <CardHeader>
+                            <CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/>Performance by Category</CardTitle>
+                            <CardDescription>
+                                Comparison of your average rating and average revision rounds across different service categories.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {categoryPerformance.length > 0 ? (
+                                <ChartContainer config={categoryChartConfig} className="h-[400px] w-full">
+                                    <BarChart data={categoryPerformance} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis dataKey="category" tickLine={false} axisLine={false} tickMargin={8} />
+                                        <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--chart-1))" domain={[0, 5]} tickCount={6} />
+                                        <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" domain={[0, 'dataMax + 1']} tickCount={4} />
+                                        <RechartsTooltip content={<ChartTooltipContent />} />
+                                        <Legend />
+                                        <Bar yAxisId="left" dataKey="avgRating" fill="var(--color-avgRating)" name="Avg. Rating" radius={4} />
+                                        <Bar yAxisId="right" dataKey="avgRevisions" fill="var(--color-avgRevisions)" name="Avg. Revisions" radius={4} />
+                                    </BarChart>
+                                </ChartContainer>
+                            ) : (
+                                <div className="text-center py-10 text-muted-foreground">
+                                    No review data available to generate category performance reports.
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                );
+            case 'clients':
+                return <PlaceholderCard title="Client Cohorts Report" />;
+            case 'revisions':
+                return <PlaceholderCard title="Revisions Impact Report" />;
+            case 'turnaround':
+                return <PlaceholderCard title="Turnaround Time Report" />;
+            default:
+                return null;
+        }
+    }
 
   return (
     <div className="space-y-8">
@@ -184,35 +248,27 @@ export default function DesignerReportsPage(): ReactElement {
             </CardContent>
         </Card>
         <AnalyticsCard />
-        <Card className="shadow-lg">
+
+        <Card>
             <CardHeader>
-                <CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/>Performance by Category</CardTitle>
-                <CardDescription>
-                    Comparison of your average rating and average revision rounds across different service categories.
-                </CardDescription>
+                <Label htmlFor="report-select">Select Report View</Label>
+                <Select value={reportView} onValueChange={(v) => setReportView(v as ReportView)}>
+                    <SelectTrigger id="report-select" className="w-full md:w-[300px]">
+                        <SelectValue placeholder="Select a report..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="category">Category Breakdown</SelectItem>
+                        <SelectItem value="monthly">Monthly Performance</SelectItem>
+                        <SelectItem value="clients">Client Cohorts</SelectItem>
+                        <SelectItem value="revisions">Revisions Impact</SelectItem>
+                        <SelectItem value="turnaround">Turnaround Time</SelectItem>
+                    </SelectContent>
+                </Select>
             </CardHeader>
             <CardContent>
-                {categoryPerformance.length > 0 ? (
-                    <ChartContainer config={categoryChartConfig} className="h-[400px] w-full">
-                        <BarChart data={categoryPerformance} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                            <CartesianGrid vertical={false} />
-                            <XAxis dataKey="category" tickLine={false} axisLine={false} tickMargin={8} />
-                            <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--chart-1))" domain={[0, 5]} tickCount={6} />
-                            <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" domain={[0, 'dataMax + 1']} tickCount={4} />
-                            <RechartsTooltip content={<ChartTooltipContent />} />
-                            <Legend />
-                            <Bar yAxisId="left" dataKey="avgRating" fill="var(--color-avgRating)" name="Avg. Rating" radius={4} />
-                            <Bar yAxisId="right" dataKey="avgRevisions" fill="var(--color-avgRevisions)" name="Avg. Revisions" radius={4} />
-                        </BarChart>
-                    </ChartContainer>
-                ) : (
-                    <div className="text-center py-10 text-muted-foreground">
-                        No review data available to generate category performance reports.
-                    </div>
-                )}
+                {renderReport()}
             </CardContent>
         </Card>
     </div>
   );
 }
-
