@@ -48,10 +48,10 @@ const mockPayoutMethods: PayoutMethod[] = [
 ];
 
 const mockPayoutHistory = [
-    { id: 'po_1', date: new Date(2024, 6, 15), amount: 12500.50, method: 'Bank Transfer', status: 'Completed' },
-    { id: 'po_2', date: new Date(2024, 6, 1), amount: 8200.00, method: 'Bank Transfer', status: 'Completed' },
-    { id: 'po_3', date: new Date(2024, 5, 15), amount: 15300.00, method: 'Bank Transfer', status: 'Completed' },
-    { id: 'po_4', date: new Date(2024, 5, 1), amount: 5500.75, method: 'Failed' },
+    { id: 'po_1', date: new Date(2024, 6, 15), amount: 12500.50, method: 'Bank Transfer', status: 'Completed', relatedOrderId: 'ORD2945S' },
+    { id: 'po_2', date: new Date(2024, 6, 1), amount: 8200.00, method: 'Bank Transfer', status: 'Completed', relatedOrderId: 'ORD1038K' },
+    { id: 'po_3', date: new Date(2024, 5, 15), amount: 15300.00, method: 'Bank Transfer', status: 'Completed', relatedOrderId: 'ORD7361P' },
+    { id: 'po_4', date: new Date(2024, 5, 1), amount: 5500.75, method: 'Failed', relatedOrderId: 'ORD6531A' },
 ];
 
 export default function DesignerPaymentSettingsPage(): ReactElement {
@@ -436,6 +436,7 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
                         <TableHead>Amount</TableHead>
                         <TableHead>Method</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Invoice</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -448,6 +449,13 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
                                 <Badge variant={payout.status === 'Completed' ? 'default' : 'destructive'}>
                                     {payout.status}
                                 </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={`/invoice/${payout.relatedOrderId}`}>
+                                        <FileText className="mr-2 h-4 w-4" /> View
+                                    </Link>
+                                </Button>
                             </TableCell>
                         </TableRow>
                     ))}
