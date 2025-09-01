@@ -403,43 +403,48 @@ export default function DesignerReportsPage(): ReactElement {
 
   return (
     <div className="space-y-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <Card className="shadow-lg flex-grow">
-                <CardHeader>
-                    <CardTitle className="flex items-center text-lg"><Award className="mr-2 h-5 w-5"/>Your Quality Score</CardTitle>
-                    <CardDescription>
-                        A summary of your client ratings, on-time delivery, and dispute history.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-center gap-4">
-                        <Progress value={85} className="h-3 flex-grow" />
-                        <span className="text-xl font-bold text-primary">85%</span>
-                    </div>
-                    <p className="text-sm text-center font-medium text-green-600 dark:text-green-500 mt-2">
-                        You are 85% ready for Top Tier status
-                    </p>
-                </CardContent>
-            </Card>
-            <CustomReportDialog />
-        </div>
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center text-lg"><Award className="mr-2 h-5 w-5"/>Your Quality Score</CardTitle>
+                <CardDescription>
+                    A summary of your client ratings, on-time delivery, and dispute history.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center gap-4">
+                    <Progress value={85} className="h-3 flex-grow" />
+                    <span className="text-xl font-bold text-primary">85%</span>
+                </div>
+                <p className="text-sm text-center font-medium text-green-600 dark:text-green-500 mt-2">
+                    You are 85% ready for Top Tier status
+                </p>
+            </CardContent>
+        </Card>
+        
         <AnalyticsCard />
 
         <Card>
             <CardHeader>
-                <Label htmlFor="report-select">Select Report View</Label>
-                <Select value={reportView} onValueChange={(v) => setReportView(v as ReportView)}>
-                    <SelectTrigger id="report-select" className="w-full md:w-[300px]">
-                        <SelectValue placeholder="Select a report..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="category">Category Breakdown</SelectItem>
-                        <SelectItem value="monthly">Monthly Performance</SelectItem>
-                        <SelectItem value="clients">Client Cohorts</SelectItem>
-                        <SelectItem value="revisions">Revisions Impact</SelectItem>
-                        <SelectItem value="turnaround">Turnaround Time</SelectItem>
-                    </SelectContent>
-                </Select>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex-grow">
+                         <Label htmlFor="report-select">Select Report View</Label>
+                        <Select value={reportView} onValueChange={(v) => setReportView(v as ReportView)}>
+                            <SelectTrigger id="report-select" className="w-full md:w-[300px]">
+                                <SelectValue placeholder="Select a report..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="category">Category Breakdown</SelectItem>
+                                <SelectItem value="monthly">Monthly Performance</SelectItem>
+                                <SelectItem value="clients">Client Cohorts</SelectItem>
+                                <SelectItem value="revisions">Revisions Impact</SelectItem>
+                                <SelectItem value="turnaround">Turnaround Time</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="self-end">
+                      <CustomReportDialog />
+                    </div>
+                </div>
             </CardHeader>
             <CardContent>
                 {renderReport()}
