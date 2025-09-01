@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useMemo, useState, type ReactElement } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Clock, CheckCheck, GitCommitHorizontal, ShieldAlert, Cloud, MessageSquare, Reply, UserCircle, Link as LinkIconLucide, MoreHorizontal, FileText, Languages, Award, ThumbsUp } from 'lucide-react';
+import { Star, Clock, CheckCheck, GitCommitHorizontal, ShieldAlert, Cloud, MessageSquare, Reply, UserCircle, Link as LinkIconLucide, MoreHorizontal, FileText, Languages, Award, ThumbsUp, PackageSearch } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -215,6 +216,12 @@ export default function DesignerReviewsPage(): ReactElement {
       return ratingMatch && statusMatch && dateMatch;
     });
   }, [reviews, ratingFilter, statusFilter, dateFilter]);
+  
+  const clearFilters = () => {
+    setRatingFilter('all');
+    setStatusFilter('all');
+    setDateFilter('all');
+  };
 
   const handleFeatureToggle = (reviewId: string, checked: boolean) => {
     setReviews(prevReviews => 
@@ -350,7 +357,31 @@ export default function DesignerReviewsPage(): ReactElement {
                  </div>
               </div>
             )) : (
-              <p className="text-muted-foreground text-center py-8">No reviews match your current filters.</p>
+              <Card className="text-center py-16 shadow-lg border-dashed">
+                <CardContent className="space-y-4">
+                    {reviews.length === 0 ? (
+                        <>
+                           <ThumbsUp className="mx-auto h-20 w-20 text-muted-foreground opacity-50" />
+                            <h2 className="text-2xl font-semibold font-headline">No Reviews Yet</h2>
+                            <p className="text-muted-foreground max-w-md mx-auto">
+                            Enable auto review requests to get started.
+                            </p>
+                            <Button asChild className="mt-4">
+                            <Link href="/designer/profile">Go to Settings</Link>
+                            </Button>
+                        </>
+                    ) : (
+                         <>
+                            <PackageSearch className="mx-auto h-20 w-20 text-muted-foreground opacity-50" />
+                            <h2 className="text-2xl font-semibold font-headline">No Reviews Found</h2>
+                            <p className="text-muted-foreground max-w-md mx-auto">
+                                No reviews match your current filters. Try adjusting or clearing them.
+                            </p>
+                            <Button variant="link" onClick={clearFilters}>Clear All Filters</Button>
+                        </>
+                    )}
+                </CardContent>
+            </Card>
             )}
           </div>
         </CardContent>
