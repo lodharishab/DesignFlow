@@ -94,19 +94,19 @@ const allTransactionStatuses: TransactionStatus[] = ['Completed', 'Pending', 'On
 
 const MOCK_DESIGNER_ID = 'des002'; // For filtering orders
 
-type AdvanceRequestStatus = 'Pending' | 'Approved' | 'Rejected';
-interface AdvanceRequest {
+type PayoutRequestStatus = 'Pending' | 'Approved' | 'Rejected';
+interface PayoutRequest {
   id: string;
   orderId: string;
   orderName: string;
   amount: number;
   reason: string;
-  status: AdvanceRequestStatus;
+  status: PayoutRequestStatus;
   requestDate: Date;
   repaidAmount: number;
 }
 
-const mockAdvanceRequests: AdvanceRequest[] = [
+const mockPayoutRequests: PayoutRequest[] = [
   { id: 'ADV001', orderId: 'ORD7361P', orderName: 'E-commerce Website UI/UX', amount: 5000, reason: 'Software subscription renewal (Adobe CC)', status: 'Approved', requestDate: new Date(2024, 6, 19), repaidAmount: 2500 },
   { id: 'ADV002', orderId: 'ORD1038K', orderName: 'Social Media Campaign Graphics', amount: 1000, reason: 'Stock photo subscription', status: 'Pending', requestDate: new Date(2024, 7, 1), repaidAmount: 0 },
   { id: 'ADV003', orderId: 'ORD6531A', orderName: 'Restaurant Menu Design', amount: 3000, reason: 'Marketing materials for personal brand', status: 'Rejected', requestDate: new Date(2024, 6, 12), repaidAmount: 0 },
@@ -117,9 +117,9 @@ export default function DesignerEarningsPage(): ReactElement {
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const [advanceRequests, setAdvanceRequests] = useState<AdvanceRequest[]>(mockAdvanceRequests);
-  const [isSubmittingAdvance, setIsSubmittingAdvance] = useState(false);
-  const [advanceForm, setAdvanceForm] = useState({ orderId: '', amount: '', reason: '', attachment: null as File | null });
+  const [payoutRequests, setPayoutRequests] = useState<PayoutRequest[]>(mockPayoutRequests);
+  const [isSubmittingPayoutRequest, setIsSubmittingPayoutRequest] = useState(false);
+  const [payoutRequestForm, setPayoutRequestForm] = useState({ orderId: '', amount: '', reason: '', attachment: null as File | null });
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -140,7 +140,7 @@ export default function DesignerEarningsPage(): ReactElement {
     }
   };
 
-  const getAdvanceStatusBadgeVariant = (status: AdvanceRequestStatus) => {
+  const getPayoutRequestStatusBadgeVariant = (status: PayoutRequestStatus) => {
       switch (status) {
         case 'Approved': return 'default';
         case 'Pending': return 'secondary';
@@ -279,49 +279,49 @@ export default function DesignerEarningsPage(): ReactElement {
     revenue: { label: "Revenue", color: "hsl(var(--chart-2))" },
   };
 
-  const activeOrdersForAdvance = useMemo(() => {
+  const activeOrdersForPayoutRequest = useMemo(() => {
     return initialOrdersData.filter(order => order.designerId === MOCK_DESIGNER_ID && order.status === 'In Progress');
   }, []);
 
-  const handleAdvanceFormChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handlePayoutRequestFormChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
-    setAdvanceForm(prev => ({ ...prev, [id]: value }));
+    setPayoutRequestForm(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleAdvanceOrderSelect = (value: string) => {
-    setAdvanceForm(prev => ({...prev, orderId: value}));
+  const handlePayoutRequestOrderSelect = (value: string) => {
+    setPayoutRequestForm(prev => ({...prev, orderId: value}));
   };
 
-  const handleAdvanceFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handlePayoutRequestFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setAdvanceForm(prev => ({ ...prev, attachment: e.target.files![0] }));
+      setPayoutRequestForm(prev => ({ ...prev, attachment: e.target.files![0] }));
     }
   };
 
-  const handleSubmitAdvanceRequest = (e: FormEvent) => {
+  const handleSubmitPayoutRequest = (e: FormEvent) => {
     e.preventDefault();
-    if (!advanceForm.orderId || !advanceForm.amount || !advanceForm.reason) {
+    if (!payoutRequestForm.orderId || !payoutRequestForm.amount || !payoutRequestForm.reason) {
       toast({ title: "Error", description: "Please select an order and fill in the amount and reason.", variant: "destructive" });
       return;
     }
-    setIsSubmittingAdvance(true);
-    console.log("Submitting advance request:", advanceForm);
+    setIsSubmittingPayoutRequest(true);
+    console.log("Submitting payout request:", payoutRequestForm);
     setTimeout(() => {
-      const orderName = activeOrdersForAdvance.find(o => o.id === advanceForm.orderId)?.serviceName || 'Unknown Order';
-      const newRequest: AdvanceRequest = {
+      const orderName = activeOrdersForPayoutRequest.find(o => o.id === payoutRequestForm.orderId)?.serviceName || 'Unknown Order';
+      const newRequest: PayoutRequest = {
         id: `ADV${Date.now().toString().slice(-4)}`,
-        orderId: advanceForm.orderId,
+        orderId: payoutRequestForm.orderId,
         orderName,
-        amount: parseFloat(advanceForm.amount),
-        reason: advanceForm.reason,
+        amount: parseFloat(payoutRequestForm.amount),
+        reason: payoutRequestForm.reason,
         status: 'Pending',
         requestDate: new Date(),
         repaidAmount: 0,
       };
-      setAdvanceRequests(prev => [newRequest, ...prev]);
-      toast({ title: "Advance Request Submitted", description: "Your request has been sent for admin review." });
-      setAdvanceForm({ orderId: '', amount: '', reason: '', attachment: null });
-      setIsSubmittingAdvance(false);
+      setPayoutRequests(prev => [newRequest, ...prev]);
+      toast({ title: "Payout Request Submitted", description: "Your request has been sent for admin review." });
+      setPayoutRequestForm({ orderId: '', amount: '', reason: '', attachment: null });
+      setIsSubmittingPayoutRequest(false);
     }, 1500);
   };
   
@@ -637,24 +637,24 @@ export default function DesignerEarningsPage(): ReactElement {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center"><HandCoins className="mr-2 h-5 w-5"/>Advances</CardTitle>
-          <CardDescription>Request an advance on an active project or track your existing requests.</CardDescription>
+          <CardTitle className="flex items-center"><HandCoins className="mr-2 h-5 w-5"/>Payout Requests</CardTitle>
+          <CardDescription>Request a payout for a completed milestone or track your existing requests.</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="tracker">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="tracker">Advance Tracker</TabsTrigger>
-              <TabsTrigger value="request">Request Advance</TabsTrigger>
+              <TabsTrigger value="tracker">Request Tracker</TabsTrigger>
+              <TabsTrigger value="request">Request Payout</TabsTrigger>
             </TabsList>
             <TabsContent value="tracker" className="mt-4">
               <div className="space-y-4">
-                {advanceRequests.map(req => (
+                {payoutRequests.map(req => (
                   <Card key={req.id} className="bg-secondary/30">
                     <CardContent className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <div className="flex-grow">
                         <div className="flex items-center gap-2">
                           <p className="font-semibold">₹{req.amount.toLocaleString('en-IN')}</p>
-                          <Badge variant={getAdvanceStatusBadgeVariant(req.status)}>{req.status}</Badge>
+                          <Badge variant={getPayoutRequestStatusBadgeVariant(req.status)}>{req.status}</Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">Order: {req.orderName} ({req.orderId})</p>
                         <p className="text-xs text-muted-foreground mt-1">Requested: {format(req.requestDate, 'PP')}</p>
@@ -670,41 +670,41 @@ export default function DesignerEarningsPage(): ReactElement {
               </div>
             </TabsContent>
             <TabsContent value="request" className="mt-4">
-              <form onSubmit={handleSubmitAdvanceRequest} className="space-y-4">
+              <form onSubmit={handleSubmitPayoutRequest} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="orderId">Select Order*</Label>
-                    <Select value={advanceForm.orderId} onValueChange={handleAdvanceOrderSelect} required>
+                    <Select value={payoutRequestForm.orderId} onValueChange={handlePayoutRequestOrderSelect} required>
                       <SelectTrigger id="orderId"><SelectValue placeholder="Choose an active order..." /></SelectTrigger>
                       <SelectContent>
-                        {activeOrdersForAdvance.length > 0 ? activeOrdersForAdvance.map(order => (
+                        {activeOrdersForPayoutRequest.length > 0 ? activeOrdersForPayoutRequest.map(order => (
                           <SelectItem key={order.id} value={order.id}>{order.serviceName} ({order.id})</SelectItem>
                         )) : (
-                          <SelectItem value="none" disabled>No active orders eligible for advance.</SelectItem>
+                          <SelectItem value="none" disabled>No active orders eligible for payout requests.</SelectItem>
                         )}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="amount">Amount Requested (INR)*</Label>
-                    <Input id="amount" type="number" placeholder="e.g., 5000" value={advanceForm.amount} onChange={handleAdvanceFormChange} required/>
+                    <Input id="amount" type="number" placeholder="e.g., 5000" value={payoutRequestForm.amount} onChange={handlePayoutRequestFormChange} required/>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reason">Reason for Request*</Label>
-                  <Textarea id="reason" placeholder="e.g., Need to purchase a software subscription for this project." value={advanceForm.reason} onChange={handleAdvanceFormChange} required/>
+                  <Textarea id="reason" placeholder="e.g., Requesting payout for Phase 1 completion." value={payoutRequestForm.reason} onChange={handlePayoutRequestFormChange} required/>
                 </div>
                  <div className="space-y-2">
                   <Label htmlFor="attachment">Attachment (Optional)</Label>
                   <div className="flex items-center gap-2">
                     <Upload className="h-4 w-4 text-muted-foreground" />
-                    <Input id="attachment" type="file" onChange={handleAdvanceFileChange} />
+                    <Input id="attachment" type="file" onChange={handlePayoutRequestFileChange} />
                   </div>
                 </div>
                 <div className="flex justify-end">
-                  <Button type="submit" disabled={isSubmittingAdvance || activeOrdersForAdvance.length === 0}>
-                    {isSubmittingAdvance && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                    {isSubmittingAdvance ? 'Submitting...' : 'Submit Request'}
+                  <Button type="submit" disabled={isSubmittingPayoutRequest || activeOrdersForPayoutRequest.length === 0}>
+                    {isSubmittingPayoutRequest && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                    {isSubmittingPayoutRequest ? 'Submitting...' : 'Submit Request'}
                   </Button>
                 </div>
               </form>
@@ -715,4 +715,3 @@ export default function DesignerEarningsPage(): ReactElement {
     </div>
   );
 }
-

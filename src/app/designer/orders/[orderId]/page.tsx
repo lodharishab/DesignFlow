@@ -31,7 +31,7 @@ import {
   Save,
   BookMarked,
   Users as UsersIcon, // for Shared Notes
-  HandCoins, // For Advance Request
+  HandCoins, // For Payout Request
   Image as ImageIconLucide,
   Download,
   FileText
@@ -282,7 +282,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
   
   const canSubmitDeliverables = order.status === 'In Progress' || (order.status === 'Revision Requested' && !showRevisionModal);
   const unlimitedRevisions = order.revisionsAllowed >= 99;
-  const canRequestAdvance = order.totalAmount > 8000;
+  const canRequestPayout = order.totalAmount > 8000;
 
   return (
     <div className="space-y-8">
@@ -298,8 +298,8 @@ function DesignerOrderDetailPageContent(): ReactElement {
                     </Link>
                 </Button>
             )}
-            {canRequestAdvance && (
-              <RequestAdvanceDialog order={order} />
+            {canRequestPayout && (
+              <RequestPayoutDialog order={order} />
             )}
              <Badge variant={getStatusBadgeVariant(order.status)} className="text-base px-4 py-2 self-start md:self-center">
                 {getStatusIcon(order.status)}
@@ -395,7 +395,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
                   </CardTitle>
                   {order.revisionRequestDate && (
                     <CardDescription className="text-xs text-destructive/80">
-                        Requested on: {format(order.revisionRequestDate, 'PPp')}
+                        Requested on: {format(order.revisionRequestDate, 'PPpp')}
                     </CardDescription>
                   )}
                 </CardHeader>
@@ -578,7 +578,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
   );
 }
 
-function RequestAdvanceDialog({ order }: { order: Order }) {
+function RequestPayoutDialog({ order }: { order: Order }) {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState('');
@@ -589,12 +589,12 @@ function RequestAdvanceDialog({ order }: { order: Order }) {
 
   const handleRequestSubmit = () => {
     if (!amount || !reason || !milestoneId) {
-      toast({ title: "Error", description: "Please fill all fields for the advance request.", variant: "destructive"});
+      toast({ title: "Error", description: "Please fill all fields for the payout request.", variant: "destructive"});
       return;
     }
     // Simulate sending request
-    console.log("Submitting advance request:", { orderId: order.id, milestoneId, amount, reason });
-    toast({ title: "Request Sent (Simulated)", description: `Advance request for ₹${amount} has been sent to admin for review.`});
+    console.log("Submitting payout request:", { orderId: order.id, milestoneId, amount, reason });
+    toast({ title: "Request Sent (Simulated)", description: `Payout request for ₹${amount} has been sent to admin for review.`});
     setIsOpen(false);
     setAmount('');
     setReason('');
@@ -606,14 +606,14 @@ function RequestAdvanceDialog({ order }: { order: Order }) {
       <DialogTrigger asChild>
         <Button variant="outline">
           <HandCoins className="mr-2 h-4 w-4" />
-          Request Advance
+          Request Payout
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Request Payment Advance</DialogTitle>
+          <DialogTitle>Request Milestone Payout</DialogTitle>
           <DialogDescription>
-            Request an advance for a specific milestone on order {order.id}. This will be sent to an admin for approval.
+            Request a payout for a specific milestone on order {order.id}. This will be sent to an admin for approval.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -642,7 +642,7 @@ function RequestAdvanceDialog({ order }: { order: Order }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="reason">Reason for Request*</Label>
-            <Textarea id="reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g., To purchase software subscription required for the project."/>
+            <Textarea id="reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g., Requesting payout for completed Phase 1."/>
           </div>
         </div>
         <DialogFooter>
@@ -753,5 +753,3 @@ export default function DesignerOrderDetailWrapper(): ReactElement {
         </Suspense>
     )
 }
-
-

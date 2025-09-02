@@ -130,7 +130,7 @@ const navItems = [
     children: [
         { href: '/admin/payments', icon: IndianRupee, label: 'Dashboard & Ledger' },
         { href: '/admin/payments/payouts', icon: SendToBack, label: 'Pending Payouts' },
-        { href: '/admin/payments/advances', icon: HandCoins, label: 'Advance Requests' },
+        { href: '/admin/payments/advances', icon: HandCoins, label: 'Payout Requests' },
         { href: '/admin/payments/disputes', icon: ShieldAlert, label: 'Dispute Management' },
         { href: '/admin/payments/reports', icon: PieChartIcon, label: 'Reports & Analytics' },
         { href: '/admin/payments/settings', icon: Settings, label: 'Payment Settings' },

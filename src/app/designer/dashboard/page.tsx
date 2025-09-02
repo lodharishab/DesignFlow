@@ -103,15 +103,14 @@ function DesignerDashboardPageContent() {
     { title: 'Total Orders', value: '12', icon: Briefcase, href: '/designer/orders', color: 'text-blue-500' },
     { title: 'Completed Orders', value: '8', icon: CheckCircle, href: '/designer/orders?status=Completed', color: 'text-green-500' },
     { title: 'Pending Orders', value: '4', icon: Clock, href: '/designer/orders?status=In Progress', color: 'text-orange-500' },
-    { title: 'Total Earnings', value: '₹85,500', icon: IndianRupee, href: '#', color: 'text-purple-500' },
-    { title: 'My Rating', value: '4.7/5', icon: Star, href: '/designer/reviews', color: 'text-yellow-500' },
+    { title: 'Total Earnings', value: '₹85,500', icon: IndianRupee, href: '/designer/earnings', color: 'text-purple-500' },
+    { title: 'My Rating', value: '4.7/5', icon: Star, href: '/designer/performance/reviews', color: 'text-yellow-500' },
     { title: 'Portfolio Views', value: '1,204', icon: Eye, href: '/designer/portfolio?view=analytics', color: 'text-pink-500' },
   ];
 
   const quickActions = [
     { label: 'Add Portfolio Item', href: '/designer/portfolio/new', icon: PlusCircle, disabled: false },
-    { label: 'Create Service', href: '#', icon: Pencil, disabled: true },
-    { label: 'Request Advance', href: '#', icon: HandCoins, disabled: true },
+    { label: 'Request Payout', href: '/designer/earnings', icon: HandCoins, disabled: false },
     { label: 'Message Clients', href: '/designer/messages', icon: MessageSquare, disabled: false },
     { label: 'View All Orders', href: '/designer/orders', icon: Briefcase, disabled: false },
   ];
@@ -155,9 +154,9 @@ function DesignerDashboardPageContent() {
       </div>
 
        {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {quickActions.map(action => (
-          <Button key={action.label} variant="outline" asChild={!action.disabled} disabled={action.disabled} className="flex-col h-20 md:h-24 justify-center gap-1 shadow-sm hover:shadow-md hover:bg-accent hover:border-primary/20 transition-all">
+          <Button key={action.label} variant="outline" asChild={!action.disabled} disabled={action.disabled} className="flex-col h-20 md:h-24 justify-center gap-1 shadow-sm hover:shadow-md hover:bg-accent hover:border-primary/20 transition-all group">
              {action.disabled ? (
               <div className="flex flex-col items-center justify-center text-center">
                   <action.icon className="h-6 w-6 mb-1 text-muted-foreground" />

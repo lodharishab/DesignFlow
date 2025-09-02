@@ -149,8 +149,7 @@ function TransactionDetailModal({ transaction, ledger, escrowBalance, onAction }
          <DialogClose asChild>
           <Button variant="outline"><X className="mr-2 h-4 w-4" />Close</Button>
         </DialogClose>
-        <Button variant="outline" onClick={() => onAction('hold')} disabled><Hourglass className="mr-2 h-4 w-4"/>Place On Hold (Soon)</Button>
-        <Button variant="outline" onClick={() => onAction('advance')} disabled><CircleArrowOutUpRight className="mr-2 h-4 w-4"/>Give Advance (Soon)</Button>
+        <Button variant="outline" onClick={() => onAction('payoutRequest')}><CircleArrowOutUpRight className="mr-2 h-4 w-4"/>Request Payout</Button>
         <Button onClick={() => onAction('refund')} variant="destructive"><AlertTriangle className="mr-2 h-4 w-4"/>Issue Full Refund</Button>
         <Button onClick={() => onAction('payout')}><Send className="mr-2 h-4 w-4"/>Release Payout</Button>
       </DialogFooter>
@@ -160,7 +159,7 @@ function TransactionDetailModal({ transaction, ledger, escrowBalance, onAction }
 
 const quickLinks = [
     { href: "/admin/payments/payouts", label: "Pending Payouts", icon: SendToBack },
-    { href: "/admin/payments/advances", label: "Advance Requests", icon: HandCoins },
+    { href: "/admin/payments/advances", label: "Payout Requests", icon: HandCoins },
     { href: "/admin/payments/disputes", label: "Dispute Management", icon: ShieldAlert },
     { href: "/admin/payments/reports", label: "Reports & Analytics", icon: PieChartIcon },
     { href: "/admin/payments/settings", label: "Payment Settings", icon: Settings },
@@ -242,6 +241,12 @@ export default function AdminPaymentsPage(): ReactElement {
             title: "Refund Initiated (Simulated)",
             description: `Full refund issued to ${selectedTransaction.clientName} for order ${selectedTransaction.orderId}.`,
             variant: 'destructive'
+        });
+      }
+      else if (action === 'payoutRequest') {
+        toast({
+            title: "Payout Requested (Simulated)",
+            description: `Payout requested for ${selectedTransaction.designerName} on order ${selectedTransaction.orderId}.`,
         });
       }
       setSelectedTransaction(null);
