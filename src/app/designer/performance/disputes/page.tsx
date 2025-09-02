@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, type ReactElement, useMemo, type FormEvent } from 'react';
@@ -88,21 +89,21 @@ function DisputeDetailModal({ dispute }: { dispute: Dispute }) {
                 </div>
                 
                  <div className="space-y-3">
-                    <h3 className="font-semibold text-lg flex items-center"><History className="mr-2 h-5 w-5"/>Dispute Timeline</h3>
-                    <div className="border rounded-md p-4 space-y-4">
+                    <h3 className="font-semibold text-lg flex items-center"><History className="mr-2 h-5 w-5"/>Communication Timeline</h3>
+                    <div className="border rounded-md p-4 space-y-4 bg-muted/50">
                         {dispute.timeline.map((event, index) => (
-                             <div key={index} className="flex items-start gap-3">
-                                 <div className="flex flex-col items-center">
-                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                       {event.actor === 'Admin' ? <ShieldAlert className="w-4 h-4 text-primary"/> : <User className="w-4 h-4 text-primary"/>}
+                            <Card key={index} className="shadow-sm bg-background">
+                                <CardContent className="p-3">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <p className="font-semibold text-sm flex items-center">
+                                            {event.actor === 'Admin' ? <ShieldAlert className="w-4 h-4 mr-2 text-primary"/> : <User className="w-4 h-4 mr-2"/>}
+                                            {event.actor}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">{format(event.timestamp, 'PPpp')}</p>
                                     </div>
-                                    {index < dispute.timeline.length - 1 && <div className="w-px h-6 bg-border mt-1"></div>}
-                                 </div>
-                                 <div className="flex-grow">
-                                    <p className="text-sm"><span className="font-semibold">{event.actor}:</span> {event.action}</p>
-                                    <p className="text-xs text-muted-foreground">{format(event.timestamp, 'PPpp')}</p>
-                                 </div>
-                             </div>
+                                    <p className="text-sm text-muted-foreground">{event.action}</p>
+                                </CardContent>
+                            </Card>
                         ))}
                     </div>
                  </div>
