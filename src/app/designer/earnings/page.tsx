@@ -74,20 +74,20 @@ interface Transaction {
 }
 
 const mockTransactions: Transaction[] = [
-    { id: 'txn_e_ps01', orderId: 'ORD2945S', date: new Date(), type: 'Earning', status: 'Completed', amount: 19999, description: 'Startup Logo & Brand Identity' },
-    { id: 'txn_f_ps01', orderId: 'ORD2945S', date: new Date(), type: 'Fee', status: 'Completed', amount: -1999.90, description: 'Platform Fee (10%)' },
-    { id: 'txn_p_ps01', orderId: 'ORD2945S', date: new Date(), type: 'Payout', status: 'Completed', amount: -17999.10, description: 'Payout to bank account' },
-    { id: 'txn_e_vs01', orderId: 'ORD6531A', date: new Date(), type: 'Earning', status: 'On Hold', amount: 6999, description: 'Restaurant Menu Design' },
-    { id: 'txn_a_vs01', orderId: 'ORD6531A', date: new Date(), type: 'Advance', status: 'Processing', amount: -2000, description: 'Advance for software' },
-    { id: 'txn_e_rk01', orderId: 'ORD7361P', date: new Date(), type: 'Earning', status: 'On Hold', amount: 24999, description: 'E-commerce Website UI/UX' },
-    { id: 'txn_refund_rk01', orderId: 'ORDREF01', date: new Date(), type: 'Refund', status: 'Completed', amount: -1000, description: 'Partial Refund for ORDABC' },
+    { id: 'txn_e_ps01', orderId: 'ORD2945S', date: new Date('2024-07-20T10:00:00Z'), type: 'Earning', status: 'Completed', amount: 19999, description: 'Startup Logo & Brand Identity' },
+    { id: 'txn_f_ps01', orderId: 'ORD2945S', date: new Date('2024-07-20T10:05:00Z'), type: 'Fee', status: 'Completed', amount: -1999.90, description: 'Platform Fee (10%)' },
+    { id: 'txn_p_ps01', orderId: 'ORD2945S', date: new Date('2024-07-20T10:05:00Z'), type: 'Payout', status: 'Completed', amount: -17999.10, description: 'Payout to bank account' },
+    { id: 'txn_e_vs01', orderId: 'ORD6531A', date: new Date('2024-07-19T11:00:00Z'), type: 'Earning', status: 'On Hold', amount: 6999, description: 'Restaurant Menu Design' },
+    { id: 'txn_a_vs01', orderId: 'ORD6531A', date: new Date('2024-07-21T09:00:00Z'), type: 'Advance', status: 'Processing', amount: -2000, description: 'Advance for software' },
+    { id: 'txn_e_rk01', orderId: 'ORD7361P', date: new Date('2024-07-22T14:00:00Z'), type: 'Earning', status: 'On Hold', amount: 24999, description: 'E-commerce Website UI/UX' },
+    { id: 'txn_refund_rk01', orderId: 'ORDREF01', date: new Date('2024-07-18T16:00:00Z'), type: 'Refund', status: 'Completed', amount: -1000, description: 'Partial Refund for ORDABC' },
     // Adding more historical data for charts
-    { id: 'txn_e_old1', orderId: 'ORDOLD01', date: subMonths(new Date(), 1), type: 'Earning', status: 'Completed', amount: 15000, description: 'Old Project Earning'},
-    { id: 'txn_e_old2', orderId: 'ORDOLD02', date: subMonths(new Date(), 2), type: 'Earning', status: 'Completed', amount: 22000, description: 'Another Old Project'},
-    { id: 'txn_e_old3', orderId: 'ORDOLD03', date: subMonths(new Date(), 2), type: 'Earning', status: 'Completed', amount: 8000, description: 'Small Old Project'},
-    { id: 'txn_e_old4', orderId: 'ORDOLD04', date: subMonths(new Date(), 3), type: 'Earning', status: 'Completed', amount: 35000, description: 'Large Old Project'},
-    { id: 'txn_e_old5', orderId: 'ORDOLD05', date: subMonths(new Date(), 4), type: 'Earning', status: 'Completed', amount: 12000, description: 'Archived Project Earning'},
-    { id: 'txn_e_old6', orderId: 'ORDOLD06', date: subMonths(new Date(), 5), type: 'Earning', status: 'Completed', amount: 18000, description: 'Very Old Project'},
+    { id: 'txn_e_old1', orderId: 'ORDOLD01', date: subMonths(new Date('2024-07-25'), 1), type: 'Earning', status: 'Completed', amount: 15000, description: 'Old Project Earning'},
+    { id: 'txn_e_old2', orderId: 'ORDOLD02', date: subMonths(new Date('2024-07-25'), 2), type: 'Earning', status: 'Completed', amount: 22000, description: 'Another Old Project'},
+    { id: 'txn_e_old3', orderId: 'ORDOLD03', date: subMonths(new Date('2024-07-25'), 2), type: 'Earning', status: 'Completed', amount: 8000, description: 'Small Old Project'},
+    { id: 'txn_e_old4', orderId: 'ORDOLD04', date: subMonths(new Date('2024-07-25'), 3), type: 'Earning', status: 'Completed', amount: 35000, description: 'Large Old Project'},
+    { id: 'txn_e_old5', orderId: 'ORDOLD05', date: subMonths(new Date('2024-07-25'), 4), type: 'Earning', status: 'Completed', amount: 12000, description: 'Archived Project Earning'},
+    { id: 'txn_e_old6', orderId: 'ORDOLD06', date: subMonths(new Date('2024-07-25'), 5), type: 'Earning', status: 'Completed', amount: 18000, description: 'Very Old Project'},
 ];
 
 const allTransactionStatuses: TransactionStatus[] = ['Completed', 'Pending', 'On Hold', 'Processing', 'Cancelled'];
