@@ -1,6 +1,6 @@
 
 export type DisputeStatus = 'Open' | 'Under Review' | 'Resolved (Client Favor)' | 'Resolved (Designer Favor)' | 'Closed';
-export type DisputeType = 'Deliverable Quality' | 'Non-Delivery' | 'Communication Issue' | 'Scope Creep';
+export type DisputeType = 'Deliverable Quality' | 'Non-Delivery' | 'Communication Issue' | 'Scope Creep' | 'Payment Issue' | 'Other';
 
 export interface TimelineEvent {
     actor: 'Client' | 'Designer' | 'Admin';
