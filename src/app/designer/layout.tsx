@@ -18,7 +18,8 @@ import {
   ChevronDown,
   Activity, // For new Performance page
   ShieldAlert,
-  FileWarning
+  FileWarning,
+  Layers // For new Services section
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -55,6 +56,14 @@ const navItems = [
   { href: '/designer/orders', icon: Briefcase, label: 'My Orders' },
   { href: '/designer/portfolio', icon: Palette, label: 'My Portfolio' },
   { href: '/designer/messages', icon: MessageSquare, label: 'Messaging' },
+  { 
+    label: 'My Services',
+    icon: Layers,
+    pathPrefix: '/designer/applications',
+    children: [
+      { href: '/designer/applications', icon: CheckCircle, label: 'Service Applications' },
+    ]
+  },
   { 
     label: 'Performance', 
     icon: Activity, 
