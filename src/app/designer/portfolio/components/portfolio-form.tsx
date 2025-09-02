@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { addPortfolioItemAction, type AddPortfolioResult } from '@/app/designer/portfolio/actions';
@@ -42,7 +43,7 @@ const initialState: AddPortfolioResult = {
 };
 
 export function PortfolioForm() {
-  const [state, formAction] = useFormState(addPortfolioItemAction, initialState);
+  const [state, formAction] = useActionState(addPortfolioItemAction, initialState);
   const { toast } = useToast();
   const router = useRouter();
 
