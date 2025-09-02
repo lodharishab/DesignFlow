@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, type ReactElement, Suspense } from 'react';
@@ -34,7 +33,8 @@ import {
   Users as UsersIcon, // for Shared Notes
   HandCoins, // For Advance Request
   Image as ImageIconLucide,
-  Download
+  Download,
+  FileText
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -65,7 +65,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { Progress } from "@/components/ui/progress";
+import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 
@@ -92,8 +92,8 @@ const ordersWithEnhancements: Order[] = initialOrdersData.map(order => {
       ...order,
       milestones: [
         { id: 'm1_7361p', title: 'Phase 1: Wireframes & UX Flow', dueDate: new Date(2024, 6, 8), amount: 8000, status: 'Paid' },
-        { id: 'm2_7361p', title: 'Phase 2: UI Design & Style Guide', dueDate: new Date(2024, 6, 20), amount: 12000, status: 'Delivered' },
-        { id: 'm3_7361p', title: 'Phase 3: Final Assets & Prototype', dueDate: new Date(2024, 6, 28), amount: 4999, status: 'Pending' },
+        { id: 'm2_7361p', title: 'UI Design & Style Guide', dueDate: new Date(2024, 6, 20), amount: 12000, status: 'Delivered' },
+        { id: 'm3_7361p', title: 'Final Assets & Prototype', dueDate: new Date(2024, 6, 28), amount: 4999, status: 'Pending' },
       ]
     };
   }
@@ -753,3 +753,5 @@ export default function DesignerOrderDetailWrapper(): ReactElement {
         </Suspense>
     )
 }
+
+
