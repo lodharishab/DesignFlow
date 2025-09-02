@@ -34,7 +34,8 @@ import {
   HandCoins, // For Payout Request
   Image as ImageIconLucide,
   Download,
-  FileText
+  FileText,
+  Share2 // Added for sharing notes
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -265,6 +266,20 @@ function DesignerOrderDetailPageContent(): ReactElement {
         toast({ title: "Notes Saved (Simulated)", description: "Your private notes have been updated." });
         setIsSavingNotes(false);
     }, 1000);
+  };
+  
+  const handleShareNote = () => {
+    if (!privateNotes.trim() || !order) {
+        toast({ title: "Note is empty", description: "Cannot share an empty note with the client.", variant: "destructive" });
+        return;
+    }
+    const newEvent: OrderEvent = {
+        timestamp: new Date(),
+        event: `Note from Designer: ${privateNotes}`,
+        actor: order.designerName || 'Designer',
+    };
+    setOrder(prevOrder => prevOrder ? ({ ...prevOrder, orderEvents: [newEvent, ...prevOrder.orderEvents] }) : null);
+    toast({ title: "Note Shared", description: "Your private note has been sent as a message to the client." });
   };
 
   if (isLoading) {
@@ -497,6 +512,36 @@ function DesignerOrderDetailPageContent(): ReactElement {
                     </CardContent>
                 )}
             </Card>
+             <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="font-headline text-xl flex items-center">
+                        <BookMarked className="mr-2 h-5 w-5 text-primary"/>
+                        Private Notes
+                    </CardTitle>
+                    <CardDescription>Only you and admins can see these notes.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Textarea 
+                        placeholder="Add notes for your reference, like client preferences, ideas, or to-do items..."
+                        rows={5}
+                        value={privateNotes}
+                        onChange={(e) => setPrivateNotes(e.target.value)}
+                        disabled={isSavingNotes}
+                    />
+                     {order.privateNotesLastEdited && (
+                        <p className="text-xs text-muted-foreground mt-2">Last saved: {format(order.privateNotesLastEdited, 'PPpp')}</p>
+                     )}
+                </CardContent>
+                <CardFooter className="flex justify-end gap-2">
+                    <Button onClick={handleSaveNotes} disabled={isSavingNotes}>
+                        {isSavingNotes ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                        {isSavingNotes ? 'Saving...' : 'Save Note'}
+                    </Button>
+                    <Button variant="outline" onClick={handleShareNote} disabled={isSavingNotes || !privateNotes.trim()}>
+                      <Share2 className="mr-2 h-4 w-4"/> Share with Client
+                    </Button>
+                </CardFooter>
+            </Card>
         </div>
 
         <div className="space-y-8">
@@ -544,33 +589,6 @@ function DesignerOrderDetailPageContent(): ReactElement {
                         )}
                     </div>
                 </CardContent>
-            </Card>
-             <Card className="shadow-lg">
-                <CardHeader>
-                    <CardTitle className="font-headline text-xl flex items-center">
-                        <BookMarked className="mr-2 h-5 w-5 text-primary"/>
-                        Private Notes
-                    </CardTitle>
-                    <CardDescription>Only you and admins can see these notes.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Textarea 
-                        placeholder="Add notes for your reference, like client preferences, ideas, or to-do items..."
-                        rows={5}
-                        value={privateNotes}
-                        onChange={(e) => setPrivateNotes(e.target.value)}
-                        disabled={isSavingNotes}
-                    />
-                     {order.privateNotesLastEdited && (
-                        <p className="text-xs text-muted-foreground mt-2">Last saved: {format(order.privateNotesLastEdited, 'PPpp')}</p>
-                     )}
-                </CardContent>
-                <CardFooter>
-                    <Button onClick={handleSaveNotes} disabled={isSavingNotes}>
-                        {isSavingNotes ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                        {isSavingNotes ? 'Saving...' : 'Save Notes'}
-                    </Button>
-                </CardFooter>
             </Card>
         </div>
       </div>
