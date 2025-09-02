@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Bell, Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, Film, Presentation, Loader2, PlusCircle, Upload, FileText, AlertTriangle, Briefcase, Eye, Link as LinkIconLucide } from 'lucide-react';
+import { Briefcase, Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, Film, Presentation, Loader2, PlusCircle, Upload, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { designersData, type DesignerProfile } from '@/lib/designer-data';
 import type { Icon as LucideIconType } from 'lucide-react';
@@ -14,33 +14,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
-
-// --- Mock Data for Alerts ---
-type AlertPriority = 'High' | 'Medium' | 'Low';
-interface Alert {
-  id: string;
-  title: string;
-  description: string;
-  priority: AlertPriority;
-  timestamp: Date;
-  link: string;
-  linkText: string;
-  icon: LucideIconType;
-}
-
-const mockAlerts: Alert[] = [
-  { id: 'alert1', title: 'Action Required: Revision Request', description: "Client has requested revisions on order ORD9274R.", priority: 'High', timestamp: new Date(new Date().setHours(new Date().getHours() - 2)), link: '/designer/orders/ORD9274R', linkText: 'View Order', icon: AlertTriangle },
-  { id: 'alert2', title: 'New Order Assigned', description: "You have been assigned to order ORD4011M: Mobile App Icon Set.", priority: 'Medium', timestamp: new Date(new Date().setDate(new Date().getDate() - 1)), link: '/designer/orders/ORD4011M', linkText: 'View Order', icon: Briefcase },
-  { id: 'alert3', title: 'Profile Update Recommended', description: "Your bio is looking a bit short. A detailed bio attracts more clients.", priority: 'Low', timestamp: new Date(new Date().setDate(new Date().getDate() - 3)), link: '/designer/profile', linkText: 'Update Profile', icon: Palette },
-  { id: 'alert4', title: 'Order Complete: Awaiting Your Review', description: "Your work on ORD2945S has been approved by the client. Leave a review for your experience.", priority: 'Medium', timestamp: new Date(new Date().setDate(new Date().getDate() - 4)), link: '/designer/review/ORD2945S', linkText: 'Leave Review', icon: Eye },
-];
+import { Badge } from '@/components/ui/badge';
 
 
-// --- Component Code ---
+// --- MOCK DATA ---
 const CURRENT_DESIGNER_ID = 'des001'; 
 
 interface ServiceCategoryOption {
@@ -51,39 +29,23 @@ interface ServiceCategoryOption {
   description: string;
 }
 
-// Consistent with services page categories if possible
 const availableServiceCategories: ServiceCategoryOption[] = [
   { id: 'cat001', name: 'Logo Design', slug: 'logo-design', icon: Palette, description: 'Get alerts for new logo and branding projects.' },
   { id: 'cat002', name: 'Web UI/UX', slug: 'web-ui-ux', icon: Laptop, description: 'Notifications for website and app interface design tasks.' },
-  { id: 'cat003', name: 'Print Materials', slug: 'print-materials', icon: Printer, description: 'Stay updated on brochure, flyer, and other print design needs.' },
-  { id: 'cat004', name: 'Custom Illustrations', slug: 'custom-illustrations', icon: BrushIcon, description: 'Receive notifications for illustration and artwork projects.' },
+  { id: 'cat003', name: 'Print Design', slug: 'print-materials', icon: Printer, description: 'Stay updated on brochure, flyer, and other print design needs.' },
+  { id: 'cat004', name: 'Illustration', slug: 'custom-illustrations', icon: BrushIcon, description: 'Receive notifications for illustration and artwork projects.' },
   { id: 'cat005', name: 'Social Media Graphics', slug: 'social-media-graphics', icon: Share2, description: 'Alerts for social media post, banner, and ad designs.' },
   { id: 'cat006', name: 'Packaging Design', slug: 'packaging', icon: PackageIcon, description: 'Notifications for product packaging design projects.' },
   { id: 'cat007', name: 'Motion Graphics', slug: 'motion-graphics', icon: Film, description: 'Alerts for animation and video editing projects.' },
   { id: 'cat008', name: 'Presentation Design', slug: 'presentations', icon: Presentation, description: 'Stay informed about pitch deck and presentation design tasks.' },
 ];
 
-interface NotificationPreferences {
+interface ActiveServices {
   [categorySlug: string]: boolean;
 }
 
-const getPriorityBadgeClasses = (priority: AlertPriority): string => {
-    switch (priority) {
-        case 'High': return 'bg-destructive/20 text-destructive border-destructive/30 hover:bg-destructive/30';
-        case 'Medium': return 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30';
-        case 'Low': return 'bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/30';
-    }
-};
-
-const getPriorityIconColor = (priority: AlertPriority): string => {
-    switch (priority) {
-        case 'High': return 'text-destructive';
-        case 'Medium': return 'text-yellow-500';
-        case 'Low': return 'text-blue-500';
-    }
-}
-
-function NewCategoryRequestDialog({ availableCategories, designerName }: { availableCategories: ServiceCategoryOption[], designerName: string }) {
+// --- DIALOG FOR NEW CATEGORY REQUESTS ---
+function NewCategoryRequestDialog({ availableCategories }: { availableCategories: ServiceCategoryOption[] }) {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -103,7 +65,6 @@ function NewCategoryRequestDialog({ availableCategories, designerName }: { avail
         toast({ title: "Application Submitted (Simulated)", description: `Your application for the "${selectedCategory}" category has been sent for review.` });
         setIsSubmitting(false);
         setIsOpen(false);
-        // Reset form
         setSelectedCategory('');
         setExperience('');
         setPortfolioFile(null);
@@ -115,7 +76,7 @@ function NewCategoryRequestDialog({ availableCategories, designerName }: { avail
       <DialogTrigger asChild>
         <Button variant="outline">
           <PlusCircle className="mr-2 h-4 w-4" />
-          Request New Category Approval
+          Apply for New Category
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[480px]">
@@ -177,42 +138,42 @@ function NewCategoryRequestDialog({ availableCategories, designerName }: { avail
 }
 
 
-export default function DesignerServicesNotificationsPage() {
+// --- MAIN PAGE COMPONENT ---
+export default function DesignerServicesPage() {
   const { toast } = useToast();
   const [designer, setDesigner] = useState<DesignerProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferences>({});
+  const [activeServices, setActiveServices] = useState<ActiveServices>({});
 
   useEffect(() => {
     const foundDesigner = designersData.find(d => d.id === CURRENT_DESIGNER_ID);
     if (foundDesigner) {
       setDesigner(foundDesigner);
-      // Simulate loading saved preferences or initializing based on specialties
-      const initialPrefs: NotificationPreferences = {};
+      // Simulate loading saved preferences. By default, a designer is active in all their approved specialties.
+      const initialPrefs: ActiveServices = {};
       availableServiceCategories.forEach(cat => {
-        // Example: auto-subscribe if the category name is among their specialties
         initialPrefs[cat.slug] = foundDesigner.specialties?.includes(cat.name) || false;
       });
-      setNotificationPrefs(initialPrefs);
+      setActiveServices(initialPrefs);
     }
     setIsLoading(false);
   }, []);
 
-  const handlePreferenceChange = (categorySlug: string, isSubscribed: boolean) => {
-    setNotificationPrefs(prev => ({
+  const handleActiveToggle = (categorySlug: string, isActivated: boolean) => {
+    setActiveServices(prev => ({
       ...prev,
-      [categorySlug]: isSubscribed,
+      [categorySlug]: isActivated,
     }));
   };
   
-  const handleSaveAllPreferences = () => {
+  const handleSaveChanges = () => {
     setIsSaving(true);
-    console.log("Saving notification preferences (simulated):", notificationPrefs);
+    console.log("Saving active services (simulated):", activeServices);
     setTimeout(() => {
         toast({
-            title: "Preferences Saved (Simulated)",
-            description: "Your notification preferences have been updated.",
+            title: "Services Updated (Simulated)",
+            description: "Your available services have been updated.",
         });
         setIsSaving(false);
     }, 1000);
@@ -228,76 +189,42 @@ export default function DesignerServicesNotificationsPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2 text-muted-foreground">Loading service preferences...</p>
+        <p className="ml-2 text-muted-foreground">Loading service settings...</p>
       </div>
     );
   }
 
   if (!designer) {
-    return <p>Designer profile not found. Cannot manage service notifications.</p>;
+    return <p>Designer profile not found. Cannot manage services.</p>;
   }
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-3xl font-bold font-headline flex items-center">
-          <Bell className="mr-3 h-8 w-8 text-primary" />
-          My Service Alerts
+          <Briefcase className="mr-3 h-8 w-8 text-primary" />
+          My Offered Services
         </h1>
         <div className="flex flex-col sm:flex-row gap-2">
-            <NewCategoryRequestDialog availableCategories={availableCategoriesForRequest} designerName={designer.name} />
-            <Button onClick={handleSaveAllPreferences} disabled={isSaving}>
+            <NewCategoryRequestDialog availableCategories={availableCategoriesForRequest} />
+            <Button onClick={handleSaveChanges} disabled={isSaving}>
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                {isSaving ? 'Saving...' : 'Save All Preferences'}
+                {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
         </div>
       </div>
       
-      {/* Recent Alerts Section */}
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Recent Alerts</CardTitle>
+          <CardTitle>Manage Your Available Services</CardTitle>
           <CardDescription>
-            Important updates and actions required on your account and projects.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-            {mockAlerts.length > 0 ? (
-                <div className="space-y-4">
-                    {mockAlerts.map((alert) => (
-                        <div key={alert.id} className="p-4 border rounded-lg flex items-start gap-4">
-                           <alert.icon className={cn("h-6 w-6 mt-1 shrink-0", getPriorityIconColor(alert.priority))} />
-                           <div className="flex-grow">
-                                <div className="flex items-center justify-between">
-                                    <p className="font-semibold">{alert.title}</p>
-                                    <Badge className={cn(getPriorityBadgeClasses(alert.priority))}>{alert.priority}</Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground">{alert.description}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(alert.timestamp, { addSuffix: true })}</p>
-                           </div>
-                           <Button asChild variant="outline" size="sm" className="self-center">
-                               <Link href={alert.link}><LinkIconLucide className="mr-2 h-3.5 w-3.5" /> {alert.linkText}</Link>
-                           </Button>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <p className="text-muted-foreground text-center py-4">No recent alerts.</p>
-            )}
-        </CardContent>
-      </Card>
-      
-      {/* Subscription Management Section */}
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle>Manage Project Notifications</CardTitle>
-          <CardDescription>
-            Subscribe to receive email notifications for new project opportunities in your approved service categories. 
+            Use the toggles to set which of your approved services you are currently available to take projects for. To offer services in a new category, apply for approval.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {availableServiceCategories.map(category => {
             const isApproved = designer.specialties.includes(category.name);
+            const isActive = activeServices[category.slug] || false;
             return (
                 <div key={category.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-secondary/30 hover:shadow-sm transition-shadow">
                 <div className="mb-3 sm:mb-0">
@@ -307,17 +234,23 @@ export default function DesignerServicesNotificationsPage() {
                     </Label>
                     <p className="text-sm text-muted-foreground mt-1 pl-9">{category.description}</p>
                 </div>
-                <div className="flex items-center space-x-2 shrink-0 ml-auto sm:ml-4">
-                    <Switch
-                    id={`switch-${category.slug}`}
-                    checked={isApproved && (notificationPrefs[category.slug] || false)}
-                    onCheckedChange={(checked) => handlePreferenceChange(category.slug, checked)}
-                    disabled={isSaving || !isApproved}
-                    aria-label={`Notifications for ${category.name}`}
-                    />
-                    <Label htmlFor={`switch-${category.slug}`} className="text-sm cursor-pointer">
-                    {isApproved ? (notificationPrefs[category.slug] ? 'Subscribed' : 'Paused') : 'Not Approved'}
-                    </Label>
+                <div className="flex items-center space-x-3 shrink-0 ml-auto sm:ml-4">
+                    {isApproved ? (
+                        <>
+                            <Switch
+                            id={`switch-${category.slug}`}
+                            checked={isActive}
+                            onCheckedChange={(checked) => handleActiveToggle(category.slug, checked)}
+                            disabled={isSaving}
+                            aria-label={`Activate services for ${category.name}`}
+                            />
+                            <Label htmlFor={`switch-${category.slug}`} className="text-sm font-medium cursor-pointer w-20">
+                            {isActive ? 'Active' : 'Inactive'}
+                            </Label>
+                        </>
+                    ) : (
+                         <Badge variant="outline">Not Approved</Badge>
+                    )}
                 </div>
                 </div>
             )
