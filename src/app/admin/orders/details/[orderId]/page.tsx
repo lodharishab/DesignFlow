@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, type ReactElement } from 'react';
@@ -22,135 +23,21 @@ import {
   Edit,
   ListChecks,
   Loader2,
-  Tag 
+  Tag,
+  Paperclip,
+  Image as ImageIconLucide,
+  Download
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { initialOrdersData } from '@/components/admin/orders/orders-table-view';
+import type { Order } from '@/components/admin/orders/orders-table-view';
 
-type OrderStatus = 'Pending Assignment' | 'In Progress' | 'Awaiting Client Review' | 'Revision Requested' | 'Completed' | 'Cancelled' | 'Refunded';
-
-interface OrderEvent {
-  timestamp: Date;
-  event: string;
-  actor?: string;
-  notes?: string;
-}
-
-interface Order {
-  id: string;
-  clientName: string;
-  clientId: string;
-  designerName?: string;
-  designerId?: string;
-  serviceName: string;
-  serviceId: string;
-  serviceTier?: string; 
-  orderDate: Date;
-  dueDate?: Date;
-  status: OrderStatus;
-  totalAmount: number;
-  currency: string;
-  paymentMethod?: string;
-  transactionId?: string;
-  orderEvents: OrderEvent[];
-  clientBrief?: string;
-  deliverables?: { name: string, url: string, submittedAt: Date }[];
-}
-
-const initialOrdersData: Order[] = [
-  { 
-    id: 'order001', 
-    clientName: 'Alice Johnson', clientId: 'cli001', 
-    designerName: 'Bob The Builder', designerId: 'des002',
-    serviceName: 'Modern Logo Design', serviceId: 'svc001', serviceTier: 'Standard',
-    orderDate: new Date(2024, 5, 1, 10, 30), 
-    dueDate: new Date(new Date().setDate(new Date().getDate() + 3)), 
-    status: 'In Progress', 
-    totalAmount: 199, currency: 'INR',
-    paymentMethod: 'Razorpay',
-    transactionId: 'pay_Nlcftg87sHjkl',
-    orderEvents: [
-      { timestamp: new Date(2024, 5, 1, 10, 30), event: 'Order Placed', actor: 'Alice Johnson' },
-      { timestamp: new Date(2024, 5, 1, 11, 0), event: 'Payment Successful (Razorpay)', actor: 'System' },
-      { timestamp: new Date(2024, 5, 2, 9, 0), event: 'Designer Assigned: Bob The Builder', actor: 'Admin' },
-      { timestamp: new Date(2024, 5, 2, 9, 5), event: 'Status changed to In Progress', actor: 'System' },
-      { timestamp: new Date(2024, 5, 10, 17, 0), event: 'First draft submitted by designer.', actor: 'Bob The Builder', notes: 'Attached logo_concept_v1.zip' },
-      { timestamp: new Date(2024, 5, 11, 10, 0), event: 'Client requested revisions.', actor: 'Alice Johnson', notes: 'Needs more color options.' },
-      { timestamp: new Date(2024, 5, 11, 10, 5), event: 'Status changed to Revision Requested', actor: 'System' },
-      { timestamp: new Date(2024, 5, 12, 14,0), event: 'Revised draft submitted by designer.', actor: 'Bob The Builder', notes: 'logo_concept_v2.zip attached with new color palettes.' },
-      { timestamp: new Date(2024, 5, 12, 14,5), event: 'Status changed to Awaiting Client Review', actor: 'System' },
-    ],
-    clientBrief: "Looking for a minimalist logo for a new tech startup 'InnovateX'. Colors: prefer blues and silvers. Icon should represent innovation and connection. Modern and sleek feel.",
-    deliverables: [
-      { name: 'logo_concept_v1.zip', url: '#', submittedAt: new Date(2024, 5, 10, 17, 0)},
-      { name: 'logo_concept_v2.zip', url: '#', submittedAt: new Date(2024, 5, 12, 14, 0)},
-    ]
-  },
-  { 
-    id: 'order002', 
-    clientName: 'Charlie Brown', clientId: 'cli003', 
-    serviceName: 'Social Media Post Pack', serviceId: 'svc002', serviceTier: 'Basic',
-    orderDate: new Date(2024, 5, 5, 14, 0), 
-    dueDate: new Date(new Date().setDate(new Date().getDate() - 2)), 
-    status: 'In Progress', 
-    totalAmount: 99, currency: 'INR',
-    paymentMethod: 'PhonePe',
-    transactionId: 'txn_GhtrDEWAq789',
-     orderEvents: [
-      { timestamp: new Date(2024, 5, 5, 14, 0), event: 'Order Placed', actor: 'Charlie Brown' },
-      { timestamp: new Date(2024, 5, 5, 14, 5), event: 'Payment Successful (PhonePe)', actor: 'System' },
-      { timestamp: new Date(2024, 5, 5, 14, 10), event: 'Status changed to Pending Assignment', actor: 'System' },
-      { timestamp: new Date(2024, 5, 6, 10,0), event: 'Designer Assigned: David C.', actor: 'Admin'},
-      { timestamp: new Date(2024, 5, 6, 10,5), event: 'Status changed to In Progress', actor: 'System'},
-    ],
-    clientBrief: "Need 5 engaging posts for a summer sale campaign on Instagram and Facebook. Theme: Bright and sunny. Target audience: Young adults (18-25)."
-  },
-  { 
-    id: 'order003', 
-    clientName: 'Diana Prince', clientId: 'cli004',
-    designerName: 'Alice Wonderland', designerId: 'des001',
-    serviceName: 'UI/UX Web Design Mockup', serviceId: 'svc004', serviceTier: 'Premium',
-    orderDate: new Date(2024, 4, 20, 16, 45), 
-    dueDate: new Date(2024, 5, 10),
-    status: 'Completed', 
-    totalAmount: 399, currency: 'INR',
-    paymentMethod: 'Razorpay',
-    transactionId: 'pay_Mnbvcxz87Uyt',
-    orderEvents: [ ],
-    clientBrief: "Design a modern and clean homepage mockup for an e-commerce store selling eco-friendly products.",
-    deliverables: [{ name: 'Homepage_mockup_final.fig', url: '#', submittedAt: new Date(2024, 5, 8, 12, 0)}],
-  },
-  { 
-    id: 'order004', 
-    clientName: 'Edward Scissorhands', clientId: 'cli005',
-    serviceName: 'Custom Illustration', serviceId: 'svc005', serviceTier: 'Standard',
-    orderDate: new Date(2024, 5, 8, 9, 15), 
-    status: 'Cancelled', 
-    totalAmount: 149, currency: 'INR',
-    paymentMethod: 'Razorpay',
-    transactionId: 'pay_Lkjhgf56Qwe',
-    orderEvents: [ ]
-  },
-   { 
-    id: 'order005', 
-    clientName: 'Fiona Gallagher', clientId: 'cli006',
-    designerName: 'Carol Danvers', designerId: 'des003',
-    serviceName: 'Professional Brochure Design', serviceId: 'svc003', serviceTier: 'Standard',
-    orderDate: new Date(2024, 5, 10, 11, 20), 
-    dueDate: new Date(new Date().setDate(new Date().getDate() + 7)), 
-    status: 'Awaiting Client Review', 
-    totalAmount: 249, currency: 'INR',
-    paymentMethod: 'PhonePe',
-    transactionId: 'txn_Poiuyt09Mnb',
-    orderEvents: [ ],
-    deliverables: [ { name: 'brochure_draft_v1.pdf', url: '#', submittedAt: new Date(2024, 5, 18, 17, 0)} ]
-  },
-];
-
-const getStatusBadgeVariant = (status: OrderStatus) => {
+const getStatusBadgeVariant = (status: Order['status']) => {
   switch (status) {
     case 'Completed': return 'default'; 
     case 'In Progress': return 'secondary'; 
@@ -163,7 +50,7 @@ const getStatusBadgeVariant = (status: OrderStatus) => {
   }
 };
 
-const activeOrderStatusesForDeadline: OrderStatus[] = ['In Progress', 'Awaiting Client Review', 'Revision Requested'];
+const activeOrderStatusesForDeadline: Order['status'][] = ['In Progress', 'Awaiting Client Review', 'Revision Requested'];
 
 export default function AdminOrderDetailPage(): ReactElement {
   const router = useRouter();
@@ -282,9 +169,30 @@ export default function AdminOrderDetailPage(): ReactElement {
               <p>Transaction ID: {order.transactionId || 'N/A'}</p>
             </div>
             {order.clientBrief && (
-              <div className="md:col-span-2 lg:col-span-3 space-y-1">
+              <div className="md:col-span-2 lg:col-span-3 space-y-2">
                 <h4 className="font-semibold text-foreground flex items-center"><MessageSquare className="mr-2 h-4 w-4 text-muted-foreground"/>Client Brief</h4>
                 <p className="whitespace-pre-line bg-muted p-3 rounded-md text-muted-foreground">{order.clientBrief}</p>
+
+                {order.briefAttachments && order.briefAttachments.length > 0 && (
+                    <div className="pt-2">
+                        <h5 className="text-sm font-semibold text-foreground mb-2 flex items-center"><Paperclip className="mr-2 h-4 w-4 text-muted-foreground"/>Client Attachments</h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                            {order.briefAttachments.map((file, idx) => (
+                                <div key={idx} className="p-2 border rounded-md bg-background flex justify-between items-center text-sm">
+                                    <div className="flex items-center gap-2 overflow-hidden">
+                                        {file.type === 'image' && <ImageIconLucide className="h-4 w-4 text-muted-foreground flex-shrink-0"/>}
+                                        {file.type === 'pdf' && <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0"/>}
+                                        {file.type === 'file' && <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0"/>}
+                                        <span className="truncate" title={file.name}>{file.name}</span>
+                                    </div>
+                                    <Button variant="ghost" size="icon" asChild className="h-7 w-7 flex-shrink-0">
+                                        <Link href={file.url} target="_blank" rel="noopener noreferrer"><Download className="h-4 w-4"/></Link>
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
               </div>
             )}
           </div>

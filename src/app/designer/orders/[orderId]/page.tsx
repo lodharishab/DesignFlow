@@ -32,7 +32,9 @@ import {
   Save,
   BookMarked,
   Users as UsersIcon, // for Shared Notes
-  HandCoins // For Advance Request
+  HandCoins, // For Advance Request
+  Image as ImageIconLucide,
+  Download
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -54,6 +56,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, isPast, differenceInDays } from 'date-fns';
@@ -359,6 +362,26 @@ function DesignerOrderDetailPageContent(): ReactElement {
               <div className="space-y-2">
                 <h4 className="font-semibold text-foreground flex items-center"><ClipboardList className="mr-2 h-4 w-4 text-muted-foreground"/>Client Brief</h4>
                 <p className="whitespace-pre-line bg-muted p-4 rounded-md text-muted-foreground">{order.clientBrief}</p>
+                {order.briefAttachments && order.briefAttachments.length > 0 && (
+                    <div className="pt-2">
+                        <h5 className="text-sm font-semibold text-foreground mb-2 flex items-center"><Paperclip className="mr-2 h-4 w-4 text-muted-foreground"/>Client Attachments</h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                            {order.briefAttachments.map((file, idx) => (
+                                <div key={idx} className="p-2 border rounded-md bg-background flex justify-between items-center text-sm">
+                                    <div className="flex items-center gap-2 overflow-hidden">
+                                        {file.type === 'image' && <ImageIconLucide className="h-4 w-4 text-muted-foreground flex-shrink-0"/>}
+                                        {file.type === 'pdf' && <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0"/>}
+                                        {file.type === 'file' && <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0"/>}
+                                        <span className="truncate" title={file.name}>{file.name}</span>
+                                    </div>
+                                    <Button variant="ghost" size="icon" asChild className="h-7 w-7 flex-shrink-0">
+                                        <Link href={file.url} target="_blank" rel="noopener noreferrer"><Download className="h-4 w-4"/></Link>
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
               </div>
             </>
           )}

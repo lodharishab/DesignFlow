@@ -86,6 +86,7 @@ export interface Order {
   transactionId?: string;
   orderEvents: OrderEvent[];
   clientBrief?: string;
+  briefAttachments?: { name: string, url: string, type: 'image' | 'pdf' | 'file' }[];
   deliverables?: { name: string, url: string, submittedAt: Date }[];
   revisionNotes?: string;
   revisionRequestDate?: Date;
@@ -118,6 +119,11 @@ export const initialOrdersData: Order[] = [
       { timestamp: new Date(2024, 6, 1, 10, 30), event: 'Order Placed', actor: 'Priya Sharma' },
     ].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()),
     clientBrief: "Need a modern and clean UI/UX for a new e-commerce platform selling Indian handicrafts. Focus on mobile-first design and easy navigation for a diverse audience. Include vernacular language support considerations.",
+    briefAttachments: [
+        { name: 'Brand_Logo.svg', url: '#', type: 'file' },
+        { name: 'Inspiration_Site.jpg', url: 'https://placehold.co/800x600.png', type: 'image' },
+        { name: 'Product_List.pdf', url: '#', type: 'pdf' },
+    ],
     revisionsAllowed: 3,
     revisionsUsed: 0,
     privateNotes: "Client seems very particular about the color palette. Make sure to provide at least 5-6 strong options in the first review. Also, check out behance.net/some-inspiration for the style she likes.",
