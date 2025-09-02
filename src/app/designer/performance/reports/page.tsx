@@ -4,12 +4,13 @@
 import { useMemo, useState, type ReactElement, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { PieChart as PieChartIcon, ArrowLeft, BarChart2, Award, FileText, Calendar as CalendarIcon, Check, Settings, Bell, MoreHorizontal, Download } from "lucide-react";
+import { PieChart as PieChartIcon, ArrowLeft, BarChart2, Award, FileText, Calendar as CalendarIcon, Check, Settings, Bell, MoreHorizontal, Download, ThumbsUp, ShieldCheck } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis, Legend, Cell, LabelList } from "recharts";
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { format, sub, startOfDay, endOfDay } from 'date-fns';
 import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
+import { mockDisputesData } from '@/app/designer/performance/disputes/data'; // Import dispute data
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -160,6 +161,52 @@ function AnalyticsCard() {
             </CardContent>
         </Card>
     );
+}
+
+function DisputeAnalyticsCard() {
+    const analytics = useMemo(() => {
+        const totalDisputes = mockDisputesData.length;
+        const resolvedDesignerFavor = mockDisputesData.filter(d => d.status === 'Resolved (Designer Favor)').length;
+        const resolvedClientFavor = mockDisputesData.filter(d => d.status === 'Resolved (Client Favor)').length;
+        const totalResolved = resolvedDesignerFavor + resolvedClientFavor;
+        const winRate = totalResolved > 0 ? (resolvedDesignerFavor / totalResolved) * 100 : 100;
+
+        return {
+            totalDisputes,
+            resolvedDesignerFavor,
+            resolvedClientFavor,
+            winRate: winRate.toFixed(0),
+        };
+    }, []);
+
+    return (
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center"><ShieldCheck className="mr-2 h-5 w-5"/>Dispute Analytics</CardTitle>
+                <CardDescription>An overview of your dispute history.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                    <div className="p-3 bg-secondary/50 rounded-lg">
+                        <p className="text-2xl font-bold">{analytics.totalDisputes}</p>
+                        <p className="text-xs text-muted-foreground">Total Disputes</p>
+                    </div>
+                     <div className="p-3 bg-green-100 dark:bg-green-900/40 rounded-lg">
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">{analytics.resolvedDesignerFavor}</p>
+                        <p className="text-xs text-green-700 dark:text-green-500">Won</p>
+                    </div>
+                     <div className="p-3 bg-red-100 dark:bg-red-900/40 rounded-lg">
+                        <p className="text-2xl font-bold text-red-600 dark:text-red-400">{analytics.resolvedClientFavor}</p>
+                        <p className="text-xs text-red-700 dark:text-red-500">Lost</p>
+                    </div>
+                     <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{analytics.winRate}%</p>
+                        <p className="text-xs text-blue-700 dark:text-blue-500">Win Rate</p>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    )
 }
 
 function PlaceholderCard({ title, handleExport, handleSchedule }: { title: string; handleExport: (format: 'csv' | 'pdf' | 'excel') => void; handleSchedule: () => void; }) {
@@ -498,6 +545,7 @@ export default function DesignerReportsPage(): ReactElement {
         </Card>
         
         <AnalyticsCard />
+        <DisputeAnalyticsCard />
 
         <Card>
             <CardHeader>
