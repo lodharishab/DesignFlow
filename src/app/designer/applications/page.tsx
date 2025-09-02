@@ -1,20 +1,23 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type FormEvent } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Bell, Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, Film, Presentation, Loader2, AlertTriangle, Briefcase, Eye, Link as LinkIconLucide } from 'lucide-react';
+import { Bell, Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, Film, Presentation, Loader2, PlusCircle, Upload, FileText, AlertTriangle, Briefcase, Eye, Link as LinkIconLucide } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { designersData, type DesignerProfile } from '@/lib/designer-data';
 import type { Icon as LucideIconType } from 'lucide-react';
-import Link from 'next/link';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-
+import Link from 'next/link';
 
 // --- Mock Data for Alerts ---
 type AlertPriority = 'High' | 'Medium' | 'Low';
@@ -80,6 +83,100 @@ const getPriorityIconColor = (priority: AlertPriority): string => {
     }
 }
 
+function NewCategoryRequestDialog({ availableCategories, designerName }: { availableCategories: ServiceCategoryOption[], designerName: string }) {
+  const { toast } = useToast();
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [experience, setExperience] = useState('');
+  const [portfolioFile, setPortfolioFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!selectedCategory || !experience.trim() || !portfolioFile) {
+        toast({ title: "Error", description: "Please fill out all fields and upload a portfolio sample.", variant: "destructive" });
+        return;
+    }
+    setIsSubmitting(true);
+    console.log("Submitting category application:", { category: selectedCategory, experience, portfolio: portfolioFile.name });
+    setTimeout(() => {
+        toast({ title: "Application Submitted (Simulated)", description: `Your application for the "${selectedCategory}" category has been sent for review.` });
+        setIsSubmitting(false);
+        setIsOpen(false);
+        // Reset form
+        setSelectedCategory('');
+        setExperience('');
+        setPortfolioFile(null);
+    }, 1500);
+  };
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Request New Category Approval
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[480px]">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle className="font-headline text-2xl">Apply for a New Service Category</DialogTitle>
+            <DialogDescription>
+              Submit your application to get approved for new types of projects. Admin review required.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="category-select">Desired Category*</Label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory} required>
+                <SelectTrigger id="category-select">
+                  <SelectValue placeholder="Select a category..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableCategories.map(cat => (
+                    <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="experience-desc">Describe Your Experience*</Label>
+              <Textarea 
+                id="experience-desc" 
+                value={experience} 
+                onChange={(e) => setExperience(e.target.value)} 
+                placeholder={`Briefly explain your experience and skills in ${selectedCategory || 'the selected category'}.`} 
+                rows={4}
+                required
+              />
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="portfolio-upload">Upload Portfolio Sample*</Label>
+              <Input 
+                id="portfolio-upload" 
+                type="file" 
+                onChange={(e) => setPortfolioFile(e.target.files ? e.target.files[0] : null)} 
+                accept=".pdf, image/*"
+                required
+              />
+              <p className="text-xs text-muted-foreground">Upload a relevant work sample (PDF or image).</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Cancel</Button></DialogClose>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting ? 'Submitting...' : 'Submit Application'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
 export default function DesignerServicesNotificationsPage() {
   const { toast } = useToast();
   const [designer, setDesigner] = useState<DesignerProfile | null>(null);
@@ -94,6 +191,7 @@ export default function DesignerServicesNotificationsPage() {
       // Simulate loading saved preferences or initializing based on specialties
       const initialPrefs: NotificationPreferences = {};
       availableServiceCategories.forEach(cat => {
+        // Example: auto-subscribe if the category name is among their specialties
         initialPrefs[cat.slug] = foundDesigner.specialties?.includes(cat.name) || false;
       });
       setNotificationPrefs(initialPrefs);
@@ -119,6 +217,11 @@ export default function DesignerServicesNotificationsPage() {
         setIsSaving(false);
     }, 1000);
   };
+  
+  const availableCategoriesForRequest = useMemo(() => {
+    if (!designer) return [];
+    return availableServiceCategories.filter(cat => !designer.specialties.includes(cat.name));
+  }, [designer]);
 
 
   if (isLoading) {
@@ -141,6 +244,13 @@ export default function DesignerServicesNotificationsPage() {
           <Bell className="mr-3 h-8 w-8 text-primary" />
           My Service Alerts
         </h1>
+        <div className="flex flex-col sm:flex-row gap-2">
+            <NewCategoryRequestDialog availableCategories={availableCategoriesForRequest} designerName={designer.name} />
+            <Button onClick={handleSaveAllPreferences} disabled={isSaving}>
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                {isSaving ? 'Saving...' : 'Save All Preferences'}
+            </Button>
+        </div>
       </div>
       
       {/* Recent Alerts Section */}
@@ -183,39 +293,36 @@ export default function DesignerServicesNotificationsPage() {
           <CardTitle>Manage Project Notifications</CardTitle>
           <CardDescription>
             Subscribe to receive email notifications for new project opportunities in your approved service categories. 
-            Your approved specialties may pre-select some categories.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {availableServiceCategories.map(category => (
-            <div key={category.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-secondary/30 hover:shadow-sm transition-shadow">
-              <div className="mb-3 sm:mb-0">
-                <Label htmlFor={`switch-${category.slug}`} className="text-lg font-semibold flex items-center">
-                  <category.icon className="mr-3 h-6 w-6 text-primary" />
-                  {category.name}
-                </Label>
-                <p className="text-sm text-muted-foreground mt-1 pl-9">{category.description}</p>
-              </div>
-              <div className="flex items-center space-x-2 shrink-0 ml-auto sm:ml-4">
-                <Switch
-                  id={`switch-${category.slug}`}
-                  checked={notificationPrefs[category.slug] || false}
-                  onCheckedChange={(checked) => handlePreferenceChange(category.slug, checked)}
-                  disabled={isSaving}
-                />
-                <Label htmlFor={`switch-${category.slug}`} className="text-sm cursor-pointer">
-                  {notificationPrefs[category.slug] ? 'Subscribed' : 'Paused'}
-                </Label>
-              </div>
-            </div>
-          ))}
+          {availableServiceCategories.map(category => {
+            const isApproved = designer.specialties.includes(category.name);
+            return (
+                <div key={category.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-secondary/30 hover:shadow-sm transition-shadow">
+                <div className="mb-3 sm:mb-0">
+                    <Label htmlFor={`switch-${category.slug}`} className="text-lg font-semibold flex items-center">
+                    <category.icon className="mr-3 h-6 w-6 text-primary" />
+                    {category.name}
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1 pl-9">{category.description}</p>
+                </div>
+                <div className="flex items-center space-x-2 shrink-0 ml-auto sm:ml-4">
+                    <Switch
+                    id={`switch-${category.slug}`}
+                    checked={isApproved && (notificationPrefs[category.slug] || false)}
+                    onCheckedChange={(checked) => handlePreferenceChange(category.slug, checked)}
+                    disabled={isSaving || !isApproved}
+                    aria-label={`Notifications for ${category.name}`}
+                    />
+                    <Label htmlFor={`switch-${category.slug}`} className="text-sm cursor-pointer">
+                    {isApproved ? (notificationPrefs[category.slug] ? 'Subscribed' : 'Paused') : 'Not Approved'}
+                    </Label>
+                </div>
+                </div>
+            )
+          })}
         </CardContent>
-         <CardFooter>
-            <Button onClick={handleSaveAllPreferences} disabled={isSaving}>
-                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                {isSaving ? 'Saving...' : 'Save All Preferences'}
-            </Button>
-        </CardFooter>
       </Card>
     </div>
   );
