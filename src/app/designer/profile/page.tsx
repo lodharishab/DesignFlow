@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera, Wand2, Sparkles, AlertCircle, Tag, X, Calendar, Power } from 'lucide-react';
+import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera, Wand2, Sparkles, AlertCircle, Tag, X, Calendar, Power, Bell } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { designersData, type DesignerProfile } from '@/lib/designer-data';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,7 @@ import { generateDesignerBio } from '@/ai/flows/designer-bio-flow';
 import type { DesignerBioResponse } from '@/ai/flows/designer-bio-types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 
 // Hardcoded for prototype - replace with actual auth user ID
 const CURRENT_DESIGNER_ID = 'des001'; 
@@ -39,6 +40,12 @@ interface WeeklySchedule {
     [day: string]: DaySchedule;
 }
 
+type NotificationChannel = 'inApp' | 'email' | 'push';
+type NotificationType = 'newOrder' | 'paymentAlerts' | 'disputeUpdates' | 'reviewAlerts' | 'milestoneUpdates';
+
+type NotificationPreferences = Record<NotificationType, Record<NotificationChannel, boolean>>;
+
+
 const allAvailableSpecialties = [
     'Logo Design', 'Web UI/UX', 'Branding', 'Illustration', 'Icon Design',
     'App Design', 'Packaging Design', '3D Modeling', 'Print Design',
@@ -47,6 +54,14 @@ const allAvailableSpecialties = [
     'User Research', 'Prototyping', 'Figma', 'Digital Art', 'Cultural Design',
     'Sustainable Design', 'Label Design', 'Data Visualization', 'Photography', 'Photo Editing'
 ].sort();
+
+const notificationTypes: {id: NotificationType, label: string, description: string, disabled?: boolean}[] = [
+    { id: 'newOrder', label: 'New Order Assignments', description: 'Alerts when a new project is assigned to you.', disabled: true },
+    { id: 'paymentAlerts', label: 'Payment & Payout Alerts', description: 'Notifications about successful payouts or payment issues.' },
+    { id: 'disputeUpdates', label: 'Dispute Updates', description: 'Alerts regarding new or updated disputes on your orders.' },
+    { id: 'reviewAlerts', label: 'New Client Reviews', description: 'Get notified when a client leaves you a new review.' },
+    { id: 'milestoneUpdates', label: 'Project Milestone Updates', description: 'Updates on milestone approvals and upcoming deadlines.' },
+];
 
 function AiAssistDialog({ onAccept, designer }: { onAccept: (content: DesignerBioResponse) => void; designer: DesignerProfile }) {
   const [tone, setTone] = useState('Professional');
@@ -163,6 +178,16 @@ export default function DesignerProfilePage() {
   const [reviewRequestDelay, setReviewRequestDelay] = useState('24h');
   const [isSavingReviewSettings, setIsSavingReviewSettings] = useState(false);
 
+  // Notification Preferences State
+  const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferences>({
+    newOrder: { inApp: true, email: true, push: false },
+    paymentAlerts: { inApp: true, email: true, push: false },
+    disputeUpdates: { inApp: true, email: true, push: false },
+    reviewAlerts: { inApp: true, email: false, push: false },
+    milestoneUpdates: { inApp: true, email: false, push: false },
+  });
+  const [isSavingNotifications, setIsSavingNotifications] = useState(false);
+
 
   useEffect(() => {
     const foundDesigner = designersData.find(d => d.id === CURRENT_DESIGNER_ID);
@@ -270,6 +295,26 @@ export default function DesignerProfilePage() {
             description: `Review requests will be sent ${reviewRequestDelay === 'immediate' ? 'immediately' : `after ${reviewRequestDelay}`}.`
         });
         setIsSavingReviewSettings(false);
+    }, 1000);
+  };
+  
+  const handleNotificationPrefChange = (type: NotificationType, channel: NotificationChannel, checked: boolean) => {
+    setNotificationPrefs(prev => ({
+        ...prev,
+        [type]: {
+            ...prev[type],
+            [channel]: checked
+        }
+    }));
+  };
+  
+  const handleSaveNotifications = (e: FormEvent) => {
+    e.preventDefault();
+    setIsSavingNotifications(true);
+    console.log("Saving notification preferences:", notificationPrefs);
+    setTimeout(() => {
+        toast({ title: "Notification Settings Saved" });
+        setIsSavingNotifications(false);
     }, 1000);
   };
 
@@ -505,8 +550,8 @@ export default function DesignerProfilePage() {
       <form onSubmit={handleAvailabilitySubmit}>
         <Card className="shadow-lg">
             <CardHeader>
-                <CardTitle className="flex items-center"><Clock className="mr-2 h-5 w-5 text-muted-foreground" />Availability & Work Preferences</CardTitle>
-                <CardDescription>Set your work schedule and project load to manage expectations.</CardDescription>
+                <CardTitle className="flex items-center"><Power className="mr-2 h-5 w-5 text-muted-foreground" />Work Availability</CardTitle>
+                <CardDescription>Set your project load to manage expectations.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
@@ -594,6 +639,64 @@ export default function DesignerProfilePage() {
                 {isSavingReviewSettings ? 'Saving...' : 'Save Review Settings'}
             </Button>
           </CardFooter>
+        </Card>
+      </form>
+      
+       <form onSubmit={handleSaveNotifications}>
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center"><Bell className="mr-2 h-5 w-5 text-muted-foreground" />Notification Preferences</CardTitle>
+                <CardDescription>Choose how you receive alerts for important account activity.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Notification Type</TableHead>
+                            <TableHead className="text-center">In-App</TableHead>
+                            <TableHead className="text-center">Email</TableHead>
+                            <TableHead className="text-center">Push</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {notificationTypes.map(type => (
+                            <TableRow key={type.id}>
+                                <TableCell>
+                                    <p className="font-medium">{type.label}</p>
+                                    <p className="text-xs text-muted-foreground">{type.description}</p>
+                                </TableCell>
+                                <TableCell className="text-center">
+                                    <Checkbox 
+                                      checked={notificationPrefs[type.id]?.inApp}
+                                      onCheckedChange={(checked) => handleNotificationPrefChange(type.id, 'inApp', !!checked)}
+                                      disabled={type.disabled || isSavingNotifications}
+                                    />
+                                </TableCell>
+                                <TableCell className="text-center">
+                                    <Checkbox 
+                                      checked={notificationPrefs[type.id]?.email}
+                                      onCheckedChange={(checked) => handleNotificationPrefChange(type.id, 'email', !!checked)}
+                                      disabled={type.disabled || isSavingNotifications}
+                                    />
+                                </TableCell>
+                                <TableCell className="text-center">
+                                     <Checkbox 
+                                      checked={notificationPrefs[type.id]?.push}
+                                      onCheckedChange={(checked) => handleNotificationPrefChange(type.id, 'push', !!checked)}
+                                      disabled={isSavingNotifications}
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+             <CardFooter className="justify-end border-t pt-6">
+                <Button type="submit" disabled={isSavingNotifications}>
+                    {isSavingNotifications ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
+                    {isSavingNotifications ? 'Saving...' : 'Save Notification Settings'}
+                </Button>
+            </CardFooter>
         </Card>
       </form>
     </div>
