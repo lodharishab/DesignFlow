@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera, Wand2, Sparkles, AlertCircle } from 'lucide-react';
+import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera, Wand2, Sparkles, AlertCircle, Tag, X } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { designersData, type DesignerProfile } from '@/lib/designer-data';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { generateDesignerBio } from '@/ai/flows/designer-bio-flow';
 import type { DesignerBioResponse } from '@/ai/flows/designer-bio-types';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // Hardcoded for prototype - replace with actual auth user ID
 const CURRENT_DESIGNER_ID = 'des001'; 
@@ -26,6 +27,15 @@ interface SocialLink {
   platform: string;
   url: string;
 }
+
+const allAvailableSpecialties = [
+    'Logo Design', 'Web UI/UX', 'Branding', 'Illustration', 'Icon Design',
+    'App Design', 'Packaging Design', '3D Modeling', 'Print Design',
+    'Social Media Graphics', 'Motion Graphics', 'Video Editing', 'Content Creation',
+    'Presentation Design', 'Typography', 'Layout Design', 'Corporate Branding',
+    'User Research', 'Prototyping', 'Figma', 'Digital Art', 'Cultural Design',
+    'Sustainable Design', 'Label Design', 'Data Visualization', 'Photography', 'Photo Editing'
+].sort();
 
 function AiAssistDialog({ onAccept, designer }: { onAccept: (content: DesignerBioResponse) => void; designer: DesignerProfile }) {
   const [tone, setTone] = useState('Professional');
@@ -128,6 +138,9 @@ export default function DesignerProfilePage() {
     { platform: 'Dribbble', url: '' },
     { platform: 'LinkedIn', url: '' },
   ]);
+  const [specialties, setSpecialties] = useState<string[]>([]);
+  const [skills, setSkills] = useState<string[]>([]);
+  const [currentSkillInput, setCurrentSkillInput] = useState('');
 
   // New state for review settings
   const [autoRequestReviews, setAutoRequestReviews] = useState(true);
@@ -146,6 +159,8 @@ export default function DesignerProfilePage() {
       setWebsite(foundDesigner.website || '');
       setTimeZone('Asia/Kolkata'); // Example Default
       setLanguage('en-IN'); // Example Default
+      setSpecialties(foundDesigner.specialties || []);
+      setSkills(foundDesigner.specialties || []); // Using specialties as placeholder for skills initially
       
       const BehanceLink = foundDesigner.socialLinks?.find(l => l.platform === 'Behance')?.url || '';
       const DribbbleLink = foundDesigner.socialLinks?.find(l => l.platform === 'Dribbble')?.url || '';
@@ -170,11 +185,41 @@ export default function DesignerProfilePage() {
     setBio(content.bio);
   };
 
+  const handleSpecialtyChange = (specialty: string, checked: boolean) => {
+    setSpecialties(prev => {
+        if (checked) {
+            return [...prev, specialty];
+        } else {
+            return prev.filter(s => s !== specialty);
+        }
+    });
+  };
+
+  const addSkillFromInput = () => {
+    const newSkill = currentSkillInput.trim();
+    if (newSkill && !skills.includes(newSkill)) {
+      setSkills([...skills, newSkill]);
+    }
+    setCurrentSkillInput(''); 
+  };
+
+  const handleSkillInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); 
+      addSkillFromInput();
+    }
+  };
+
+  const handleRemoveSkill = (skillToRemove: string) => {
+    setSkills(skills.filter(skill => skill !== skillToRemove));
+  };
+
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     // Simulate API call
-    console.log("Saving profile data:", { name, username, bio, location, website, socialLinks, timeZone, language });
+    console.log("Saving profile data:", { name, username, bio, location, website, socialLinks, timeZone, language, specialties, skills });
     setTimeout(() => {
       toast({
         title: "Profile Updated (Simulated)",
@@ -338,7 +383,62 @@ export default function DesignerProfilePage() {
             </div>
             
             <Separator />
+
+             <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center"><Star className="mr-2 h-5 w-5 text-primary" />Your Specialties</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-3 p-4 border rounded-md bg-secondary/30">
+                {allAvailableSpecialties.map(specialty => (
+                    <div key={specialty} className="flex items-center space-x-2">
+                        <Checkbox 
+                            id={`specialty-${specialty.replace(/\s+/g, '-')}`}
+                            checked={specialties.includes(specialty)}
+                            onCheckedChange={(checked) => handleSpecialtyChange(specialty, !!checked)}
+                            disabled={isSaving}
+                        />
+                        <Label htmlFor={`specialty-${specialty.replace(/\s+/g, '-')}`} className="font-normal text-sm cursor-pointer">{specialty}</Label>
+                    </div>
+                ))}
+              </div>
+            </div>
+
+            <Separator />
             
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center"><Tag className="mr-2 h-5 w-5 text-primary" />Your Skills</h3>
+               <div className="space-y-2">
+                <Input 
+                    id="skillInput" 
+                    placeholder="Add a skill (e.g., Figma, Photoshop) and press Enter" 
+                    value={currentSkillInput}
+                    onChange={(e) => setCurrentSkillInput(e.target.value)}
+                    onKeyDown={handleSkillInputKeyDown}
+                    disabled={isSaving}
+                    className="flex-grow"
+                    />
+                <div className="flex flex-wrap gap-2 mt-2 min-h-[2.5rem] p-2 border rounded-md bg-muted/50">
+                    {skills.map((skill, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1 pr-1 py-1 text-sm">
+                        {skill}
+                        <button 
+                        type="button" 
+                        onClick={() => handleRemoveSkill(skill)}
+                        className="rounded-full hover:bg-muted-foreground/20 p-0.5 focus:outline-none focus:ring-1 focus:ring-ring"
+                        aria-label={`Remove skill ${skill}`}
+                        disabled={isSaving}
+                        >
+                        <X className="h-3 w-3" />
+                        </button>
+                    </Badge>
+                    ))}
+                    {skills.length === 0 && (
+                    <p className="text-xs text-muted-foreground py-1 px-1">No skills added yet.</p>
+                    )}
+                </div>
+              </div>
+            </div>
+
+             <Separator />
+
             <div>
               <h3 className="text-lg font-semibold mb-3 flex items-center"><LinkIcon className="mr-2 h-5 w-5 text-primary" />Social Media Links</h3>
               <div className="space-y-4">
@@ -355,22 +455,6 @@ export default function DesignerProfilePage() {
                   </div>
                 ))}
               </div>
-            </div>
-
-            <Separator />
-
-            <div>
-              <h3 className="text-lg font-semibold mb-2 flex items-center"><Briefcase className="mr-2 h-5 w-5 text-primary" />Specialties</h3>
-              {designer.specialties && designer.specialties.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {designer.specialties.map(specialty => (
-                    <Badge key={specialty} variant="secondary">{specialty}</Badge>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No specialties listed. These are often derived from services you're approved for.</p>
-              )}
-               <p className="text-xs text-muted-foreground mt-2">Specialties are typically managed by admins based on your approved services.</p>
             </div>
 
           </CardContent>
