@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera, Wand2, Sparkles, AlertCircle, Tag, X } from 'lucide-react';
+import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera, Wand2, Sparkles, AlertCircle, Tag, X, Calendar, Power } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { designersData, type DesignerProfile } from '@/lib/designer-data';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +27,16 @@ const CURRENT_DESIGNER_ID = 'des001';
 interface SocialLink {
   platform: string;
   url: string;
+}
+
+interface DaySchedule {
+    available: boolean;
+    from: string;
+    to: string;
+}
+
+interface WeeklySchedule {
+    [day: string]: DaySchedule;
 }
 
 const allAvailableSpecialties = [
@@ -143,7 +153,21 @@ export default function DesignerProfilePage() {
   const [skills, setSkills] = useState<string[]>([]);
   const [currentSkillInput, setCurrentSkillInput] = useState('');
 
-  // New state for review settings
+  // Availability state
+  const [isAvailableForOrders, setIsAvailableForOrders] = useState(true);
+  const [maxActiveOrders, setMaxActiveOrders] = useState(5);
+  const [weeklySchedule, setWeeklySchedule] = useState<WeeklySchedule>({
+    Monday: { available: true, from: '09:00', to: '18:00' },
+    Tuesday: { available: true, from: '09:00', to: '18:00' },
+    Wednesday: { available: true, from: '09:00', to: '18:00' },
+    Thursday: { available: true, from: '09:00', to: '18:00' },
+    Friday: { available: true, from: '09:00', to: '18:00' },
+    Saturday: { available: false, from: '10:00', to: '14:00' },
+    Sunday: { available: false, from: '10:00', to: '14:00' },
+  });
+  const [isSavingAvailability, setIsSavingAvailability] = useState(false);
+
+  // Review settings state
   const [autoRequestReviews, setAutoRequestReviews] = useState(true);
   const [reviewRequestDelay, setReviewRequestDelay] = useState('24h');
   const [isSavingReviewSettings, setIsSavingReviewSettings] = useState(false);
@@ -216,6 +240,16 @@ export default function DesignerProfilePage() {
   const handleRemoveSkill = (skillToRemove: string) => {
     setSkills(skills.filter(skill => skill !== skillToRemove));
   };
+  
+  const handleScheduleChange = (day: string, field: keyof DaySchedule, value: string | boolean) => {
+    setWeeklySchedule(prev => ({
+        ...prev,
+        [day]: {
+            ...prev[day],
+            [field]: value
+        }
+    }));
+  };
 
 
   const handleSubmit = (e: FormEvent) => {
@@ -229,6 +263,19 @@ export default function DesignerProfilePage() {
         description: "Your profile information has been saved.",
       });
       setIsSaving(false);
+    }, 1000);
+  };
+  
+  const handleAvailabilitySubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setIsSavingAvailability(true);
+    console.log("Saving availability:", { isAvailableForOrders, maxActiveOrders, weeklySchedule });
+    setTimeout(() => {
+        toast({
+            title: "Availability Saved (Simulated)",
+            description: "Your work preferences have been updated."
+        });
+        setIsSavingAvailability(false);
     }, 1000);
   };
   
@@ -474,6 +521,79 @@ export default function DesignerProfilePage() {
         </Card>
       </form>
        
+      <form onSubmit={handleAvailabilitySubmit}>
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center"><Clock className="mr-2 h-5 w-5 text-muted-foreground" />Availability & Work Preferences</CardTitle>
+                <CardDescription>Set your work schedule and project load to manage expectations.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                    <Label htmlFor="availability-switch" className="flex flex-col space-y-1">
+                        <span>Available for new orders</span>
+                        <span className="font-normal leading-snug text-muted-foreground">
+                        Turn this off to temporarily stop receiving new project assignments.
+                        </span>
+                    </Label>
+                    <Switch
+                        id="availability-switch"
+                        checked={isAvailableForOrders}
+                        onCheckedChange={setIsAvailableForOrders}
+                        disabled={isSavingAvailability}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="max-orders">Maximum Active Orders</Label>
+                    <Input 
+                        id="max-orders" 
+                        type="number" 
+                        className="w-32" 
+                        value={maxActiveOrders} 
+                        onChange={(e) => setMaxActiveOrders(Number(e.target.value))}
+                        min="1"
+                        max="20"
+                        disabled={isSavingAvailability}
+                    />
+                    <p className="text-xs text-muted-foreground">The maximum number of projects you want to work on at one time.</p>
+                </div>
+                 <Separator />
+                <div>
+                  <Label>Weekly Schedule</Label>
+                  <div className="space-y-3 mt-2">
+                    {Object.entries(weeklySchedule).map(([day, schedule]) => (
+                        <div key={day} className="grid grid-cols-[100px_1fr_auto_1fr] items-center gap-3 p-2 rounded-md border">
+                            <div className="flex items-center">
+                                <Switch 
+                                    id={`schedule-switch-${day}`} 
+                                    checked={schedule.available}
+                                    onCheckedChange={(checked) => handleScheduleChange(day, 'available', checked)}
+                                    disabled={isSavingAvailability}
+                                />
+                                <Label htmlFor={`schedule-switch-${day}`} className="ml-3 font-medium">{day}</Label>
+                            </div>
+                            <div className={cn("flex items-center gap-2", !schedule.available && "opacity-40 pointer-events-none")}>
+                               <Label htmlFor={`from-${day}`} className="text-xs">From:</Label>
+                               <Input id={`from-${day}`} type="time" value={schedule.from} onChange={(e) => handleScheduleChange(day, 'from', e.target.value)} className="h-8"/>
+                            </div>
+                             <span className={cn(!schedule.available && "opacity-40")}>-</span>
+                            <div className={cn("flex items-center gap-2", !schedule.available && "opacity-40 pointer-events-none")}>
+                               <Label htmlFor={`to-${day}`} className="text-xs">To:</Label>
+                               <Input id={`to-${day}`} type="time" value={schedule.to} onChange={(e) => handleScheduleChange(day, 'to', e.target.value)} className="h-8"/>
+                            </div>
+                        </div>
+                    ))}
+                  </div>
+                </div>
+            </CardContent>
+            <CardFooter className="justify-end border-t pt-6">
+                 <Button type="submit" disabled={isSavingAvailability}>
+                    {isSavingAvailability ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    {isSavingAvailability ? 'Saving...' : 'Save Availability'}
+                </Button>
+            </CardFooter>
+        </Card>
+      </form>
+
       <form onSubmit={handleReviewSettingsSubmit}>
         <Card className="shadow-lg">
           <CardHeader>
