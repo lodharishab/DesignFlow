@@ -8,14 +8,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera } from 'lucide-react';
+import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera, Wand2, Sparkles, AlertCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { designersData, type DesignerProfile } from '@/lib/designer-data';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { generateDesignerBio } from '@/ai/flows/designer-bio-flow';
+import type { DesignerBioResponse } from '@/ai/flows/designer-bio-types';
 
 // Hardcoded for prototype - replace with actual auth user ID
 const CURRENT_DESIGNER_ID = 'des001'; 
@@ -24,6 +26,89 @@ interface SocialLink {
   platform: string;
   url: string;
 }
+
+function AiAssistDialog({ onAccept, designer }: { onAccept: (content: DesignerBioResponse) => void; designer: DesignerProfile }) {
+  const [tone, setTone] = useState('Professional');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<DesignerBioResponse | null>(null);
+  const { toast } = useToast();
+
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    setGeneratedContent(null);
+    try {
+      const result = await generateDesignerBio({
+        name: designer.name,
+        specialties: designer.specialties.join(', '),
+        tone: tone,
+      });
+      setGeneratedContent(result);
+    } catch (error) {
+      console.error(error);
+      toast({ title: "AI Generation Failed", description: "Could not generate content. Please try again.", variant: "destructive" });
+    }
+    setIsGenerating(false);
+  };
+  
+  const handleAccept = () => {
+    if (generatedContent) {
+      onAccept(generatedContent);
+    }
+  };
+
+  return (
+    <DialogContent className="sm:max-w-[600px]">
+      <DialogHeader>
+        <DialogTitle className="font-headline text-2xl flex items-center"><Wand2 className="mr-3 h-6 w-6 text-primary"/> AI Bio Assistant</DialogTitle>
+        <DialogDescription>Let AI help you craft a professional bio based on your skills and preferred tone.</DialogDescription>
+      </DialogHeader>
+      <div className="space-y-4 py-4">
+        <div className="space-y-2">
+            <Label htmlFor="ai-tone">Select a Tone</Label>
+            <Select value={tone} onValueChange={setTone}>
+                <SelectTrigger id="ai-tone">
+                    <SelectValue placeholder="Select a tone..." />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="Professional">Professional</SelectItem>
+                    <SelectItem value="Friendly & Approachable">Friendly & Approachable</SelectItem>
+                    <SelectItem value="Creative & Artistic">Creative & Artistic</SelectItem>
+                    <SelectItem value="Formal & Corporate">Formal & Corporate</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+        <Button onClick={handleGenerate} disabled={isGenerating} className="w-full">
+          {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4"/>}
+          {isGenerating ? 'Generating...' : 'Generate Bio'}
+        </Button>
+        
+        {generatedContent && (
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="font-semibold">Suggested Bio:</h3>
+            <div className="p-3 border rounded-md bg-muted text-sm whitespace-pre-wrap">
+              {generatedContent.bio}
+            </div>
+          </div>
+        )}
+         <p className="text-xs text-muted-foreground flex items-center pt-2">
+            <AlertCircle className="h-3 w-3 mr-1.5"/>Powered by AI — please review carefully before saving.
+        </p>
+      </div>
+       <DialogFooter className="sm:justify-between gap-2">
+        <DialogClose asChild>
+            <Button variant="ghost">Cancel</Button>
+        </DialogClose>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleGenerate} disabled={isGenerating}>Regenerate</Button>
+          <DialogClose asChild>
+            <Button onClick={handleAccept} disabled={!generatedContent}>Accept & Insert</Button>
+          </DialogClose>
+        </div>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
 export default function DesignerProfilePage() {
   const { toast } = useToast();
   const [designer, setDesigner] = useState<DesignerProfile | null>(null);
@@ -62,7 +147,6 @@ export default function DesignerProfilePage() {
       setTimeZone('Asia/Kolkata'); // Example Default
       setLanguage('en-IN'); // Example Default
       
-      // Initialize social links from data or defaults
       const BehanceLink = foundDesigner.socialLinks?.find(l => l.platform === 'Behance')?.url || '';
       const DribbbleLink = foundDesigner.socialLinks?.find(l => l.platform === 'Dribbble')?.url || '';
       const LinkedInLink = foundDesigner.socialLinks?.find(l => l.platform === 'LinkedIn')?.url || '';
@@ -80,6 +164,10 @@ export default function DesignerProfilePage() {
     const newLinks = [...socialLinks];
     newLinks[index].url = value;
     setSocialLinks(newLinks);
+  };
+  
+  const handleAcceptAiContent = (content: DesignerBioResponse) => {
+    setBio(content.bio);
   };
 
   const handleSubmit = (e: FormEvent) => {
@@ -204,15 +292,25 @@ export default function DesignerProfilePage() {
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
             <div>
-              <Label htmlFor="bio" className="flex items-center mb-1"><UserCircle className="mr-2 h-4 w-4 text-muted-foreground" />Your Bio</Label>
+              <div className="flex justify-between items-center mb-1">
+                <Label htmlFor="bio" className="flex items-center"><UserCircle className="mr-2 h-4 w-4 text-muted-foreground" />Your Bio</Label>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button type="button" variant="secondary" size="sm"><Wand2 className="mr-1.5 h-4 w-4"/> AI Assist</Button>
+                    </DialogTrigger>
+                    <AiAssistDialog onAccept={handleAcceptAiContent} designer={designer} />
+                </Dialog>
+              </div>
               <Textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={5}
+                maxLength={300}
                 placeholder="Tell clients about yourself, your experience, and your design philosophy..."
                 disabled={isSaving}
               />
+              <p className="text-xs text-muted-foreground text-right">{bio.length} / 300 characters</p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
