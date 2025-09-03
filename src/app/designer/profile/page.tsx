@@ -156,15 +156,6 @@ export default function DesignerProfilePage() {
   // Availability state
   const [isAvailableForOrders, setIsAvailableForOrders] = useState(true);
   const [maxActiveOrders, setMaxActiveOrders] = useState(5);
-  const [weeklySchedule, setWeeklySchedule] = useState<WeeklySchedule>({
-    Monday: { available: true, from: '09:00', to: '18:00' },
-    Tuesday: { available: true, from: '09:00', to: '18:00' },
-    Wednesday: { available: true, from: '09:00', to: '18:00' },
-    Thursday: { available: true, from: '09:00', to: '18:00' },
-    Friday: { available: true, from: '09:00', to: '18:00' },
-    Saturday: { available: false, from: '10:00', to: '14:00' },
-    Sunday: { available: false, from: '10:00', to: '14:00' },
-  });
   const [isSavingAvailability, setIsSavingAvailability] = useState(false);
 
   // Review settings state
@@ -241,16 +232,6 @@ export default function DesignerProfilePage() {
     setSkills(skills.filter(skill => skill !== skillToRemove));
   };
   
-  const handleScheduleChange = (day: string, field: keyof DaySchedule, value: string | boolean) => {
-    setWeeklySchedule(prev => ({
-        ...prev,
-        [day]: {
-            ...prev[day],
-            [field]: value
-        }
-    }));
-  };
-
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -269,7 +250,7 @@ export default function DesignerProfilePage() {
   const handleAvailabilitySubmit = (e: FormEvent) => {
     e.preventDefault();
     setIsSavingAvailability(true);
-    console.log("Saving availability:", { isAvailableForOrders, maxActiveOrders, weeklySchedule });
+    console.log("Saving availability:", { isAvailableForOrders, maxActiveOrders });
     setTimeout(() => {
         toast({
             title: "Availability Saved (Simulated)",
@@ -555,34 +536,6 @@ export default function DesignerProfilePage() {
                         disabled={isSavingAvailability}
                     />
                     <p className="text-xs text-muted-foreground">The maximum number of projects you want to work on at one time.</p>
-                </div>
-                 <Separator />
-                <div>
-                  <Label>Weekly Schedule</Label>
-                  <div className="space-y-3 mt-2">
-                    {Object.entries(weeklySchedule).map(([day, schedule]) => (
-                        <div key={day} className="grid grid-cols-[100px_1fr_auto_1fr] items-center gap-3 p-2 rounded-md border">
-                            <div className="flex items-center">
-                                <Switch 
-                                    id={`schedule-switch-${day}`} 
-                                    checked={schedule.available}
-                                    onCheckedChange={(checked) => handleScheduleChange(day, 'available', checked)}
-                                    disabled={isSavingAvailability}
-                                />
-                                <Label htmlFor={`schedule-switch-${day}`} className="ml-3 font-medium">{day}</Label>
-                            </div>
-                            <div className={cn("flex items-center gap-2", !schedule.available && "opacity-40 pointer-events-none")}>
-                               <Label htmlFor={`from-${day}`} className="text-xs">From:</Label>
-                               <Input id={`from-${day}`} type="time" value={schedule.from} onChange={(e) => handleScheduleChange(day, 'from', e.target.value)} className="h-8"/>
-                            </div>
-                             <span className={cn(!schedule.available && "opacity-40")}>-</span>
-                            <div className={cn("flex items-center gap-2", !schedule.available && "opacity-40 pointer-events-none")}>
-                               <Label htmlFor={`to-${day}`} className="text-xs">To:</Label>
-                               <Input id={`to-${day}`} type="time" value={schedule.to} onChange={(e) => handleScheduleChange(day, 'to', e.target.value)} className="h-8"/>
-                            </div>
-                        </div>
-                    ))}
-                  </div>
                 </div>
             </CardContent>
             <CardFooter className="justify-end border-t pt-6">
