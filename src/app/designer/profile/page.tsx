@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star } from 'lucide-react';
+import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { designersData, type DesignerProfile } from '@/lib/designer-data';
 import { Badge } from '@/components/ui/badge';
@@ -31,9 +31,13 @@ export default function DesignerProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
 
   // Form state
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
   const [location, setLocation] = useState('');
   const [website, setWebsite] = useState('');
+  const [timeZone, setTimeZone] = useState('');
+  const [language, setLanguage] = useState('');
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([
     { platform: 'Behance', url: '' },
     { platform: 'Dribbble', url: '' },
@@ -50,9 +54,13 @@ export default function DesignerProfilePage() {
     const foundDesigner = designersData.find(d => d.id === CURRENT_DESIGNER_ID);
     if (foundDesigner) {
       setDesigner(foundDesigner);
+      setName(foundDesigner.name);
+      setUsername(foundDesigner.slug);
       setBio(foundDesigner.bio || '');
       setLocation(foundDesigner.location || '');
       setWebsite(foundDesigner.website || '');
+      setTimeZone('Asia/Kolkata'); // Example Default
+      setLanguage('en-IN'); // Example Default
       
       // Initialize social links from data or defaults
       const BehanceLink = foundDesigner.socialLinks?.find(l => l.platform === 'Behance')?.url || '';
@@ -78,7 +86,7 @@ export default function DesignerProfilePage() {
     e.preventDefault();
     setIsSaving(true);
     // Simulate API call
-    console.log("Saving profile data:", { bio, location, website, socialLinks });
+    console.log("Saving profile data:", { name, username, bio, location, website, socialLinks, timeZone, language });
     setTimeout(() => {
       toast({
         title: "Profile Updated (Simulated)",
@@ -123,21 +131,76 @@ export default function DesignerProfilePage() {
       </h1>
 
       <form onSubmit={handleSubmit}>
+        {/* Personal Info Card */}
+        <Card className="shadow-lg mb-8">
+            <CardHeader>
+                <CardTitle className="flex items-center"><UserCog className="mr-2 h-5 w-5 text-muted-foreground" /> Personal Info</CardTitle>
+                <CardDescription>Manage your personal details and account settings.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="flex items-center space-x-6">
+                    <div className="relative">
+                        <Avatar className="h-24 w-24">
+                            <AvatarImage src={designer.avatarUrl} alt={designer.name} data-ai-hint={designer.imageHint} />
+                            <AvatarFallback>{designer.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <Button size="icon" className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full" disabled>
+                            <Camera className="h-4 w-4" />
+                            <span className="sr-only">Change Avatar</span>
+                        </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground flex-grow">Avatar uploads are coming soon. Your current avatar is shown.</p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="name" className="flex items-center"><UserCircle className="mr-2 h-4 w-4"/>Full Name</Label>
+                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} disabled={isSaving} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="username" className="flex items-center"><AtSign className="mr-2 h-4 w-4"/>Username</Label>
+                        <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} disabled={isSaving} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="email" className="flex items-center"><Mail className="mr-2 h-4 w-4"/>Email Address</Label>
+                        <Input id="email" type="email" value={designer.email || ''} disabled />
+                        <p className="text-xs text-muted-foreground">Email cannot be changed. Please contact support.</p>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="phone" className="flex items-center"><Phone className="mr-2 h-4 w-4"/>Phone Number</Label>
+                        <Input id="phone" value="9876543210" disabled /> {/* Placeholder value */}
+                        <p className="text-xs text-muted-foreground">Phone number is your primary login.</p>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="timezone" className="flex items-center"><Clock className="mr-2 h-4 w-4"/>Time Zone</Label>
+                         <Select value={timeZone} onValueChange={setTimeZone} disabled={isSaving}>
+                            <SelectTrigger id="timezone"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Asia/Kolkata">India Standard Time (IST)</SelectItem>
+                                <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
+                                <SelectItem value="Europe/London">Greenwich Mean Time (GMT)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="language" className="flex items-center"><Languages className="mr-2 h-4 w-4"/>Language/Locale</Label>
+                         <Select value={language} onValueChange={setLanguage} disabled={isSaving}>
+                            <SelectTrigger id="language"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="en-IN">English (India)</SelectItem>
+                                <SelectItem value="en-US">English (US)</SelectItem>
+                                <SelectItem value="hi-IN" disabled>Hindi (coming soon)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+        
+        {/* Professional Info Card */}
         <Card className="shadow-lg">
           <CardHeader>
-            <div className="flex items-start space-x-6">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={designer.avatarUrl} alt={designer.name} data-ai-hint={designer.imageHint} />
-                <AvatarFallback>{designer.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="flex-grow">
-                <CardTitle className="font-headline text-2xl">{designer.name}</CardTitle>
-                <CardDescription className="flex items-center text-sm text-muted-foreground">
-                  <Mail className="mr-1.5 h-4 w-4" /> {designer.email || 'N/A'} 
-                </CardDescription>
-                <Button variant="outline" size="sm" className="mt-3" disabled>Change Avatar (Soon)</Button>
-              </div>
-            </div>
+            <CardTitle className="flex items-center"><Briefcase className="mr-2 h-5 w-5 text-muted-foreground" />Professional Information</CardTitle>
+            <CardDescription>This information is visible on your public profile.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
             <div>
