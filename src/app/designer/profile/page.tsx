@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { generateDesignerBio } from '@/ai/flows/designer-bio-flow';
 import type { DesignerBioResponse } from '@/ai/flows/designer-bio-types';
 import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
 
 // Hardcoded for prototype - replace with actual auth user ID
 const CURRENT_DESIGNER_ID = 'des001'; 
@@ -185,13 +186,15 @@ export default function DesignerProfilePage() {
     setBio(content.bio);
   };
 
-  const handleSpecialtyChange = (specialty: string, checked: boolean) => {
+  const handleSpecialtyToggle = (specialtyToToggle: string) => {
     setSpecialties(prev => {
-        if (checked) {
-            return [...prev, specialty];
+        const newSpecialties = new Set(prev);
+        if (newSpecialties.has(specialtyToToggle)) {
+            newSpecialties.delete(specialtyToToggle);
         } else {
-            return prev.filter(s => s !== specialty);
+            newSpecialties.add(specialtyToToggle);
         }
+        return Array.from(newSpecialties);
     });
   };
 
@@ -386,19 +389,23 @@ export default function DesignerProfilePage() {
 
              <div>
               <h3 className="text-lg font-semibold mb-3 flex items-center"><Star className="mr-2 h-5 w-5 text-primary" />Your Specialties</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-3 p-4 border rounded-md bg-secondary/30">
-                {allAvailableSpecialties.map(specialty => (
-                    <div key={specialty} className="flex items-center space-x-2">
-                        <Checkbox 
-                            id={`specialty-${specialty.replace(/\s+/g, '-')}`}
-                            checked={specialties.includes(specialty)}
-                            onCheckedChange={(checked) => handleSpecialtyChange(specialty, !!checked)}
-                            disabled={isSaving}
-                        />
-                        <Label htmlFor={`specialty-${specialty.replace(/\s+/g, '-')}`} className="font-normal text-sm cursor-pointer">{specialty}</Label>
-                    </div>
-                ))}
-              </div>
+               <div className="flex flex-wrap gap-2 p-4 border rounded-md bg-secondary/30">
+                    {allAvailableSpecialties.map(specialty => {
+                        const isSelected = specialties.includes(specialty);
+                        return (
+                            <Button 
+                                key={specialty}
+                                type="button"
+                                variant={isSelected ? "default" : "outline"}
+                                onClick={() => handleSpecialtyToggle(specialty)}
+                                disabled={isSaving}
+                                size="sm"
+                            >
+                                {specialty}
+                            </Button>
+                        )
+                    })}
+                </div>
             </div>
 
             <Separator />
