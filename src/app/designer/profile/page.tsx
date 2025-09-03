@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
@@ -20,7 +21,7 @@ import { generateDesignerBio } from '@/ai/flows/designer-bio-flow';
 import type { DesignerBioResponse } from '@/ai/flows/designer-bio-types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 // Hardcoded for prototype - replace with actual auth user ID
 const CURRENT_DESIGNER_ID = 'des001'; 
