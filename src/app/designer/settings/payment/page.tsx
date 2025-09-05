@@ -54,6 +54,16 @@ const mockPayoutHistory = [
     { id: 'po_4', date: new Date(2024, 5, 1), amount: 5500.75, method: 'Failed', relatedOrderId: 'ORD6531A' },
 ];
 
+const countryCurrencyMap: Record<string, string> = {
+    'India': 'INR',
+    'United States': 'USD',
+    'United Kingdom': 'GBP',
+    'Germany': 'EUR',
+    'Singapore': 'SGD',
+};
+const countries = Object.keys(countryCurrencyMap);
+const currencies = ['INR', 'USD', 'GBP', 'EUR'];
+
 export default function DesignerPaymentSettingsPage(): ReactElement {
   const { toast } = useToast();
   const [methods, setMethods] = useState<PayoutMethod[]>(mockPayoutMethods);
@@ -62,7 +72,14 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
   // State for Bank Transfer form
   const [accountHolderName, setAccountHolderName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
+  const [confirmAccountNumber, setConfirmAccountNumber] = useState('');
+  const [bankName, setBankName] = useState('');
   const [ifscCode, setIfscCode] = useState('');
+  const [swiftBic, setSwiftBic] = useState('');
+  const [accountType, setAccountType] = useState('');
+  const [country, setCountry] = useState('India');
+  const [currency, setCurrency] = useState('INR');
+  
 
   // State for UPI form
   const [upiId, setUpiId] = useState('');
@@ -86,10 +103,19 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
 
   const primaryMethod = methods.find(m => m.isPrimary);
 
+  const handleCountryChange = (selectedCountry: string) => {
+      setCountry(selectedCountry);
+      setCurrency(countryCurrencyMap[selectedCountry] || 'INR');
+  };
+
   const handleBankSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!accountHolderName || !accountNumber || !ifscCode) {
-        toast({ title: "Missing Information", description: "Please fill all the bank account fields.", variant: "destructive" });
+    if (!accountHolderName || !accountNumber || !ifscCode || !bankName || !accountType || !country || !currency) {
+        toast({ title: "Missing Information", description: "Please fill all required bank account fields.", variant: "destructive" });
+        return;
+    }
+    if (accountNumber !== confirmAccountNumber) {
+        toast({ title: "Account Numbers Mismatch", description: "The account numbers you entered do not match.", variant: "destructive" });
         return;
     }
     setIsSaving(true);
@@ -100,7 +126,13 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
       setMethods(prev => [...prev, {id: `meth_${Date.now()}`, type: 'Bank Account', details: `**** **** **** ${accountNumber.slice(-4)}`, isPrimary: prev.length === 0, status: 'Pending'}]);
       setAccountHolderName('');
       setAccountNumber('');
+      setConfirmAccountNumber('');
+      setBankName('');
       setIfscCode('');
+      setSwiftBic('');
+      setAccountType('');
+      setCountry('India');
+      setCurrency('INR');
     }, 1500);
   };
   
@@ -274,14 +306,63 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
                               <Label htmlFor="accountHolderName">Account Holder Name (as per bank records)*</Label>
                               <Input id="accountHolderName" value={accountHolderName} onChange={(e) => setAccountHolderName(e.target.value)} placeholder="e.g., Priya Sharma" required disabled={isSaving}/>
                           </div>
-                          <div className="space-y-2">
-                              <Label htmlFor="accountNumber">Account Number*</Label>
-                              <Input id="accountNumber" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Enter your bank account number" required disabled={isSaving}/>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="accountNumber">Account Number / IBAN*</Label>
+                                <Input id="accountNumber" type="password" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Enter account number" required disabled={isSaving}/>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="confirmAccountNumber">Confirm Account Number*</Label>
+                                <Input id="confirmAccountNumber" type="password" value={confirmAccountNumber} onChange={(e) => setConfirmAccountNumber(e.target.value)} placeholder="Confirm account number" required disabled={isSaving}/>
+                            </div>
                           </div>
-                          <div className="space-y-2">
-                              <Label htmlFor="ifscCode">IFSC Code*</Label>
-                              <Input id="ifscCode" value={ifscCode} onChange={(e) => setIfscCode(e.target.value)} placeholder="Enter your bank's IFSC code" required disabled={isSaving}/>
-                          </div>
+                           <div className="grid md:grid-cols-2 gap-4">
+                               <div className="space-y-2">
+                                  <Label htmlFor="bankName">Bank Name*</Label>
+                                  <Input id="bankName" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g., HDFC Bank" required disabled={isSaving}/>
+                              </div>
+                               <div className="space-y-2">
+                                  <Label htmlFor="accountType">Account Type*</Label>
+                                  <Select value={accountType} onValueChange={setAccountType} required>
+                                    <SelectTrigger id="accountType"><SelectValue placeholder="Select account type..." /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Savings">Savings</SelectItem>
+                                        <SelectItem value="Current">Current</SelectItem>
+                                        <SelectItem value="Business">Business</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                              </div>
+                           </div>
+                           <div className="grid md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="ifscCode">IFSC / Routing Number*</Label>
+                                    <Input id="ifscCode" value={ifscCode} onChange={(e) => setIfscCode(e.target.value)} placeholder="Enter IFSC or Routing Number" required disabled={isSaving}/>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="swiftBic">SWIFT/BIC Code (Optional)</Label>
+                                    <Input id="swiftBic" value={swiftBic} onChange={(e) => setSwiftBic(e.target.value)} placeholder="For international payouts" disabled={isSaving}/>
+                                </div>
+                           </div>
+                             <div className="grid md:grid-cols-2 gap-4">
+                               <div className="space-y-2">
+                                  <Label htmlFor="country">Country*</Label>
+                                  <Select value={country} onValueChange={handleCountryChange} required>
+                                      <SelectTrigger id="country"><SelectValue placeholder="Select country..." /></SelectTrigger>
+                                      <SelectContent>
+                                        {countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                      </SelectContent>
+                                  </Select>
+                              </div>
+                               <div className="space-y-2">
+                                  <Label htmlFor="currency">Currency*</Label>
+                                  <Select value={currency} onValueChange={setCurrency} required>
+                                      <SelectTrigger id="currency"><SelectValue placeholder="Select currency..." /></SelectTrigger>
+                                      <SelectContent>
+                                        {currencies.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                      </SelectContent>
+                                  </Select>
+                              </div>
+                           </div>
                            <div className="flex justify-end pt-2">
                                 <Button type="submit" disabled={isSaving}>
                                   {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
