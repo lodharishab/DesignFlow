@@ -170,10 +170,11 @@ function AiAssistDialog({ onAccept, designer }: { onAccept: (content: DesignerBi
 export default function DesignerProfilePage() {
   const { toast } = useToast();
   const [designer, setDesigner] = useState<DesignerProfile | null>(null);
+  const [initialState, setInitialState] = useState<any | null>(null); // For resetting the form
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Form state
+  // Consolidated form state
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
@@ -181,26 +182,14 @@ export default function DesignerProfilePage() {
   const [website, setWebsite] = useState('');
   const [timeZone, setTimeZone] = useState('');
   const [language, setLanguage] = useState('');
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([
-    { platform: 'Behance', url: '' },
-    { platform: 'Dribbble', url: '' },
-    { platform: 'LinkedIn', url: '' },
-  ]);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([{ platform: 'Behance', url: '' },{ platform: 'Dribbble', url: '' },{ platform: 'LinkedIn', url: '' },]);
   const [specialties, setSpecialties] = useState<string[]>([]);
   const [skills, setSkills] = useState<string[]>([]);
   const [currentSkillInput, setCurrentSkillInput] = useState('');
-
-  // Availability state
   const [isAvailableForOrders, setIsAvailableForOrders] = useState(true);
   const [maxActiveOrders, setMaxActiveOrders] = useState(5);
-  const [isSavingAvailability, setIsSavingAvailability] = useState(false);
-
-  // Review settings state
   const [autoRequestReviews, setAutoRequestReviews] = useState(true);
   const [reviewRequestDelay, setReviewRequestDelay] = useState('immediate');
-  const [isSavingReviewSettings, setIsSavingReviewSettings] = useState(false);
-
-  // Notification Preferences State
   const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferences>({
     newOrder: { inApp: true, email: true, push: false },
     paymentAlerts: { inApp: true, email: true, push: false },
@@ -208,38 +197,66 @@ export default function DesignerProfilePage() {
     reviewAlerts: { inApp: true, email: false, push: false },
     milestoneUpdates: { inApp: true, email: false, push: false },
   });
-  const [isSavingNotifications, setIsSavingNotifications] = useState(false);
-
-  // Security State
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
-  const [isSavingSecurity, setIsSavingSecurity] = useState(false);
+
+  const captureInitialState = (designerProfile: DesignerProfile) => {
+    const initialStateData = {
+      name: designerProfile.name,
+      username: designerProfile.slug,
+      bio: designerProfile.bio || '',
+      location: designerProfile.location || '',
+      website: designerProfile.website || '',
+      timeZone: 'Asia/Kolkata',
+      language: 'en-IN',
+      socialLinks: [
+        { platform: 'Behance', url: designerProfile.socialLinks?.find(l => l.platform === 'Behance')?.url || '' },
+        { platform: 'Dribbble', url: designerProfile.socialLinks?.find(l => l.platform === 'Dribbble')?.url || '' },
+        { platform: 'LinkedIn', url: designerProfile.socialLinks?.find(l => l.platform === 'LinkedIn')?.url || '' },
+      ],
+      specialties: designerProfile.specialties || [],
+      skills: designerProfile.specialties || [],
+      isAvailableForOrders: true,
+      maxActiveOrders: 5,
+      autoRequestReviews: true,
+      reviewRequestDelay: 'immediate',
+      notificationPrefs: { /* Default prefs */ },
+      isTwoFactorEnabled: false,
+    };
+    setInitialState(initialStateData);
+    resetForm(initialStateData);
+  };
+  
+  const resetForm = (stateToResetTo = initialState) => {
+    if (!stateToResetTo) return;
+    setName(stateToResetTo.name);
+    setUsername(stateToResetTo.username);
+    setBio(stateToResetTo.bio);
+    setLocation(stateToResetTo.location);
+    setWebsite(stateToResetTo.website);
+    setTimeZone(stateToResetTo.timeZone);
+    setLanguage(stateToResetTo.language);
+    setSocialLinks(stateToResetTo.socialLinks);
+    setSpecialties(stateToResetTo.specialties);
+    setSkills(stateToResetTo.skills);
+    setIsAvailableForOrders(stateToResetTo.isAvailableForOrders);
+    setMaxActiveOrders(stateToResetTo.maxActiveOrders);
+    setAutoRequestReviews(stateToResetTo.autoRequestReviews);
+    setReviewRequestDelay(stateToResetTo.reviewRequestDelay);
+    // setNotificationPrefs(stateToResetTo.notificationPrefs);
+    setIsTwoFactorEnabled(stateToResetTo.isTwoFactorEnabled);
+    setNewPassword('');
+    setConfirmPassword('');
+    toast({ title: "Changes Reverted", description: "Your unsaved changes have been discarded." });
+  };
 
 
   useEffect(() => {
     const foundDesigner = designersData.find(d => d.id === CURRENT_DESIGNER_ID);
     if (foundDesigner) {
       setDesigner(foundDesigner);
-      setName(foundDesigner.name);
-      setUsername(foundDesigner.slug);
-      setBio(foundDesigner.bio || '');
-      setLocation(foundDesigner.location || '');
-      setWebsite(foundDesigner.website || '');
-      setTimeZone('Asia/Kolkata'); // Example Default
-      setLanguage('en-IN'); // Example Default
-      setSpecialties(foundDesigner.specialties || []);
-      setSkills(foundDesigner.specialties || []); // Using specialties as placeholder for skills initially
-      
-      const BehanceLink = foundDesigner.socialLinks?.find(l => l.platform === 'Behance')?.url || '';
-      const DribbbleLink = foundDesigner.socialLinks?.find(l => l.platform === 'Dribbble')?.url || '';
-      const LinkedInLink = foundDesigner.socialLinks?.find(l => l.platform === 'LinkedIn')?.url || '';
-      setSocialLinks([
-        { platform: 'Behance', url: BehanceLink },
-        { platform: 'Dribbble', url: DribbbleLink },
-        { platform: 'LinkedIn', url: LinkedInLink },
-      ]);
-
+      captureInitialState(foundDesigner);
     }
     setIsLoading(false);
   }, []);
@@ -285,47 +302,6 @@ export default function DesignerProfilePage() {
     setSkills(skills.filter(skill => skill !== skillToRemove));
   };
   
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    // Simulate API call
-    console.log("Saving profile data:", { name, username, bio, location, website, socialLinks, timeZone, language, specialties, skills });
-    setTimeout(() => {
-      toast({
-        title: "Profile Updated (Simulated)",
-        description: "Your profile information has been saved.",
-      });
-      setIsSaving(false);
-    }, 1000);
-  };
-  
-  const handleAvailabilitySubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setIsSavingAvailability(true);
-    console.log("Saving availability:", { isAvailableForOrders, maxActiveOrders });
-    setTimeout(() => {
-        toast({
-            title: "Availability Saved (Simulated)",
-            description: "Your work preferences have been updated."
-        });
-        setIsSavingAvailability(false);
-    }, 1000);
-  };
-  
-   const handleReviewSettingsSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setIsSavingReviewSettings(true);
-    console.log("Saving review settings:", { autoRequestReviews, reviewRequestDelay });
-    setTimeout(() => {
-        toast({
-            title: "Review Settings Saved",
-            description: `Review requests will be sent ${reviewRequestDelay === 'immediate' ? 'immediately' : `after ${reviewRequestDelay}`}.`
-        });
-        setIsSavingReviewSettings(false);
-    }, 1000);
-  };
-  
   const handleNotificationPrefChange = (type: NotificationType, channel: NotificationChannel, checked: boolean) => {
     setNotificationPrefs(prev => ({
         ...prev,
@@ -335,34 +311,40 @@ export default function DesignerProfilePage() {
         }
     }));
   };
-  
-  const handleSaveNotifications = (e: FormEvent) => {
+
+  const handleFormSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setIsSavingNotifications(true);
-    console.log("Saving notification preferences:", notificationPrefs);
-    setTimeout(() => {
-        toast({ title: "Notification Settings Saved" });
-        setIsSavingNotifications(false);
-    }, 1000);
-  };
-  
-  const handleSecuritySubmit = (e: FormEvent) => {
-    e.preventDefault();
+    setIsSaving(true);
+
     if (newPassword && newPassword !== confirmPassword) {
       toast({ title: "Error", description: "Passwords do not match.", variant: "destructive" });
+      setIsSaving(false);
       return;
     }
     if (newPassword && newPassword.length < 8) {
       toast({ title: "Error", description: "Password must be at least 8 characters long.", variant: "destructive" });
+      setIsSaving(false);
       return;
     }
-    setIsSavingSecurity(true);
-    console.log("Saving security settings:", { newPassword: newPassword ? '******' : '', isTwoFactorEnabled });
+
+    // Simulate saving all data
+    const allData = {
+        name, username, bio, location, website, timeZone, language, socialLinks, specialties, skills,
+        isAvailableForOrders, maxActiveOrders,
+        autoRequestReviews, reviewRequestDelay,
+        notificationPrefs,
+        newPassword: newPassword ? '******' : '', isTwoFactorEnabled
+    };
+    console.log("Saving all profile settings (simulated):", allData);
+
     setTimeout(() => {
-      toast({ title: "Security Settings Updated" });
+      toast({
+        title: "Profile Saved (Simulated)",
+        description: "All your settings have been successfully updated.",
+      });
+      setIsSaving(false);
       setNewPassword('');
       setConfirmPassword('');
-      setIsSavingSecurity(false);
     }, 1500);
   };
 
@@ -381,15 +363,15 @@ export default function DesignerProfilePage() {
   }
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold font-headline flex items-center">
-        <Settings className="mr-3 h-8 w-8 text-primary" />
-        Profile & Settings
-      </h1>
+    <form onSubmit={handleFormSubmit}>
+        <div className="space-y-8 pb-28"> {/* Add padding-bottom for sticky footer */}
+        <h1 className="text-3xl font-bold font-headline flex items-center">
+            <Settings className="mr-3 h-8 w-8 text-primary" />
+            Profile & Settings
+        </h1>
 
-      <form onSubmit={handleSubmit}>
         {/* Personal Info Card */}
-        <Card className="shadow-lg mb-8">
+        <Card className="shadow-lg">
             <CardHeader>
                 <CardTitle className="flex items-center"><UserCog className="mr-2 h-5 w-5 text-muted-foreground" /> Personal Info</CardTitle>
                 <CardDescription>Manage your personal details and account settings.</CardDescription>
@@ -586,50 +568,42 @@ export default function DesignerProfilePage() {
             </div>
 
           </CardContent>
-          <CardFooter className="justify-end border-t pt-6">
-            <Button type="submit" disabled={isSaving}>
-              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              {isSaving ? 'Saving...' : 'Save Profile Changes'}
-            </Button>
-          </CardFooter>
         </Card>
-      </form>
-       
-      <Card className="shadow-lg">
-        <CardHeader>
-            <CardTitle className="flex items-center"><Award className="mr-2 h-5 w-5 text-muted-foreground"/>My Badges</CardTitle>
-            <CardDescription>Showcase your achievements to build trust with clients.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <TooltipProvider>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {badgeData.map(badge => {
-                const hasBadge = designer.badges?.includes(badge.name);
-                return (
-                  <Tooltip key={badge.name}>
-                    <TooltipTrigger asChild>
-                      <Card className={cn(
-                        "text-center p-4 flex flex-col items-center justify-center gap-2 transition-all",
-                        hasBadge ? 'border-primary/40 bg-primary/10' : 'bg-muted/50'
-                      )}>
-                        <badge.icon className={cn("h-10 w-10", hasBadge ? 'text-primary' : 'text-muted-foreground/60')} />
-                        <p className={cn("font-semibold text-sm", hasBadge ? 'text-primary' : 'text-muted-foreground')}>{badge.name}</p>
-                      </Card>
-                    </TooltipTrigger>
-                    {!hasBadge && (
-                      <TooltipContent>
-                        <p className="text-xs">{badge.criteria}</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                );
-              })}
-            </div>
-          </TooltipProvider>
-        </CardContent>
-      </Card>
       
-      <form onSubmit={handleAvailabilitySubmit}>
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center"><Award className="mr-2 h-5 w-5 text-muted-foreground"/>My Badges</CardTitle>
+                <CardDescription>Showcase your achievements to build trust with clients.</CardDescription>
+            </CardHeader>
+            <CardContent>
+            <TooltipProvider>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {badgeData.map(badge => {
+                    const hasBadge = designer.badges?.includes(badge.name);
+                    return (
+                    <Tooltip key={badge.name}>
+                        <TooltipTrigger asChild>
+                        <Card className={cn(
+                            "text-center p-4 flex flex-col items-center justify-center gap-2 transition-all",
+                            hasBadge ? 'border-primary/40 bg-primary/10' : 'bg-muted/50'
+                        )}>
+                            <badge.icon className={cn("h-10 w-10", hasBadge ? 'text-primary' : 'text-muted-foreground/60')} />
+                            <p className={cn("font-semibold text-sm", hasBadge ? 'text-primary' : 'text-muted-foreground')}>{badge.name}</p>
+                        </Card>
+                        </TooltipTrigger>
+                        {!hasBadge && (
+                        <TooltipContent>
+                            <p className="text-xs">{badge.criteria}</p>
+                        </TooltipContent>
+                        )}
+                    </Tooltip>
+                    );
+                })}
+                </div>
+            </TooltipProvider>
+            </CardContent>
+        </Card>
+      
         <Card className="shadow-lg">
             <CardHeader>
                 <CardTitle className="flex items-center"><Power className="mr-2 h-5 w-5 text-muted-foreground" />Work Availability</CardTitle>
@@ -647,7 +621,7 @@ export default function DesignerProfilePage() {
                         id="availability-switch"
                         checked={isAvailableForOrders}
                         onCheckedChange={setIsAvailableForOrders}
-                        disabled={isSavingAvailability}
+                        disabled={isSaving}
                     />
                 </div>
                 <div className="space-y-2">
@@ -660,21 +634,13 @@ export default function DesignerProfilePage() {
                         onChange={(e) => setMaxActiveOrders(Number(e.target.value))}
                         min="1"
                         max="20"
-                        disabled={isSavingAvailability}
+                        disabled={isSaving}
                     />
                     <p className="text-xs text-muted-foreground">The maximum number of projects you want to work on at one time.</p>
                 </div>
             </CardContent>
-            <CardFooter className="justify-end border-t pt-6">
-                 <Button type="submit" disabled={isSavingAvailability}>
-                    {isSavingAvailability ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    {isSavingAvailability ? 'Saving...' : 'Save Availability'}
-                </Button>
-            </CardFooter>
         </Card>
-      </form>
 
-      <form onSubmit={handleReviewSettingsSubmit}>
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center"><Star className="mr-2 h-5 w-5 text-muted-foreground" />Automated Review Requests</CardTitle>
@@ -692,7 +658,7 @@ export default function DesignerProfilePage() {
                 id="auto-review-switch"
                 checked={autoRequestReviews}
                 onCheckedChange={setAutoRequestReviews}
-                disabled={isSavingReviewSettings}
+                disabled={isSaving}
               />
             </div>
             {autoRequestReviews && (
@@ -701,7 +667,7 @@ export default function DesignerProfilePage() {
                  <Select
                   value={reviewRequestDelay}
                   onValueChange={setReviewRequestDelay}
-                  disabled={isSavingReviewSettings}
+                  disabled={isSaving}
                 >
                   <SelectTrigger className="w-[180px]" id="review-delay">
                     <SelectValue placeholder="Select delay" />
@@ -714,16 +680,8 @@ export default function DesignerProfilePage() {
               </div>
             )}
           </CardContent>
-          <CardFooter className="justify-end border-t pt-6">
-              <Button type="submit" disabled={isSavingReviewSettings}>
-                {isSavingReviewSettings ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                {isSavingReviewSettings ? 'Saving...' : 'Save Review Settings'}
-            </Button>
-          </CardFooter>
         </Card>
-      </form>
       
-       <form onSubmit={handleSaveNotifications}>
         <Card className="shadow-lg">
             <CardHeader>
                 <CardTitle className="flex items-center"><Bell className="mr-2 h-5 w-5 text-muted-foreground" />Notification Preferences</CardTitle>
@@ -750,21 +708,21 @@ export default function DesignerProfilePage() {
                                     <Checkbox 
                                       checked={notificationPrefs[type.id]?.inApp}
                                       onCheckedChange={(checked) => handleNotificationPrefChange(type.id, 'inApp', !!checked)}
-                                      disabled={type.disabled || isSavingNotifications}
+                                      disabled={type.disabled || isSaving}
                                     />
                                 </TableCell>
                                 <TableCell className="text-center">
                                     <Checkbox 
                                       checked={notificationPrefs[type.id]?.email}
                                       onCheckedChange={(checked) => handleNotificationPrefChange(type.id, 'email', !!checked)}
-                                      disabled={type.disabled || isSavingNotifications}
+                                      disabled={type.disabled || isSaving}
                                     />
                                 </TableCell>
                                 <TableCell className="text-center">
                                      <Checkbox 
                                       checked={notificationPrefs[type.id]?.push}
                                       onCheckedChange={(checked) => handleNotificationPrefChange(type.id, 'push', !!checked)}
-                                      disabled={isSavingNotifications}
+                                      disabled={isSaving}
                                     />
                                 </TableCell>
                             </TableRow>
@@ -772,16 +730,8 @@ export default function DesignerProfilePage() {
                     </TableBody>
                 </Table>
             </CardContent>
-             <CardFooter className="justify-end border-t pt-6">
-                <Button type="submit" disabled={isSavingNotifications}>
-                    {isSavingNotifications ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
-                    {isSavingNotifications ? 'Saving...' : 'Save Notification Settings'}
-                </Button>
-            </CardFooter>
         </Card>
-      </form>
 
-      <form onSubmit={handleSecuritySubmit}>
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center"><ShieldCheck className="mr-2 h-5 w-5 text-muted-foreground" />Security</CardTitle>
@@ -793,11 +743,11 @@ export default function DesignerProfilePage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="newPassword">New Password</Label>
-                  <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={isSavingSecurity} />
+                  <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={isSaving} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isSavingSecurity} />
+                  <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isSaving} />
                 </div>
               </div>
             </div>
@@ -817,7 +767,7 @@ export default function DesignerProfilePage() {
                   id="2fa-switch"
                   checked={isTwoFactorEnabled}
                   onCheckedChange={setIsTwoFactorEnabled}
-                  disabled={isSavingSecurity}
+                  disabled={isSaving}
                 />
               </div>
             </div>
@@ -849,14 +799,23 @@ export default function DesignerProfilePage() {
               </Table>
             </div>
           </CardContent>
-          <CardFooter className="justify-end border-t pt-6">
-            <Button type="submit" disabled={isSavingSecurity}>
-              {isSavingSecurity ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-              Save Security Settings
-            </Button>
-          </CardFooter>
         </Card>
-      </form>
-    </div>
+      </div>
+
+       <div className="fixed bottom-0 left-0 md:left-[var(--sidebar-width)] right-0 z-40">
+            <div className="container mx-auto px-6">
+                <Card className="shadow-2xl border-t-2 rounded-b-none p-4">
+                    <div className="flex justify-end items-center gap-4">
+                        <Button variant="outline" type="button" onClick={() => resetForm(initialState)} disabled={isSaving}>Cancel</Button>
+                        <Button type="submit" disabled={isSaving}>
+                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                            {isSaving ? 'Saving All Changes...' : 'Save All Changes'}
+                        </Button>
+                    </div>
+                </Card>
+            </div>
+       </div>
+    </form>
   );
 }
+
