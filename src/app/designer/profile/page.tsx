@@ -21,8 +21,10 @@ import type { DesignerBioResponse } from '@/ai/flows/designer-bio-types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
 
 // Hardcoded for prototype - replace with actual auth user ID
 const CURRENT_DESIGNER_ID = 'des001'; 
@@ -225,10 +227,10 @@ export default function DesignerProfilePage() {
       isTwoFactorEnabled: false,
     };
     setInitialState(initialStateData);
-    resetForm(initialStateData);
+    resetForm(initialStateData, false); // Don't show toast on initial load
   };
   
-  const resetForm = (stateToResetTo = initialState) => {
+  const resetForm = (stateToResetTo = initialState, showToast = true) => {
     if (!stateToResetTo) return;
     setName(stateToResetTo.name);
     setUsername(stateToResetTo.username);
@@ -248,7 +250,9 @@ export default function DesignerProfilePage() {
     setIsTwoFactorEnabled(stateToResetTo.isTwoFactorEnabled);
     setNewPassword('');
     setConfirmPassword('');
-    toast({ title: "Changes Reverted", description: "Your unsaved changes have been discarded." });
+    if(showToast) {
+        toast({ title: "Changes Reverted", description: "Your unsaved changes have been discarded." });
+    }
   };
 
 
@@ -339,8 +343,9 @@ export default function DesignerProfilePage() {
 
     setTimeout(() => {
       toast({
-        title: "Profile Saved (Simulated)",
-        description: "All your settings have been successfully updated.",
+        title: "Profile Updated Successfully!",
+        description: "Your settings have been saved.",
+        variant: 'default',
       });
       setIsSaving(false);
       setNewPassword('');
@@ -370,436 +375,362 @@ export default function DesignerProfilePage() {
             Profile & Settings
         </h1>
 
-        {/* Personal Info Card */}
-        <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="flex items-center"><UserCog className="mr-2 h-5 w-5 text-muted-foreground" /> Personal Info</CardTitle>
-                <CardDescription>Manage your personal details and account settings.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <div className="flex items-center space-x-6">
-                    <div className="relative">
-                        <Avatar className="h-24 w-24">
-                            <AvatarImage src={designer.avatarUrl} alt={designer.name} data-ai-hint={designer.imageHint} />
-                            <AvatarFallback>{designer.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <Button size="icon" className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full" disabled>
-                            <Camera className="h-4 w-4" />
-                            <span className="sr-only">Change Avatar</span>
-                        </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground flex-grow">Avatar uploads are coming soon. Your current avatar is shown.</p>
-                </div>
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="name" className="flex items-center"><UserCircle className="mr-2 h-4 w-4"/>Full Name</Label>
-                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} disabled={isSaving} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="username" className="flex items-center"><AtSign className="mr-2 h-4 w-4"/>Username</Label>
-                        <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} disabled={isSaving} />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="email" className="flex items-center"><Mail className="mr-2 h-4 w-4"/>Email Address</Label>
-                        <Input id="email" type="email" value={designer.email || ''} disabled />
-                        <p className="text-xs text-muted-foreground">Email cannot be changed. Please contact support.</p>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="phone" className="flex items-center"><Phone className="mr-2 h-4 w-4"/>Phone Number</Label>
-                        <Input id="phone" value="9876543210" disabled /> {/* Placeholder value */}
-                        <p className="text-xs text-muted-foreground">Phone number is your primary login.</p>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="timezone" className="flex items-center"><Clock className="mr-2 h-4 w-4"/>Time Zone</Label>
-                         <Select value={timeZone} onValueChange={setTimeZone} disabled={isSaving}>
-                            <SelectTrigger id="timezone"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Asia/Kolkata">India Standard Time (IST)</SelectItem>
-                                <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
-                                <SelectItem value="Europe/London">Greenwich Mean Time (GMT)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="language" className="flex items-center"><Languages className="mr-2 h-4 w-4"/>Language/Locale</Label>
-                         <Select value={language} onValueChange={setLanguage} disabled={isSaving}>
-                            <SelectTrigger id="language"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="en-IN">English (India)</SelectItem>
-                                <SelectItem value="en-US">English (US)</SelectItem>
-                                <SelectItem value="hi-IN" disabled>Hindi (coming soon)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-        
-        {/* Professional Info Card */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center"><Briefcase className="mr-2 h-5 w-5 text-muted-foreground" />Professional Information</CardTitle>
-            <CardDescription>This information is visible on your public profile.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6 pt-6">
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <Label htmlFor="bio" className="flex items-center"><UserCircle className="mr-2 h-4 w-4 text-muted-foreground" />Your Bio</Label>
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button type="button" variant="secondary" size="sm"><Wand2 className="mr-1.5 h-4 w-4"/> AI Assist</Button>
-                    </DialogTrigger>
-                    <AiAssistDialog onAccept={handleAcceptAiContent} designer={designer} />
-                </Dialog>
-              </div>
-              <Textarea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                rows={5}
-                maxLength={300}
-                placeholder="Tell clients about yourself, your experience, and your design philosophy..."
-                disabled={isSaving}
-              />
-              <p className="text-xs text-muted-foreground text-right">{bio.length} / 300 characters</p>
-            </div>
+        <Accordion type="multiple" defaultValue={['item-1', 'item-2']} className="w-full space-y-6">
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="location" className="flex items-center mb-1"><MapPin className="mr-2 h-4 w-4 text-muted-foreground" />Location</Label>
-                <Input
-                  id="location"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g., City, Country"
-                  disabled={isSaving}
-                />
-              </div>
-              <div>
-                <Label htmlFor="website" className="flex items-center mb-1"><Globe className="mr-2 h-4 w-4 text-muted-foreground" />Website URL</Label>
-                <Input
-                  id="website"
-                  type="url"
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                  placeholder="https://yourportfolio.com"
-                  disabled={isSaving}
-                />
-              </div>
-            </div>
+             {/* Personal Info Accordion Item */}
+             <AccordionItem value="item-1" className="border rounded-lg shadow-md bg-card">
+                <AccordionTrigger className="px-6 py-4 text-xl font-headline hover:no-underline">
+                    <div className="flex items-center"><UserCog className="mr-3 h-5 w-5 text-muted-foreground" /> Personal Info</div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6">
+                    <div className="pt-2 space-y-6">
+                         <div className="flex items-center space-x-6">
+                            <div className="relative">
+                                <Avatar className="h-24 w-24">
+                                    <AvatarImage src={designer.avatarUrl} alt={designer.name} data-ai-hint={designer.imageHint} />
+                                    <AvatarFallback>{designer.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                                <Button size="icon" className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full" disabled>
+                                    <Camera className="h-4 w-4" />
+                                    <span className="sr-only">Change Avatar</span>
+                                </Button>
+                            </div>
+                            <p className="text-xs text-muted-foreground flex-grow">Avatar uploads are coming soon. Your current avatar is shown.</p>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="name" className="flex items-center"><UserCircle className="mr-2 h-4 w-4"/>Full Name</Label>
+                                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} disabled={isSaving} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="username" className="flex items-center"><AtSign className="mr-2 h-4 w-4"/>Username</Label>
+                                <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} disabled={isSaving} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="flex items-center"><Mail className="mr-2 h-4 w-4"/>Email Address</Label>
+                                <Input id="email" type="email" value={designer.email || ''} disabled />
+                                <p className="text-xs text-muted-foreground">Email cannot be changed. Please contact support.</p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="phone" className="flex items-center"><Phone className="mr-2 h-4 w-4"/>Phone Number</Label>
+                                <Input id="phone" value="9876543210" disabled />
+                                <p className="text-xs text-muted-foreground">Phone number is your primary login.</p>
+                            </div>
+                            <div className="space-y-2">
+                                <TooltipProvider>
+                                <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Label htmlFor="timezone" className="flex items-center"><Clock className="mr-2 h-4 w-4"/>Time Zone</Label>
+                                </TooltipTrigger>
+                                <TooltipContent><p>This affects when deadlines and communications are displayed to you.</p></TooltipContent>
+                                </Tooltip>
+                                </TooltipProvider>
+                                <Select value={timeZone} onValueChange={setTimeZone} disabled={isSaving}>
+                                    <SelectTrigger id="timezone"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Asia/Kolkata">India Standard Time (IST)</SelectItem>
+                                        <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
+                                        <SelectItem value="Europe/London">Greenwich Mean Time (GMT)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="language" className="flex items-center"><Languages className="mr-2 h-4 w-4"/>Language/Locale</Label>
+                                <Select value={language} onValueChange={setLanguage} disabled={isSaving}>
+                                    <SelectTrigger id="language"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="en-IN">English (India)</SelectItem>
+                                        <SelectItem value="en-US">English (US)</SelectItem>
+                                        <SelectItem value="hi-IN" disabled>Hindi (coming soon)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
             
-            <Separator />
+             {/* Professional Info Accordion Item */}
+            <AccordionItem value="item-2" className="border rounded-lg shadow-md bg-card">
+                 <AccordionTrigger className="px-6 py-4 text-xl font-headline hover:no-underline">
+                    <div className="flex items-center"><Briefcase className="mr-3 h-5 w-5 text-muted-foreground" /> Professional Info</div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6">
+                    <div className="pt-2 space-y-6">
+                        <div>
+                        <div className="flex justify-between items-center mb-1">
+                            <Label htmlFor="bio" className="flex items-center"><UserCircle className="mr-2 h-4 w-4 text-muted-foreground" />Your Bio</Label>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button type="button" variant="secondary" size="sm"><Wand2 className="mr-1.5 h-4 w-4"/> AI Assist</Button>
+                                </DialogTrigger>
+                                <AiAssistDialog onAccept={handleAcceptAiContent} designer={designer} />
+                            </Dialog>
+                        </div>
+                        <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={5} maxLength={300} placeholder="Tell clients about yourself..." disabled={isSaving}/>
+                        <p className="text-xs text-muted-foreground text-right">{bio.length} / 300 characters</p>
+                        </div>
 
-             <div>
-              <h3 className="text-lg font-semibold mb-3 flex items-center"><Star className="mr-2 h-5 w-5 text-primary" />Your Specialties</h3>
-               <div className="flex flex-wrap gap-2 p-4 border rounded-md bg-secondary/30">
-                    {allAvailableSpecialties.map(specialty => {
-                        const isSelected = specialties.includes(specialty);
-                        return (
-                            <Button 
-                                key={specialty}
-                                type="button"
-                                variant={isSelected ? "default" : "outline"}
-                                onClick={() => handleSpecialtyToggle(specialty)}
-                                disabled={isSaving}
-                                size="sm"
-                            >
-                                {specialty}
-                            </Button>
-                        )
-                    })}
-                </div>
-            </div>
+                        <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <Label htmlFor="location" className="flex items-center mb-1"><MapPin className="mr-2 h-4 w-4 text-muted-foreground" />Location</Label>
+                            <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g., City, Country" disabled={isSaving}/>
+                        </div>
+                        <div>
+                            <Label htmlFor="website" className="flex items-center mb-1"><Globe className="mr-2 h-4 w-4 text-muted-foreground" />Website URL</Label>
+                            <Input id="website" type="url" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://yourportfolio.com" disabled={isSaving}/>
+                        </div>
+                        </div>
+                        
+                        <Separator />
 
-            <Separator />
+                        <div>
+                        <h3 className="text-lg font-semibold mb-3 flex items-center"><Star className="mr-2 h-5 w-5 text-primary" />Your Specialties</h3>
+                        <div className="flex flex-wrap gap-2 p-4 border rounded-md bg-secondary/30">
+                                {allAvailableSpecialties.map(specialty => {
+                                    const isSelected = specialties.includes(specialty);
+                                    return (
+                                        <Button key={specialty} type="button" variant={isSelected ? "default" : "outline"} onClick={() => handleSpecialtyToggle(specialty)} disabled={isSaving} size="sm">
+                                            {specialty}
+                                        </Button>
+                                    )
+                                })}
+                            </div>
+                        </div>
+
+                        <Separator />
+                        
+                        <div>
+                        <h3 className="text-lg font-semibold mb-3 flex items-center"><Tag className="mr-2 h-5 w-5 text-primary" />Your Skills</h3>
+                        <div className="space-y-2">
+                            <Input id="skillInput" placeholder="Add a skill (e.g., Figma, Photoshop) and press Enter" value={currentSkillInput} onChange={(e) => setCurrentSkillInput(e.target.value)} onKeyDown={handleSkillInputKeyDown} disabled={isSaving} className="flex-grow"/>
+                            <div className="flex flex-wrap gap-2 mt-2 min-h-[2.5rem] p-2 border rounded-md bg-muted/50">
+                                {skills.map((skill, index) => (
+                                <Badge key={index} variant="secondary" className="flex items-center gap-1 pr-1 py-1 text-sm">
+                                    {skill}
+                                    <button type="button" onClick={() => handleRemoveSkill(skill)} className="rounded-full hover:bg-muted-foreground/20 p-0.5 focus:outline-none focus:ring-1 focus:ring-ring" aria-label={`Remove skill ${skill}`} disabled={isSaving}>
+                                    <X className="h-3 w-3" />
+                                    </button>
+                                </Badge>
+                                ))}
+                                {skills.length === 0 && (
+                                <p className="text-xs text-muted-foreground py-1 px-1">No skills added yet.</p>
+                                )}
+                            </div>
+                        </div>
+                        </div>
+
+                        <Separator />
+
+                        <div>
+                        <h3 className="text-lg font-semibold mb-3 flex items-center"><LinkIcon className="mr-2 h-5 w-5 text-primary" />Social Media Links</h3>
+                        <div className="space-y-4">
+                            {socialLinks.map((link, index) => (
+                            <div key={link.platform}>
+                                <Label htmlFor={`social-${link.platform.toLowerCase()}`}>{link.platform}</Label>
+                                <Input id={`social-${link.platform.toLowerCase()}`} value={link.url} onChange={(e) => handleSocialLinkChange(index, e.target.value)} placeholder={`Your ${link.platform} profile URL`} disabled={isSaving}/>
+                            </div>
+                            ))}
+                        </div>
+                        </div>
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
             
-            <div>
-              <h3 className="text-lg font-semibold mb-3 flex items-center"><Tag className="mr-2 h-5 w-5 text-primary" />Your Skills</h3>
-               <div className="space-y-2">
-                <Input 
-                    id="skillInput" 
-                    placeholder="Add a skill (e.g., Figma, Photoshop) and press Enter" 
-                    value={currentSkillInput}
-                    onChange={(e) => setCurrentSkillInput(e.target.value)}
-                    onKeyDown={handleSkillInputKeyDown}
-                    disabled={isSaving}
-                    className="flex-grow"
-                    />
-                <div className="flex flex-wrap gap-2 mt-2 min-h-[2.5rem] p-2 border rounded-md bg-muted/50">
-                    {skills.map((skill, index) => (
-                    <Badge key={index} variant="secondary" className="flex items-center gap-1 pr-1 py-1 text-sm">
-                        {skill}
-                        <button 
-                        type="button" 
-                        onClick={() => handleRemoveSkill(skill)}
-                        className="rounded-full hover:bg-muted-foreground/20 p-0.5 focus:outline-none focus:ring-1 focus:ring-ring"
-                        aria-label={`Remove skill ${skill}`}
-                        disabled={isSaving}
-                        >
-                        <X className="h-3 w-3" />
-                        </button>
-                    </Badge>
-                    ))}
-                    {skills.length === 0 && (
-                    <p className="text-xs text-muted-foreground py-1 px-1">No skills added yet.</p>
-                    )}
-                </div>
-              </div>
-            </div>
+            {/* Achievements Accordion Item */}
+            <AccordionItem value="item-3" className="border rounded-lg shadow-md bg-card">
+                 <AccordionTrigger className="px-6 py-4 text-xl font-headline hover:no-underline">
+                    <div className="flex items-center"><Award className="mr-3 h-5 w-5 text-muted-foreground" /> Achievements</div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6">
+                    <div className="pt-2">
+                        <TooltipProvider>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {badgeData.map(badge => {
+                                const hasBadge = designer.badges?.includes(badge.name);
+                                return (
+                                <Tooltip key={badge.name}>
+                                    <TooltipTrigger asChild>
+                                    <Card className={cn(
+                                        "text-center p-4 flex flex-col items-center justify-center gap-2 transition-all",
+                                        hasBadge ? 'border-primary/40 bg-primary/10' : 'bg-muted/50'
+                                    )}>
+                                        <badge.icon className={cn("h-10 w-10", hasBadge ? 'text-primary' : 'text-muted-foreground/60')} />
+                                        <p className={cn("font-semibold text-sm", hasBadge ? 'text-primary' : 'text-muted-foreground')}>{badge.name}</p>
+                                    </Card>
+                                    </TooltipTrigger>
+                                    {!hasBadge && (
+                                    <TooltipContent>
+                                        <p className="text-xs">{badge.criteria}</p>
+                                    </TooltipContent>
+                                    )}
+                                </Tooltip>
+                                );
+                            })}
+                            </div>
+                        </TooltipProvider>
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+            
+            {/* Availability Accordion Item */}
+            <AccordionItem value="item-4" className="border rounded-lg shadow-md bg-card">
+                 <AccordionTrigger className="px-6 py-4 text-xl font-headline hover:no-underline">
+                    <div className="flex items-center"><Power className="mr-3 h-5 w-5 text-muted-foreground" /> Availability</div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6">
+                    <div className="pt-2 space-y-6">
+                        <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                            <Label htmlFor="availability-switch" className="flex flex-col space-y-1">
+                                <span>Available for new orders</span>
+                                <span className="font-normal leading-snug text-muted-foreground">
+                                Turn this off to temporarily stop receiving new project assignments.
+                                </span>
+                            </Label>
+                            <Switch id="availability-switch" checked={isAvailableForOrders} onCheckedChange={setIsAvailableForOrders} disabled={isSaving}/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="max-orders">Maximum Active Orders</Label>
+                            <Input id="max-orders" type="number" className="w-32" value={maxActiveOrders} onChange={(e) => setMaxActiveOrders(Number(e.target.value))} min="1" max="20" disabled={isSaving}/>
+                            <p className="text-xs text-muted-foreground">The maximum number of projects you want to work on at one time.</p>
+                        </div>
+                         <div className="space-y-6">
+                            <h3 className="font-semibold">Automated Review Requests</h3>
+                            <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                                <Label htmlFor="auto-review-switch" className="flex flex-col space-y-1">
+                                    <span>Auto-send review requests</span>
+                                    <span className="font-normal leading-snug text-muted-foreground">
+                                    When enabled, we'll automatically email clients to ask for a review after you mark an order as complete.
+                                    </span>
+                                </Label>
+                                <Switch id="auto-review-switch" checked={autoRequestReviews} onCheckedChange={setAutoRequestReviews} disabled={isSaving}/>
+                            </div>
+                            {autoRequestReviews && (
+                            <div className="space-y-2 pl-4 border-l-2 ml-2">
+                                <Label htmlFor="review-delay">Send Request After</Label>
+                                <Select value={reviewRequestDelay} onValueChange={setReviewRequestDelay} disabled={isSaving}>
+                                    <SelectTrigger className="w-[180px]" id="review-delay">
+                                        <SelectValue placeholder="Select delay" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="immediate">Immediately</SelectItem>
+                                        <SelectItem value="12h">12 Hours</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            )}
+                        </div>
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+            
+            {/* Notifications Accordion Item */}
+            <AccordionItem value="item-5" className="border rounded-lg shadow-md bg-card">
+                 <AccordionTrigger className="px-6 py-4 text-xl font-headline hover:no-underline">
+                    <div className="flex items-center"><Bell className="mr-3 h-5 w-5 text-muted-foreground" /> Notifications</div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6">
+                    <div className="pt-2">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Notification Type</TableHead>
+                                    <TableHead className="text-center">In-App</TableHead>
+                                    <TableHead className="text-center">Email</TableHead>
+                                    <TableHead className="text-center">Push</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {notificationTypes.map(type => (
+                                    <TableRow key={type.id}>
+                                        <TableCell>
+                                            <p className="font-medium">{type.label}</p>
+                                            <p className="text-xs text-muted-foreground">{type.description}</p>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <Checkbox checked={notificationPrefs[type.id]?.inApp} onCheckedChange={(checked) => handleNotificationPrefChange(type.id, 'inApp', !!checked)} disabled={type.disabled || isSaving}/>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <Checkbox checked={notificationPrefs[type.id]?.email} onCheckedChange={(checked) => handleNotificationPrefChange(type.id, 'email', !!checked)} disabled={type.disabled || isSaving}/>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <Checkbox checked={notificationPrefs[type.id]?.push} onCheckedChange={(checked) => handleNotificationPrefChange(type.id, 'push', !!checked)} disabled={isSaving}/>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+            
+            {/* Security Accordion Item */}
+            <AccordionItem value="item-6" className="border rounded-lg shadow-md bg-card">
+                 <AccordionTrigger className="px-6 py-4 text-xl font-headline hover:no-underline">
+                    <div className="flex items-center"><ShieldCheck className="mr-3 h-5 w-5 text-muted-foreground" /> Security</div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6">
+                    <div className="pt-2 space-y-8">
+                        <div>
+                        <h3 className="font-semibold mb-2">Change Password</h3>
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="newPassword">New Password</Label>
+                                <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={isSaving} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                                <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isSaving} />
+                            </div>
+                        </div>
+                        </div>
 
-             <Separator />
+                        <Separator />
 
-            <div>
-              <h3 className="text-lg font-semibold mb-3 flex items-center"><LinkIcon className="mr-2 h-5 w-5 text-primary" />Social Media Links</h3>
-              <div className="space-y-4">
-                {socialLinks.map((link, index) => (
-                  <div key={link.platform}>
-                    <Label htmlFor={`social-${link.platform.toLowerCase()}`}>{link.platform}</Label>
-                    <Input
-                      id={`social-${link.platform.toLowerCase()}`}
-                      value={link.url}
-                      onChange={(e) => handleSocialLinkChange(index, e.target.value)}
-                      placeholder={`Your ${link.platform} profile URL`}
-                      disabled={isSaving}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+                        <div>
+                        <h3 className="font-semibold mb-2">Two-Factor Authentication (2FA)</h3>
+                        <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                            <Label htmlFor="2fa-switch" className="flex flex-col space-y-1">
+                                <span>Enable Two-Factor Authentication</span>
+                                <span className="font-normal leading-snug text-muted-foreground">
+                                Add an extra layer of security to your account.
+                                </span>
+                            </Label>
+                            <Switch id="2fa-switch" checked={isTwoFactorEnabled} onCheckedChange={setIsTwoFactorEnabled} disabled={isSaving}/>
+                        </div>
+                        </div>
+                        <Separator />
+                        <div>
+                        <h3 className="font-semibold mb-2">Recent Login Activity</h3>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Device</TableHead>
+                                    <TableHead>Location</TableHead>
+                                    <TableHead>IP Address</TableHead>
+                                    <TableHead>Date & Time</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {mockLoginActivity.map((activity, index) => (
+                                    <TableRow key={index}>
+                                    <TableCell className="flex items-center">
+                                        {activity.device.includes('iPhone') ? <Smartphone className="h-4 w-4 mr-2 text-muted-foreground"/> : <Monitor className="h-4 w-4 mr-2 text-muted-foreground"/>}
+                                        {activity.device}
+                                    </TableCell>
+                                    <TableCell>{activity.location}</TableCell>
+                                    <TableCell className="font-mono text-xs">{activity.ip}</TableCell>
+                                    <TableCell className="text-xs text-muted-foreground">{formatDistanceToNow(activity.timestamp, { addSuffix: true })}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                        </div>
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
 
-          </CardContent>
-        </Card>
-      
-        <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="flex items-center"><Award className="mr-2 h-5 w-5 text-muted-foreground"/>My Badges</CardTitle>
-                <CardDescription>Showcase your achievements to build trust with clients.</CardDescription>
-            </CardHeader>
-            <CardContent>
-            <TooltipProvider>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {badgeData.map(badge => {
-                    const hasBadge = designer.badges?.includes(badge.name);
-                    return (
-                    <Tooltip key={badge.name}>
-                        <TooltipTrigger asChild>
-                        <Card className={cn(
-                            "text-center p-4 flex flex-col items-center justify-center gap-2 transition-all",
-                            hasBadge ? 'border-primary/40 bg-primary/10' : 'bg-muted/50'
-                        )}>
-                            <badge.icon className={cn("h-10 w-10", hasBadge ? 'text-primary' : 'text-muted-foreground/60')} />
-                            <p className={cn("font-semibold text-sm", hasBadge ? 'text-primary' : 'text-muted-foreground')}>{badge.name}</p>
-                        </Card>
-                        </TooltipTrigger>
-                        {!hasBadge && (
-                        <TooltipContent>
-                            <p className="text-xs">{badge.criteria}</p>
-                        </TooltipContent>
-                        )}
-                    </Tooltip>
-                    );
-                })}
-                </div>
-            </TooltipProvider>
-            </CardContent>
-        </Card>
-      
-        <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="flex items-center"><Power className="mr-2 h-5 w-5 text-muted-foreground" />Work Availability</CardTitle>
-                <CardDescription>Set your project load to manage expectations.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
-                    <Label htmlFor="availability-switch" className="flex flex-col space-y-1">
-                        <span>Available for new orders</span>
-                        <span className="font-normal leading-snug text-muted-foreground">
-                        Turn this off to temporarily stop receiving new project assignments.
-                        </span>
-                    </Label>
-                    <Switch
-                        id="availability-switch"
-                        checked={isAvailableForOrders}
-                        onCheckedChange={setIsAvailableForOrders}
-                        disabled={isSaving}
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="max-orders">Maximum Active Orders</Label>
-                    <Input 
-                        id="max-orders" 
-                        type="number" 
-                        className="w-32" 
-                        value={maxActiveOrders} 
-                        onChange={(e) => setMaxActiveOrders(Number(e.target.value))}
-                        min="1"
-                        max="20"
-                        disabled={isSaving}
-                    />
-                    <p className="text-xs text-muted-foreground">The maximum number of projects you want to work on at one time.</p>
-                </div>
-            </CardContent>
-        </Card>
-
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center"><Star className="mr-2 h-5 w-5 text-muted-foreground" />Automated Review Requests</CardTitle>
-            <CardDescription>Automate asking clients for reviews after an order is completed.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
-              <Label htmlFor="auto-review-switch" className="flex flex-col space-y-1">
-                <span>Auto-send review requests</span>
-                <span className="font-normal leading-snug text-muted-foreground">
-                  When enabled, we'll automatically email clients to ask for a review after you mark an order as complete.
-                </span>
-              </Label>
-              <Switch
-                id="auto-review-switch"
-                checked={autoRequestReviews}
-                onCheckedChange={setAutoRequestReviews}
-                disabled={isSaving}
-              />
-            </div>
-            {autoRequestReviews && (
-              <div className="space-y-2 pl-4 border-l-2 ml-2">
-                <Label htmlFor="review-delay">Send Request After</Label>
-                 <Select
-                  value={reviewRequestDelay}
-                  onValueChange={setReviewRequestDelay}
-                  disabled={isSaving}
-                >
-                  <SelectTrigger className="w-[180px]" id="review-delay">
-                    <SelectValue placeholder="Select delay" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="immediate">Immediately</SelectItem>
-                    <SelectItem value="12h">12 Hours</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      
-        <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="flex items-center"><Bell className="mr-2 h-5 w-5 text-muted-foreground" />Notification Preferences</CardTitle>
-                <CardDescription>Choose how you receive alerts for important account activity.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Notification Type</TableHead>
-                            <TableHead className="text-center">In-App</TableHead>
-                            <TableHead className="text-center">Email</TableHead>
-                            <TableHead className="text-center">Push</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {notificationTypes.map(type => (
-                            <TableRow key={type.id}>
-                                <TableCell>
-                                    <p className="font-medium">{type.label}</p>
-                                    <p className="text-xs text-muted-foreground">{type.description}</p>
-                                </TableCell>
-                                <TableCell className="text-center">
-                                    <Checkbox 
-                                      checked={notificationPrefs[type.id]?.inApp}
-                                      onCheckedChange={(checked) => handleNotificationPrefChange(type.id, 'inApp', !!checked)}
-                                      disabled={type.disabled || isSaving}
-                                    />
-                                </TableCell>
-                                <TableCell className="text-center">
-                                    <Checkbox 
-                                      checked={notificationPrefs[type.id]?.email}
-                                      onCheckedChange={(checked) => handleNotificationPrefChange(type.id, 'email', !!checked)}
-                                      disabled={type.disabled || isSaving}
-                                    />
-                                </TableCell>
-                                <TableCell className="text-center">
-                                     <Checkbox 
-                                      checked={notificationPrefs[type.id]?.push}
-                                      onCheckedChange={(checked) => handleNotificationPrefChange(type.id, 'push', !!checked)}
-                                      disabled={isSaving}
-                                    />
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
-
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center"><ShieldCheck className="mr-2 h-5 w-5 text-muted-foreground" />Security</CardTitle>
-            <CardDescription>Manage your password, two-factor authentication, and view recent login activity.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-8">
-            <div>
-              <h3 className="font-semibold mb-2">Change Password</h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
-                  <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={isSaving} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isSaving} />
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div>
-              <h3 className="font-semibold mb-2">Two-Factor Authentication (2FA)</h3>
-              <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
-                <Label htmlFor="2fa-switch" className="flex flex-col space-y-1">
-                  <span>Enable Two-Factor Authentication</span>
-                  <span className="font-normal leading-snug text-muted-foreground">
-                    Add an extra layer of security to your account.
-                  </span>
-                </Label>
-                <Switch
-                  id="2fa-switch"
-                  checked={isTwoFactorEnabled}
-                  onCheckedChange={setIsTwoFactorEnabled}
-                  disabled={isSaving}
-                />
-              </div>
-            </div>
-            <Separator />
-            <div>
-              <h3 className="font-semibold mb-2">Recent Login Activity</h3>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Device</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>IP Address</TableHead>
-                    <TableHead>Date & Time</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockLoginActivity.map((activity, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="flex items-center">
-                        {activity.device.includes('iPhone') ? <Smartphone className="h-4 w-4 mr-2 text-muted-foreground"/> : <Monitor className="h-4 w-4 mr-2 text-muted-foreground"/>}
-                        {activity.device}
-                      </TableCell>
-                      <TableCell>{activity.location}</TableCell>
-                      <TableCell className="font-mono text-xs">{activity.ip}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{formatDistanceToNow(activity.timestamp, { addSuffix: true })}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        </Accordion>
       </div>
 
        <div className="fixed bottom-0 left-0 md:left-[var(--sidebar-width)] right-0 z-40">
@@ -818,4 +749,3 @@ export default function DesignerProfilePage() {
     </form>
   );
 }
-
