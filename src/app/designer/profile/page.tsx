@@ -176,7 +176,7 @@ export default function DesignerProfilePage() {
 
   // Review settings state
   const [autoRequestReviews, setAutoRequestReviews] = useState(true);
-  const [reviewRequestDelay, setReviewRequestDelay] = useState('24h');
+  const [reviewRequestDelay, setReviewRequestDelay] = useState('immediate');
   const [isSavingReviewSettings, setIsSavingReviewSettings] = useState(false);
 
   // Notification Preferences State
@@ -627,7 +627,7 @@ export default function DesignerProfilePage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="immediate">Immediately</SelectItem>
-                    <SelectItem value="24h">24 Hours</SelectItem>
+                    <SelectItem value="12h">12 Hours</SelectItem>
                     <SelectItem value="3d">3 Days</SelectItem>
                   </SelectContent>
                 </Select>
