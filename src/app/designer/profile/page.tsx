@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera, Wand2, Sparkles, AlertCircle, Tag, X, Calendar, Power, Bell, ShieldCheck, KeyRound, Smartphone, Monitor } from 'lucide-react';
+import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera, Wand2, Sparkles, AlertCircle, Tag, X, Calendar, Power, Bell, ShieldCheck, KeyRound, Smartphone, Monitor, Award, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { designersData, type DesignerProfile } from '@/lib/designer-data';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format, formatDistanceToNow } from 'date-fns';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Hardcoded for prototype - replace with actual auth user ID
 const CURRENT_DESIGNER_ID = 'des001'; 
@@ -75,6 +76,13 @@ const notificationTypes: {id: NotificationType, label: string, description: stri
     { id: 'disputeUpdates', label: 'Dispute Updates', description: 'Alerts regarding new or updated disputes on your orders.' },
     { id: 'reviewAlerts', label: 'New Client Reviews', description: 'Get notified when a client leaves you a new review.' },
     { id: 'milestoneUpdates', label: 'Project Milestone Updates', description: 'Updates on milestone approvals and upcoming deadlines.' },
+];
+
+const badgeData = [
+  { name: 'Top Rated', icon: Award, criteria: 'Maintain a 4.8+ rating over 20+ reviews.' },
+  { name: 'Rising Talent', icon: TrendingUp, criteria: 'Complete your first 5 orders with positive feedback.' },
+  { name: 'On-Time Delivery', icon: CheckCircle2, criteria: 'Consistently deliver projects before the deadline.' },
+  { name: 'Verified', icon: ShieldCheck, criteria: 'Complete identity and payment verification.' },
 ];
 
 function AiAssistDialog({ onAccept, designer }: { onAccept: (content: DesignerBioResponse) => void; designer: DesignerProfile }) {
@@ -587,6 +595,40 @@ export default function DesignerProfilePage() {
         </Card>
       </form>
        
+      <Card className="shadow-lg">
+        <CardHeader>
+            <CardTitle className="flex items-center"><Award className="mr-2 h-5 w-5 text-muted-foreground"/>My Badges</CardTitle>
+            <CardDescription>Showcase your achievements to build trust with clients.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TooltipProvider>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {badgeData.map(badge => {
+                const hasBadge = designer.badges?.includes(badge.name);
+                return (
+                  <Tooltip key={badge.name}>
+                    <TooltipTrigger asChild>
+                      <Card className={cn(
+                        "text-center p-4 flex flex-col items-center justify-center gap-2 transition-all",
+                        hasBadge ? 'border-primary/40 bg-primary/10' : 'bg-muted/50'
+                      )}>
+                        <badge.icon className={cn("h-10 w-10", hasBadge ? 'text-primary' : 'text-muted-foreground/60')} />
+                        <p className={cn("font-semibold text-sm", hasBadge ? 'text-primary' : 'text-muted-foreground')}>{badge.name}</p>
+                      </Card>
+                    </TooltipTrigger>
+                    {!hasBadge && (
+                      <TooltipContent>
+                        <p className="text-xs">{badge.criteria}</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                );
+              })}
+            </div>
+          </TooltipProvider>
+        </CardContent>
+      </Card>
+      
       <form onSubmit={handleAvailabilitySubmit}>
         <Card className="shadow-lg">
             <CardHeader>

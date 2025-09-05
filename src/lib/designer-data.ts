@@ -18,6 +18,7 @@ export interface DesignerProfile {
   clientRatingAverage?: number | null; // e.g., 1-5, null if no ratings yet
   clientRatingCount?: number; // Number of client ratings
   overallRanking?: number; // Derived score, initially can be based on adminRanking
+  badges?: ('Top Rated' | 'Rising Talent' | 'On-Time Delivery' | 'Verified')[];
 }
 
 export const designersData: DesignerProfile[] = [
@@ -42,6 +43,7 @@ export const designersData: DesignerProfile[] = [
     clientRatingAverage: 4.8,
     clientRatingCount: 23,
     overallRanking: 5,
+    badges: ['Top Rated', 'On-Time Delivery', 'Verified'],
   },
   {
     id: 'des002',
@@ -63,6 +65,7 @@ export const designersData: DesignerProfile[] = [
     clientRatingAverage: 4.7,
     clientRatingCount: 18,
     overallRanking: 4,
+    badges: ['On-Time Delivery', 'Verified'],
   },
   {
     id: 'des003',
@@ -84,6 +87,7 @@ export const designersData: DesignerProfile[] = [
     clientRatingAverage: 4.9,
     clientRatingCount: 30,
     overallRanking: 4,
+    badges: ['Top Rated', 'Verified'],
   },
    {
     id: 'des004',
@@ -102,6 +106,7 @@ export const designersData: DesignerProfile[] = [
     clientRatingAverage: 4.6,
     clientRatingCount: 15,
     overallRanking: 5,
+    badges: ['On-Time Delivery', 'Verified'],
   },
   {
     id: 'des005',
@@ -122,6 +127,7 @@ export const designersData: DesignerProfile[] = [
     clientRatingAverage: null, // No client ratings yet
     clientRatingCount: 0,
     overallRanking: 3,
+    badges: ['Verified', 'Rising Talent'],
   },
   {
     id: 'des006',
@@ -140,6 +146,7 @@ export const designersData: DesignerProfile[] = [
     clientRatingAverage: 4.5,
     clientRatingCount: 12,
     overallRanking: 4,
+    badges: ['Verified'],
   },
   {
     id: 'des007',
@@ -157,6 +164,6 @@ export const designersData: DesignerProfile[] = [
     clientRatingAverage: 4.2,
     clientRatingCount: 8,
     overallRanking: 3,
+    badges: ['Verified'],
   }
 ];
-
