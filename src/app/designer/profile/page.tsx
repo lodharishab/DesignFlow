@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
@@ -628,7 +627,6 @@ export default function DesignerProfilePage() {
                   <SelectContent>
                     <SelectItem value="immediate">Immediately</SelectItem>
                     <SelectItem value="12h">12 Hours</SelectItem>
-                    <SelectItem value="3d">3 Days</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
