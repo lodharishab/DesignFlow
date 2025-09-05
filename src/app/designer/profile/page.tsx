@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera, Wand2, Sparkles, AlertCircle, Tag, X, Calendar, Power, Bell } from 'lucide-react';
+import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera, Wand2, Sparkles, AlertCircle, Tag, X, Calendar, Power, Bell, ShieldCheck, KeyRound, Smartphone, Monitor } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { designersData, type DesignerProfile } from '@/lib/designer-data';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,7 @@ import type { DesignerBioResponse } from '@/ai/flows/designer-bio-types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { format, formatDistanceToNow } from 'date-fns';
 
 // Hardcoded for prototype - replace with actual auth user ID
 const CURRENT_DESIGNER_ID = 'des001'; 
@@ -44,6 +45,19 @@ type NotificationChannel = 'inApp' | 'email' | 'push';
 type NotificationType = 'newOrder' | 'paymentAlerts' | 'disputeUpdates' | 'reviewAlerts' | 'milestoneUpdates';
 
 type NotificationPreferences = Record<NotificationType, Record<NotificationChannel, boolean>>;
+
+interface LoginActivity {
+    ip: string;
+    device: string;
+    location: string;
+    timestamp: Date;
+}
+
+const mockLoginActivity: LoginActivity[] = [
+    { ip: '103.22.201.12', device: 'Chrome on macOS', location: 'Mumbai, IN', timestamp: new Date() },
+    { ip: '45.112.88.210', device: 'Firefox on Windows', location: 'Delhi, IN', timestamp: new Date(new Date().setDate(new Date().getDate() - 2)) },
+    { ip: '15.206.110.15', device: 'Safari on iPhone', location: 'Bangalore, IN', timestamp: new Date(new Date().setDate(new Date().getDate() - 5)) },
+];
 
 
 const allAvailableSpecialties = [
@@ -188,6 +202,12 @@ export default function DesignerProfilePage() {
   });
   const [isSavingNotifications, setIsSavingNotifications] = useState(false);
 
+  // Security State
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
+  const [isSavingSecurity, setIsSavingSecurity] = useState(false);
+
 
   useEffect(() => {
     const foundDesigner = designersData.find(d => d.id === CURRENT_DESIGNER_ID);
@@ -316,6 +336,26 @@ export default function DesignerProfilePage() {
         toast({ title: "Notification Settings Saved" });
         setIsSavingNotifications(false);
     }, 1000);
+  };
+  
+  const handleSecuritySubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (newPassword && newPassword !== confirmPassword) {
+      toast({ title: "Error", description: "Passwords do not match.", variant: "destructive" });
+      return;
+    }
+    if (newPassword && newPassword.length < 8) {
+      toast({ title: "Error", description: "Password must be at least 8 characters long.", variant: "destructive" });
+      return;
+    }
+    setIsSavingSecurity(true);
+    console.log("Saving security settings:", { newPassword: newPassword ? '******' : '', isTwoFactorEnabled });
+    setTimeout(() => {
+      toast({ title: "Security Settings Updated" });
+      setNewPassword('');
+      setConfirmPassword('');
+      setIsSavingSecurity(false);
+    }, 1500);
   };
 
 
@@ -696,6 +736,83 @@ export default function DesignerProfilePage() {
                     {isSavingNotifications ? 'Saving...' : 'Save Notification Settings'}
                 </Button>
             </CardFooter>
+        </Card>
+      </form>
+
+      <form onSubmit={handleSecuritySubmit}>
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center"><ShieldCheck className="mr-2 h-5 w-5 text-muted-foreground" />Security</CardTitle>
+            <CardDescription>Manage your password, two-factor authentication, and view recent login activity.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-8">
+            <div>
+              <h3 className="font-semibold mb-2">Change Password</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={isSavingSecurity} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isSavingSecurity} />
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div>
+              <h3 className="font-semibold mb-2">Two-Factor Authentication (2FA)</h3>
+              <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                <Label htmlFor="2fa-switch" className="flex flex-col space-y-1">
+                  <span>Enable Two-Factor Authentication</span>
+                  <span className="font-normal leading-snug text-muted-foreground">
+                    Add an extra layer of security to your account.
+                  </span>
+                </Label>
+                <Switch
+                  id="2fa-switch"
+                  checked={isTwoFactorEnabled}
+                  onCheckedChange={setIsTwoFactorEnabled}
+                  disabled={isSavingSecurity}
+                />
+              </div>
+            </div>
+            <Separator />
+            <div>
+              <h3 className="font-semibold mb-2">Recent Login Activity</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Device</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>IP Address</TableHead>
+                    <TableHead>Date & Time</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockLoginActivity.map((activity, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="flex items-center">
+                        {activity.device.includes('iPhone') ? <Smartphone className="h-4 w-4 mr-2 text-muted-foreground"/> : <Monitor className="h-4 w-4 mr-2 text-muted-foreground"/>}
+                        {activity.device}
+                      </TableCell>
+                      <TableCell>{activity.location}</TableCell>
+                      <TableCell className="font-mono text-xs">{activity.ip}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{formatDistanceToNow(activity.timestamp, { addSuffix: true })}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+          <CardFooter className="justify-end border-t pt-6">
+            <Button type="submit" disabled={isSavingSecurity}>
+              {isSavingSecurity ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+              Save Security Settings
+            </Button>
+          </CardFooter>
         </Card>
       </form>
     </div>
