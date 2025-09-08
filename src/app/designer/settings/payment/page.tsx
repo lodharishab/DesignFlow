@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet, Mail, SlidersHorizontal, RefreshCw, Calendar, Globe, History, Download, FileText, ArrowRight, Bell, CircleHelp } from 'lucide-react';
+import { Settings, Save, Banknote, ShieldCheck, Edit, Trash2, Loader2, IndianRupee, Wallet, Mail, SlidersHorizontal, RefreshCw, Calendar, Globe, History, Download, FileText, ArrowRight, Bell, CircleHelp, Upload } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -21,7 +21,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,6 +79,8 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
   const [accountType, setAccountType] = useState('');
   const [country, setCountry] = useState('India');
   const [currency, setCurrency] = useState('INR');
+  const [bankProof, setBankProof] = useState<File | null>(null);
+  const [setAsPrimary, setSetAsPrimary] = useState(false);
   
 
   // State for UPI form
@@ -119,11 +121,17 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
         return;
     }
     setIsSaving(true);
-    console.log("Saving new Bank Account:", { accountHolderName, accountNumber, ifscCode });
+    console.log("Saving new Bank Account:", { accountHolderName, accountNumber, ifscCode, bankProof: bankProof?.name, setAsPrimary });
     setTimeout(() => {
       toast({ title: "Bank Account Added (Simulated)", description: "Your bank account details have been added and are pending verification.", });
       setIsSaving(false);
-      setMethods(prev => [...prev, {id: `meth_${Date.now()}`, type: 'Bank Account', details: `**** **** **** ${accountNumber.slice(-4)}`, isPrimary: prev.length === 0, status: 'Pending'}]);
+      setMethods(prev => {
+          let updatedMethods = [...prev];
+          if (setAsPrimary) {
+              updatedMethods = updatedMethods.map(m => ({ ...m, isPrimary: false }));
+          }
+          return [...updatedMethods, {id: `meth_${Date.now()}`, type: 'Bank Account', details: `**** **** **** ${accountNumber.slice(-4)}`, isPrimary: setAsPrimary || prev.length === 0, status: 'Pending'}];
+      });
       setAccountHolderName('');
       setAccountNumber('');
       setConfirmAccountNumber('');
@@ -133,6 +141,8 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
       setAccountType('');
       setCountry('India');
       setCurrency('INR');
+      setBankProof(null);
+      setSetAsPrimary(false);
     }, 1500);
   };
   
@@ -363,6 +373,17 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
                                   </Select>
                               </div>
                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="bankProof">Upload Bank Proof (Cancelled Cheque, Statement)*</Label>
+                                <div className="flex items-center gap-2">
+                                  <Upload className="h-4 w-4 text-muted-foreground" />
+                                  <Input id="bankProof" type="file" onChange={(e) => setBankProof(e.target.files ? e.target.files[0] : null)} accept=".pdf,image/*" disabled={isSaving}/>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-2 pt-2">
+                                <Switch id="setAsPrimary" checked={setAsPrimary} onCheckedChange={setSetAsPrimary} disabled={isSaving} />
+                                <Label htmlFor="setAsPrimary">Set as my primary payout method</Label>
+                            </div>
                            <div className="flex justify-end pt-2">
                                 <Button type="submit" disabled={isSaving}>
                                   {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
@@ -564,3 +585,5 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
     </div>
   );
 }
+
+    
