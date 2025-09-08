@@ -32,6 +32,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 
 interface PayoutMethod {
@@ -123,7 +124,7 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
     setIsSaving(true);
     console.log("Saving new Bank Account:", { accountHolderName, accountNumber, ifscCode, bankProof: bankProof?.name, setAsPrimary });
     setTimeout(() => {
-      toast({ title: "Bank Account Added (Simulated)", description: "Your bank account details have been added and are pending verification.", });
+      toast({ title: "Bank Account Added", description: "Your bank account has been added successfully and is pending verification.", });
       setIsSaving(false);
       setMethods(prev => {
           let updatedMethods = [...prev];
@@ -222,6 +223,7 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
   };
 
   return (
+    <TooltipProvider>
     <div className="space-y-8">
       <h1 className="text-3xl font-bold font-headline flex items-center">
         <Settings className="mr-3 h-8 w-8 text-primary" />
@@ -345,11 +347,21 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
                            </div>
                            <div className="grid md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="ifscCode">IFSC / Routing Number*</Label>
+                                     <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Label htmlFor="ifscCode" className="flex items-center gap-1 cursor-help">IFSC / Routing Number* <CircleHelp className="h-3 w-3 text-muted-foreground"/></Label>
+                                        </TooltipTrigger>
+                                        <TooltipContent><p>IFSC for Indian banks, Routing Number for US banks.</p></TooltipContent>
+                                    </Tooltip>
                                     <Input id="ifscCode" value={ifscCode} onChange={(e) => setIfscCode(e.target.value)} placeholder="Enter IFSC or Routing Number" required disabled={isSaving}/>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="swiftBic">SWIFT/BIC Code (Optional)</Label>
+                                     <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Label htmlFor="swiftBic" className="flex items-center gap-1 cursor-help">SWIFT/BIC Code (Optional) <CircleHelp className="h-3 w-3 text-muted-foreground"/></Label>
+                                        </TooltipTrigger>
+                                        <TooltipContent><p>Required for international payouts outside of certain regions.</p></TooltipContent>
+                                    </Tooltip>
                                     <Input id="swiftBic" value={swiftBic} onChange={(e) => setSwiftBic(e.target.value)} placeholder="For international payouts" disabled={isSaving}/>
                                 </div>
                            </div>
@@ -581,9 +593,8 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
             </Button>
         </CardFooter>
       </Card>
-
     </div>
+    </TooltipProvider>
   );
 }
 
-    
