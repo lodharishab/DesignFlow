@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingCart, MessageSquare, Briefcase, ArrowRight, BarChart3, Sparkles, CheckCircle2, Bell, Package } from 'lucide-react';
+import { ShoppingCart, MessageSquare, Briefcase, ArrowRight, BarChart3, Sparkles, CheckCircle2, Bell, Package, IndianRupee, Hourglass } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -15,8 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Separator } from '@/components/ui/separator';
-
 
 // Mock data for active orders - consistent with /client/orders page
 const activeOrdersMock = [
@@ -26,9 +24,10 @@ const activeOrdersMock = [
 ];
 
 const clientStats = [
-    { title: "Active Orders", value: activeOrdersMock.length.toString(), icon: ShoppingCart, color: "text-blue-500" },
-    { title: "Completed Projects", value: "5", icon: CheckCircle2, color: "text-green-500" }, // Example static value
-    { title: "Total Spent", value: "₹55,000", icon: BarChart3, color: "text-purple-500" }, // Example static value
+    { title: "Active Orders", value: activeOrdersMock.length.toString(), icon: ShoppingCart, color: "text-blue-500", href: "/client/orders?status=active" },
+    { title: "Completed Projects", value: "5", icon: CheckCircle2, color: "text-green-500", href: "/client/orders?status=completed" },
+    { title: "Total Spend", value: "₹55,000", icon: BarChart3, color: "text-purple-500" },
+    { title: "Pending Payments", value: "1", icon: Hourglass, color: "text-orange-500", href: "/client/orders?status=pending_payment" },
 ];
 
 const mockNotifications = [
@@ -110,17 +109,18 @@ export default function ClientDashboardPage() {
       </div>
       
       {/* Quick Stats Section */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2">
         {clientStats.map(stat => (
           <Card key={stat.title} className="shadow-lg hover:shadow-xl transition-shadow">
+            <Link href={stat.href || '#'} className={`block h-full ${!stat.href ? 'cursor-default' : ''}`}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
                 <stat.icon className={`h-5 w-5 ${stat.color}`} />
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold">{stat.value}</div>
-                {/* <p className="text-xs text-muted-foreground">+2 from last month (example)</p> */}
               </CardContent>
+            </Link>
           </Card>
         ))}
       </div>
