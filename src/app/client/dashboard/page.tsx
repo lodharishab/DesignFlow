@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingCart, MessageSquare, Briefcase, ArrowRight, BarChart3, Sparkles, CheckCircle2, Bell, Package, IndianRupee, Hourglass } from 'lucide-react';
+import { ShoppingCart, MessageSquare, Briefcase, ArrowRight, BarChart3, Sparkles, CheckCircle2, Bell, Package, IndianRupee, Hourglass, Star, Upload, Heart, CalendarPlus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,14 @@ const clientStats = [
     { title: "Total Spend", value: "₹55,000", icon: BarChart3, color: "text-purple-500" },
     { title: "Pending Payments", value: "1", icon: Hourglass, color: "text-orange-500", href: "/client/orders?status=pending_payment" },
 ];
+
+const quickActions = [
+    { label: "Start New Project", href: "/design-services", icon: Sparkles, variant: "default" },
+    { label: "Manage Brand Assets", href: "/client/brand-profile", icon: Briefcase, variant: "outline" },
+    { label: "Upload Brand Asset", href: "/client/brand-profile", icon: Upload, variant: "outline" },
+    { label: "View Favorites", href: "#", icon: Heart, variant: "outline" },
+    { label: "Book Consultation", href: "#", icon: CalendarPlus, variant: "outline" },
+]
 
 const mockNotifications = [
     {
@@ -109,7 +117,7 @@ export default function ClientDashboardPage() {
       </div>
       
       {/* Quick Stats Section */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {clientStats.map(stat => (
           <Card key={stat.title} className="shadow-lg hover:shadow-xl transition-shadow">
             <Link href={stat.href || '#'} className={`block h-full ${!stat.href ? 'cursor-default' : ''}`}>
@@ -125,8 +133,25 @@ export default function ClientDashboardPage() {
         ))}
       </div>
 
+       {/* Quick Actions Section */}
+      <Card className="shadow-lg">
+          <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {quickActions.map(action => (
+                <Button key={action.label} variant={action.variant as any} className="flex-col h-24 text-center justify-center gap-2" asChild>
+                    <Link href={action.href}>
+                        <action.icon className="h-6 w-6" />
+                        <span className="text-xs whitespace-normal">{action.label}</span>
+                    </Link>
+                </Button>
+              ))}
+          </CardContent>
+      </Card>
 
-      <div className="grid gap-6 md:grid-cols-2">
+
+      <div className="grid gap-6 md:grid-cols-1">
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="font-headline flex items-center">
@@ -164,27 +189,6 @@ export default function ClientDashboardPage() {
             <Button className="mt-6 w-full" asChild>
               <Link href="/client/orders">
                 View All My Orders <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="font-headline flex items-center">
-              <Sparkles className="mr-3 h-6 w-6 text-primary" />
-              Start a New Project
-            </CardTitle>
-            <CardDescription>Find the perfect design solution for your needs.</CardDescription>
-          </CardHeader>
-          <CardContent className="text-center flex flex-col items-center justify-center h-full">
-             <div className="relative w-full aspect-[16/9] max-w-sm bg-muted rounded-md flex items-center justify-center mb-6 overflow-hidden">
-                <Image src="https://placehold.co/600x400.png" alt="Browse design services" fill style={{objectFit: 'cover'}} data-ai-hint="design inspiration creative" />
-             </div>
-            <p className="text-muted-foreground mb-6">Explore our curated list of design services with fixed scopes and transparent prices. Let's bring your vision to life!</p>
-            <Button size="lg" asChild className="w-full max-w-xs">
-              <Link href="/design-services">
-                Browse All Services <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </CardContent>
