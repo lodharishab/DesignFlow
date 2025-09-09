@@ -1,29 +1,26 @@
 
-"use client";
-
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { FileCode } from "lucide-react";
-import { Skeleton } from '@/components/ui/skeleton';
+import { promises as fs } from 'fs';
+import path from 'path';
 
-// Directly import the README content as a string.
-// Note: This requires specific configuration in your build tool (e.g., webpack loader)
-// to handle raw file imports. Next.js might need a custom webpack config for this.
-// For the prototype, we will simulate this by hardcoding the content.
-import readme from '../../../../../README.md';
+// This is now a server component, so we can use Node.js APIs like fs.
+async function ReadmePage() {
+    // Construct the absolute path to the README.md file
+    const readmePath = path.join(process.cwd(), 'README.md');
+    let readmeContent = '';
+    let isLoading = true;
+    let errorMessage = null;
 
-function ReadmePage() {
-    const [readmeContent, setReadmeContent] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        // Since we can't directly import .md as a raw string easily without webpack loaders,
-        // we'll simulate the fetch or import here.
-        const mockReadme = readme; // In a real app, you might fetch this.
-        setReadmeContent(mockReadme);
-        setIsLoading(false);
-    }, []);
+    try {
+        readmeContent = await fs.readFile(readmePath, 'utf8');
+        isLoading = false;
+    } catch (error) {
+        console.error("Failed to read README.md:", error);
+        errorMessage = "Error: Could not load the README.md file. Please check if the file exists at the root of the project.";
+        isLoading = false;
+    }
 
     return (
         <div className="space-y-8">
@@ -40,13 +37,8 @@ function ReadmePage() {
                     <CardDescription>A direct view of the project's README.md file for development and feature tracking.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {isLoading ? (
-                        <div className="space-y-4">
-                            <Skeleton className="h-8 w-1/3" />
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-20 w-full mt-4" />
-                        </div>
+                    {errorMessage ? (
+                        <p className="text-destructive">{errorMessage}</p>
                     ) : (
                         <Textarea 
                             readOnly 

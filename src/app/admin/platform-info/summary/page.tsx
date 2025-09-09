@@ -1,24 +1,23 @@
 
-"use client";
-
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { BookText } from "lucide-react";
-import { Skeleton } from '@/components/ui/skeleton';
+import { promises as fs } from 'fs';
+import path from 'path';
 
-import projectSummary from '../../../../../project-summary.txt';
+// This is now a server component, so we can use Node.js APIs like fs.
+async function ProjectSummaryPage() {
+    // Construct the absolute path to the project-summary.txt file
+    const summaryPath = path.join(process.cwd(), 'project-summary.txt');
+    let summaryContent = '';
+    let errorMessage = null;
 
-function ProjectSummaryPage() {
-    const [summaryContent, setSummaryContent] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        // Simulate fetch/import of the project summary file
-        const mockSummary = projectSummary;
-        setSummaryContent(mockSummary);
-        setIsLoading(false);
-    }, []);
+    try {
+        summaryContent = await fs.readFile(summaryPath, 'utf8');
+    } catch (error) {
+        console.error("Failed to read project-summary.txt:", error);
+        errorMessage = "Error: Could not load the project-summary.txt file. Please check if the file exists at the root of the project.";
+    }
 
     return (
         <div className="space-y-8">
@@ -35,13 +34,8 @@ function ProjectSummaryPage() {
                     <CardDescription>A high-level summary of the application's structure, pages, and implemented features.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {isLoading ? (
-                        <div className="space-y-4">
-                            <Skeleton className="h-8 w-1/3" />
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-40 w-full mt-4" />
-                        </div>
+                    {errorMessage ? (
+                         <p className="text-destructive">{errorMessage}</p>
                     ) : (
                         <Textarea 
                             readOnly 
