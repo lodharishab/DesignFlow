@@ -160,54 +160,6 @@ function AuditLogsSection() {
     );
 }
 
-function AboutSection() {
-    const [readmeContent, setReadmeContent] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        // This is a mock fetch. In a real scenario, you might have an API route
-        // that securely reads the file from the server.
-        // For this prototype, we'll just use a hardcoded string or a fetch to a public file if available.
-        const mockReadme = `
-# DesignFlow - Creative Services Marketplace
-
-This is a Next.js project for DesignFlow, a marketplace connecting clients with expert designers, primarily focused on the Indian market. The platform aims to provide high-quality creative work through a streamlined process with transparent pricing.
-
-## Project Progress & Features Checklist (as of last update)
-
-**I. Core Structure & Public Pages:**
-
-*   [✓] Basic Project Setup: Next.js, React, ShadCN UI, Tailwind.
-*   [✓] Homepage (\`/\`): Hero, How it Works, Featured Services, Portfolio Glance, CTAs.
-*   [✓] Services Landing Page (\`/design-services\`): Hero with auto-scrolling category carousel, Popular Services, Portfolio Glance.
-*   [✓] All Services Page (\`/services\`): Filterable and sortable list of all service packages (auto-filters from header links).
-*   ... (rest of README content) ...
-`;
-        setReadmeContent(mockReadme);
-        setIsLoading(false);
-    }, []);
-
-    return (
-        <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle>README & Project Info</CardTitle>
-                <CardDescription>A direct view of the project's README.md file for development and feature tracking.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {isLoading ? (
-                    <p>Loading README...</p>
-                ) : (
-                    <Textarea 
-                        readOnly 
-                        value={readmeContent}
-                        className="font-mono text-xs h-[600px] bg-muted/50"
-                    />
-                )}
-            </CardContent>
-        </Card>
-    )
-}
-
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>({
     platformName: "DesignFlow",
@@ -255,227 +207,214 @@ export default function AdminSettingsPage() {
         </h1>
         <Button onClick={handleSaveSettings}>Save All Settings</Button>
       </div>
-
-       <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="general">
-                    <Settings className="mr-2 h-4 w-4"/> General Settings
-                </TabsTrigger>
-                <TabsTrigger value="about">
-                    <Info className="mr-2 h-4 w-4"/> About & App Info
-                </TabsTrigger>
-            </TabsList>
-            <TabsContent value="general" className="mt-6 space-y-8">
-                 {/* General Site Settings */}
-                <Card className="shadow-lg">
-                    <CardHeader>
-                    <CardTitle className="flex items-center"><Settings className="mr-2 h-5 w-5 text-muted-foreground" />General Site Settings</CardTitle>
-                    <CardDescription>Basic configuration for your platform.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                        <Label htmlFor="platformName">Platform Name</Label>
-                        <Input id="platformName" value={settings.platformName} onChange={handleInputChange} placeholder="Your Platform Name" />
-                        </div>
-                        <div>
-                        <Label htmlFor="contactEmail">Contact Email</Label>
-                        <Input id="contactEmail" type="email" value={settings.contactEmail} onChange={handleInputChange} placeholder="contact@example.com" />
-                        </div>
+      
+        <div className="space-y-8">
+            {/* General Site Settings */}
+            <Card className="shadow-lg">
+                <CardHeader>
+                <CardTitle className="flex items-center"><Settings className="mr-2 h-5 w-5 text-muted-foreground" />General Site Settings</CardTitle>
+                <CardDescription>Basic configuration for your platform.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                    <Label htmlFor="platformName">Platform Name</Label>
+                    <Input id="platformName" value={settings.platformName} onChange={handleInputChange} placeholder="Your Platform Name" />
                     </div>
                     <div>
-                        <Label htmlFor="defaultCurrency" className="flex items-center">
-                        <IndianRupee className="mr-2 h-4 w-4 text-muted-foreground" /> Default Currency
-                        </Label>
-                        <Input id="defaultCurrency" value={settings.defaultCurrency} onChange={handleInputChange} placeholder="INR, USD, etc." />
-                        <p className="text-xs text-muted-foreground mt-1">e.g., INR, USD, EUR. This affects membership pricing display.</p>
+                    <Label htmlFor="contactEmail">Contact Email</Label>
+                    <Input id="contactEmail" type="email" value={settings.contactEmail} onChange={handleInputChange} placeholder="contact@example.com" />
                     </div>
-                    </CardContent>
-                </Card>
+                </div>
+                <div>
+                    <Label htmlFor="defaultCurrency" className="flex items-center">
+                    <IndianRupee className="mr-2 h-4 w-4 text-muted-foreground" /> Default Currency
+                    </Label>
+                    <Input id="defaultCurrency" value={settings.defaultCurrency} onChange={handleInputChange} placeholder="INR, USD, etc." />
+                    <p className="text-xs text-muted-foreground mt-1">e.g., INR, USD, EUR. This affects membership pricing display.</p>
+                </div>
+                </CardContent>
+            </Card>
 
-                {/* User & Registration Settings */}
-                <Card className="shadow-lg">
-                    <CardHeader>
-                    <CardTitle className="flex items-center"><UserCog className="mr-2 h-5 w-5 text-muted-foreground" />User & Registration</CardTitle>
-                    <CardDescription>Control user sign-ups and legal document links.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
-                        <Label htmlFor="allowClientRegistrations" className="flex flex-col space-y-1">
-                        <span>Allow New Client Registrations</span>
-                        <span className="font-normal leading-snug text-muted-foreground">
-                            Enable or disable new clients from signing up.
-                        </span>
-                        </Label>
-                        <Switch
-                        id="allowClientRegistrations"
-                        checked={settings.allowClientRegistrations}
-                        onCheckedChange={(checked) => handleSwitchChange('allowClientRegistrations', checked)}
-                        />
+            {/* User & Registration Settings */}
+            <Card className="shadow-lg">
+                <CardHeader>
+                <CardTitle className="flex items-center"><UserCog className="mr-2 h-5 w-5 text-muted-foreground" />User & Registration</CardTitle>
+                <CardDescription>Control user sign-ups and legal document links.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                    <Label htmlFor="allowClientRegistrations" className="flex flex-col space-y-1">
+                    <span>Allow New Client Registrations</span>
+                    <span className="font-normal leading-snug text-muted-foreground">
+                        Enable or disable new clients from signing up.
+                    </span>
+                    </Label>
+                    <Switch
+                    id="allowClientRegistrations"
+                    checked={settings.allowClientRegistrations}
+                    onCheckedChange={(checked) => handleSwitchChange('allowClientRegistrations', checked)}
+                    />
+                </div>
+                <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                    <Label htmlFor="allowDesignerRegistrations" className="flex flex-col space-y-1">
+                    <span>Allow New Designer Registrations</span>
+                    <span className="font-normal leading-snug text-muted-foreground">
+                        Enable or disable new designers from signing up. (All new designers are pending approval)
+                    </span>
+                    </Label>
+                    <Switch
+                    id="allowDesignerRegistrations"
+                    checked={settings.allowDesignerRegistrations}
+                    onCheckedChange={(checked) => handleSwitchChange('allowDesignerRegistrations', checked)}
+                    />
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                    <Label htmlFor="termsUrl">Terms of Service URL</Label>
+                    <Input id="termsUrl" value={settings.termsUrl} onChange={handleInputChange} placeholder="/terms-of-service" />
                     </div>
-                    <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
-                        <Label htmlFor="allowDesignerRegistrations" className="flex flex-col space-y-1">
-                        <span>Allow New Designer Registrations</span>
-                        <span className="font-normal leading-snug text-muted-foreground">
-                            Enable or disable new designers from signing up. (All new designers are pending approval)
-                        </span>
-                        </Label>
-                        <Switch
-                        id="allowDesignerRegistrations"
-                        checked={settings.allowDesignerRegistrations}
-                        onCheckedChange={(checked) => handleSwitchChange('allowDesignerRegistrations', checked)}
-                        />
+                    <div>
+                    <Label htmlFor="privacyUrl">Privacy Policy URL</Label>
+                    <Input id="privacyUrl" value={settings.privacyUrl} onChange={handleInputChange} placeholder="/privacy-policy" />
                     </div>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                        <Label htmlFor="termsUrl">Terms of Service URL</Label>
-                        <Input id="termsUrl" value={settings.termsUrl} onChange={handleInputChange} placeholder="/terms-of-service" />
-                        </div>
-                        <div>
-                        <Label htmlFor="privacyUrl">Privacy Policy URL</Label>
-                        <Input id="privacyUrl" value={settings.privacyUrl} onChange={handleInputChange} placeholder="/privacy-policy" />
-                        </div>
-                    </div>
-                    </CardContent>
-                </Card>
+                </div>
+                </CardContent>
+            </Card>
 
-                {/* Membership Settings */}
-                <Card className="shadow-lg">
-                    <CardHeader>
-                    <CardTitle className="flex items-center"><Layers className="mr-2 h-5 w-5 text-muted-foreground" />Membership Settings</CardTitle>
-                    <CardDescription>Manage membership plans and trial options.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
-                        <Label htmlFor="enableMemberships" className="flex flex-col space-y-1">
-                        <span>Enable Memberships</span>
-                        <span className="font-normal leading-snug text-muted-foreground">
-                            Toggle the entire membership system on or off.
-                        </span>
-                        </Label>
-                        <Switch
-                        id="enableMemberships"
-                        checked={settings.enableMemberships}
-                        onCheckedChange={(checked) => handleSwitchChange('enableMemberships', checked)}
-                        />
-                    </div>
-                    
-                    <Separator />
-                    <h3 className="text-lg font-medium">Client Membership Plans (Examples)</h3>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                        <Label htmlFor="clientBasicPlanName">Basic Plan Name</Label>
-                        <Input id="clientBasicPlanName" value={settings.clientBasicPlanName} onChange={handleInputChange} />
-                        </div>
-                        <div>
-                        <Label htmlFor="clientBasicPlanPrice">Basic Plan Price ({settings.defaultCurrency})</Label>
-                        <Input id="clientBasicPlanPrice" type="number" value={settings.clientBasicPlanPrice} onChange={handleInputChange} />
-                        </div>
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                        <Label htmlFor="clientPremiumPlanName">Premium Plan Name</Label>
-                        <Input id="clientPremiumPlanName" value={settings.clientPremiumPlanName} onChange={handleInputChange} />
-                        </div>
-                        <div>
-                        <Label htmlFor="clientPremiumPlanPrice">Premium Plan Price ({settings.defaultCurrency})</Label>
-                        <Input id="clientPremiumPlanPrice" type="number" value={settings.clientPremiumPlanPrice} onChange={handleInputChange} />
-                        </div>
-                    </div>
-                    <Button variant="outline" className="w-full md:w-auto" disabled>Manage All Client Plans (Coming Soon)</Button>
-
-                    <Separator />
-                    <h3 className="text-lg font-medium">Designer Membership Plans (Examples)</h3>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                        <Label htmlFor="designerBasicPlanName">Basic Plan Name</Label>
-                        <Input id="designerBasicPlanName" value={settings.designerBasicPlanName} onChange={handleInputChange} />
-                        </div>
-                        <div>
-                        <Label htmlFor="designerBasicPlanPrice">Basic Plan Price ({settings.defaultCurrency})</Label>
-                        <Input id="designerBasicPlanPrice" type="number" value={settings.designerBasicPlanPrice} onChange={handleInputChange} />
-                        </div>
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                        <Label htmlFor="designerProPlanName">Pro Plan Name</Label>
-                        <Input id="designerProPlanName" value={settings.designerProPlanName} onChange={handleInputChange} />
-                        </div>
-                        <div>
-                        <Label htmlFor="designerProPlanPrice">Pro Plan Price ({settings.defaultCurrency})</Label>
-                        <Input id="designerProPlanPrice" type="number" value={settings.designerProPlanPrice} onChange={handleInputChange} />
-                        </div>
-                    </div>
-                    <Button variant="outline" className="w-full md:w-auto" disabled>Manage All Designer Plans (Coming Soon)</Button>
-
-                    <Separator />
-                    <h3 className="text-lg font-medium">Free Trial</h3>
-                    <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
-                        <Label htmlFor="enableFreeTrial" className="flex flex-col space-y-1">
-                        <span>Enable Free Trial</span>
-                        <span className="font-normal leading-snug text-muted-foreground">
-                            Offer a trial period for new members.
-                        </span>
-                        </Label>
-                        <Switch
-                        id="enableFreeTrial"
-                        checked={settings.enableFreeTrial}
-                        onCheckedChange={(checked) => handleSwitchChange('enableFreeTrial', checked)}
-                        />
-                    </div>
-                    {settings.enableFreeTrial && (
-                        <div>
-                        <Label htmlFor="trialDurationDays">Trial Duration (Days)</Label>
-                        <Input id="trialDurationDays" type="number" value={settings.trialDurationDays.toString()} onChange={handleInputChange} />
-                        </div>
-                    )}
-                    </CardContent>
-                </Card>
+            {/* Membership Settings */}
+            <Card className="shadow-lg">
+                <CardHeader>
+                <CardTitle className="flex items-center"><Layers className="mr-2 h-5 w-5 text-muted-foreground" />Membership Settings</CardTitle>
+                <CardDescription>Manage membership plans and trial options.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                    <Label htmlFor="enableMemberships" className="flex flex-col space-y-1">
+                    <span>Enable Memberships</span>
+                    <span className="font-normal leading-snug text-muted-foreground">
+                        Toggle the entire membership system on or off.
+                    </span>
+                    </Label>
+                    <Switch
+                    id="enableMemberships"
+                    checked={settings.enableMemberships}
+                    onCheckedChange={(checked) => handleSwitchChange('enableMemberships', checked)}
+                    />
+                </div>
                 
-                {/* Payment Gateway Settings (Placeholder) */}
-                <Card className="shadow-lg">
-                    <CardHeader>
-                    <CardTitle className="flex items-center"><CreditCard className="mr-2 h-5 w-5 text-muted-foreground" />Payment Gateway Settings</CardTitle>
-                    <CardDescription>Configure your payment processor integrations. (UI Placeholders)</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
+                <Separator />
+                <h3 className="text-lg font-medium">Client Membership Plans (Examples)</h3>
+                <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                        <Label htmlFor="stripeApiKey">Stripe API Key (Secret)</Label>
-                        <Input id="stripeApiKey" type="password" value={settings.stripeApiKey} onChange={handleInputChange} placeholder="sk_test_••••••••••••••••••••••••" />
-                        <p className="text-xs text-muted-foreground mt-1">Enter your Stripe secret key. This is a placeholder and not saved.</p>
+                    <Label htmlFor="clientBasicPlanName">Basic Plan Name</Label>
+                    <Input id="clientBasicPlanName" value={settings.clientBasicPlanName} onChange={handleInputChange} />
                     </div>
                     <div>
-                        <Label htmlFor="paypalClientId">PayPal Client ID</Label>
-                        <Input id="paypalClientId" value={settings.paypalClientId} onChange={handleInputChange} placeholder="PayPal Client ID" />
-                        <p className="text-xs text-muted-foreground mt-1">Enter your PayPal Client ID. This is a placeholder and not saved.</p>
+                    <Label htmlFor="clientBasicPlanPrice">Basic Plan Price ({settings.defaultCurrency})</Label>
+                    <Input id="clientBasicPlanPrice" type="number" value={settings.clientBasicPlanPrice} onChange={handleInputChange} />
                     </div>
-                    <Button variant="outline" disabled>Connect Payment Gateways (Coming Soon)</Button>
-                    </CardContent>
-                </Card>
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                    <Label htmlFor="clientPremiumPlanName">Premium Plan Name</Label>
+                    <Input id="clientPremiumPlanName" value={settings.clientPremiumPlanName} onChange={handleInputChange} />
+                    </div>
+                    <div>
+                    <Label htmlFor="clientPremiumPlanPrice">Premium Plan Price ({settings.defaultCurrency})</Label>
+                    <Input id="clientPremiumPlanPrice" type="number" value={settings.clientPremiumPlanPrice} onChange={handleInputChange} />
+                    </div>
+                </div>
+                <Button variant="outline" className="w-full md:w-auto" disabled>Manage All Client Plans (Coming Soon)</Button>
 
-                {/* Notification Settings */}
-                <Card className="shadow-lg">
-                    <CardHeader>
-                    <CardTitle className="flex items-center"><Bell className="mr-2 h-5 w-5 text-muted-foreground" />Notification Settings</CardTitle>
-                    <CardDescription>Configure email notifications.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
+                <Separator />
+                <h3 className="text-lg font-medium">Designer Membership Plans (Examples)</h3>
+                <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                        <Label htmlFor="adminNotificationEmail">Admin Notification Email</Label>
-                        <Input id="adminNotificationEmail" type="email" value={settings.adminNotificationEmail} onChange={handleInputChange} placeholder="admin-alerts@example.com" />
-                        <p className="text-xs text-muted-foreground mt-1">Email address for receiving important platform notifications.</p>
+                    <Label htmlFor="designerBasicPlanName">Basic Plan Name</Label>
+                    <Input id="designerBasicPlanName" value={settings.designerBasicPlanName} onChange={handleInputChange} />
                     </div>
-                    {/* More notification toggles could go here */}
-                    </CardContent>
-                </Card>
+                    <div>
+                    <Label htmlFor="designerBasicPlanPrice">Basic Plan Price ({settings.defaultCurrency})</Label>
+                    <Input id="designerBasicPlanPrice" type="number" value={settings.designerBasicPlanPrice} onChange={handleInputChange} />
+                    </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                    <Label htmlFor="designerProPlanName">Pro Plan Name</Label>
+                    <Input id="designerProPlanName" value={settings.designerProPlanName} onChange={handleInputChange} />
+                    </div>
+                    <div>
+                    <Label htmlFor="designerProPlanPrice">Pro Plan Price ({settings.defaultCurrency})</Label>
+                    <Input id="designerProPlanPrice" type="number" value={settings.designerProPlanPrice} onChange={handleInputChange} />
+                    </div>
+                </div>
+                <Button variant="outline" className="w-full md:w-auto" disabled>Manage All Designer Plans (Coming Soon)</Button>
 
-                {/* Audit Logs Section */}
-                <AuditLogsSection />
-            </TabsContent>
-            <TabsContent value="about" className="mt-6">
-                <AboutSection />
-            </TabsContent>
-        </Tabs>
+                <Separator />
+                <h3 className="text-lg font-medium">Free Trial</h3>
+                <div className="flex items-center justify-between space-x-2 p-4 border rounded-md">
+                    <Label htmlFor="enableFreeTrial" className="flex flex-col space-y-1">
+                    <span>Enable Free Trial</span>
+                    <span className="font-normal leading-snug text-muted-foreground">
+                        Offer a trial period for new members.
+                    </span>
+                    </Label>
+                    <Switch
+                    id="enableFreeTrial"
+                    checked={settings.enableFreeTrial}
+                    onCheckedChange={(checked) => handleSwitchChange('enableFreeTrial', checked)}
+                    />
+                </div>
+                {settings.enableFreeTrial && (
+                    <div>
+                    <Label htmlFor="trialDurationDays">Trial Duration (Days)</Label>
+                    <Input id="trialDurationDays" type="number" value={settings.trialDurationDays.toString()} onChange={handleInputChange} />
+                    </div>
+                )}
+                </CardContent>
+            </Card>
+            
+            {/* Payment Gateway Settings (Placeholder) */}
+            <Card className="shadow-lg">
+                <CardHeader>
+                <CardTitle className="flex items-center"><CreditCard className="mr-2 h-5 w-5 text-muted-foreground" />Payment Gateway Settings</CardTitle>
+                <CardDescription>Configure your payment processor integrations. (UI Placeholders)</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                <div>
+                    <Label htmlFor="stripeApiKey">Stripe API Key (Secret)</Label>
+                    <Input id="stripeApiKey" type="password" value={settings.stripeApiKey} onChange={handleInputChange} placeholder="sk_test_••••••••••••••••••••••••" />
+                    <p className="text-xs text-muted-foreground mt-1">Enter your Stripe secret key. This is a placeholder and not saved.</p>
+                </div>
+                <div>
+                    <Label htmlFor="paypalClientId">PayPal Client ID</Label>
+                    <Input id="paypalClientId" value={settings.paypalClientId} onChange={handleInputChange} placeholder="PayPal Client ID" />
+                    <p className="text-xs text-muted-foreground mt-1">Enter your PayPal Client ID. This is a placeholder and not saved.</p>
+                </div>
+                <Button variant="outline" disabled>Connect Payment Gateways (Coming Soon)</Button>
+                </CardContent>
+            </Card>
+
+            {/* Notification Settings */}
+            <Card className="shadow-lg">
+                <CardHeader>
+                <CardTitle className="flex items-center"><Bell className="mr-2 h-5 w-5 text-muted-foreground" />Notification Settings</CardTitle>
+                <CardDescription>Configure email notifications.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                <div>
+                    <Label htmlFor="adminNotificationEmail">Admin Notification Email</Label>
+                    <Input id="adminNotificationEmail" type="email" value={settings.adminNotificationEmail} onChange={handleInputChange} placeholder="admin-alerts@example.com" />
+                    <p className="text-xs text-muted-foreground mt-1">Email address for receiving important platform notifications.</p>
+                </div>
+                {/* More notification toggles could go here */}
+                </CardContent>
+            </Card>
+
+            {/* Audit Logs Section */}
+            <AuditLogsSection />
+        </div>
 
       <div className="flex justify-end mt-8">
          <Button onClick={handleSaveSettings} size="lg">Save All Settings</Button>
@@ -483,3 +422,5 @@ export default function AdminSettingsPage() {
     </div>
   );
 }
+
+    

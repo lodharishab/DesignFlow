@@ -34,7 +34,8 @@ import {
   PieChart as PieChartIcon,
   UserCog,
   History, // for Activity Logs
-  User as UserIcon // for Clients
+  User as UserIcon, // for Clients
+  Info // For Platform Info
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -138,6 +139,7 @@ const navItems = [
     ]
   },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
+  { href: '/admin/platform-info', icon: Info, label: 'Platform Info' }, // New Item
 ];
 
 // Inner component to consume SidebarContext
@@ -314,3 +316,5 @@ export default function AdminLayout({
     </SidebarProvider>
   );
 }
+
+    
