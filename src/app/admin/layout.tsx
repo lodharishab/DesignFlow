@@ -35,7 +35,11 @@ import {
   UserCog,
   History, // for Activity Logs
   User as UserIcon, // for Clients
-  Info // For Platform Info
+  Info, // For Platform Info
+  FileCode, // For README
+  BookText, // For Project Summary
+  Sparkles, // For AI Flows
+  Package // For Tech Stack
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -139,7 +143,17 @@ const navItems = [
     ]
   },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
-  { href: '/admin/platform-info', icon: Info, label: 'Platform Info' }, // New Item
+  {
+    label: 'Platform Info',
+    icon: Info,
+    pathPrefix: '/admin/platform-info',
+    children: [
+      { href: '/admin/platform-info/readme', icon: FileCode, label: 'README' },
+      { href: '/admin/platform-info/summary', icon: BookText, label: 'Project Summary' },
+      { href: '/admin/platform-info/ai-flows', icon: Sparkles, label: 'AI Flows' },
+      { href: '/admin/platform-info/tech-stack', icon: Package, label: 'Tech Stack' },
+    ]
+  },
 ];
 
 // Inner component to consume SidebarContext
@@ -316,5 +330,3 @@ export default function AdminLayout({
     </SidebarProvider>
   );
 }
-
-    
