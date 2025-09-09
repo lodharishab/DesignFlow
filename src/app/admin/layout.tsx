@@ -49,7 +49,8 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
   SidebarFooter,
-  useSidebar
+  useSidebar,
+  SidebarTrigger
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/shared/mode-toggle';
@@ -259,6 +260,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
               >
                 <LayoutGrid className="h-5 w-5" />
               </Button>
+            </div>
+             <div className="hidden md:block">
+              <SidebarTrigger className="h-8 w-8" />
             </div>
             <div className="flex-1" />
             <div className="flex items-center space-x-4">
