@@ -1,5 +1,8 @@
 
 import { MongoClient, Db, ServerApiVersion } from 'mongodb';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || 'designflow_db'; // You can make the DB name configurable
