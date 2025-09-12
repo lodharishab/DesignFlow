@@ -1,0 +1,48 @@
+
+# DesignFlow - Project Overview (Version 0.03)
+
+This document provides a summary of the DesignFlow project with dashboards and initial dynamic features implemented.
+
+## I. Core Public Pages
+
+All public-facing pages for browsing services, portfolio, and blog are complete.
+
+## II. Authentication & User Roles
+
+Full signup and login flows are implemented with simulated logic.
+
+## III. Client Area (`/client/...`)
+
+The client portal is functional with mock data.
+
+*   **Client Dashboard**: Shows stats and active orders.
+*   **My Orders**: A table view of all orders.
+*   **Profile**: A page for clients to manage their basic profile information.
+
+## IV. Designer Area (`/designer/...`)
+
+The designer portal allows for portfolio and profile management.
+
+*   **Designer Dashboard**: Main landing page for designers.
+*   **Portfolio Management**: View and add new portfolio items using Server Actions.
+*   **Profile & Settings**: Edit public-facing bio and skills.
+
+## V. Admin Area (`/admin/...`)
+
+An extensive admin portal is available for platform management.
+
+*   **Admin Dashboard**: High-level statistics and quick links.
+*   **User Management**: List, add, and edit users (simulated).
+*   **Service Management**: List and manage services and categories (simulated).
+*   **Order Management**: A filterable table of all orders.
+*   **Blog Post Management**: Full CRUD functionality for blog posts using Server Actions.
+
+## VI. E-commerce & Support
+
+*   **Cart Page (`/cart`)**: Displays items and calculates totals.
+*   **Order Status Pages**: Success and Failed pages are in place.
+
+## VII. Technical Aspects
+
+*   **Server Actions**: Used for blog and portfolio form submissions.
+*   **UI Context**: Manages global state like login status.

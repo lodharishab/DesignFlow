@@ -1,5 +1,5 @@
 
-# DesignFlow - Project Overview, Pages, and Features
+# DesignFlow - Project Overview, Pages, and Features (v0.04)
 
 This document provides a comprehensive summary of the DesignFlow Creative Services Marketplace project, detailing its structure, pages, and key features as currently implemented in the prototype.
 
