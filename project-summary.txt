@@ -1,3 +1,4 @@
+
 # DesignFlow - Project Overview, Pages, and Features
 
 This document provides a comprehensive summary of the DesignFlow Creative Services Marketplace project, detailing its structure, pages, and key features as currently implemented in the prototype.
@@ -45,7 +46,7 @@ A dedicated, authenticated portal for clients to manage their activities.
 *   **Client Dashboard (`/client/dashboard`)**: The main landing page for logged-in clients, showing quick stats, active orders, and CTAs to browse services.
 *   **My Orders (`/client/orders`)**: A paginated and sortable table view of all past and present orders.
 *   **Order Detail (`/client/orders/[orderId]`)**: A detailed view of a specific order, including status, deliverables, and a communication log (simulated).
-*   **Brand Profile (`/client/brand-profile`)**: A form for clients to provide detailed information about their brand, target audience, style preferences, and brand assets to help designers.
+*   **Brand Profile (`/client/brand-profile`)**: A form for clients to provide detailed information about their brand, target audience, style preferences, and brand assets to help designers. Includes AI-powered suggestions.
 *   **Account Settings (`/client/profile`)**: A page for clients to manage their basic profile information (name, password, etc.).
 
 ## IV. Designer Area (`/designer/...`)
@@ -57,10 +58,12 @@ A dedicated, authenticated portal for designers.
 *   **Portfolio Management (`/designer/portfolio`)**: A view of the designer's own portfolio items, with options to add new projects.
     *   **Add New Project (`/designer/portfolio/new`)**: A form (using a Server Action) to add a new item to their portfolio.
     *   **Edit Project (`/designer/portfolio/edit/[itemId]`)**: A placeholder page for editing an existing portfolio item.
-*   **Profile & Settings (`/designer/profile`)**: A page for designers to edit their public-facing bio, location, website, and social links.
-*   **Service Alerts (`/designer/services-notifications`)**: A page where designers can subscribe/unsubscribe to notifications for new projects in different service categories.
+*   **Profile & Settings (`/designer/profile`)**: A comprehensive page for designers to edit their public-facing bio, location, website, skills, availability, and security settings.
+*   **Service Alerts/Applications (`/designer/applications`)**: A page where designers can subscribe to notifications for new projects and apply for approval in new service categories.
 *   **My Orders (`/designer/orders`)**: A sortable table view of orders assigned to the designer.
 *   **Order Detail (`/designer/orders/[orderId]`)**: A detailed view for managing an assigned order, including submitting deliverables and communicating with the client (simulated).
+*   **Earnings (`/designer/earnings`)**: A dashboard to view earnings, transaction history, and request payouts.
+*   **Performance (`/designer/performance`)**: A section to view reviews and dispute history.
 
 ## V. Admin Area (`/admin/...`)
 
@@ -82,6 +85,13 @@ An extensive, authenticated portal for platform administrators.
     *   **Status-Specific Views**: Separate pages that show pre-filtered lists of orders (e.g., In Progress, Completed, Cancelled).
     *   **Order Detail (`/admin/orders/details/[orderId]`)**: A detailed view of any order.
 *   **Blog Post Management (`/admin/blog`)**: Full CRUD functionality for blog posts using Server Actions.
+*   **Messaging & Support**:
+    *   **Direct Messages (`/admin/messaging/direct`)**: A UI for viewing and managing direct messages.
+    *   **Chat Monitor (`/admin/messaging/monitor`)**: A UI to monitor chats between clients and designers.
+    *   **Announcements (`/admin/messaging/announcements`)**: A page to create and send platform-wide announcements, with AI assistance.
+    *   **Reviews (`/admin/reviews`)**: A page to moderate and manage user reviews.
+    *   **Reports (`/admin/reports`)**: A dashboard to view and manage user-submitted reports.
+*   **Payments & Revenue (`/admin/payments`)**: A dashboard for viewing transactions, managing payouts, and handling disputes.
 *   **Platform Settings (`/admin/settings`)**: A page with forms to manage various platform-wide settings (e.g., registration toggles, membership plans - simulated).
 
 ## VI. E-commerce & Support
@@ -96,5 +106,5 @@ An extensive, authenticated portal for platform administrators.
 *   **Tech Stack**: Next.js (App Router), React, TypeScript, ShadCN UI Components, Tailwind CSS.
 *   **Data Handling**: Currently uses mock data defined in TypeScript files. Server Actions are used for forms in the admin (blog, portfolio).
 *   **Database Setup**: A basic MongoDB connection file (`src/lib/mongodb.ts`) and a sample database library (`src/lib/blog-db.ts`) are in place, ready for full integration.
-*   **AI Integration**: A Genkit setup file (`src/ai/genkit.ts`) is configured, ready for implementing AI features.
+*   **AI Integration**: A Genkit setup file (`src/ai/genkit.ts`) is configured. AI flows are implemented for general conversation (Kira), content generation (blog ideas, announcements, designer bios), and branding suggestions.
 *   **Deployment**: Configured for easy deployment using Firebase App Hosting.
