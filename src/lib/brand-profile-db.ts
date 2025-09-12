@@ -23,6 +23,7 @@ export interface BrandProfileFormData {
   industry: string;
   targetAudience: string;
   brandValues: string;
+  tags?: string[]; // Added for brand tags
   preferredDesignStyle: string;
   colorsToUse: string;
   colorsToAvoid: string;

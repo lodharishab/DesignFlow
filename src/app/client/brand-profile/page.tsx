@@ -9,18 +9,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, MessageCircle, FileText, Loader2, Info, UploadCloud, Link as LinkIcon, Eye, CheckCircle, X, History, CloudUpload } from 'lucide-react';
+import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, MessageCircle, FileText, Loader2, Info, UploadCloud, Link as LinkIcon, Eye, CheckCircle, X, History, CloudUpload, Tag } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { saveBrandProfile, getBrandProfile, type BrandProfileFormData } from '@/lib/brand-profile-db';
 import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
+import { Badge } from '@/components/ui/badge';
 
 const industryOptions = ["Technology", "Retail/E-commerce", "Healthcare", "Education", "Hospitality/Travel", "Real Estate", "Finance", "Manufacturing", "Non-profit", "Creative Arts", "Other"];
 const companySizeOptions = ["Solo / Freelancer", "1-10 employees", "11-50 employees", "51-200 employees", "201-1000 employees", "1000+ employees"];
 const designStyleOptions = ["Modern & Minimalist", "Classic & Elegant", "Playful & Fun", "Bold & Dynamic", "Rustic & Natural", "Tech & Futuristic", "Artistic & Illustrative", "Corporate & Formal", "Other"];
 const feedbackStyleOptions = ["Direct & Concise", "Detailed & Explanatory", "Collaborative Discussion", "Visual Examples Preferred"];
+const suggestedTags = ["Minimal", "Luxury", "Fun", "Bold", "Elegant", "Professional", "Youthful", "Corporate", "Feminine", "Masculine"];
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -28,24 +30,17 @@ const initialFormData: BrandProfileFormData = {
   companyName: "", companyWebsite: "", industry: "", companySize: "", targetAudience: "",
   brandValues: "", preferredDesignStyle: "", colorsToUse: "", colorsToAvoid: "",
   typicalProjectTypes: "", communicationPreference: "Platform Chat", feedbackStyle: "",
-  notesForDesigners: "", brandGuidelinesLink: "", existingAssetsLink: ""
+  notesForDesigners: "", brandGuidelinesLink: "", existingAssetsLink: "", tags: []
 };
 
 // --- PREVIEW COMPONENT ---
 function BrandProfilePreview({ profileData }: { profileData: BrandProfileFormData }) {
-    // This component remains largely the same but will now display debounced state changes.
-    // NOTE: File previews are handled by the main component due to File object scope.
-    const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
-
     const parseColors = (colorString: string) => {
         return colorString.split(',').map(color => color.trim()).filter(Boolean);
     };
 
     const colorsToUse = parseColors(profileData.colorsToUse);
     const colorsToAvoid = parseColors(profileData.colorsToAvoid);
-
-    // This part is tricky without passing the File object, so we'll let the parent handle it.
-    // For now, this preview won't show image/font previews to keep it simple.
 
     return (
         <Card className="shadow-lg sticky top-24">
@@ -66,6 +61,16 @@ function BrandProfilePreview({ profileData }: { profileData: BrandProfileFormDat
                         <div className="flex flex-wrap gap-2">
                             {colorsToUse.map((color, index) => (
                                 <div key={index} className="h-8 w-8 rounded-full border" style={{ backgroundColor: color }}></div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                {profileData.tags && profileData.tags.length > 0 && (
+                    <div className="space-y-2">
+                        <Label>Brand Tags</Label>
+                        <div className="flex flex-wrap gap-2">
+                            {profileData.tags.map((tag, index) => (
+                                <Badge key={index} variant="secondary">{tag}</Badge>
                             ))}
                         </div>
                     </div>
@@ -94,29 +99,27 @@ export default function BrandProfilePage() {
   const [formData, setFormData] = useState<BrandProfileFormData>(initialFormData);
   const [isLoaded, setIsLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const [tagInput, setTagInput] = useState('');
   
-  // Ref to store the initial state for reset functionality
   const initialStateRef = useRef<BrandProfileFormData>(initialFormData);
 
-  // Load data on component mount
   useEffect(() => {
     const loadData = async () => {
       const savedData = await getBrandProfile();
       if (savedData) {
-        setFormData(savedData);
-        initialStateRef.current = savedData; // Store the loaded state as the "original"
+        setFormData(prev => ({...prev, ...savedData}));
+        initialStateRef.current = {...initialStateRef.current, ...savedData};
       }
       setIsLoaded(true);
     };
     loadData();
   }, []);
 
-  // Debounced effect for auto-saving
   useDebouncedEffect(() => {
-    if (isLoaded) { // Only save after initial data load
+    if (isLoaded) {
       handleAutoSave();
     }
-  }, [formData], { delay: 1500 }); // 1.5-second delay
+  }, [formData], { delay: 1500 });
 
 
   const handleAutoSave = async () => {
@@ -124,7 +127,6 @@ export default function BrandProfilePage() {
     try {
       await saveBrandProfile(formData);
       setSaveStatus('saved');
-      // The "Saved" status will be reset to "idle" by the timeout in the UI
     } catch (error) {
       setSaveStatus('error');
       toast({
@@ -150,7 +152,7 @@ export default function BrandProfilePage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
-    setSaveStatus('saving'); // Indicate changes are being made
+    setSaveStatus('saving');
   };
 
   const handleSelectChange = (id: keyof BrandProfileFormData, value: string) => {
@@ -162,6 +164,28 @@ export default function BrandProfilePage() {
     setFormData(prev => ({ ...prev, [id]: value }));
     setSaveStatus('saving');
   };
+
+  const handleAddTag = (tagToAdd: string) => {
+    const newTag = tagToAdd.trim();
+    if (newTag && !(formData.tags || []).includes(newTag)) {
+        setFormData(prev => ({ ...prev, tags: [...(prev.tags || []), newTag] }));
+        setSaveStatus('saving');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setFormData(prev => ({ ...prev, tags: (prev.tags || []).filter(t => t !== tagToRemove) }));
+    setSaveStatus('saving');
+  };
+  
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag(tagInput);
+      setTagInput('');
+    }
+  };
+
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -245,6 +269,38 @@ export default function BrandProfilePage() {
                         <Label htmlFor="brandValues">Brand Values (comma-separated)</Label>
                         <Input id="brandValues" value={formData.brandValues} onChange={handleChange} placeholder="e.g., Innovation, Trust, Community, Sustainability" />
                         </div>
+
+                         <div className="space-y-2">
+                          <Label>Brand Tags</Label>
+                          <div className="p-3 border rounded-md bg-muted/50">
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {(formData.tags || []).map(tag => (
+                                <Badge key={tag} variant="default" className="text-sm">
+                                  {tag}
+                                  <button onClick={() => handleRemoveTag(tag)} className="ml-1.5 rounded-full hover:bg-primary-foreground/20 p-0.5">
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                            <Input
+                              id="tag-input"
+                              placeholder="Add a custom tag and press Enter"
+                              value={tagInput}
+                              onChange={(e) => setTagInput(e.target.value)}
+                              onKeyDown={handleTagInputKeyDown}
+                            />
+                            <p className="text-xs text-muted-foreground mt-2">Suggested tags:</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                               {suggestedTags.filter(st => !(formData.tags || []).includes(st)).map(tag => (
+                                <Button key={tag} type="button" size="sm" variant="outline" onClick={() => handleAddTag(tag)}>
+                                  {tag}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
                         <div className="space-y-2">
                         <Label htmlFor="preferredDesignStyle">Preferred Design Style</Label>
                         <Select value={formData.preferredDesignStyle} onValueChange={(value) => handleSelectChange('preferredDesignStyle', value)}>
@@ -327,4 +383,3 @@ export default function BrandProfilePage() {
     </div>
   );
 }
-
