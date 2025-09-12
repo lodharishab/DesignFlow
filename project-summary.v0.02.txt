@@ -1,0 +1,32 @@
+
+# DesignFlow - Project Overview, Pages, and Features (v0.02)
+
+This document summarizes the features and pages implemented up to version 0.02.
+
+## I. Core Structure & Public Pages
+
+*   **Homepage (`/`)**: Enhanced with sections for portfolio and calls-to-action.
+*   **Services Pages**:
+    *   A main services landing page (`/design-services`) is created.
+    *   An "All Services" page (`/services`) to list every package.
+    *   A detailed page (`/services/[serviceId]`) for individual services.
+*   **Portfolio Pages**:
+    *   A main portfolio listing page (`/portfolio`).
+    *   A detailed page (`/portfolio/[id]`) for individual portfolio items.
+*   **Blog Pages**:
+    *   A blog listing page (`/blog`) to show all posts.
+    *   A page for individual blog posts (`/blog/[slug]`).
+*   **Layout & Styling**:
+    *   A `CategoriesNavbar` has been added for service navigation.
+    *   Mobile bottom navigation is implemented for better mobile UX.
+    *   The theme is more refined with light/dark mode support.
+
+## II. Technical Aspects
+
+*   **Mock Data**: Initial mock data sources have been created for blog posts and portfolio items to populate the new pages.
+
+## III. Key Next Steps
+
+1.  **Authentication & User Roles**: Build the complete login and signup flows for clients and designers.
+2.  **Dashboard Development**: Create the basic sidebar layouts and dashboard landing pages for the client, designer, and admin areas.
+3.  **Form Handling**: Implement Server Actions for handling simple form submissions, like a contact form or a newsletter signup.

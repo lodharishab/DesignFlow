@@ -1,0 +1,17 @@
+
+# DesignFlow - Project Overview, Pages, and Features (v0.01)
+
+This document provides a summary of the initial setup for the DesignFlow project.
+
+## I. Core Structure
+
+*   **Project Setup**: The project is initialized with Next.js, React, TypeScript, ShadCN UI, and Tailwind CSS.
+*   **Homepage (`/`)**: A basic homepage exists with a hero section and placeholder content for "How It Works" and "Featured Services".
+*   **Layout Components**: A standard `Navbar` and `Footer` are in place.
+*   **Styling**: A basic theme has been configured in `globals.css`.
+
+## II. Key Next Steps
+
+1.  **Expand Public Pages**: The immediate goal is to build out all public-facing pages, such as a detailed services listing, a portfolio gallery, and a blog.
+2.  **Implement Authentication**: Plan and implement user registration and login functionality for different roles (Client, Designer, Admin).
+3.  **Develop User Dashboards**: Design and build the foundational layouts and pages for the authenticated user areas.

@@ -1,0 +1,47 @@
+
+# DesignFlow - Project Overview, Pages, and Features (v0.03)
+
+This document summarizes the features implemented up to version 0.03, focusing on authentication and the initial dashboard structures.
+
+## I. Public Pages
+
+*   All public pages from v0.02 are stable and feature complete (using mock data).
+
+## II. Authentication & User Roles
+
+*   **Auth Layout**: A dedicated layout for login and signup pages has been created.
+*   **Login & Signup**:
+    *   A unified Login page (`/login`) with simulated role-based redirection.
+    *   A Client Signup page (`/signup`).
+    *   A separate, more detailed Designer Signup page (`/signup/designer`).
+*   **Pending Approval Page**: A waiting page for designers after they complete their application.
+
+## III. Client Area (`/client/...`)
+
+*   **Client Layout**: A sidebar navigation layout for the client portal is implemented.
+*   **Dashboard**: A basic client dashboard page is created.
+*   **Placeholder Pages**: Pages for "My Orders" and "Profile" are created with placeholder content.
+
+## IV. Designer Area (`/designer/...`)
+
+*   **Designer Layout**: A sidebar navigation layout for the designer portal.
+*   **Dashboard**: A basic designer dashboard page is in place.
+*   **Portfolio Management**: Designers can view their portfolio items and use a form (powered by a Server Action) to add new projects.
+
+## V. Admin Area (`/admin/...`)
+
+*   **Admin Layout**: A comprehensive sidebar layout for all administrative functions.
+*   **Dashboard**: An admin dashboard with placeholder stats and quick links.
+*   **CRUD for Blog**: Full functionality (Create, Read, Update, Delete) for blog posts has been implemented using Server Actions.
+*   **Management Placeholders**: List views for Users, Designers, Services, and Orders are created, populated by mock data.
+
+## VI. Technical Aspects
+
+*   **Server Actions**: Now used for the blog management system.
+*   **UI Context**: Manages global UI state like the mobile menu and login status.
+
+## VII. Key Next Steps
+
+1.  **Complete Dashboard Features**: Implement the functionality for all the placeholder pages in the user dashboards (e.g., order details, profile editing, service creation).
+2.  **E-commerce Flow**: Build the "Add to Cart" functionality and the checkout process.
+3.  **AI Integration**: Introduce Genkit to the project for AI-powered features.

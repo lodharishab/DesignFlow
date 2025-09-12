@@ -4,19 +4,33 @@ import { Textarea } from "@/components/ui/textarea";
 import { BookText } from "lucide-react";
 import { promises as fs } from 'fs';
 import path from 'path';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from 'next/link';
 
-async function ProjectSummaryPage() {
-    const summaryPath = path.join(process.cwd(), 'project-summary.txt');
-    
-    let summaryContent = '';
-    let errorMessage = null;
+interface ProjectSummaryPageProps {
+  searchParams: { [key: string]: string | string[] | undefined };
+}
 
-    try {
-        summaryContent = await fs.readFile(summaryPath, 'utf8');
-    } catch (error) {
-        console.error(`Failed to read project-summary.txt:`, error);
-        errorMessage = `Error: Could not load the file project-summary.txt. Please check if the file exists.`;
+async function ProjectSummaryPage({ searchParams }: ProjectSummaryPageProps) {
+    const version = searchParams.version || '0.04';
+
+    const getFileNameForVersion = (v: string) => {
+        if (v === '0.04') return 'project-summary.txt';
+        return `project-summary.v${v.replace('0.0', '')}.txt`;
     }
+
+    const readFileContent = async (fileName: string) => {
+        try {
+            const filePath = path.join(process.cwd(), fileName);
+            return await fs.readFile(filePath, 'utf8');
+        } catch (error) {
+            console.error(`Failed to read ${fileName}:`, error);
+            return `Error: Could not load the file ${fileName}. Please check if the file exists.`;
+        }
+    };
+
+    const content = await readFileContent(getFileNameForVersion(version as string));
+    const versions = ['0.04', '0.03', '0.02', '0.01'];
 
     return (
         <div className="space-y-8">
@@ -29,19 +43,26 @@ async function ProjectSummaryPage() {
 
             <Card className="shadow-lg">
                  <CardHeader>
-                    <CardTitle>Feature & Page Overview (v0.04 - Current)</CardTitle>
-                    <CardDescription>A high-level summary of the application's structure, pages, and implemented features.</CardDescription>
+                    <CardTitle>Feature & Page Overviews by Version</CardTitle>
+                    <CardDescription>A high-level summary of the application's structure and features at different points in its development.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {errorMessage ? (
-                         <p className="text-destructive">{errorMessage}</p>
-                    ) : (
-                        <Textarea 
-                            readOnly 
-                            value={summaryContent}
-                            className="font-mono text-xs h-[600px] bg-muted/50"
-                        />
-                    )}
+                    <Tabs defaultValue={version as string} className="w-full">
+                        <TabsList className="grid w-full grid-cols-4">
+                             {versions.map(v => (
+                                <TabsTrigger key={v} value={v} asChild>
+                                    <Link href={`?version=${v}`}>v{v}</Link>
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                        <TabsContent value={version as string} className="mt-4">
+                            <Textarea 
+                                readOnly 
+                                value={content}
+                                className="font-mono text-xs h-[600px] bg-muted/50"
+                            />
+                        </TabsContent>
+                    </Tabs>
                 </CardContent>
             </Card>
         </div>
