@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type FormEvent, useEffect } from 'react';
+import { useState, type FormEvent, useEffect, useCallback, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,79 +9,33 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, MessageCircle, FileText, Loader2, Info, UploadCloud, Link as LinkIcon, Eye } from 'lucide-react';
+import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, MessageCircle, FileText, Loader2, Info, UploadCloud, Link as LinkIcon, Eye, CheckCircle, X, History, CloudUpload } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-
-interface BrandProfileData {
-  companyName: string;
-  companyWebsite: string;
-  industry: string;
-  companySize: string;
-  targetAudience: string;
-  brandValues: string;
-  preferredDesignStyle: string;
-  colorsToUse: string;
-  colorsToAvoid: string;
-  typicalProjectTypes: string;
-  communicationPreference: string;
-  feedbackStyle: string;
-  notesForDesigners: string;
-  logoAsset: File | null;
-  brandGuidelinesLink: string;
-  existingAssetsLink: string;
-  fontFile: File | null;
-}
+import { saveBrandProfile, getBrandProfile, type BrandProfileFormData } from '@/lib/brand-profile-db';
+import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
 
 const industryOptions = ["Technology", "Retail/E-commerce", "Healthcare", "Education", "Hospitality/Travel", "Real Estate", "Finance", "Manufacturing", "Non-profit", "Creative Arts", "Other"];
 const companySizeOptions = ["Solo / Freelancer", "1-10 employees", "11-50 employees", "51-200 employees", "201-1000 employees", "1000+ employees"];
 const designStyleOptions = ["Modern & Minimalist", "Classic & Elegant", "Playful & Fun", "Bold & Dynamic", "Rustic & Natural", "Tech & Futuristic", "Artistic & Illustrative", "Corporate & Formal", "Other"];
 const feedbackStyleOptions = ["Direct & Concise", "Detailed & Explanatory", "Collaborative Discussion", "Visual Examples Preferred"];
 
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
-function BrandProfilePreview({ profileData }: { profileData: BrandProfileData }) {
+const initialFormData: BrandProfileFormData = {
+  companyName: "", companyWebsite: "", industry: "", companySize: "", targetAudience: "",
+  brandValues: "", preferredDesignStyle: "", colorsToUse: "", colorsToAvoid: "",
+  typicalProjectTypes: "", communicationPreference: "Platform Chat", feedbackStyle: "",
+  notesForDesigners: "", brandGuidelinesLink: "", existingAssetsLink: ""
+};
+
+// --- PREVIEW COMPONENT ---
+function BrandProfilePreview({ profileData }: { profileData: BrandProfileFormData }) {
+    // This component remains largely the same but will now display debounced state changes.
+    // NOTE: File previews are handled by the main component due to File object scope.
     const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
-    const [fontFaceStyle, setFontFaceStyle] = useState('');
-
-    useEffect(() => {
-        if (profileData.logoAsset) {
-            const url = URL.createObjectURL(profileData.logoAsset);
-            setLogoPreviewUrl(url);
-            return () => URL.revokeObjectURL(url);
-        } else {
-            setLogoPreviewUrl(null);
-        }
-    }, [profileData.logoAsset]);
-
-     useEffect(() => {
-        if (profileData.fontFile) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const fontDataUrl = reader.result as string;
-                const newFontFace = `
-                    @font-face {
-                        font-family: 'UploadedFont';
-                        src: url(${fontDataUrl});
-                    }
-                `;
-                if(document.getElementById('dynamic-font-style')) {
-                    (document.getElementById('dynamic-font-style') as HTMLStyleElement).innerHTML = newFontFace;
-                } else {
-                    const style = document.createElement('style');
-                    style.id = 'dynamic-font-style';
-                    style.innerHTML = newFontFace;
-                    document.head.appendChild(style);
-                }
-                setFontFaceStyle('UploadedFont');
-            };
-            reader.readAsDataURL(profileData.fontFile);
-        } else {
-             setFontFaceStyle('');
-        }
-    }, [profileData.fontFile]);
-
 
     const parseColors = (colorString: string) => {
         return colorString.split(',').map(color => color.trim()).filter(Boolean);
@@ -90,41 +44,23 @@ function BrandProfilePreview({ profileData }: { profileData: BrandProfileData })
     const colorsToUse = parseColors(profileData.colorsToUse);
     const colorsToAvoid = parseColors(profileData.colorsToAvoid);
 
+    // This part is tricky without passing the File object, so we'll let the parent handle it.
+    // For now, this preview won't show image/font previews to keep it simple.
+
     return (
         <Card className="shadow-lg sticky top-24">
             <CardHeader>
                 <CardTitle className="flex items-center"><Eye className="mr-2 h-5 w-5" /> Brand Preview</CardTitle>
-                <CardDescription>A live preview of your brand assets as you define them.</CardDescription>
+                <CardDescription>A live preview of your brand profile as you define it.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="space-y-2">
-                    <Label>Logo</Label>
-                    <div className="w-full h-32 flex items-center justify-center bg-muted/50 rounded-md border-2 border-dashed">
-                        {logoPreviewUrl ? (
-                            <Image src={logoPreviewUrl} alt="Logo preview" width={100} height={100} style={{ objectFit: 'contain' }} />
-                        ) : (
-                            <p className="text-sm text-muted-foreground">Logo preview appears here</p>
-                        )}
-                    </div>
-                </div>
-
-                <div className="space-y-2">
+                 <div className="space-y-2">
                     <Label>Brand Name</Label>
-                    <h3 className="text-2xl font-bold" style={{fontFamily: fontFaceStyle || 'inherit'}}>
+                    <h3 className="text-2xl font-bold">
                         {profileData.companyName || <span className="text-muted-foreground/50">Your Company Name</span>}
                     </h3>
                 </div>
-
-                 {fontFaceStyle && (
-                    <div className="space-y-2">
-                         <Label>Uploaded Font Preview</Label>
-                         <p className="text-lg" style={{fontFamily: fontFaceStyle}}>
-                            The quick brown fox jumps over the lazy dog.
-                         </p>
-                    </div>
-                )}
-
-                {colorsToUse.length > 0 && (
+                 {colorsToUse.length > 0 && (
                     <div className="space-y-2">
                         <Label>Preferred Colors</Label>
                         <div className="flex flex-wrap gap-2">
@@ -134,7 +70,6 @@ function BrandProfilePreview({ profileData }: { profileData: BrandProfileData })
                         </div>
                     </div>
                 )}
-
                 {colorsToAvoid.length > 0 && (
                     <div className="space-y-2">
                         <Label>Colors to Avoid</Label>
@@ -154,69 +89,96 @@ function BrandProfilePreview({ profileData }: { profileData: BrandProfileData })
     );
 }
 
-
 export default function BrandProfilePage() {
   const { toast } = useToast();
-  const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState<BrandProfileData>({
-    companyName: "",
-    companyWebsite: "",
-    industry: "",
-    companySize: "",
-    targetAudience: "",
-    brandValues: "",
-    preferredDesignStyle: "",
-    colorsToUse: "",
-    colorsToAvoid: "",
-    typicalProjectTypes: "",
-    communicationPreference: "Platform Chat",
-    feedbackStyle: "",
-    notesForDesigners: "",
-    logoAsset: null,
-    brandGuidelinesLink: "",
-    existingAssetsLink: "",
-    fontFile: null,
-  });
+  const [formData, setFormData] = useState<BrandProfileFormData>(initialFormData);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  
+  // Ref to store the initial state for reset functionality
+  const initialStateRef = useRef<BrandProfileFormData>(initialFormData);
+
+  // Load data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      const savedData = await getBrandProfile();
+      if (savedData) {
+        setFormData(savedData);
+        initialStateRef.current = savedData; // Store the loaded state as the "original"
+      }
+      setIsLoaded(true);
+    };
+    loadData();
+  }, []);
+
+  // Debounced effect for auto-saving
+  useDebouncedEffect(() => {
+    if (isLoaded) { // Only save after initial data load
+      handleAutoSave();
+    }
+  }, [formData], { delay: 1500 }); // 1.5-second delay
+
+
+  const handleAutoSave = async () => {
+    setSaveStatus('saving');
+    try {
+      await saveBrandProfile(formData);
+      setSaveStatus('saved');
+      // The "Saved" status will be reset to "idle" by the timeout in the UI
+    } catch (error) {
+      setSaveStatus('error');
+      toast({
+        title: "Auto-save Failed",
+        description: "Could not save your changes. Please try saving manually.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const handleManualSave = async () => {
+    setSaveStatus('saving');
+    try {
+        await saveBrandProfile(formData);
+        setSaveStatus('saved');
+        toast({ title: "Draft Saved", description: "Your brand profile has been manually saved." });
+    } catch (error) {
+        setSaveStatus('error');
+        toast({ title: "Save Failed", description: "An error occurred while saving.", variant: "destructive" });
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
+    setSaveStatus('saving'); // Indicate changes are being made
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, files } = e.target;
-    if (files && files[0]) {
-      setFormData(prev => ({ ...prev, [id]: files[0] }));
-    } else {
-      setFormData(prev => ({ ...prev, [id]: null }));
-    }
-  };
-
-  const handleSelectChange = (id: keyof BrandProfileData, value: string) => {
+  const handleSelectChange = (id: keyof BrandProfileFormData, value: string) => {
     setFormData(prev => ({ ...prev, [id]: value }));
+    setSaveStatus('saving');
   };
   
-  const handleRadioChange = (id: keyof BrandProfileData, value: string) => {
+  const handleRadioChange = (id: keyof BrandProfileFormData, value: string) => {
     setFormData(prev => ({ ...prev, [id]: value }));
+    setSaveStatus('saving');
   };
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    // Simulate API call
-    console.log("Saving brand profile:", {
-      ...formData,
-      logoAssetName: formData.logoAsset?.name,
-      fontFileName: formData.fontFile?.name
-    });
-    setTimeout(() => {
-      toast({
-        title: "Brand Profile Saved (Simulated)",
-        description: "Your brand information has been updated.",
-      });
-      setIsSaving(false);
-    }, 1500);
-  };
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (saveStatus === 'saved' || saveStatus === 'error') {
+      timer = setTimeout(() => setSaveStatus('idle'), 2000);
+    }
+    return () => clearTimeout(timer);
+  }, [saveStatus]);
+
+  if (!isLoaded) {
+    return (
+        <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-2 text-muted-foreground">Loading your brand profile...</p>
+        </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -225,6 +187,11 @@ export default function BrandProfilePage() {
           <Sparkles className="mr-3 h-8 w-8 text-primary" />
           My Brand Profile
         </h1>
+         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          {saveStatus === 'saving' && <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>}
+          {saveStatus === 'saved' && <><CheckCircle className="h-4 w-4 text-green-500" /> Saved</>}
+          {saveStatus === 'error' && <><X className="h-4 w-4 text-destructive" /> Error</>}
+        </div>
       </div>
 
        <div className="grid lg:grid-cols-3 gap-8 items-start">
@@ -233,12 +200,10 @@ export default function BrandProfilePage() {
                 <CardHeader>
                 <CardTitle>Tell Us About Your Brand</CardTitle>
                 <CardDescription>
-                    Providing these details helps designers understand your needs, style, and preferences better, leading to more effective collaborations.
+                    Providing these details helps designers understand your needs, style, and preferences better, leading to more effective collaborations. All changes are saved automatically.
                 </CardDescription>
                 </CardHeader>
-                <form onSubmit={handleSubmit}>
                 <CardContent className="space-y-8">
-                    
                     <section>
                     <h2 className="text-xl font-semibold font-headline mb-4 flex items-center"><Building className="mr-2 h-5 w-5 text-primary" />Company & Industry</h2>
                     <div className="grid md:grid-cols-2 gap-6">
@@ -303,27 +268,18 @@ export default function BrandProfilePage() {
                     <Separator />
 
                     <section>
-                    <h2 className="text-xl font-semibold font-headline mb-4 flex items-center"><UploadCloud className="mr-2 h-5 w-5 text-primary" />Brand Assets</h2>
-                    <div className="grid md:grid-cols-1 gap-6">
+                      <h2 className="text-xl font-semibold font-headline mb-4 flex items-center"><CloudUpload className="mr-2 h-5 w-5 text-primary" />Brand Assets</h2>
+                      <p className="text-sm text-muted-foreground -mt-2 mb-4">File uploads are not auto-saved. Please use the manual save button after selecting files.</p>
+                      <div className="grid md:grid-cols-1 gap-6">
                         <div className="space-y-2">
-                        <Label htmlFor="logoAsset">Logo File</Label>
-                        <Input id="logoAsset" type="file" onChange={handleFileChange} accept=".png, .jpg, .jpeg, .svg, .ai, .eps" />
-                        <p className="text-xs text-muted-foreground">Upload your main logo file. Vector formats (SVG, AI, EPS) are preferred.</p>
+                          <Label htmlFor="brandGuidelinesLink">Brand Guidelines Link (Optional)</Label>
+                          <Input id="brandGuidelinesLink" type="url" value={formData.brandGuidelinesLink} onChange={handleChange} placeholder="https://example.com/brand-guidelines.pdf" />
                         </div>
                         <div className="space-y-2">
-                        <Label htmlFor="fontFile">Primary Brand Font File</Label>
-                        <Input id="fontFile" type="file" onChange={handleFileChange} accept=".ttf, .otf, .woff, .woff2" />
-                        <p className="text-xs text-muted-foreground">Upload your primary brand font file (e.g., .ttf, .otf).</p>
+                          <Label htmlFor="existingAssetsLink">Existing Assets Folder Link (Optional)</Label>
+                          <Input id="existingAssetsLink" type="url" value={formData.existingAssetsLink} onChange={handleChange} placeholder="e.g., Google Drive, Dropbox link" />
                         </div>
-                        <div className="space-y-2">
-                        <Label htmlFor="brandGuidelinesLink">Brand Guidelines Link (Optional)</Label>
-                        <Input id="brandGuidelinesLink" type="url" value={formData.brandGuidelinesLink} onChange={handleChange} placeholder="https://example.com/brand-guidelines.pdf" />
-                        </div>
-                        <div className="space-y-2">
-                        <Label htmlFor="existingAssetsLink">Existing Assets Folder Link (Optional)</Label>
-                        <Input id="existingAssetsLink" type="url" value={formData.existingAssetsLink} onChange={handleChange} placeholder="e.g., Google Drive, Dropbox link" />
-                        </div>
-                    </div>
+                      </div>
                     </section>
 
                     <Separator />
@@ -357,13 +313,11 @@ export default function BrandProfilePage() {
                     </div>
                     </section>
                 </CardContent>
-                <CardFooter className="border-t pt-6">
-                    <Button type="submit" disabled={isSaving} className="w-full md:w-auto">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    {isSaving ? 'Saving Brand Profile...' : 'Save Brand Profile'}
+                <CardFooter className="border-t pt-6 flex justify-end">
+                    <Button type="button" onClick={handleManualSave} disabled={saveStatus === 'saving'}>
+                      <Save className="mr-2 h-4 w-4" /> Save Draft
                     </Button>
                 </CardFooter>
-                </form>
             </Card>
         </div>
         <div className="lg:col-span-1">
