@@ -47,11 +47,11 @@ interface User {
 type UserStatus = 'Active' | 'Suspended';
 
 const initialUsersData: User[] = [ // Using a different name to avoid conflict if imported
-  { id: 'usr001', name: 'Priya Sharma', email: 'priya.sharma@example.in', mobileNumber: '9876543210', roles: ['Client'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman avatar', joinDate: new Date(2023, 0, 15), lastLogin: new Date(2024, 5, 1), status: 'Active' },
-  { id: 'usr002', name: 'Bob Smith', email: 'bob@example.com', mobileNumber: '8765432109', roles: ['Designer'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'man avatar', joinDate: new Date(2022, 11, 5), lastLogin: new Date(2024, 5, 3), status: 'Active' },
-  { id: 'usr003', name: 'Charlie Brown', email: 'charlie@example.com', mobileNumber: '7654321098', roles: ['Client', 'Designer'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'person avatar', joinDate: new Date(2023, 2, 20), lastLogin: new Date(2024, 4, 28), status: 'Suspended' },
-  { id: 'usr004', name: 'Diana Prince', email: 'diana@example.com', mobileNumber: '6543210987', roles: ['Admin'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'woman avatar', joinDate: new Date(2022, 5, 10), lastLogin: new Date(2024, 5, 4), status: 'Active' },
-  { id: 'usr005', name: 'Edward Scissorhands', email: 'edward@example.com', mobileNumber: '9988776655', roles: ['Guest'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'man silhouette', joinDate: new Date(2024, 0, 1), lastLogin: null, status: 'Active' },
+  { id: 'usr001', name: 'Priya Sharma', email: 'priya.sharma@example.in', mobileNumber: '9876543210', roles: ['Client'], avatarUrl: 'https://picsum.photos/seed/avatar1/40/40', avatarHint: 'woman avatar', joinDate: new Date(2023, 0, 15), lastLogin: new Date(2024, 5, 1), status: 'Active' },
+  { id: 'usr002', name: 'Bob Smith', email: 'bob@example.com', mobileNumber: '8765432109', roles: ['Designer'], avatarUrl: 'https://picsum.photos/seed/avatar2/40/40', avatarHint: 'man avatar', joinDate: new Date(2022, 11, 5), lastLogin: new Date(2024, 5, 3), status: 'Active' },
+  { id: 'usr003', name: 'Charlie Brown', email: 'charlie@example.com', mobileNumber: '7654321098', roles: ['Client', 'Designer'], avatarUrl: 'https://picsum.photos/seed/avatar3/40/40', avatarHint: 'person avatar', joinDate: new Date(2023, 2, 20), lastLogin: new Date(2024, 4, 28), status: 'Suspended' },
+  { id: 'usr004', name: 'Diana Prince', email: 'diana@example.com', mobileNumber: '6543210987', roles: ['Admin'], avatarUrl: 'https://picsum.photos/seed/avatar4/40/40', avatarHint: 'woman avatar', joinDate: new Date(2022, 5, 10), lastLogin: new Date(2024, 5, 4), status: 'Active' },
+  { id: 'usr005', name: 'Edward Scissorhands', email: 'edward@example.com', mobileNumber: '9988776655', roles: ['Guest'], avatarUrl: 'https://picsum.photos/seed/avatar5/40/40', avatarHint: 'man silhouette', joinDate: new Date(2024, 0, 1), lastLogin: null, status: 'Active' },
 ];
 
 const availableRoles = ['Client', 'Designer', 'Admin', 'Guest'];
@@ -257,7 +257,7 @@ export default function AdminEditUserPage(): ReactElement {
                   <Checkbox
                     id={`role-${role}`}
                     checked={selectedRoles.includes(role)}
-                    onCheckedChange={(checked) => handleRoleChange(role, checked)}
+                    onCheckedChange={(checked) => handleRoleChange(role, !!checked)}
                     disabled={isSaving}
                   />
                   <Label htmlFor={`role-${role}`} className="font-normal flex items-center text-sm">

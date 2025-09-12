@@ -126,7 +126,7 @@ const blogTemplates = [
   {
     name: 'Full Article Layout',
     description: 'A structured template for a complete blog post.',
-    thumbnailUrl: 'https://placehold.co/150x100.png',
+    thumbnailUrl: 'https://picsum.photos/seed/template1/150/100',
     thumbnailHint: 'blog layout article',
     content: `
 <h2 class="font-headline text-2xl mt-6 mb-2">[Your Main Section Title]</h2>
@@ -134,7 +134,7 @@ const blogTemplates = [
 <p>You can add another paragraph here to elaborate on the topic before introducing a visual element.</p>
 
 <div class="my-6">
-  <img src="https://placehold.co/800x400.png" alt="Placeholder for your relevant image" class="rounded-lg shadow-md" data-ai-hint="placeholder relevant image">
+  <img src="https://picsum.photos/seed/articleimg1/800/400" alt="Placeholder for your relevant image" class="rounded-lg shadow-md" data-ai-hint="placeholder relevant image">
   <p class="text-center text-sm text-muted-foreground mt-2"><em>Optional: A caption for your image.</em></p>
 </div>
 
@@ -166,7 +166,7 @@ const blogTemplates = [
   {
     name: 'How-To Guide',
     description: 'A step-by-step guide to help users achieve a goal.',
-    thumbnailUrl: 'https://placehold.co/150x100.png',
+    thumbnailUrl: 'https://picsum.photos/seed/template2/150/100',
     thumbnailHint: 'checklist tutorial',
     content: `<p>Start with a brief introduction about what this guide will help the user accomplish.</p>
 <h3 class="font-headline text-xl mt-4 mb-2">Step 1: [Your First Step]</h3>
@@ -182,7 +182,7 @@ const blogTemplates = [
   {
     name: 'News Update',
     description: 'Announce a new feature, event, or company news.',
-    thumbnailUrl: 'https://placehold.co/150x100.png',
+    thumbnailUrl: 'https://picsum.photos/seed/template3/150/100',
     thumbnailHint: 'newspaper announcement',
     content: `<p>We're thrilled to announce an exciting new update for our community! [Briefly state the main news here].</p>
 <h3 class="font-headline text-xl mt-4 mb-2">What's New?</h3>
@@ -213,7 +213,7 @@ function AddNewBlogPostPageContent() {
   const [category, setCategory] = useState('');
   const [tags, setTags] = useState('');
   const [status, setStatus] = useState<BlogPost['status']>('Draft');
-  const [featuredImageUrl, setFeaturedImageUrl] = useState('https://placehold.co/800x450.png');
+  const [featuredImageUrl, setFeaturedImageUrl] = useState('https://picsum.photos/seed/placeholder1/800/450');
   const [featuredImageHint, setFeaturedImageHint] = useState('blog post image');
   const [publishDate, setPublishDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -229,7 +229,7 @@ function AddNewBlogPostPageContent() {
         setCategory(data.category || '');
         setTags(Array.isArray(data.tags) ? data.tags.join(', ') : '');
         setStatus(data.status || 'Draft');
-        setFeaturedImageUrl(data.featuredImageUrl || 'https://placehold.co/800x450.png');
+        setFeaturedImageUrl(data.featuredImageUrl || 'https://picsum.photos/seed/placeholder1/800/450');
         setFeaturedImageHint(data.featuredImageHint || 'blog post image');
         setPublishDate(data.publishDateString || new Date().toISOString().split('T')[0]);
         setSlug(''); // Clear slug to force regeneration on save
@@ -422,7 +422,7 @@ function AddNewBlogPostPageContent() {
             <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="featuredImageUrl"><ImageIcon className="inline-block mr-2 h-4 w-4 text-muted-foreground" />Featured Image URL*</Label>
-                    <Input id="featuredImageUrl" name="featuredImageUrl" type="url" value={featuredImageUrl} onChange={(e) => setFeaturedImageUrl(e.target.value)} required placeholder="https://placehold.co/800x450.png" aria-describedby="imageUrl-error"/>
+                    <Input id="featuredImageUrl" name="featuredImageUrl" type="url" value={featuredImageUrl} onChange={(e) => setFeaturedImageUrl(e.target.value)} required placeholder="https://picsum.photos/seed/placeholder1/800/450" aria-describedby="imageUrl-error"/>
                     {state.errors?.featuredImageUrl && <p id="imageUrl-error" className="text-sm text-destructive">{state.errors.featuredImageUrl}</p>}
                 </div>
                 <div className="space-y-2">

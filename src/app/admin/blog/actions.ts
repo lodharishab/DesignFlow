@@ -12,7 +12,7 @@ export interface BlogActionResult {
 }
 
 const MOCK_ADMIN_AUTHOR_NAME = "Admin Author";
-const MOCK_ADMIN_AUTHOR_AVATAR_URL = "https://placehold.co/40x40.png";
+const MOCK_ADMIN_AUTHOR_AVATAR_URL = "https://picsum.photos/seed/admin/40/40";
 const MOCK_ADMIN_AUTHOR_AVATAR_HINT = "admin avatar";
 
 function validateUrl(url: string): boolean {

@@ -55,7 +55,7 @@ export default function AboutUsPage() {
               </div>
               <div className="relative aspect-square rounded-lg overflow-hidden shadow-xl">
                 <Image
-                  src="https://placehold.co/600x600.png"
+                  src="https://picsum.photos/seed/about1/600/600"
                   alt="Diverse team collaborating on designs"
                   fill
                   style={{ objectFit: 'cover' }}
@@ -116,7 +116,7 @@ export default function AboutUsPage() {
                 <Card key={index} className="shadow-md">
                   <CardContent className="p-6 text-center">
                     <div className="relative w-32 h-32 rounded-full mx-auto mb-4 bg-muted overflow-hidden">
-                       <Image src={`https://placehold.co/128x128.png`} alt={`Team Member ${index + 1}`} fill style={{ objectFit: 'cover' }} data-ai-hint="person avatar" />
+                       <Image src={`https://picsum.photos/seed/team${index}/128/128`} alt={`Team Member ${index + 1}`} fill style={{ objectFit: 'cover' }} data-ai-hint="person avatar" />
                     </div>
                     <h3 className="text-lg font-semibold font-headline">Team Member {index + 1}</h3>
                     <p className="text-sm text-primary">Role/Title</p>
