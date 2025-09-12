@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, MessageCircle, FileText, Loader2, Info, UploadCloud, Link as LinkIcon, Eye, CheckCircle, X, History, CloudUpload, Tag } from 'lucide-react';
+import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, MessageCircle, FileText, Loader2, Info, UploadCloud, Link as LinkIcon, Eye, CheckCircle, X, History, CloudUpload, Tag, Wand2, Lightbulb, Type, Droplets } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
@@ -17,6 +17,8 @@ import { cn } from '@/lib/utils';
 import { saveBrandProfile, getBrandProfile, type BrandProfileFormData } from '@/lib/brand-profile-db';
 import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
 import { Badge } from '@/components/ui/badge';
+import { generateBrandSuggestions } from '@/ai/flows/brand-suggestions-flow';
+import type { BrandSuggestionsResponse } from '@/ai/flows/brand-suggestions-types';
 
 const industryOptions = ["Technology", "Retail/E-commerce", "Healthcare", "Education", "Hospitality/Travel", "Real Estate", "Finance", "Manufacturing", "Non-profit", "Creative Arts", "Other"];
 const companySizeOptions = ["Solo / Freelancer", "1-10 employees", "11-50 employees", "51-200 employees", "201-1000 employees", "1000+ employees"];
@@ -92,6 +94,92 @@ function BrandProfilePreview({ profileData }: { profileData: BrandProfileFormDat
             </CardContent>
         </Card>
     );
+}
+
+// --- AI SUGGESTIONS COMPONENT ---
+function BrandSuggestions({ profileData, onApplySuggestion }: { profileData: BrandProfileFormData; onApplySuggestion: (field: keyof BrandProfileFormData, value: string) => void; }) {
+  const [suggestions, setSuggestions] = useState<BrandSuggestionsResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleGenerate = async () => {
+    if (!profileData.industry || !profileData.targetAudience || !profileData.brandValues) {
+      toast({
+        title: "Incomplete Profile",
+        description: "Please fill in Industry, Target Audience, and Brand Values to get the best suggestions.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setIsLoading(true);
+    setSuggestions(null);
+    try {
+      const result = await generateBrandSuggestions({
+        industry: profileData.industry,
+        targetAudience: profileData.targetAudience,
+        brandValues: profileData.brandValues,
+        existingTags: (profileData.tags || []).join(', '),
+      });
+      setSuggestions(result);
+    } catch (error) {
+      console.error(error);
+      toast({ title: "AI Generation Failed", description: "Could not generate suggestions. Please try again.", variant: "destructive" });
+    }
+    setIsLoading(false);
+  };
+
+  return (
+    <Card className="shadow-lg">
+      <CardHeader>
+        <CardTitle className="flex items-center"><Lightbulb className="mr-2 h-5 w-5 text-primary"/> AI Brand Assistant</CardTitle>
+        <CardDescription>Get AI-powered suggestions to refine your brand's identity based on your profile.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Button onClick={handleGenerate} disabled={isLoading} className="w-full">
+          {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Wand2 className="mr-2 h-4 w-4"/>}
+          {isLoading ? "Analyzing..." : "Generate Suggestions"}
+        </Button>
+        {suggestions && (
+          <div className="mt-6 space-y-6">
+            {/* Design Styles */}
+            <div className="space-y-3">
+              <h4 className="font-semibold flex items-center"><Paintbrush className="mr-2 h-4 w-4 text-muted-foreground"/>Suggested Design Styles</h4>
+              <div className="flex flex-wrap gap-2">
+                {suggestions.designStyles.map(style => (
+                  <Button key={style} variant="outline" size="sm" onClick={() => onApplySuggestion('preferredDesignStyle', style)}>Apply "{style}"</Button>
+                ))}
+              </div>
+            </div>
+            {/* Font Pairings */}
+            <div className="space-y-3">
+              <h4 className="font-semibold flex items-center"><Type className="mr-2 h-4 w-4 text-muted-foreground"/>Suggested Font Pairings</h4>
+              {suggestions.fontPairings.map((pairing, index) => (
+                <Card key={index} className="bg-muted/50 p-3">
+                  <p><span className="font-bold">Heading:</span> {pairing.headingFont}</p>
+                  <p><span className="font-bold">Body:</span> {pairing.bodyFont}</p>
+                </Card>
+              ))}
+            </div>
+            {/* Color Palettes */}
+            <div className="space-y-3">
+              <h4 className="font-semibold flex items-center"><Droplets className="mr-2 h-4 w-4 text-muted-foreground"/>Suggested Color Palettes</h4>
+              {suggestions.colorPalettes.map((palette, index) => (
+                <Card key={index} className="bg-muted/50 p-3">
+                  <p className="font-bold mb-2">{palette.name}</p>
+                  <div className="flex gap-2">
+                    {palette.colors.map(color => (
+                       <div key={color} className="h-8 w-8 rounded-full border" style={{ backgroundColor: color }}></div>
+                    ))}
+                    <Button variant="ghost" size="sm" className="ml-auto" onClick={() => onApplySuggestion('colorsToUse', palette.colors.join(', '))}>Apply</Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
 }
 
 export default function BrandProfilePage() {
@@ -186,6 +274,11 @@ export default function BrandProfilePage() {
     }
   };
 
+   const handleApplySuggestion = (field: keyof BrandProfileFormData, value: string) => {
+      setFormData(prev => ({ ...prev, [field]: value }));
+      toast({ title: "Suggestion Applied!", description: `The ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} has been updated.` });
+  };
+
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -219,7 +312,7 @@ export default function BrandProfilePage() {
       </div>
 
        <div className="grid lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-8">
             <Card className="shadow-lg">
                 <CardHeader>
                 <CardTitle>Tell Us About Your Brand</CardTitle>
@@ -376,8 +469,9 @@ export default function BrandProfilePage() {
                 </CardFooter>
             </Card>
         </div>
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
             <BrandProfilePreview profileData={formData} />
+            <BrandSuggestions profileData={formData} onApplySuggestion={handleApplySuggestion} />
         </div>
       </div>
     </div>
