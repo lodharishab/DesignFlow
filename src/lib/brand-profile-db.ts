@@ -17,6 +17,7 @@ export interface BrandProfileFormData {
   companyName: string;
   companyWebsite: string;
   industry: string;
+  companySize: string,
   targetAudience: string;
   brandValues: string;
   tags?: string[];
@@ -24,6 +25,11 @@ export interface BrandProfileFormData {
   colorsToUse: string;
   colorsToAvoid: string;
   notesForDesigners: string;
+  communicationPreference: string;
+  feedbackStyle: string;
+  brandGuidelinesLink: string;
+  existingAssetsLink: string;
+  logoUrl?: string | null;
 }
 
 /**
@@ -59,3 +65,4 @@ export async function getBrandKits(): Promise<BrandProfileFormData[]> {
         return [];
     }
 }
+
