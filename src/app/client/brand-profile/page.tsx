@@ -9,13 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, FileText, Loader2, UploadCloud, Link as LinkIcon, Eye, Font, MessageSquare as MessageSquareIcon, CheckSquare, Tag, X, Check } from 'lucide-react';
+import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, FileText, Loader2, UploadCloud, Link as LinkIcon, Eye, Font, MessageSquare as MessageSquareIcon, CheckSquare, Tag, X, Check, CheckboxIcon } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
 import { BrandProfileFormData, getBrandKits, saveBrandKits } from '@/lib/brand-profile-db';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 // Re-usable component for the preview
@@ -91,12 +92,23 @@ export default function BrandProfilePage() {
   const { toast } = useToast();
   const [formData, setFormData] = useState<BrandProfileFormData>({
     id: 'default',
-    companyName: "", companyWebsite: "", industry: "",
-    companySize: "", targetAudience: "", brandValues: "",
-    tags: [], preferredDesignStyle: "", colorsToUse: "",
-    colorsToAvoid: "", communicationPreference: "Platform Chat",
-    feedbackStyle: "", notesForDesigners: "", brandGuidelinesLink: "",
-    existingAssetsLink: "", logoUrl: null,
+    companyName: "", 
+    companyWebsite: "", 
+    industry: "",
+    companySize: "", 
+    targetAudience: "", 
+    brandValues: "",
+    tags: [], 
+    preferredDesignStyle: "", 
+    colorsToUse: "",
+    colorsToAvoid: "", 
+    communicationPreference: "Platform Chat",
+    feedbackStyle: "", 
+    notesForDesigners: "", 
+    brandGuidelinesLink: "",
+    existingAssetsLink: "", 
+    logoUrl: null,
+    projectTypes: []
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -198,6 +210,7 @@ export default function BrandProfilePage() {
   const companySizeOptions = ["Solo / Freelancer", "1-10 employees", "11-50 employees", "51-200 employees", "201-1000 employees", "1000+ employees"];
   const feedbackStyleOptions = ["Direct & Concise", "Detailed & Explanatory", "Collaborative Discussion", "Visual Examples Preferred"];
   const suggestedTags = ["Minimal", "Luxury", "Fun", "Bold", "Elegant", "Professional", "Modern", "Classic", "Youthful"];
+  const projectTypeOptions = ["Logo & Branding", "Website / App UI/UX", "Social Media Graphics", "Print Materials (Brochures, etc.)", "Packaging Design", "Illustrations & Art"];
 
 
   return (
@@ -398,4 +411,3 @@ export default function BrandProfilePage() {
     </div>
   );
 }
-
