@@ -9,12 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, MessageCircle, FileText, Loader2, Info, UploadCloud, Link as LinkIcon, Eye, CheckCircle, X, History, CloudUpload, Tag, Wand2, Lightbulb, Type, Droplets } from 'lucide-react';
+import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, MessageCircle, FileText, Loader2, Info, UploadCloud, Link as LinkIcon, Eye, CheckCircle, X, History, CloudUpload, Tag, Wand2, Lightbulb, Type, Droplets, PlusCircle, Edit } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { saveBrandProfile, getBrandProfile, type BrandProfileFormData } from '@/lib/brand-profile-db';
+import { saveBrandKits, getBrandKits, type BrandProfileFormData } from '@/lib/brand-profile-db';
 import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
 import { Badge } from '@/components/ui/badge';
 import { generateBrandSuggestions } from '@/ai/flows/brand-suggestions-flow';
@@ -22,248 +22,58 @@ import type { BrandSuggestionsResponse } from '@/ai/flows/brand-suggestions-type
 
 const industryOptions = ["Technology", "Retail/E-commerce", "Healthcare", "Education", "Hospitality/Travel", "Real Estate", "Finance", "Manufacturing", "Non-profit", "Creative Arts", "Other"];
 const companySizeOptions = ["Solo / Freelancer", "1-10 employees", "11-50 employees", "51-200 employees", "201-1000 employees", "1000+ employees"];
-const designStyleOptions = ["Modern & Minimalist", "Classic & Elegant", "Playful & Fun", "Bold & Dynamic", "Rustic & Natural", "Tech & Futuristic", "Artistic & Illustrative", "Corporate & Formal", "Other"];
 const feedbackStyleOptions = ["Direct & Concise", "Detailed & Explanatory", "Collaborative Discussion", "Visual Examples Preferred"];
 const suggestedTags = ["Minimal", "Luxury", "Fun", "Bold", "Elegant", "Professional", "Youthful", "Corporate", "Feminine", "Masculine"];
 
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
-
-const initialFormData: BrandProfileFormData = {
-  companyName: "", companyWebsite: "", industry: "", companySize: "", targetAudience: "",
+const BLANK_FORM_DATA: Omit<BrandProfileFormData, 'id'> = {
+  companyName: "", companyWebsite: "", industry: "", targetAudience: "",
   brandValues: "", preferredDesignStyle: "", colorsToUse: "", colorsToAvoid: "",
-  typicalProjectTypes: "", communicationPreference: "Platform Chat", feedbackStyle: "",
+  communicationPreference: "Platform Chat", feedbackStyle: "",
   notesForDesigners: "", brandGuidelinesLink: "", existingAssetsLink: "", tags: []
 };
 
-// --- PREVIEW COMPONENT ---
-function BrandProfilePreview({ profileData }: { profileData: BrandProfileFormData }) {
-    const parseColors = (colorString: string) => {
-        return colorString.split(',').map(color => color.trim()).filter(Boolean);
-    };
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
-    const colorsToUse = parseColors(profileData.colorsToUse);
-    const colorsToAvoid = parseColors(profileData.colorsToAvoid);
 
-    return (
-        <Card className="shadow-lg sticky top-24">
-            <CardHeader>
-                <CardTitle className="flex items-center"><Eye className="mr-2 h-5 w-5" /> Brand Preview</CardTitle>
-                <CardDescription>A live preview of your brand profile as you define it.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                 <div className="space-y-2">
-                    <Label>Brand Name</Label>
-                    <h3 className="text-2xl font-bold">
-                        {profileData.companyName || <span className="text-muted-foreground/50">Your Company Name</span>}
-                    </h3>
-                </div>
-                 {colorsToUse.length > 0 && (
-                    <div className="space-y-2">
-                        <Label>Preferred Colors</Label>
-                        <div className="flex flex-wrap gap-2">
-                            {colorsToUse.map((color, index) => (
-                                <div key={index} className="h-8 w-8 rounded-full border" style={{ backgroundColor: color }}></div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-                {profileData.tags && profileData.tags.length > 0 && (
-                    <div className="space-y-2">
-                        <Label>Brand Tags</Label>
-                        <div className="flex flex-wrap gap-2">
-                            {profileData.tags.map((tag, index) => (
-                                <Badge key={index} variant="secondary">{tag}</Badge>
-                            ))}
-                        </div>
-                    </div>
-                )}
-                {colorsToAvoid.length > 0 && (
-                    <div className="space-y-2">
-                        <Label>Colors to Avoid</Label>
-                        <div className="flex flex-wrap gap-2">
-                            {colorsToAvoid.map((color, index) => (
-                                <div key={index} className="relative h-8 w-8 rounded-full border" style={{ backgroundColor: color }}>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <X className="w-6 h-6 text-red-500 bg-white/50 rounded-full" />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-    );
-}
-
-// --- AI SUGGESTIONS COMPONENT ---
-function BrandSuggestions({ profileData, onApplySuggestion }: { profileData: BrandProfileFormData; onApplySuggestion: (field: keyof BrandProfileFormData, value: string) => void; }) {
-  const [suggestions, setSuggestions] = useState<BrandSuggestionsResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
-  const handleGenerate = async () => {
-    if (!profileData.industry || !profileData.targetAudience || !profileData.brandValues) {
-      toast({
-        title: "Incomplete Profile",
-        description: "Please fill in Industry, Target Audience, and Brand Values to get the best suggestions.",
-        variant: "destructive"
-      });
-      return;
-    }
-    setIsLoading(true);
-    setSuggestions(null);
-    try {
-      const result = await generateBrandSuggestions({
-        industry: profileData.industry,
-        targetAudience: profileData.targetAudience,
-        brandValues: profileData.brandValues,
-        existingTags: (profileData.tags || []).join(', '),
-      });
-      setSuggestions(result);
-    } catch (error) {
-      console.error(error);
-      toast({ title: "AI Generation Failed", description: "Could not generate suggestions. Please try again.", variant: "destructive" });
-    }
-    setIsLoading(false);
-  };
-
-  return (
-    <Card className="shadow-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center"><Lightbulb className="mr-2 h-5 w-5 text-primary"/> AI Brand Assistant</CardTitle>
-        <CardDescription>Get AI-powered suggestions to refine your brand's identity based on your profile.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Button onClick={handleGenerate} disabled={isLoading} className="w-full">
-          {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Wand2 className="mr-2 h-4 w-4"/>}
-          {isLoading ? "Analyzing..." : "Generate Suggestions"}
-        </Button>
-        {suggestions && (
-          <div className="mt-6 space-y-6">
-            {/* Design Styles */}
-            <div className="space-y-3">
-              <h4 className="font-semibold flex items-center"><Paintbrush className="mr-2 h-4 w-4 text-muted-foreground"/>Suggested Design Styles</h4>
-              <div className="flex flex-wrap gap-2">
-                {suggestions.designStyles.map(style => (
-                  <Button key={style} variant="outline" size="sm" onClick={() => onApplySuggestion('preferredDesignStyle', style)}>Apply "{style}"</Button>
-                ))}
-              </div>
-            </div>
-            {/* Font Pairings */}
-            <div className="space-y-3">
-              <h4 className="font-semibold flex items-center"><Type className="mr-2 h-4 w-4 text-muted-foreground"/>Suggested Font Pairings</h4>
-              {suggestions.fontPairings.map((pairing, index) => (
-                <Card key={index} className="bg-muted/50 p-3">
-                  <p><span className="font-bold">Heading:</span> {pairing.headingFont}</p>
-                  <p><span className="font-bold">Body:</span> {pairing.bodyFont}</p>
-                </Card>
-              ))}
-            </div>
-            {/* Color Palettes */}
-            <div className="space-y-3">
-              <h4 className="font-semibold flex items-center"><Droplets className="mr-2 h-4 w-4 text-muted-foreground"/>Suggested Color Palettes</h4>
-              {suggestions.colorPalettes.map((palette, index) => (
-                <Card key={index} className="bg-muted/50 p-3">
-                  <p className="font-bold mb-2">{palette.name}</p>
-                  <div className="flex gap-2">
-                    {palette.colors.map(color => (
-                       <div key={color} className="h-8 w-8 rounded-full border" style={{ backgroundColor: color }}></div>
-                    ))}
-                    <Button variant="ghost" size="sm" className="ml-auto" onClick={() => onApplySuggestion('colorsToUse', palette.colors.join(', '))}>Apply</Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-export default function BrandProfilePage() {
-  const { toast } = useToast();
-  const [formData, setFormData] = useState<BrandProfileFormData>(initialFormData);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+function BrandKitForm({
+  initialData,
+  onSave,
+  onCancel,
+  saveStatus
+}: {
+  initialData: BrandProfileFormData;
+  onSave: (data: BrandProfileFormData) => void;
+  onCancel: () => void;
+  saveStatus: SaveStatus;
+}) {
+  const [formData, setFormData] = useState<BrandProfileFormData>(initialData);
   const [tagInput, setTagInput] = useState('');
-  
-  const initialStateRef = useRef<BrandProfileFormData>(initialFormData);
-
-  useEffect(() => {
-    const loadData = async () => {
-      const savedData = await getBrandProfile();
-      if (savedData) {
-        setFormData(prev => ({...prev, ...savedData}));
-        initialStateRef.current = {...initialStateRef.current, ...savedData};
-      }
-      setIsLoaded(true);
-    };
-    loadData();
-  }, []);
 
   useDebouncedEffect(() => {
-    if (isLoaded) {
-      handleAutoSave();
+    // Only auto-save if there's an actual change from the initial data passed in
+    if (JSON.stringify(formData) !== JSON.stringify(initialData)) {
+      onSave(formData);
     }
   }, [formData], { delay: 1500 });
-
-
-  const handleAutoSave = async () => {
-    setSaveStatus('saving');
-    try {
-      await saveBrandProfile(formData);
-      setSaveStatus('saved');
-    } catch (error) {
-      setSaveStatus('error');
-      toast({
-        title: "Auto-save Failed",
-        description: "Could not save your changes. Please try saving manually.",
-        variant: "destructive"
-      });
-    }
-  };
   
-  const handleManualSave = async () => {
-    setSaveStatus('saving');
-    try {
-        await saveBrandProfile(formData);
-        setSaveStatus('saved');
-        toast({ title: "Draft Saved", description: "Your brand profile has been manually saved." });
-    } catch (error) {
-        setSaveStatus('error');
-        toast({ title: "Save Failed", description: "An error occurred while saving.", variant: "destructive" });
-    }
-  }
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
-    setSaveStatus('saving');
   };
 
   const handleSelectChange = (id: keyof BrandProfileFormData, value: string) => {
     setFormData(prev => ({ ...prev, [id]: value }));
-    setSaveStatus('saving');
-  };
-  
-  const handleRadioChange = (id: keyof BrandProfileFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [id]: value }));
-    setSaveStatus('saving');
   };
 
   const handleAddTag = (tagToAdd: string) => {
     const newTag = tagToAdd.trim();
     if (newTag && !(formData.tags || []).includes(newTag)) {
         setFormData(prev => ({ ...prev, tags: [...(prev.tags || []), newTag] }));
-        setSaveStatus('saving');
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
     setFormData(prev => ({ ...prev, tags: (prev.tags || []).filter(t => t !== tagToRemove) }));
-    setSaveStatus('saving');
   };
   
   const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -274,11 +84,173 @@ export default function BrandProfilePage() {
     }
   };
 
-   const handleApplySuggestion = (field: keyof BrandProfileFormData, value: string) => {
-      setFormData(prev => ({ ...prev, [field]: value }));
-      toast({ title: "Suggestion Applied!", description: `The ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} has been updated.` });
-  };
+  const handleManualSave = () => {
+    onSave(formData);
+  }
 
+  return (
+     <Card className="shadow-lg mt-6">
+        <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>{initialData.id === 'new' ? 'Create New Brand Kit' : `Editing: ${initialData.companyName || 'Untitled Brand'}`}</CardTitle>
+           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              {saveStatus === 'saving' && <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>}
+              {saveStatus === 'saved' && <><CheckCircle className="h-4 w-4 text-green-500" /> Saved</>}
+              {saveStatus === 'error' && <><X className="h-4 w-4 text-destructive" /> Error</>}
+            </div>
+        </div>
+        <CardDescription>
+            Provide details to help designers understand your brand. All changes are saved automatically.
+        </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-8">
+            <section>
+            <h2 className="text-xl font-semibold font-headline mb-4 flex items-center"><Building className="mr-2 h-5 w-5 text-primary" />Company & Industry</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                <Label htmlFor="companyName">Brand/Company Name*</Label>
+                <Input id="companyName" value={formData.companyName} onChange={handleChange} placeholder="e.g., My Awesome Startup" />
+                </div>
+                <div className="space-y-2">
+                <Label htmlFor="companyWebsite">Company Website (Optional)</Label>
+                <Input id="companyWebsite" type="url" value={formData.companyWebsite} onChange={handleChange} placeholder="https://example.com" />
+                </div>
+                <div className="space-y-2">
+                <Label htmlFor="industry">Industry</Label>
+                <Select value={formData.industry} onValueChange={(value) => handleSelectChange('industry', value)}>
+                    <SelectTrigger id="industry"><SelectValue placeholder="Select industry" /></SelectTrigger>
+                    <SelectContent>{industryOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
+                </Select>
+                </div>
+            </div>
+            </section>
+
+            <Separator />
+
+            <section>
+            <h2 className="text-xl font-semibold font-headline mb-4 flex items-center"><Palette className="mr-2 h-5 w-5 text-primary" />Brand Identity & Style</h2>
+            <div className="grid md:grid-cols-1 gap-6">
+                <div className="space-y-2">
+                <Label htmlFor="targetAudience">Target Audience</Label>
+                <Textarea id="targetAudience" value={formData.targetAudience} onChange={handleChange} placeholder="Describe your typical customers/users..." rows={3} />
+                </div>
+                <div className="space-y-2">
+                <Label htmlFor="brandValues">Brand Values (comma-separated)</Label>
+                <Input id="brandValues" value={formData.brandValues} onChange={handleChange} placeholder="e.g., Innovation, Trust, Community" />
+                </div>
+
+                 <div className="space-y-2">
+                  <Label>Brand Tags</Label>
+                  <div className="p-3 border rounded-md bg-muted/50">
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {(formData.tags || []).map(tag => (
+                        <Badge key={tag} variant="default" className="text-sm">
+                          {tag}
+                          <button onClick={() => handleRemoveTag(tag)} className="ml-1.5 rounded-full hover:bg-primary-foreground/20 p-0.5">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <Input
+                      id="tag-input"
+                      placeholder="Add a custom tag and press Enter"
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={handleTagInputKeyDown}
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">Suggested tags:</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                       {suggestedTags.filter(st => !(formData.tags || []).includes(st)).map(tag => (
+                        <Button key={tag} type="button" size="sm" variant="outline" onClick={() => handleAddTag(tag)}>
+                          {tag}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="colorsToUse">Preferred Colors (comma-separated)</Label>
+                        <Input id="colorsToUse" value={formData.colorsToUse} onChange={handleChange} placeholder="e.g., #007bff, Dark Blue, Gold" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="colorsToAvoid">Colors to Avoid (comma-separated)</Label>
+                        <Input id="colorsToAvoid" value={formData.colorsToAvoid} onChange={handleChange} placeholder="e.g., Bright Pink, Neon Green" />
+                    </div>
+                </div>
+            </div>
+            </section>
+            
+            <Separator />
+            <section>
+                <h2 className="text-xl font-semibold font-headline mb-4 flex items-center"><CloudUpload className="mr-2 h-5 w-5 text-primary" />Brand Assets</h2>
+                <div className="grid md:grid-cols-1 gap-6">
+                <div className="space-y-2">
+                    <Label htmlFor="brandGuidelinesLink">Brand Guidelines Link (Optional)</Label>
+                    <Input id="brandGuidelinesLink" type="url" value={formData.brandGuidelinesLink} onChange={handleChange} placeholder="https://example.com/brand-guidelines.pdf" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="existingAssetsLink">Existing Assets Folder Link (Optional)</Label>
+                    <Input id="existingAssetsLink" type="url" value={formData.existingAssetsLink} onChange={handleChange} placeholder="e.g., Google Drive, Dropbox link" />
+                </div>
+                </div>
+            </section>
+        </CardContent>
+        <CardFooter className="border-t pt-6 flex justify-between">
+            <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+            <Button type="button" onClick={handleManualSave}>
+                <Save className="mr-2 h-4 w-4" /> Save Draft
+            </Button>
+        </CardFooter>
+    </Card>
+  )
+}
+
+export default function BrandProfilePage() {
+  const { toast } = useToast();
+  const [allBrandKits, setAllBrandKits] = useState<BrandProfileFormData[]>([]);
+  const [editingKitId, setEditingKitId] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+
+  useEffect(() => {
+    const loadData = async () => {
+      const savedData = await getBrandKits();
+      setAllBrandKits(savedData);
+      setIsLoaded(true);
+    };
+    loadData();
+  }, []);
+
+  const handleSaveKit = async (updatedKitData: BrandProfileFormData) => {
+    setSaveStatus('saving');
+    try {
+        let updatedKits: BrandProfileFormData[];
+        if (updatedKitData.id === 'new') {
+            const newKit = { ...updatedKitData, id: `kit_${Date.now()}` };
+            updatedKits = [...allBrandKits, newKit];
+            setEditingKitId(newKit.id); // Switch to editing the newly created kit
+        } else {
+            updatedKits = allBrandKits.map(kit => kit.id === updatedKitData.id ? updatedKitData : kit);
+        }
+        await saveBrandKits(updatedKits);
+        setAllBrandKits(updatedKits);
+        setSaveStatus('saved');
+    } catch (error) {
+        setSaveStatus('error');
+        toast({ title: "Save Failed", description: "An error occurred while saving.", variant: "destructive" });
+    }
+  }
+
+  const handleAddNew = () => {
+    setEditingKitId('new');
+  }
+
+  const handleCancelEdit = () => {
+    setEditingKitId(null);
+  }
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -292,188 +264,68 @@ export default function BrandProfilePage() {
     return (
         <div className="flex justify-center items-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="ml-2 text-muted-foreground">Loading your brand profile...</p>
+            <p className="ml-2 text-muted-foreground">Loading your brand kits...</p>
         </div>
     );
   }
+
+  const kitBeingEdited = editingKitId === 'new' 
+    ? { id: 'new', ...BLANK_FORM_DATA } 
+    : allBrandKits.find(kit => kit.id === editingKitId);
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold font-headline flex items-center">
           <Sparkles className="mr-3 h-8 w-8 text-primary" />
-          My Brand Profile
+          My Brand Kits
         </h1>
-         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-          {saveStatus === 'saving' && <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>}
-          {saveStatus === 'saved' && <><CheckCircle className="h-4 w-4 text-green-500" /> Saved</>}
-          {saveStatus === 'error' && <><X className="h-4 w-4 text-destructive" /> Error</>}
-        </div>
+        <Button onClick={handleAddNew} disabled={!!editingKitId}>
+            <PlusCircle className="mr-2 h-4 w-4"/> Add New Brand Kit
+        </Button>
       </div>
 
-       <div className="grid lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-2 space-y-8">
-            <Card className="shadow-lg">
-                <CardHeader>
-                <CardTitle>Tell Us About Your Brand</CardTitle>
-                <CardDescription>
-                    Providing these details helps designers understand your needs, style, and preferences better, leading to more effective collaborations. All changes are saved automatically.
-                </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                    <section>
-                    <h2 className="text-xl font-semibold font-headline mb-4 flex items-center"><Building className="mr-2 h-5 w-5 text-primary" />Company & Industry</h2>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                        <Label htmlFor="companyName">Company Name</Label>
-                        <Input id="companyName" value={formData.companyName} onChange={handleChange} placeholder="e.g., My Awesome Startup" />
-                        </div>
-                        <div className="space-y-2">
-                        <Label htmlFor="companyWebsite">Company Website (Optional)</Label>
-                        <Input id="companyWebsite" type="url" value={formData.companyWebsite} onChange={handleChange} placeholder="https://example.com" />
-                        </div>
-                        <div className="space-y-2">
-                        <Label htmlFor="industry">Industry</Label>
-                        <Select value={formData.industry} onValueChange={(value) => handleSelectChange('industry', value)}>
-                            <SelectTrigger id="industry"><SelectValue placeholder="Select industry" /></SelectTrigger>
-                            <SelectContent>{industryOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
-                        </Select>
-                        </div>
-                        <div className="space-y-2">
-                        <Label htmlFor="companySize">Company Size</Label>
-                        <Select value={formData.companySize} onValueChange={(value) => handleSelectChange('companySize', value)}>
-                            <SelectTrigger id="companySize"><SelectValue placeholder="Select company size" /></SelectTrigger>
-                            <SelectContent>{companySizeOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
-                        </Select>
-                        </div>
+      {!editingKitId && (
+        <Card>
+            <CardHeader>
+                <CardTitle>Your Saved Brands</CardTitle>
+                <CardDescription>Manage your different brand profiles here. You can add more for different projects or businesses.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {allBrandKits.length === 0 ? (
+                    <div className="text-center py-10 border-2 border-dashed rounded-lg">
+                        <p className="text-muted-foreground">You haven't created any brand kits yet.</p>
+                        <Button variant="link" onClick={handleAddNew}>Create your first one</Button>
                     </div>
-                    </section>
-
-                    <Separator />
-
-                    <section>
-                    <h2 className="text-xl font-semibold font-headline mb-4 flex items-center"><Palette className="mr-2 h-5 w-5 text-primary" />Brand Identity & Style</h2>
-                    <div className="grid md:grid-cols-1 gap-6">
-                        <div className="space-y-2">
-                        <Label htmlFor="targetAudience">Target Audience</Label>
-                        <Textarea id="targetAudience" value={formData.targetAudience} onChange={handleChange} placeholder="Describe your typical customers/users (e.g., age, interests, location, needs)" rows={3} />
-                        </div>
-                        <div className="space-y-2">
-                        <Label htmlFor="brandValues">Brand Values (comma-separated)</Label>
-                        <Input id="brandValues" value={formData.brandValues} onChange={handleChange} placeholder="e.g., Innovation, Trust, Community, Sustainability" />
-                        </div>
-
-                         <div className="space-y-2">
-                          <Label>Brand Tags</Label>
-                          <div className="p-3 border rounded-md bg-muted/50">
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              {(formData.tags || []).map(tag => (
-                                <Badge key={tag} variant="default" className="text-sm">
-                                  {tag}
-                                  <button onClick={() => handleRemoveTag(tag)} className="ml-1.5 rounded-full hover:bg-primary-foreground/20 p-0.5">
-                                    <X className="h-3 w-3" />
-                                  </button>
-                                </Badge>
-                              ))}
-                            </div>
-                            <Input
-                              id="tag-input"
-                              placeholder="Add a custom tag and press Enter"
-                              value={tagInput}
-                              onChange={(e) => setTagInput(e.target.value)}
-                              onKeyDown={handleTagInputKeyDown}
-                            />
-                            <p className="text-xs text-muted-foreground mt-2">Suggested tags:</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                               {suggestedTags.filter(st => !(formData.tags || []).includes(st)).map(tag => (
-                                <Button key={tag} type="button" size="sm" variant="outline" onClick={() => handleAddTag(tag)}>
-                                  {tag}
-                                </Button>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                        <Label htmlFor="preferredDesignStyle">Preferred Design Style</Label>
-                        <Select value={formData.preferredDesignStyle} onValueChange={(value) => handleSelectChange('preferredDesignStyle', value)}>
-                            <SelectTrigger id="preferredDesignStyle"><SelectValue placeholder="Select a design style" /></SelectTrigger>
-                            <SelectContent>{designStyleOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
-                        </Select>
-                        </div>
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="colorsToUse">Preferred Colors (comma-separated)</Label>
-                                <Input id="colorsToUse" value={formData.colorsToUse} onChange={handleChange} placeholder="e.g., #007bff, Dark Blue, Gold" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="colorsToAvoid">Colors to Avoid (comma-separated)</Label>
-                                <Input id="colorsToAvoid" value={formData.colorsToAvoid} onChange={handleChange} placeholder="e.g., Bright Pink, Neon Green" />
-                            </div>
-                        </div>
+                ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {allBrandKits.map(kit => (
+                            <Card key={kit.id} className="hover:shadow-md transition-shadow">
+                                <CardHeader className="flex flex-row items-center justify-between">
+                                    <CardTitle className="text-lg">{kit.companyName || 'Untitled Brand'}</CardTitle>
+                                    <Building className="h-5 w-5 text-muted-foreground"/>
+                                </CardHeader>
+                                <CardFooter>
+                                    <Button variant="outline" size="sm" onClick={() => setEditingKitId(kit.id)}>
+                                        <Edit className="h-4 w-4 mr-2"/> Edit
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        ))}
                     </div>
-                    </section>
-                    
-                    <Separator />
+                )}
+            </CardContent>
+        </Card>
+      )}
 
-                    <section>
-                      <h2 className="text-xl font-semibold font-headline mb-4 flex items-center"><CloudUpload className="mr-2 h-5 w-5 text-primary" />Brand Assets</h2>
-                      <p className="text-sm text-muted-foreground -mt-2 mb-4">File uploads are not auto-saved. Please use the manual save button after selecting files.</p>
-                      <div className="grid md:grid-cols-1 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="brandGuidelinesLink">Brand Guidelines Link (Optional)</Label>
-                          <Input id="brandGuidelinesLink" type="url" value={formData.brandGuidelinesLink} onChange={handleChange} placeholder="https://example.com/brand-guidelines.pdf" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="existingAssetsLink">Existing Assets Folder Link (Optional)</Label>
-                          <Input id="existingAssetsLink" type="url" value={formData.existingAssetsLink} onChange={handleChange} placeholder="e.g., Google Drive, Dropbox link" />
-                        </div>
-                      </div>
-                    </section>
-
-                    <Separator />
-
-                    <section>
-                    <h2 className="text-xl font-semibold font-headline mb-4 flex items-center"><MessageCircle className="mr-2 h-5 w-5 text-primary" />Project & Communication Preferences</h2>
-                    <div className="space-y-2 mb-6">
-                        <Label htmlFor="typicalProjectTypes">Typical Project Types</Label>
-                        <Textarea id="typicalProjectTypes" value={formData.typicalProjectTypes} onChange={handleChange} placeholder="What kind of design work do you usually require? (e.g., social media posts, website banners, logo refinements)" rows={3} />
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                        <Label>Preferred Communication Method</Label>
-                        <RadioGroup value={formData.communicationPreference} onValueChange={(value) => handleRadioChange('communicationPreference', value)} className="space-y-1">
-                            <div className="flex items-center space-x-2"><RadioGroupItem value="Platform Chat" id="comm-chat" /><Label htmlFor="comm-chat" className="font-normal">Platform Chat</Label></div>
-                            <div className="flex items-center space-x-2"><RadioGroupItem value="Email" id="comm-email" /><Label htmlFor="comm-email" className="font-normal">Email</Label></div>
-                            <div className="flex items-center space-x-2"><RadioGroupItem value="Scheduled Calls" id="comm-calls" /><Label htmlFor="comm-calls" className="font-normal">Scheduled Calls</Label></div>
-                        </RadioGroup>
-                        </div>
-                        <div className="space-y-2">
-                        <Label htmlFor="feedbackStyle">Preferred Feedback Style</Label>
-                        <Select value={formData.feedbackStyle} onValueChange={(value) => handleSelectChange('feedbackStyle', value)}>
-                            <SelectTrigger id="feedbackStyle"><SelectValue placeholder="Select feedback style" /></SelectTrigger>
-                            <SelectContent>{feedbackStyleOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
-                        </Select>
-                        </div>
-                    </div>
-                    <div className="space-y-2 mt-6">
-                        <Label htmlFor="notesForDesigners">Important Notes for Designers (Optional)</Label>
-                        <Textarea id="notesForDesigners" value={formData.notesForDesigners} onChange={handleChange} placeholder="Anything else designers should know? (e.g., brand guidelines link, past project frustrations, things you love)" rows={3} />
-                    </div>
-                    </section>
-                </CardContent>
-                <CardFooter className="border-t pt-6 flex justify-end">
-                    <Button type="button" onClick={handleManualSave} disabled={saveStatus === 'saving'}>
-                      <Save className="mr-2 h-4 w-4" /> Save Draft
-                    </Button>
-                </CardFooter>
-            </Card>
-        </div>
-        <div className="lg:col-span-1 space-y-6">
-            <BrandProfilePreview profileData={formData} />
-            <BrandSuggestions profileData={formData} onApplySuggestion={handleApplySuggestion} />
-        </div>
-      </div>
+      {kitBeingEdited && (
+        <BrandKitForm 
+          initialData={kitBeingEdited} 
+          onSave={handleSaveKit}
+          onCancel={handleCancelEdit}
+          saveStatus={saveStatus}
+        />
+      )}
     </div>
   );
 }
