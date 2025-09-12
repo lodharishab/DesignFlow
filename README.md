@@ -95,24 +95,24 @@ This project is configured for easy deployment using Firebase App Hosting, which
 ### Prerequisites
 
 *   You need to be logged into Firebase. If you haven't already, run the following command in your terminal:
-    ` + '```' + `bash
+    ```bash
     firebase login
-    ` + '```' + `
+    ```
 *   Ensure your local project is connected to a Firebase project. This is typically done for you when you start a project in Firebase Studio.
 
 ### Deployment Steps
 
 1.  **Build the Application for Production:**
     This command compiles your Next.js application into an optimized production build.
-    ` + '```' + `bash
+    ```bash
     npm run build
-    ` + '```' + `
+    ```
 
 2.  **Deploy to Firebase App Hosting:**
     After the build is complete, run the deploy script. This command will upload your build to Firebase and provision the necessary infrastructure.
-    ` + '```' + `bash
+    ```bash
     npm run deploy
-    ` + '```' + `
+    ```
 
 That's it! Firebase App Hosting will handle the rest, including scaling, security, and serving your application globally. Your app will be available at the URL provided by Firebase after the deployment is complete.
 

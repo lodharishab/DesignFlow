@@ -4,21 +4,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { BookText } from "lucide-react";
 import { promises as fs } from 'fs';
 import path from 'path';
-import Link from 'next/link';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-
-const versionToFileMap: Record<string, string> = {
-    'v0.01': 'project-summary.v0.01.txt',
-    'v0.02': 'project-summary.v0.02.txt',
-    'v0.03': 'project-summary.v0.03.txt',
-    'v0.04': 'project-summary.txt',
-};
-
-async function ProjectSummaryPage({ searchParams }: { searchParams: { version?: string } }) {
-    const selectedVersion = searchParams.version || 'v0.04';
-    const fileName = versionToFileMap[selectedVersion] || 'project-summary.txt';
-    const summaryPath = path.join(process.cwd(), fileName);
+async function ProjectSummaryPage() {
+    const summaryPath = path.join(process.cwd(), 'project-summary.txt');
     
     let summaryContent = '';
     let errorMessage = null;
@@ -26,8 +14,8 @@ async function ProjectSummaryPage({ searchParams }: { searchParams: { version?: 
     try {
         summaryContent = await fs.readFile(summaryPath, 'utf8');
     } catch (error) {
-        console.error(`Failed to read ${fileName}:`, error);
-        errorMessage = `Error: Could not load the file ${fileName}. Please check if the file exists.`;
+        console.error(`Failed to read project-summary.txt:`, error);
+        errorMessage = `Error: Could not load the file project-summary.txt. Please check if the file exists.`;
     }
 
     return (
@@ -41,20 +29,8 @@ async function ProjectSummaryPage({ searchParams }: { searchParams: { version?: 
 
             <Card className="shadow-lg">
                  <CardHeader>
-                    <Tabs defaultValue={selectedVersion} className="w-full">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle>Feature & Page Overview</CardTitle>
-                                <CardDescription>A high-level summary of the application's structure, pages, and implemented features.</CardDescription>
-                            </div>
-                            <TabsList>
-                                <TabsTrigger value="v0.01" asChild><Link href="?version=v0.01">v0.01</Link></TabsTrigger>
-                                <TabsTrigger value="v0.02" asChild><Link href="?version=v0.02">v0.02</Link></TabsTrigger>
-                                <TabsTrigger value="v0.03" asChild><Link href="?version=v0.03">v0.03</Link></TabsTrigger>
-                                <TabsTrigger value="v0.04" asChild><Link href="?version=v0.04">v0.04 (Current)</Link></TabsTrigger>
-                            </TabsList>
-                        </div>
-                    </Tabs>
+                    <CardTitle>Feature & Page Overview (v0.04 - Current)</CardTitle>
+                    <CardDescription>A high-level summary of the application's structure, pages, and implemented features.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {errorMessage ? (

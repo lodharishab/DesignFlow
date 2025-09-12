@@ -4,23 +4,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileCode } from "lucide-react";
 import { promises as fs } from 'fs';
 import path from 'path';
-import Link from 'next/link';
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-
-const versionToFileMap: Record<string, string> = {
-    'v0.01': 'README.v0.01.md',
-    'v0.02': 'README.v0.02.md',
-    'v0.03': 'README.v0.03.md',
-    'v0.04': 'README.md',
-};
-
-async function ReadmePage({ searchParams }: { searchParams: { version?: string } }) {
-    const selectedVersion = searchParams.version || 'v0.04';
-    const fileName = versionToFileMap[selectedVersion] || 'README.md';
-    const readmePath = path.join(process.cwd(), fileName);
+async function ReadmePage() {
+    const readmePath = path.join(process.cwd(), 'README.md');
     
     let readmeContent = '';
     let errorMessage = null;
@@ -28,8 +14,8 @@ async function ReadmePage({ searchParams }: { searchParams: { version?: string }
     try {
         readmeContent = await fs.readFile(readmePath, 'utf8');
     } catch (error) {
-        console.error(`Failed to read ${fileName}:`, error);
-        errorMessage = `Error: Could not load the file ${fileName}. Please check if the file exists.`;
+        console.error(`Failed to read README.md:`, error);
+        errorMessage = `Error: Could not load the file README.md. Please check if the file exists.`;
     }
 
     return (
@@ -43,20 +29,8 @@ async function ReadmePage({ searchParams }: { searchParams: { version?: string }
 
             <Card className="shadow-lg">
                 <CardHeader>
-                    <Tabs defaultValue={selectedVersion} className="w-full">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle>README.md</CardTitle>
-                                <CardDescription>A direct view of the project's README.md file for development and feature tracking.</CardDescription>
-                            </div>
-                            <TabsList>
-                                <TabsTrigger value="v0.01" asChild><Link href="?version=v0.01">v0.01</Link></TabsTrigger>
-                                <TabsTrigger value="v0.02" asChild><Link href="?version=v0.02">v0.02</Link></TabsTrigger>
-                                <TabsTrigger value="v0.03" asChild><Link href="?version=v0.03">v0.03</Link></TabsTrigger>
-                                <TabsTrigger value="v0.04" asChild><Link href="?version=v0.04">v0.04 (Current)</Link></TabsTrigger>
-                            </TabsList>
-                        </div>
-                    </Tabs>
+                    <CardTitle>README.md (v0.04 - Current)</CardTitle>
+                    <CardDescription>A direct view of the project's README.md file for development and feature tracking.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {errorMessage ? (
