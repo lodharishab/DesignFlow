@@ -9,11 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from '@/components/ui/checkbox';
 import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, MessageCircle, FileText, Loader2, Info, UploadCloud, Link as LinkIcon, Eye, Font, MessageSquare as MessageSquareIcon, CheckSquare, Tag, X } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
-import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 
 interface BrandProfileFormData {
@@ -23,8 +21,7 @@ interface BrandProfileFormData {
   companySize: string;
   targetAudience: string;
   brandValues: string;
-  tags: string[]; // Added for tags
-  projectTypes: string[]; // Added for project types
+  tags: string[];
   preferredDesignStyle: string;
   colorsToUse: string;
   colorsToAvoid: string;
@@ -41,14 +38,6 @@ const industryOptions = ["Technology", "Retail/E-commerce", "Healthcare", "Educa
 const companySizeOptions = ["Solo / Freelancer", "1-10 employees", "11-50 employees", "51-200 employees", "201-1000 employees", "1000+ employees"];
 const feedbackStyleOptions = ["Direct & Concise", "Detailed & Explanatory", "Collaborative Discussion", "Visual Examples Preferred"];
 const suggestedTags = ["Minimal", "Luxury", "Fun", "Bold", "Elegant", "Professional", "Modern", "Classic", "Youthful"];
-const projectTypeOptions = [
-    { id: 'logo-branding', label: 'Logo & Branding' },
-    { id: 'web-design', label: 'Websites & UI/UX' },
-    { id: 'print-materials', label: 'Print Materials' },
-    { id: 'social-media', label: 'Social Media' },
-    { id: 'packaging', label: 'Packaging' },
-    { id: 'illustration', label: 'Illustration' },
-];
 
 
 export default function BrandProfilePage() {
@@ -61,7 +50,6 @@ export default function BrandProfilePage() {
     targetAudience: "",
     brandValues: "",
     tags: [],
-    projectTypes: [],
     preferredDesignStyle: "",
     colorsToUse: "",
     colorsToAvoid: "",
@@ -79,7 +67,7 @@ export default function BrandProfilePage() {
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (id: keyof Omit<BrandProfileFormData, 'tags' | 'projectTypes'>, value: string) => {
+  const handleSelectChange = (id: keyof Omit<BrandProfileFormData, 'tags'>, value: string) => {
     setFormData(prev => ({ ...prev, [id]: value }));
   };
   
@@ -111,18 +99,6 @@ export default function BrandProfilePage() {
         ...prev,
         tags: prev.tags.filter(tag => tag !== tagToRemove)
     }));
-  };
-
-  const handleProjectTypeChange = (projectTypeId: string, checked: boolean) => {
-    setFormData(prev => {
-        const newProjectTypes = new Set(prev.projectTypes);
-        if (checked) {
-            newProjectTypes.add(projectTypeId);
-        } else {
-            newProjectTypes.delete(projectTypeId);
-        }
-        return { ...prev, projectTypes: Array.from(newProjectTypes) };
-    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -327,21 +303,6 @@ export default function BrandProfilePage() {
                     <SelectTrigger id="feedbackStyle"><SelectValue placeholder="Select your feedback style" /></SelectTrigger>
                     <SelectContent>{feedbackStyleOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
                   </Select>
-                </div>
-                 <div className="md:col-span-2 space-y-3">
-                    <Label>Typical Project Types</Label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 border rounded-md bg-muted/50">
-                        {projectTypeOptions.map(item => (
-                            <div key={item.id} className="flex items-center space-x-2">
-                            <Checkbox 
-                                id={item.id}
-                                checked={formData.projectTypes.includes(item.id)}
-                                onCheckedChange={(checked) => handleProjectTypeChange(item.id, !!checked)}
-                            />
-                            <Label htmlFor={item.id} className="font-normal">{item.label}</Label>
-                            </div>
-                        ))}
-                    </div>
                 </div>
               </div>
                <div className="space-y-2 mt-6">
