@@ -1,4 +1,5 @@
 
+
 'use client';
 
 /**
@@ -30,7 +31,30 @@ export interface BrandProfileFormData {
   brandGuidelinesLink: string;
   existingAssetsLink: string;
   logoUrl?: string | null;
+  projectTypes: string[];
 }
+
+const defaultBrandProfile: BrandProfileFormData = {
+    id: 'default',
+    companyName: "", 
+    companyWebsite: "", 
+    industry: "",
+    companySize: "", 
+    targetAudience: "", 
+    brandValues: "",
+    tags: [], 
+    preferredDesignStyle: "", 
+    colorsToUse: "",
+    colorsToAvoid: "", 
+    communicationPreference: "Platform Chat",
+    feedbackStyle: "", 
+    notesForDesigners: "", 
+    brandGuidelinesLink: "",
+    existingAssetsLink: "", 
+    logoUrl: null,
+    projectTypes: []
+};
+
 
 /**
  * Saves all brand kits for the user.
@@ -57,7 +81,13 @@ export async function getBrandKits(): Promise<BrandProfileFormData[]> {
         const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (localData) {
             console.log('Brand kits loaded from localStorage (simulation).');
-            return JSON.parse(localData);
+            const parsedKits: Partial<BrandProfileFormData>[] = JSON.parse(localData);
+            // Ensure all fields are present, merging with defaults.
+            const completeKits = parsedKits.map(kit => ({
+                ...defaultBrandProfile,
+                ...kit,
+            }));
+            return completeKits as BrandProfileFormData[];
         }
         return []; // Return empty array if nothing is found
     } catch (error) {

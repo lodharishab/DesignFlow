@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, type FormEvent, type ChangeEvent, useEffect } from 'react';
@@ -146,7 +147,7 @@ export default function BrandProfilePage() {
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (id: keyof Omit<BrandProfileFormData, 'tags'>, value: string) => {
+  const handleSelectChange = (id: keyof Omit<BrandProfileFormData, 'tags' | 'projectTypes'>, value: string) => {
     setFormData(prev => ({ ...prev, [id]: value }));
   };
   
@@ -161,6 +162,18 @@ export default function BrandProfilePage() {
         return { ...prev, tags: Array.from(newTags) };
     });
   };
+
+  const handleProjectTypeChange = (projectType: string, checked: boolean) => {
+      setFormData(prev => {
+          const newProjectTypes = new Set(prev.projectTypes);
+          if(checked) {
+              newProjectTypes.add(projectType);
+          } else {
+              newProjectTypes.delete(projectType);
+          }
+          return { ...prev, projectTypes: Array.from(newProjectTypes) };
+      })
+  }
 
   const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && currentTagInput.trim()) {
@@ -392,6 +405,21 @@ export default function BrandProfilePage() {
                         <SelectTrigger id="feedbackStyle"><SelectValue placeholder="Select your feedback style" /></SelectTrigger>
                         <SelectContent>{feedbackStyleOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
                     </Select>
+                    </div>
+                </div>
+                 <div className="space-y-2 mt-6">
+                    <Label>Typical Project Types</Label>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-3 border rounded-md bg-muted/50">
+                        {projectTypeOptions.map(projectType => (
+                            <div key={projectType} className="flex items-center space-x-2">
+                                <Checkbox 
+                                    id={`project-${projectType.replace(/\s+/g, '-')}`} 
+                                    checked={formData.projectTypes?.includes(projectType)}
+                                    onCheckedChange={(checked) => handleProjectTypeChange(projectType, !!checked)}
+                                />
+                                <Label htmlFor={`project-${projectType.replace(/\s+/g, '-')}`} className="font-normal text-sm">{projectType}</Label>
+                            </div>
+                        ))}
                     </div>
                 </div>
                 <div className="space-y-2 mt-6">
