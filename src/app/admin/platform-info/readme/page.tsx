@@ -4,22 +4,32 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileCode } from "lucide-react";
 import { promises as fs } from 'fs';
 import path from 'path';
+import Link from 'next/link';
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-// This is now a server component, so we can use Node.js APIs like fs.
-async function ReadmePage() {
-    // Construct the absolute path to the README.md file
-    const readmePath = path.join(process.cwd(), 'README.md');
+
+const versionToFileMap: Record<string, string> = {
+    'v0.01': 'README.v0.01.md',
+    'v0.02': 'README.v0.02.md',
+    'v0.03': 'README.v0.03.md',
+    'v0.04': 'README.md',
+};
+
+async function ReadmePage({ searchParams }: { searchParams: { version?: string } }) {
+    const selectedVersion = searchParams.version || 'v0.04';
+    const fileName = versionToFileMap[selectedVersion] || 'README.md';
+    const readmePath = path.join(process.cwd(), fileName);
+    
     let readmeContent = '';
-    let isLoading = true;
     let errorMessage = null;
 
     try {
         readmeContent = await fs.readFile(readmePath, 'utf8');
-        isLoading = false;
     } catch (error) {
-        console.error("Failed to read README.md:", error);
-        errorMessage = "Error: Could not load the README.md file. Please check if the file exists at the root of the project.";
-        isLoading = false;
+        console.error(`Failed to read ${fileName}:`, error);
+        errorMessage = `Error: Could not load the file ${fileName}. Please check if the file exists.`;
     }
 
     return (
@@ -33,8 +43,20 @@ async function ReadmePage() {
 
             <Card className="shadow-lg">
                 <CardHeader>
-                    <CardTitle>README.md</CardTitle>
-                    <CardDescription>A direct view of the project's README.md file for development and feature tracking.</CardDescription>
+                    <Tabs defaultValue={selectedVersion} className="w-full">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle>README.md</CardTitle>
+                                <CardDescription>A direct view of the project's README.md file for development and feature tracking.</CardDescription>
+                            </div>
+                            <TabsList>
+                                <TabsTrigger value="v0.01" asChild><Link href="?version=v0.01">v0.01</Link></TabsTrigger>
+                                <TabsTrigger value="v0.02" asChild><Link href="?version=v0.02">v0.02</Link></TabsTrigger>
+                                <TabsTrigger value="v0.03" asChild><Link href="?version=v0.03">v0.03</Link></TabsTrigger>
+                                <TabsTrigger value="v0.04" asChild><Link href="?version=v0.04">v0.04 (Current)</Link></TabsTrigger>
+                            </TabsList>
+                        </div>
+                    </Tabs>
                 </CardHeader>
                 <CardContent>
                     {errorMessage ? (
