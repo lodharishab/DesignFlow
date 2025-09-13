@@ -9,7 +9,8 @@ import {
   ShoppingCart, 
   UserCircle,
   Brush,
-  Sparkles // Added for Brand Profile
+  Sparkles,
+  LayoutGrid
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -32,7 +33,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
+import { BrandSwitcher } from '@/components/shared/brand-switcher';
+import { useUI } from '@/contexts/ui-context';
 
 const navItems = [
   { href: '/client/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -48,6 +51,7 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { toggleSidebar } = useUI();
 
   return (
     <SidebarProvider defaultOpen>
@@ -80,11 +84,17 @@ export default function ClientLayout({
       <SidebarInset>
         <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex h-16 items-center">
-            <div className="md:hidden">
-              <SidebarTrigger />
+             <div className="md:hidden">
+              <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8" aria-label="Open menu">
+                <LayoutGrid className="h-5 w-5" />
+              </Button>
             </div>
-            <div className="flex-1" /> {/* Spacer */}
-            <div className="flex items-center space-x-4">
+             <div className="hidden md:block">
+              <SidebarTrigger className="h-8 w-8" />
+            </div>
+            
+            <div className="ml-auto flex items-center space-x-4">
+              <BrandSwitcher />
               <ModeToggle />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

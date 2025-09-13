@@ -2,7 +2,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { getBrandKits, type BrandProfileFormData } from '@/lib/brand-profile-db';
 
 interface UIContextType {
   isMobileMenuOpen: boolean;
@@ -11,8 +12,13 @@ interface UIContextType {
   isAiChatOpen: boolean;
   setIsAiChatOpen: React.Dispatch<React.SetStateAction<boolean>>;
   toggleAiChat: () => void;
-  isLoggedIn: boolean; // Add isLoggedIn state
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>; // Add setter for isLoggedIn
+  isLoggedIn: boolean;
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+  // New brand kit management state
+  brandKits: BrandProfileFormData[];
+  activeBrandKit: BrandProfileFormData | null;
+  setActiveBrandKit: (kit: BrandProfileFormData | null) => void;
+  loadBrandKits: () => Promise<void>;
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -20,16 +26,43 @@ const UIContext = createContext<UIContextType | undefined>(undefined);
 export function UIProvider({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Default to logged out
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // New state for brand kits
+  const [brandKits, setBrandKits] = useState<BrandProfileFormData[]>([]);
+  const [activeBrandKit, setActiveBrandKitState] = useState<BrandProfileFormData | null>(null);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
   const toggleAiChat = () => setIsAiChatOpen(prev => !prev);
+
+  const loadBrandKits = async () => {
+    const kits = await getBrandKits();
+    setBrandKits(kits);
+    if (!activeBrandKit && kits.length > 0) {
+      setActiveBrandKitState(kits[0]); // Set the first kit as active by default
+    } else if (kits.length === 0) {
+      setActiveBrandKitState(null);
+    }
+  };
+
+  const setActiveBrandKit = (kit: BrandProfileFormData | null) => {
+    setActiveBrandKitState(kit);
+    // Here you could also save the active kit ID to localStorage to persist it
+  };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      loadBrandKits();
+    }
+  }, [isLoggedIn]);
+
 
   return (
     <UIContext.Provider value={{ 
       isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu, 
       isAiChatOpen, setIsAiChatOpen, toggleAiChat,
-      isLoggedIn, setIsLoggedIn // Provide state and setter
+      isLoggedIn, setIsLoggedIn,
+      brandKits, activeBrandKit, setActiveBrandKit, loadBrandKits
     }}>
       {children}
     </UIContext.Provider>

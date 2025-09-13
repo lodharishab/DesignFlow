@@ -35,7 +35,8 @@ import {
   Image as ImageIconLucide,
   Download,
   FileText,
-  Share2 // Added for sharing notes
+  Share2, // Added for sharing notes
+  Sparkles
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -84,6 +85,7 @@ interface Analytics {
 // Extend the base Order interface for this page's specific needs
 interface Order extends BaseOrder {
   analytics?: Analytics;
+  activeBrandKitName?: string; // New field for brand kit
 }
 
 // Add mock milestone and analytics data to some orders
@@ -91,6 +93,7 @@ const ordersWithEnhancements: Order[] = initialOrdersData.map(order => {
   if (order.id === 'ORD7361P') {
     return {
       ...order,
+      activeBrandKitName: "BharatRetail Solutions", // Add active brand
       milestones: [
         { id: 'm1_7361p', title: 'Phase 1: Wireframes & UX Flow', dueDate: new Date(2024, 6, 8), amount: 8000, status: 'Paid' },
         { id: 'm2_7361p', title: 'UI Design & Style Guide', dueDate: new Date(2024, 6, 20), amount: 12000, status: 'Delivered' },
@@ -101,6 +104,7 @@ const ordersWithEnhancements: Order[] = initialOrdersData.map(order => {
   if (order.id === 'ORD4011M') {
       return {
           ...order,
+          activeBrandKitName: "My First Brand", // Add active brand
           milestones: [
               { id: 'm4_4011m', title: 'Initial Icon Concepts (5 icons)', dueDate: new Date(2024, 5, 28), amount: 2500, status: 'Paid' },
               { id: 'm5_4011m', title: 'Final Icon Set (10 icons)', dueDate: new Date(2024, 6, 2), amount: 2499, status: 'Pending' },
@@ -340,6 +344,12 @@ function DesignerOrderDetailPageContent(): ReactElement {
             <div className="space-y-1">
               <h4 className="font-semibold text-foreground flex items-center"><User className="mr-2 h-4 w-4 text-muted-foreground"/>Client Details</h4>
               <p>Name: {order.clientName} ({order.clientId})</p>
+              {order.activeBrandKitName && (
+                <p className="flex items-center text-xs text-muted-foreground pt-1">
+                    <Sparkles className="h-3.5 w-3.5 mr-1.5 text-primary"/>
+                    Using Brand Kit: <span className="font-medium ml-1 text-primary">{order.activeBrandKitName}</span>
+                </p>
+              )}
             </div>
             <div className="space-y-1">
               <h4 className="font-semibold text-foreground flex items-center"><CalendarDays className="mr-2 h-4 w-4 text-muted-foreground"/>Key Dates</h4>
