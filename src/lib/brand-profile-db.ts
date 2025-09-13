@@ -1,5 +1,4 @@
 
-
 'use client';
 
 /**
@@ -34,7 +33,7 @@ export interface BrandProfileFormData {
   projectTypes: string[];
 }
 
-const defaultBrandProfile: BrandProfileFormData = {
+export const defaultBrandProfile: BrandProfileFormData = {
     id: 'default',
     companyName: "", 
     companyWebsite: "", 
@@ -57,27 +56,13 @@ const defaultBrandProfile: BrandProfileFormData = {
 
 
 /**
- * Saves all brand kits for the user.
- * @param kits An array of brand profile data to save.
- */
-export async function saveBrandKits(kits: BrandProfileFormData[]): Promise<void> {
-    console.log('Simulating saveBrandKits...');
-    try {
-        // In a real app, you might save this array to a single user document in Firestore.
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(kits));
-        console.log('All brand kits saved to localStorage (simulation).', kits);
-    } catch (error) {
-        console.error('Error saving brand kits:', error);
-    }
-}
-
-/**
  * Retrieves all brand kits for the user.
  * @returns An array of brand profile data, or an empty array if not found.
  */
 export async function getBrandKits(): Promise<BrandProfileFormData[]> {
     console.log('Simulating getBrandKits...');
     try {
+        await new Promise(resolve => setTimeout(resolve, 200)); // Simulate network delay
         const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (localData) {
             console.log('Brand kits loaded from localStorage (simulation).');
@@ -89,10 +74,60 @@ export async function getBrandKits(): Promise<BrandProfileFormData[]> {
             }));
             return completeKits as BrandProfileFormData[];
         }
-        return []; // Return empty array if nothing is found
+        // If no data, populate with a default example
+        const exampleKit = { ...defaultBrandProfile, id: `brand_${Date.now()}`, companyName: "My First Brand" };
+        await saveBrandKits([exampleKit]);
+        return [exampleKit];
     } catch (error) {
         console.error('Error getting brand kits:', error);
         return [];
     }
 }
 
+
+/**
+ * Saves all brand kits for the user. Accepts a function to update kits.
+ * @param updater A function that receives the previous kits and returns the new kits array.
+ */
+export async function saveBrandKits(updater: (prevKits: BrandProfileFormData[]) => BrandProfileFormData[]): Promise<void> {
+    console.log('Simulating saveBrandKits with updater...');
+    try {
+        await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
+        const currentKits = await getBrandKits();
+        const newKits = updater(currentKits);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newKits));
+        console.log('All brand kits saved to localStorage (simulation).', newKits);
+    } catch (error) {
+        console.error('Error saving brand kits:', error);
+    }
+}
+
+
+/**
+ * Retrieves a single brand kit by its ID.
+ * @param id The ID of the brand kit to retrieve.
+ * @returns The brand profile data or null if not found.
+ */
+export async function getBrandKitById(id: string): Promise<BrandProfileFormData | null> {
+  const kits = await getBrandKits();
+  const kit = kits.find(k => k.id === id);
+  return kit || null;
+}
+
+/**
+ * Deletes a single brand kit by its ID.
+ * @param id The ID of the brand kit to delete.
+ * @returns True if deletion was successful, false otherwise.
+ */
+export async function deleteBrandKit(id: string): Promise<boolean> {
+  try {
+    const kits = await getBrandKits();
+    const newKits = kits.filter(k => k.id !== id);
+    // Use the functional update version of saveBrandKits
+    await saveBrandKits(() => newKits);
+    return true;
+  } catch (error) {
+    console.error(`Error deleting brand kit ${id}:`, error);
+    return false;
+  }
+}

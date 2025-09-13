@@ -38,7 +38,7 @@ const navItems = [
   { href: '/client/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/client/orders', icon: ShoppingCart, label: 'My Orders' },
   { href: '/design-services', icon: Briefcase, label: 'Browse Services' },
-  { href: '/client/brand-profile', icon: Sparkles, label: 'Brand Profile' },
+  { href: '/client/brand-profiles', icon: Sparkles, label: 'Brand Profiles' },
   { href: '/client/profile', icon: UserCircle, label: 'Account Settings' },
 ];
 
@@ -106,7 +106,7 @@ export default function ClientLayout({
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild><Link href="/client/profile">Account Settings</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link href="/client/brand-profile">Brand Profile</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/client/brand-profiles">Brand Profiles</Link></DropdownMenuItem>
                   <DropdownMenuItem>Log out</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
