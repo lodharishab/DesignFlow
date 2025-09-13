@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Sparkles, PlusCircle, Edit, Trash2, PackageSearch, Heart, Share2, Mail, Copy, Send } from 'lucide-react';
+import { Sparkles, PlusCircle, Edit, Trash2, PackageSearch, Heart, Share2, Mail, Copy, Send, MessageSquare } from 'lucide-react';
 import { getBrandKits, deleteBrandKit, toggleFavoriteBrandKit, type BrandProfileFormData } from '@/lib/brand-profile-db';
 import { useToast } from "@/hooks/use-toast";
 import {
