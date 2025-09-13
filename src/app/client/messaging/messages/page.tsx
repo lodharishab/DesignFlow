@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useState, useMemo, type ReactElement } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { MessagesSquare, Search, Pin, PinOff, Send, PanelLeftClose, ArrowLeft } from "lucide-react";
 import { Input } from '@/components/ui/input';
