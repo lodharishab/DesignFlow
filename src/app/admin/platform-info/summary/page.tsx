@@ -16,7 +16,7 @@ async function ProjectSummaryPage({ searchParams }: ProjectSummaryPageProps) {
 
     const getFileNameForVersion = (v: string) => {
         if (v === '0.04') return 'project-summary.txt';
-        return `project-summary.v${v.replace('0.0', '')}.txt`;
+        return `project-summary.v${v}.txt`;
     }
 
     const readFileContent = async (fileName: string) => {

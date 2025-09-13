@@ -16,7 +16,7 @@ async function ReadmePage({ searchParams }: ReadmePageProps) {
 
     const getFileNameForVersion = (v: string) => {
         if (v === '0.04') return 'README.md';
-        return `README.v${v.replace('0.0', '')}.md`;
+        return `README.v${v}.md`;
     }
 
     const readFileContent = async (fileName: string) => {
