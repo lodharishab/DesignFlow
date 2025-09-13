@@ -92,16 +92,19 @@ const mockConversationsData: Conversation[] = [
 
 function TimeAgo({ date }: { date: Date }) {
   const [timeAgo, setTimeAgo] = React.useState('');
+  const [fullDate, setFullDate] = React.useState('');
 
   React.useEffect(() => {
     setTimeAgo(formatDistanceToNow(date, { addSuffix: true }));
+    setFullDate(date.toLocaleString());
+
     const interval = setInterval(() => {
         setTimeAgo(formatDistanceToNow(date, { addSuffix: true }));
     }, 60000);
     return () => clearInterval(interval);
   }, [date]);
 
-  return <span title={date.toLocaleString()}>{timeAgo}</span>;
+  return <span title={fullDate}>{timeAgo}</span>;
 }
 
 
