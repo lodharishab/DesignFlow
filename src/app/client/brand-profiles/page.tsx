@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Sparkles, PlusCircle, Edit, Trash2, PackageSearch, Heart } from 'lucide-react';
+import { Sparkles, PlusCircle, Edit, Trash2, PackageSearch, Heart, Share2, Mail, Copy, Send } from 'lucide-react';
 import { getBrandKits, deleteBrandKit, toggleFavoriteBrandKit, type BrandProfileFormData } from '@/lib/brand-profile-db';
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -19,9 +19,90 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useUI } from '@/contexts/ui-context';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+function ShareBrandKitDialog({ kit }: { kit: BrandProfileFormData }) {
+  const { toast } = useToast();
+  const [baseUrl, setBaseUrl] = useState('');
+
+  useEffect(() => {
+    // Ensure window is defined (runs only on client)
+    setBaseUrl(window.location.origin);
+  }, []);
+
+  const shareUrl = `${baseUrl}/brand-kit/${kit.id}`;
+  const whatsappText = encodeURIComponent(`Check out our brand kit for ${kit.companyName}: ${shareUrl}`);
+  const emailSubject = encodeURIComponent(`Brand Kit: ${kit.companyName}`);
+  const emailBody = encodeURIComponent(`Hi,\n\nPlease find our brand kit here: ${shareUrl}\n\nThank you`);
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shareUrl);
+    toast({ title: "Link Copied!", description: "The shareable link has been copied to your clipboard." });
+  };
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Share "{kit.companyName}"</DialogTitle>
+        <DialogDescription>
+          Share this brand kit with your team, designers, or partners.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="space-y-4 py-2">
+        <div className="space-y-2">
+          <Label htmlFor="share-link">Public Share Link</Label>
+          <div className="flex gap-2">
+            <Input id="share-link" value={shareUrl} readOnly />
+            <Button onClick={copyToClipboard} variant="outline" size="icon">
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        <div className="flex justify-center gap-2">
+          <Button variant="outline" asChild>
+            <a href={`mailto:?subject=${emailSubject}&body=${emailBody}`} target="_blank" rel="noopener noreferrer">
+              <Mail className="mr-2 h-4 w-4" /> Email
+            </a>
+          </Button>
+          <Button variant="outline" asChild>
+            <a href={`https://wa.me/?text=${whatsappText}`} target="_blank" rel="noopener noreferrer">
+              <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp
+            </a>
+          </Button>
+        </div>
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">Or</span>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Share with a Designer on DesignFlow</Label>
+          <div className="flex gap-2">
+            <Input placeholder="Enter designer's username or email..." disabled />
+            <Button disabled><Send className="h-4 w-4" /></Button>
+          </div>
+          <p className="text-xs text-muted-foreground">This feature is coming soon.</p>
+        </div>
+      </div>
+    </DialogContent>
+  );
+}
+
 
 export default function BrandProfilesPage() {
   const { brandKits, loadBrandKits } = useUI(); // Use context
@@ -139,6 +220,12 @@ export default function BrandProfilesPage() {
                   >
                     <Heart className={cn("h-4 w-4", kit.isFavorite && "fill-current")} />
                   </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                     <Button variant="ghost" size="icon"><Share2 className="h-4 w-4" /></Button>
+                  </DialogTrigger>
+                  <ShareBrandKitDialog kit={kit} />
+                </Dialog>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive">
