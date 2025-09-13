@@ -2,11 +2,11 @@
 "use client";
 
 import * as React from 'react';
-import { useState, useMemo, type ReactElement } from 'react';
+import { useState, useMemo, type ReactElement, useRef, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { MessagesSquare, Search, Pin, PinOff, Send, PanelLeftClose, ArrowLeft } from "lucide-react";
+import { MessagesSquare, Search, Pin, PinOff, Send, PanelLeftClose, ArrowLeft, Paperclip, UploadCloud, X, File as FileIcon, FileText, Image as ImageIcon, Download } from "lucide-react";
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,14 +16,26 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Mail, MailOpen, Archive } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import Image from 'next/image';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 // --- MOCK DATA & INTERFACES ---
+
+interface ChatFile {
+  name: string;
+  size: number; // in bytes
+  type: 'image' | 'pdf' | 'other';
+  url: string; // data URL for preview, or placeholder
+  timestamp: Date;
+}
 
 interface Message {
   id: string;
   sender: 'client' | 'designer';
   text: string;
   timestamp: string;
+  file?: Omit<ChatFile, 'timestamp'>;
 }
 
 interface Conversation {
@@ -36,6 +48,7 @@ interface Conversation {
   unreadCount: number;
   isPinned: boolean;
   messages: Message[];
+  sharedFiles: ChatFile[];
 }
 
 const mockConversationsData: Conversation[] = [
@@ -54,7 +67,11 @@ const mockConversationsData: Conversation[] = [
       { id: 'msg3', sender: 'client', text: 'The new analytics section looks great, but could we add a date range filter at the top? I think that was missed from the brief.', timestamp: '10:33 AM' },
       { id: 'msg4', sender: 'designer', text: 'Good catch! You\'re right, I can definitely add that in. It\'s a quick addition.', timestamp: '10:34 AM' },
       { id: 'msg5', sender: 'designer', text: 'Sure, I can have the revised wireframes ready by tomorrow morning. Does that work for you?', timestamp: '10:35 AM' },
-    ]
+    ],
+     sharedFiles: [
+      { name: 'initial-brief.pdf', size: 120400, type: 'pdf', url: '#', timestamp: new Date(new Date().setHours(new Date().getHours() - 5)) },
+      { name: 'inspiration.jpg', size: 800000, type: 'image', url: 'https://picsum.photos/seed/chatimg1/200/200', timestamp: new Date(new Date().setHours(new Date().getHours() - 4)) }
+    ],
   },
   {
     designerId: 'des003',
@@ -69,7 +86,8 @@ const mockConversationsData: Conversation[] = [
        { id: 'msg_a1', sender: 'client', text: 'Hi Aisha, thanks for the final social media graphics. They look perfect!', timestamp: 'Yesterday' },
        { id: 'msg_a2', sender: 'designer', text: 'You\'re welcome! Glad you liked them. Let me know if you need anything else.', timestamp: 'Yesterday' },
        { id: 'msg_a3', sender: 'client', text: 'Excellent! The campaign is performing well. Thanks for the quick turnaround.', timestamp: 'Yesterday' },
-    ]
+    ],
+    sharedFiles: [],
   },
   {
     designerId: 'des001',
@@ -83,7 +101,8 @@ const mockConversationsData: Conversation[] = [
     messages: [
        { id: 'msg_p1', sender: 'client', text: 'Hi Priya, I\'ve attached my feedback on the initial logo concepts.', timestamp: '3 days ago' },
        { id: 'msg_p2', sender: 'designer', text: 'Got it, I\'ll incorporate the feedback into the next round of logo concepts.', timestamp: '3 days ago' },
-    ]
+    ],
+    sharedFiles: [],
   },
 ];
 
@@ -97,11 +116,6 @@ function TimeAgo({ date }: { date: Date }) {
   React.useEffect(() => {
     setTimeAgo(formatDistanceToNow(date, { addSuffix: true }));
     setFullDate(date.toLocaleString());
-
-    const interval = setInterval(() => {
-        setTimeAgo(formatDistanceToNow(date, { addSuffix: true }));
-    }, 60000);
-    return () => clearInterval(interval);
   }, [date]);
 
   return <span title={fullDate}>{timeAgo}</span>;
@@ -177,7 +191,83 @@ function ConversationList({
     );
 }
 
-function ChatView({ conversation, onClose }: { conversation: Conversation | null, onClose: () => void }) {
+function ChatView({ 
+    conversation, 
+    onClose,
+    onSendMessage
+}: { 
+    conversation: Conversation | null, 
+    onClose: () => void,
+    onSendMessage: (designerId: string, message: Message) => void
+}) {
+    const [newMessage, setNewMessage] = useState('');
+    const [isDragging, setIsDragging] = useState(false);
+    const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleSendMessage = () => {
+        if (!conversation || (!newMessage.trim() && filesToUpload.length === 0)) return;
+
+        // Handle text message
+        if (newMessage.trim()) {
+            const textMessage: Message = {
+                id: `msg_${Date.now()}`,
+                sender: 'client',
+                text: newMessage,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'}),
+            };
+            onSendMessage(conversation.designerId, textMessage);
+        }
+
+        // Handle file messages
+        filesToUpload.forEach(file => {
+            const fileMessage: Message = {
+                id: `msg_file_${Date.now()}_${file.name}`,
+                sender: 'client',
+                text: '', // Text is optional for file messages
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                file: {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type.startsWith('image/') ? 'image' : (file.type === 'application/pdf' ? 'pdf' : 'other'),
+                    url: URL.createObjectURL(file), // Generate a temporary local URL for preview
+                }
+            };
+            onSendMessage(conversation.designerId, fileMessage);
+        });
+
+        setNewMessage('');
+        setFilesToUpload([]);
+    };
+
+    const handleFileSelect = (files: FileList | null) => {
+      if (files) {
+        setFilesToUpload(prev => [...prev, ...Array.from(files)]);
+      }
+    };
+  
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(true);
+    };
+  
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+    };
+  
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFileSelect(e.dataTransfer.files);
+        e.dataTransfer.clearData();
+      }
+    };
+
     if (!conversation) {
         return (
             <div className="hidden md:flex h-full w-full flex-col items-center justify-center bg-muted/50 rounded-lg">
@@ -187,9 +277,31 @@ function ChatView({ conversation, onClose }: { conversation: Conversation | null
             </div>
         );
     }
+    
+    const FilePreviewIcon = ({ fileType }: { fileType: ChatFile['type'] }) => {
+      switch (fileType) {
+        case 'image': return <ImageIcon className="h-6 w-6 text-muted-foreground" />;
+        case 'pdf': return <FileText className="h-6 w-6 text-muted-foreground" />;
+        default: return <FileIcon className="h-6 w-6 text-muted-foreground" />;
+      }
+    };
 
     return (
-        <Card className="flex flex-col h-full w-full shadow-md">
+        <Card 
+            className="flex flex-col h-full w-full shadow-md relative"
+            onDragEnter={handleDragEnter}
+        >
+             {isDragging && (
+                <div 
+                    className="absolute inset-0 z-20 bg-primary/20 border-2 border-dashed border-primary rounded-lg flex flex-col items-center justify-center"
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onDragOver={(e) => e.preventDefault()} // Necessary to allow drop
+                >
+                    <UploadCloud className="h-16 w-16 text-primary mb-4" />
+                    <p className="font-semibold text-lg text-primary">Drop files to upload</p>
+                </div>
+            )}
              <CardHeader className="flex flex-row items-center gap-4 p-3 border-b bg-background sticky top-0 z-10">
                 <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0 md:hidden">
                     <ArrowLeft className="h-5 w-5" />
@@ -212,34 +324,119 @@ function ChatView({ conversation, onClose }: { conversation: Conversation | null
                     <PanelLeftClose className="h-5 w-5" />
                  </Button>
             </CardHeader>
-            <ScrollArea className="flex-grow p-4 space-y-6">
-                 {conversation.messages.map(message => (
-                    <div key={message.id} className={cn("flex items-end gap-2", message.sender === 'client' ? 'justify-end' : '')}>
-                        {message.sender === 'designer' && (
-                            <Avatar className="h-8 w-8 shrink-0">
-                                <AvatarImage src={conversation.designerAvatarUrl} alt={conversation.designerName} data-ai-hint={conversation.designerAvatarHint} />
-                                <AvatarFallback>{conversation.designerName.substring(0, 1)}</AvatarFallback>
-                            </Avatar>
+            <Tabs defaultValue="chat" className="flex-grow flex flex-col min-h-0">
+                <TabsList className="grid w-full grid-cols-2 shrink-0">
+                    <TabsTrigger value="chat">Chat</TabsTrigger>
+                    <TabsTrigger value="media">Shared Media</TabsTrigger>
+                </TabsList>
+                <TabsContent value="chat" className="flex-grow flex flex-col min-h-0">
+                    <ScrollArea className="flex-grow p-4 space-y-6">
+                        {conversation.messages.map(message => (
+                            <div key={message.id} className={cn("flex items-end gap-2", message.sender === 'client' ? 'justify-end' : '')}>
+                                {message.sender === 'designer' && (
+                                    <Avatar className="h-8 w-8 shrink-0">
+                                        <AvatarImage src={conversation.designerAvatarUrl} alt={conversation.designerName} data-ai-hint={conversation.designerAvatarHint} />
+                                        <AvatarFallback>{conversation.designerName.substring(0, 1)}</AvatarFallback>
+                                    </Avatar>
+                                )}
+                                <div className={cn(
+                                    "rounded-lg px-3 py-2 max-w-[75%] break-words shadow-sm",
+                                    message.sender === 'client' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                                )}>
+                                    {message.text && <p className="text-sm">{message.text}</p>}
+                                    {message.file && (
+                                        <div className="flex items-center gap-2 mt-1">
+                                            {message.file.type === 'image' ? (
+                                                <Image src={message.file.url} alt={message.file.name} width={100} height={100} className="rounded-md object-cover"/>
+                                            ) : (
+                                                <FilePreviewIcon fileType={message.file.type} />
+                                            )}
+                                            <div className="text-xs">
+                                                <p className="font-semibold">{message.file.name}</p>
+                                                <p>{(message.file.size / 1024).toFixed(1)} KB</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <p className={cn(
+                                        "text-xs mt-1 text-right", 
+                                        message.sender === 'client' ? 'text-primary-foreground/70' : 'text-muted-foreground/80'
+                                    )}>
+                                        {message.timestamp}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </ScrollArea>
+                </TabsContent>
+                <TabsContent value="media" className="flex-grow flex flex-col min-h-0">
+                    <ScrollArea className="flex-grow p-4">
+                        {conversation.sharedFiles.length > 0 ? (
+                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                {conversation.sharedFiles.map((file, index) => (
+                                     <Card key={index} className="overflow-hidden">
+                                        <div className="aspect-square bg-muted flex items-center justify-center">
+                                            {file.type === 'image' ? (
+                                                <Image src={file.url} alt={file.name} width={150} height={150} className="object-cover h-full w-full"/>
+                                            ) : (
+                                                <FilePreviewIcon fileType={file.type} />
+                                            )}
+                                        </div>
+                                        <div className="p-2 text-xs border-t">
+                                            <p className="font-semibold truncate">{file.name}</p>
+                                            <p className="text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6 absolute top-1 right-1"><Download className="h-4 w-4"/></Button>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center text-sm text-muted-foreground py-10">
+                                No files have been shared in this conversation yet.
+                            </div>
                         )}
-                        <div className={cn(
-                            "rounded-lg px-3 py-2 max-w-[75%] break-words shadow-sm",
-                            message.sender === 'client' ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                        )}>
-                            <p className="text-sm">{message.text}</p>
-                            <p className={cn(
-                                "text-xs mt-1 text-right", 
-                                message.sender === 'client' ? 'text-primary-foreground/70' : 'text-muted-foreground/80'
-                            )}>
-                                {message.timestamp}
-                            </p>
+                    </ScrollArea>
+                </TabsContent>
+            </Tabs>
+            <CardFooter className="p-2 border-t flex flex-col gap-2">
+                 {filesToUpload.length > 0 && (
+                    <div className="w-full p-2 border rounded-md max-h-32 overflow-y-auto">
+                        <div className="grid grid-cols-2 gap-2">
+                            {filesToUpload.map((file, index) => (
+                                <div key={index} className="flex items-center gap-2 p-1 bg-secondary rounded text-xs">
+                                     <FilePreviewIcon fileType={file.type.startsWith('image/') ? 'image' : (file.type === 'application/pdf' ? 'pdf' : 'other')} />
+                                    <div className="flex-grow overflow-hidden">
+                                        <p className="truncate font-medium">{file.name}</p>
+                                        <p className="text-muted-foreground">{(file.size/1024).toFixed(1)} KB</p>
+                                    </div>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => setFilesToUpload(prev => prev.filter((_, i) => i !== index))}>
+                                        <X className="h-4 w-4"/>
+                                    </Button>
+                                </div>
+                            ))}
                         </div>
                     </div>
-                ))}
-            </ScrollArea>
-            <CardFooter className="p-2 border-t">
+                )}
                 <div className="flex items-center gap-2 w-full">
-                    <Textarea placeholder="Type your message..." rows={1} className="flex-grow resize-none" />
-                    <Button size="icon"><Send className="h-5 w-5" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
+                        <Paperclip className="h-5 w-5" />
+                    </Button>
+                     <input type="file" ref={fileInputRef} onChange={(e) => handleFileSelect(e.target.files)} className="hidden" multiple />
+                    <Textarea 
+                        placeholder="Type your message..." 
+                        rows={1} 
+                        className="flex-grow resize-none" 
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                            if(e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSendMessage();
+                            }
+                        }}
+                    />
+                    <Button size="icon" onClick={handleSendMessage} disabled={!newMessage.trim() && filesToUpload.length === 0}>
+                        <Send className="h-5 w-5" />
+                    </Button>
                 </div>
             </CardFooter>
         </Card>
@@ -253,6 +450,25 @@ export default function ClientMessagesPage() {
     const [conversations, setConversations] = useState<Conversation[]>(mockConversationsData);
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+
+    const handleSendMessage = (designerId: string, message: Message) => {
+        setConversations(prev => prev.map(convo => {
+            if (convo.designerId === designerId) {
+                const newMessages = [...convo.messages, message];
+                const newSharedFiles = message.file ? 
+                    [...convo.sharedFiles, { ...message.file, timestamp: new Date() }] : 
+                    convo.sharedFiles;
+                return {
+                    ...convo,
+                    messages: newMessages,
+                    sharedFiles: newSharedFiles,
+                    lastMessage: message.text || message.file?.name || 'File sent',
+                    lastMessageTimestamp: new Date(),
+                };
+            }
+            return convo;
+        }));
+    };
 
     const handleTogglePin = (e: React.MouseEvent, designerId: string) => {
         e.stopPropagation();
@@ -328,6 +544,7 @@ export default function ClientMessagesPage() {
                    <ChatView 
                         conversation={selectedConversation} 
                         onClose={() => setSelectedConversationId(null)}
+                        onSendMessage={handleSendMessage}
                     />
                 </div>
             </div>
