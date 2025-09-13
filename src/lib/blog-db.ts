@@ -140,13 +140,17 @@ async function getBlogCollection(): Promise<Collection<BlogPost> | null> {
 
 // Simulate fetching all blog posts
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
-  const collection = await getBlogCollection();
-  if (!collection) {
+  if (!isDbEnabled()) {
     console.log("DB not enabled. Returning mock blog posts.");
     return MOCK_BLOG_POSTS.sort((a, b) => b.publishDate.getTime() - a.publishDate.getTime());
   }
 
   try {
+    const collection = await getBlogCollection();
+    if (!collection) { // Check if collection is null after trying to connect
+      console.log("DB collection is null after connection attempt. Returning mock data.");
+      return MOCK_BLOG_POSTS.sort((a, b) => b.publishDate.getTime() - a.publishDate.getTime());
+    }
     const posts = await collection.find({}).sort({ publishDate: -1 }).toArray();
     return posts.map(p => ({ ...p, _id: p._id.toString() }));
   } catch(e) {
@@ -155,16 +159,21 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
   }
 }
 
+
 // Simulate fetching a single blog post by its slug (id)
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
-    const collection = await getBlogCollection();
-    if (!collection) {
+    if (!isDbEnabled()) {
         console.log("DB not enabled. Searching mock blog posts.");
         const post = MOCK_BLOG_POSTS.find(p => p.id === slug);
         return post || null;
     }
   
     try {
+        const collection = await getBlogCollection();
+        if (!collection) {
+            const post = MOCK_BLOG_POSTS.find(p => p.id === slug);
+            return post || null;
+        }
         const post = await collection.findOne({ id: slug });
         if (!post) return null;
         return { ...post, _id: post._id.toString() };

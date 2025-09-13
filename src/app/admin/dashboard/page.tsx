@@ -4,12 +4,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Briefcase, Users, ClipboardList, BarChart3, ArrowRight, UsersRound, IndianRupee, UserCheck, Newspaper, Edit, Star } from 'lucide-react';
 import Link from 'next/link';
 import { getAllBlogPosts } from '@/lib/blog-db'; // For blog post count
-// Assuming a way to get pending designers count (using existing mock data for now)
 import { designersData } from '@/lib/designer-data';
+import { isDbEnabled } from '@/lib/mongodb';
 
 export default async function AdminDashboardPage() {
-  const blogPosts = await getAllBlogPosts();
-  const totalBlogPosts = blogPosts.length;
+  let totalBlogPosts = 0;
+  if(isDbEnabled()) {
+    try {
+      const blogPosts = await getAllBlogPosts();
+      totalBlogPosts = blogPosts.length;
+    } catch (error) {
+      console.error("Failed to fetch blog posts for dashboard:", error);
+      // Let totalBlogPosts remain 0
+    }
+  } else {
+    const blogPosts = await getAllBlogPosts();
+    totalBlogPosts = blogPosts.length;
+  }
+
 
   const pendingDesigners = designersData.filter(d => d.adminRanking === null || d.adminRanking < 2).length; // Example logic for pending
 
