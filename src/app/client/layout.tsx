@@ -16,7 +16,8 @@ import {
   MessagesSquare,
   ChevronDown,
   Star,
-  ShieldAlert
+  ShieldAlert,
+  CreditCard
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -71,7 +72,15 @@ const navItems = [
       { href: '/client/performance/disputes', icon: ShieldAlert, label: 'Disputes' },
     ]
   },
-  { href: '/client/profile', icon: UserCircle, label: 'Account Settings' },
+  { 
+    label: 'Settings', 
+    icon: UserCircle, 
+    pathPrefix: '/client/profile', // Using profile as base path for settings group
+    children: [
+        { href: '/client/profile', icon: UserCircle, label: 'Account Profile' },
+        { href: '/client/settings/payment', icon: CreditCard, label: 'Payment Methods' },
+    ]
+  },
   { type: 'separator' },
   { href: '/design-services', icon: Briefcase, label: 'Browse Services' },
 ];
