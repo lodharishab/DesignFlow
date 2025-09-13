@@ -14,7 +14,9 @@ import {
   MessageSquare,
   Bell,
   MessagesSquare,
-  ChevronDown
+  ChevronDown,
+  Star,
+  ShieldAlert
 } from 'lucide-react';
 import { 
   SidebarProvider, 
@@ -58,6 +60,15 @@ const navItems = [
     children: [
       { href: '/client/messaging/messages', icon: MessagesSquare, label: 'Messages' },
       { href: '/client/messaging/notifications', icon: Bell, label: 'Notifications' },
+    ]
+  },
+  { 
+    label: 'Performance',
+    icon: Star,
+    pathPrefix: '/client/performance',
+    children: [
+      { href: '/client/performance/reviews', icon: Star, label: 'My Reviews' },
+      { href: '/client/performance/disputes', icon: ShieldAlert, label: 'Disputes' },
     ]
   },
   { href: '/client/profile', icon: UserCircle, label: 'Account Settings' },
