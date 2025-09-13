@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-import { Sparkles, ChevronsUpDown, Check, PlusCircle, Settings, Pin } from "lucide-react";
+import { Sparkles, ChevronsUpDown, Check, PlusCircle, Settings, Heart } from "lucide-react";
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -30,8 +30,8 @@ export function BrandSwitcher() {
     );
   }
 
-  const pinnedKits = brandKits.filter(kit => kit.isPinned);
-  const unpinnedKits = brandKits.filter(kit => !kit.isPinned);
+  const favoriteKits = brandKits.filter(kit => kit.isFavorite);
+  const otherKits = brandKits.filter(kit => !kit.isFavorite);
 
   return (
     <DropdownMenu>
@@ -54,13 +54,14 @@ export function BrandSwitcher() {
         <DropdownMenuLabel>Switch Brand Profile</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        {pinnedKits.length > 0 && (
+        {favoriteKits.length > 0 && (
           <DropdownMenuGroup>
-             {pinnedKits.map((kit) => (
+             <DropdownMenuLabel className="text-xs text-muted-foreground px-2 pt-1.5">Favorites</DropdownMenuLabel>
+             {favoriteKits.map((kit) => (
               <DropdownMenuItem key={kit.id} onSelect={() => setActiveBrandKit(kit)}>
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-2 overflow-hidden">
-                      <Pin className="h-4 w-4 text-primary fill-current" />
+                      <Heart className="h-4 w-4 text-red-500 fill-current" />
                       <span className="truncate">{kit.companyName}</span>
                   </div>
                   {activeBrandKit?.id === kit.id && <Check className="h-4 w-4 text-primary" />}
@@ -70,11 +71,11 @@ export function BrandSwitcher() {
           </DropdownMenuGroup>
         )}
         
-        {(pinnedKits.length > 0 && unpinnedKits.length > 0) && <DropdownMenuSeparator />}
+        {(favoriteKits.length > 0 && otherKits.length > 0) && <DropdownMenuSeparator />}
         
-        {unpinnedKits.length > 0 && (
+        {otherKits.length > 0 && (
           <DropdownMenuGroup>
-            {unpinnedKits.map((kit) => (
+            {otherKits.map((kit) => (
               <DropdownMenuItem key={kit.id} onSelect={() => setActiveBrandKit(kit)}>
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-2 overflow-hidden">

@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Sparkles, PlusCircle, Edit, Trash2, PackageSearch, Pin } from 'lucide-react';
-import { getBrandKits, deleteBrandKit, togglePinBrandKit, type BrandProfileFormData } from '@/lib/brand-profile-db';
+import { Sparkles, PlusCircle, Edit, Trash2, PackageSearch, Heart } from 'lucide-react';
+import { getBrandKits, deleteBrandKit, toggleFavoriteBrandKit, type BrandProfileFormData } from '@/lib/brand-profile-db';
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -54,20 +54,20 @@ export default function BrandProfilesPage() {
     }
   };
 
-  const handleTogglePin = async (kitId: string, kitName: string, isCurrentlyPinned: boolean) => {
-    const updatedKit = await togglePinBrandKit(kitId);
+  const handleToggleFavorite = async (kitId: string, kitName: string, isCurrentlyFavorite: boolean) => {
+    const updatedKit = await toggleFavoriteBrandKit(kitId);
     if (updatedKit) {
       await loadBrandKits(); // Reload data into context
       toast({
-        title: `Brand Kit ${isCurrentlyPinned ? 'Unpinned' : 'Pinned'}`,
-        description: `"${kitName}" has been ${isCurrentlyPinned ? 'unpinned' : 'pinned to the top'}.`,
+        title: `Brand Kit ${isCurrentlyFavorite ? 'Unfavorited' : 'Favorited'}`,
+        description: `"${kitName}" has been ${isCurrentlyFavorite ? 'removed from' : 'added to'} your favorites.`,
       });
     }
   };
 
   const sortedBrandKits = [...brandKits].sort((a, b) => {
-    if (a.isPinned && !b.isPinned) return -1;
-    if (!a.isPinned && b.isPinned) return 1;
+    if (a.isFavorite && !b.isFavorite) return -1;
+    if (!a.isFavorite && b.isFavorite) return 1;
     return (a.companyName || '').localeCompare(b.companyName || '');
   });
 
@@ -109,9 +109,9 @@ export default function BrandProfilesPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedBrandKits.map((kit) => (
             <Card key={kit.id} className="flex flex-col shadow-md hover:shadow-lg transition-shadow relative">
-              {kit.isPinned && (
-                <div className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full p-1.5 z-10">
-                  <Pin className="h-3.5 w-3.5" />
+              {kit.isFavorite && (
+                <div className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-1.5 z-10">
+                  <Heart className="h-3.5 w-3.5 fill-current" />
                 </div>
               )}
               <CardHeader className="flex-row items-center gap-4">
@@ -134,10 +134,10 @@ export default function BrandProfilesPage() {
                  <Button 
                     variant="ghost" 
                     size="icon" 
-                    onClick={() => handleTogglePin(kit.id, kit.companyName, !!kit.isPinned)}
-                    className={cn(kit.isPinned ? "text-primary" : "text-muted-foreground hover:text-primary")}
+                    onClick={() => handleToggleFavorite(kit.id, kit.companyName, !!kit.isFavorite)}
+                    className={cn(kit.isFavorite ? "text-red-500" : "text-muted-foreground hover:text-red-500")}
                   >
-                    <Pin className={cn("h-4 w-4", kit.isPinned && "fill-current")} />
+                    <Heart className={cn("h-4 w-4", kit.isFavorite && "fill-current")} />
                   </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
