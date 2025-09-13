@@ -64,7 +64,7 @@ function BrandKitContent() {
         style.innerHTML = `
         @media print {
             body { -webkit-print-color-adjust: exact; }
-            .print-hidden { display: none; }
+            .print-hidden { display: none !important; }
             main { padding-top: 0 !important; padding-bottom: 0 !important; }
             .print\\:shadow-none { box-shadow: none !important; }
             .print\\:border-none { border: none !important; }
@@ -100,7 +100,7 @@ function BrandKitContent() {
 
     return (
         <main className="flex-grow container mx-auto py-12 px-5">
-            <div className="flex justify-end mb-6 print:hidden">
+            <div className="flex justify-end mb-6 print-hidden">
                 <Button onClick={handlePrint}><Download className="mr-2 h-4 w-4"/> Download Kit</Button>
             </div>
             <Card className="max-w-4xl mx-auto shadow-xl print:shadow-none print:border-none">
@@ -189,7 +189,7 @@ export default function PublicBrandKitPage() {
       <div className="print-hidden">
         <Navbar />
       </div>
-      <Suspense fallback={<div className="flex-grow text-center py-12">Loading brand kit...</div>}>
+      <Suspense fallback={<div className="flex-grow container mx-auto py-12 px-5 text-center">Loading brand kit...</div>}>
          <ClientOnly>
             <BrandKitContent />
         </ClientOnly>
