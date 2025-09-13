@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-import { Sparkles, ChevronsUpDown, Check, PlusCircle, Settings } from "lucide-react";
+import { Sparkles, ChevronsUpDown, Check, PlusCircle, Settings, Pin } from "lucide-react";
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -29,6 +29,9 @@ export function BrandSwitcher() {
       </Button>
     );
   }
+
+  const pinnedKits = brandKits.filter(kit => kit.isPinned);
+  const unpinnedKits = brandKits.filter(kit => !kit.isPinned);
 
   return (
     <DropdownMenu>
@@ -50,25 +53,47 @@ export function BrandSwitcher() {
       <DropdownMenuContent className="w-[240px]" align="end">
         <DropdownMenuLabel>Switch Brand Profile</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          {brandKits.map((kit) => (
-            <DropdownMenuItem key={kit.id} onSelect={() => setActiveBrandKit(kit)}>
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 overflow-hidden">
-                    {kit.logoUrl ? (
-                        <div className="relative h-6 w-6 shrink-0">
-                            <Image src={kit.logoUrl} alt={kit.companyName} layout="fill" objectFit="contain" />
-                        </div>
-                    ) : (
-                        <Sparkles className="h-5 w-5 text-muted-foreground shrink-0" />
-                    )}
-                    <span className="truncate">{kit.companyName}</span>
+        
+        {pinnedKits.length > 0 && (
+          <DropdownMenuGroup>
+             {pinnedKits.map((kit) => (
+              <DropdownMenuItem key={kit.id} onSelect={() => setActiveBrandKit(kit)}>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                      <Pin className="h-4 w-4 text-primary fill-current" />
+                      <span className="truncate">{kit.companyName}</span>
+                  </div>
+                  {activeBrandKit?.id === kit.id && <Check className="h-4 w-4 text-primary" />}
                 </div>
-                {activeBrandKit?.id === kit.id && <Check className="h-4 w-4 text-primary" />}
-              </div>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuGroup>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuGroup>
+        )}
+        
+        {(pinnedKits.length > 0 && unpinnedKits.length > 0) && <DropdownMenuSeparator />}
+        
+        {unpinnedKits.length > 0 && (
+          <DropdownMenuGroup>
+            {unpinnedKits.map((kit) => (
+              <DropdownMenuItem key={kit.id} onSelect={() => setActiveBrandKit(kit)}>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                      {kit.logoUrl ? (
+                          <div className="relative h-6 w-6 shrink-0">
+                              <Image src={kit.logoUrl} alt={kit.companyName} layout="fill" objectFit="contain" />
+                          </div>
+                      ) : (
+                          <Sparkles className="h-5 w-5 text-muted-foreground shrink-0" />
+                      )}
+                      <span className="truncate">{kit.companyName}</span>
+                  </div>
+                  {activeBrandKit?.id === kit.id && <Check className="h-4 w-4 text-primary" />}
+                </div>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuGroup>
+        )}
+
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
            <Link href="/client/brand-profiles">

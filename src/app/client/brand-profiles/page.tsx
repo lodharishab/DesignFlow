@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Sparkles, PlusCircle, Edit, Trash2, PackageSearch } from 'lucide-react';
-import { getBrandKits, deleteBrandKit, type BrandProfileFormData } from '@/lib/brand-profile-db';
+import { Sparkles, PlusCircle, Edit, Trash2, PackageSearch, Pin } from 'lucide-react';
+import { getBrandKits, deleteBrandKit, togglePinBrandKit, type BrandProfileFormData } from '@/lib/brand-profile-db';
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -20,28 +20,29 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
+import { useUI } from '@/contexts/ui-context';
 
 export default function BrandProfilesPage() {
-  const [brandKits, setBrandKits] = useState<BrandProfileFormData[]>([]);
+  const { brandKits, loadBrandKits } = useUI(); // Use context
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     async function loadData() {
-      const data = await getBrandKits();
-      setBrandKits(data);
+      await loadBrandKits();
       setIsLoading(false);
     }
     loadData();
-  }, []);
+  }, [loadBrandKits]);
 
-  const handleDelete = async (kitId: string) => {
+  const handleDelete = async (kitId: string, kitName: string) => {
     const success = await deleteBrandKit(kitId);
     if (success) {
-      setBrandKits(prev => prev.filter(kit => kit.id !== kitId));
+      await loadBrandKits(); // Reload data into context
       toast({
         title: "Brand Kit Deleted",
-        description: "The brand kit has been successfully removed.",
+        description: `"${kitName}" has been successfully removed.`,
         variant: "destructive"
       });
     } else {
@@ -52,6 +53,24 @@ export default function BrandProfilesPage() {
       });
     }
   };
+
+  const handleTogglePin = async (kitId: string, kitName: string, isCurrentlyPinned: boolean) => {
+    const updatedKit = await togglePinBrandKit(kitId);
+    if (updatedKit) {
+      await loadBrandKits(); // Reload data into context
+      toast({
+        title: `Brand Kit ${isCurrentlyPinned ? 'Unpinned' : 'Pinned'}`,
+        description: `"${kitName}" has been ${isCurrentlyPinned ? 'unpinned' : 'pinned to the top'}.`,
+      });
+    }
+  };
+
+  const sortedBrandKits = [...brandKits].sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return (a.companyName || '').localeCompare(b.companyName || '');
+  });
+
 
   if (isLoading) {
     return <div>Loading brand profiles...</div>;
@@ -71,7 +90,7 @@ export default function BrandProfilesPage() {
         </Button>
       </div>
 
-      {brandKits.length === 0 ? (
+      {sortedBrandKits.length === 0 ? (
         <Card className="text-center py-16 shadow-lg border-dashed">
           <CardHeader>
             <PackageSearch className="mx-auto h-24 w-24 text-muted-foreground opacity-50" />
@@ -88,8 +107,13 @@ export default function BrandProfilesPage() {
         </Card>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {brandKits.map((kit) => (
-            <Card key={kit.id} className="flex flex-col shadow-md hover:shadow-lg transition-shadow">
+          {sortedBrandKits.map((kit) => (
+            <Card key={kit.id} className="flex flex-col shadow-md hover:shadow-lg transition-shadow relative">
+              {kit.isPinned && (
+                <div className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full p-1.5 z-10">
+                  <Pin className="h-3.5 w-3.5" />
+                </div>
+              )}
               <CardHeader className="flex-row items-center gap-4">
                  {kit.logoUrl && (
                     <div className="relative h-14 w-14 shrink-0 bg-muted rounded-md flex items-center justify-center">
@@ -107,6 +131,14 @@ export default function BrandProfilesPage() {
                 </p>
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
+                 <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => handleTogglePin(kit.id, kit.companyName, !!kit.isPinned)}
+                    className={cn(kit.isPinned ? "text-primary" : "text-muted-foreground hover:text-primary")}
+                  >
+                    <Pin className={cn("h-4 w-4", kit.isPinned && "fill-current")} />
+                  </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive">
@@ -122,7 +154,7 @@ export default function BrandProfilesPage() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDelete(kit.id)}>Delete</AlertDialogAction>
+                      <AlertDialogAction onClick={() => handleDelete(kit.id, kit.companyName)}>Delete</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>

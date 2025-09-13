@@ -31,6 +31,7 @@ export interface BrandProfileFormData {
   existingAssetsLink: string;
   logoUrl?: string | null;
   projectTypes: string[];
+  isPinned?: boolean; // New field for pinning
 }
 
 export const defaultBrandProfile: BrandProfileFormData = {
@@ -51,7 +52,8 @@ export const defaultBrandProfile: BrandProfileFormData = {
     brandGuidelinesLink: "",
     existingAssetsLink: "", 
     logoUrl: null,
-    projectTypes: []
+    projectTypes: [],
+    isPinned: false, // Default to not pinned
 };
 
 
@@ -130,4 +132,24 @@ export async function deleteBrandKit(id: string): Promise<boolean> {
     console.error(`Error deleting brand kit ${id}:`, error);
     return false;
   }
+}
+
+/**
+ * Toggles the pinned status of a brand kit.
+ * @param id The ID of the brand kit to pin/unpin.
+ * @returns The updated brand kit or null if not found.
+ */
+export async function togglePinBrandKit(id: string): Promise<BrandProfileFormData | null> {
+  let updatedKit: BrandProfileFormData | null = null;
+  await saveBrandKits(prevKits => {
+    const newKits = prevKits.map(kit => {
+      if (kit.id === id) {
+        updatedKit = { ...kit, isPinned: !kit.isPinned };
+        return updatedKit;
+      }
+      return kit;
+    });
+    return newKits;
+  });
+  return updatedKit;
 }
