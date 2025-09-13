@@ -45,6 +45,7 @@ import { BrandSwitcher } from '@/components/shared/brand-switcher';
 import { useUI } from '@/contexts/ui-context';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 const navItems = [
   { href: '/client/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
