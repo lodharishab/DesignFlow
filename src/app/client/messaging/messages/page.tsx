@@ -6,7 +6,7 @@ import { useState, useMemo, type ReactElement, useRef, useCallback } from 'react
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { MessagesSquare, Search, Pin, PinOff, Send, PanelLeftClose, ArrowLeft, Paperclip, UploadCloud, X, File as FileIcon, FileText, Image as ImageIcon, Download } from "lucide-react";
+import { MessagesSquare, Search, Pin, PinOff, Send, PanelLeftClose, ArrowLeft, Paperclip, UploadCloud, X, File as FileIcon, FileText, Image as ImageIcon, Download, Check, CheckCheck, Eye } from "lucide-react";
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -36,6 +36,7 @@ interface Message {
   text: string;
   timestamp: string;
   file?: Omit<ChatFile, 'timestamp'>;
+  status?: 'sent' | 'delivered' | 'seen';
 }
 
 interface Conversation {
@@ -62,9 +63,9 @@ const mockConversationsData: Conversation[] = [
     unreadCount: 2,
     isPinned: true,
     messages: [
-      { id: 'msg1', sender: 'client', text: 'Hi Rohan, I had a quick question about the wireframes for the dashboard.', timestamp: '10:30 AM' },
+      { id: 'msg1', sender: 'client', text: 'Hi Rohan, I had a quick question about the wireframes for the dashboard.', timestamp: '10:30 AM', status: 'seen' },
       { id: 'msg2', sender: 'designer', text: 'Hey! Of course, ask away. Happy to clarify anything.', timestamp: '10:31 AM' },
-      { id: 'msg3', sender: 'client', text: 'The new analytics section looks great, but could we add a date range filter at the top? I think that was missed from the brief.', timestamp: '10:33 AM' },
+      { id: 'msg3', sender: 'client', text: 'The new analytics section looks great, but could we add a date range filter at the top? I think that was missed from the brief.', timestamp: '10:33 AM', status: 'delivered' },
       { id: 'msg4', sender: 'designer', text: 'Good catch! You\'re right, I can definitely add that in. It\'s a quick addition.', timestamp: '10:34 AM' },
       { id: 'msg5', sender: 'designer', text: 'Sure, I can have the revised wireframes ready by tomorrow morning. Does that work for you?', timestamp: '10:35 AM' },
     ],
@@ -83,9 +84,9 @@ const mockConversationsData: Conversation[] = [
     unreadCount: 0,
     isPinned: false,
     messages: [
-       { id: 'msg_a1', sender: 'client', text: 'Hi Aisha, thanks for the final social media graphics. They look perfect!', timestamp: 'Yesterday' },
+       { id: 'msg_a1', sender: 'client', text: 'Hi Aisha, thanks for the final social media graphics. They look perfect!', timestamp: 'Yesterday', status: 'seen' },
        { id: 'msg_a2', sender: 'designer', text: 'You\'re welcome! Glad you liked them. Let me know if you need anything else.', timestamp: 'Yesterday' },
-       { id: 'msg_a3', sender: 'client', text: 'Excellent! The campaign is performing well. Thanks for the quick turnaround.', timestamp: 'Yesterday' },
+       { id: 'msg_a3', sender: 'client', text: 'Excellent! The campaign is performing well. Thanks for the quick turnaround.', timestamp: 'Yesterday', status: 'seen' },
     ],
     sharedFiles: [],
   },
@@ -99,7 +100,7 @@ const mockConversationsData: Conversation[] = [
     unreadCount: 0,
     isPinned: false,
     messages: [
-       { id: 'msg_p1', sender: 'client', text: 'Hi Priya, I\'ve attached my feedback on the initial logo concepts.', timestamp: '3 days ago' },
+       { id: 'msg_p1', sender: 'client', text: 'Hi Priya, I\'ve attached my feedback on the initial logo concepts.', timestamp: '3 days ago', status: 'delivered' },
        { id: 'msg_p2', sender: 'designer', text: 'Got it, I\'ll incorporate the feedback into the next round of logo concepts.', timestamp: '3 days ago' },
     ],
     sharedFiles: [],
@@ -215,6 +216,7 @@ function ChatView({
                 sender: 'client',
                 text: newMessage,
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'}),
+                status: 'sent', // Initial status
             };
             onSendMessage(conversation.designerId, textMessage);
         }
@@ -226,6 +228,7 @@ function ChatView({
                 sender: 'client',
                 text: '', // Text is optional for file messages
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: 'sent',
                 file: {
                     name: file.name,
                     size: file.size,
@@ -284,6 +287,19 @@ function ChatView({
         case 'pdf': return <FileText className="h-6 w-6 text-muted-foreground" />;
         default: return <FileIcon className="h-6 w-6 text-muted-foreground" />;
       }
+    };
+
+    const MessageStatusIcon = ({ status }: { status?: Message['status'] }) => {
+      if (!status) return null;
+      let Icon = Check;
+      let className = "text-primary-foreground/70";
+      if (status === 'delivered') {
+          Icon = CheckCheck;
+      } else if (status === 'seen') {
+          Icon = Eye;
+          className = "text-sky-300";
+      }
+      return <Icon className={cn("h-4 w-4", className)} />;
     };
 
     return (
@@ -357,12 +373,13 @@ function ChatView({
                                             </div>
                                         </div>
                                     )}
-                                    <p className={cn(
-                                        "text-xs mt-1 text-right", 
-                                        message.sender === 'client' ? 'text-primary-foreground/70' : 'text-muted-foreground/80'
+                                    <div className={cn(
+                                        "text-xs mt-1 flex items-center gap-1", 
+                                        message.sender === 'client' ? 'text-primary-foreground/70 justify-end' : 'text-muted-foreground/80 justify-start'
                                     )}>
-                                        {message.timestamp}
-                                    </p>
+                                        <span>{message.timestamp}</span>
+                                        {message.sender === 'client' && <MessageStatusIcon status={message.status} />}
+                                    </div>
                                 </div>
                             </div>
                         ))}
