@@ -51,7 +51,7 @@ interface Message {
   timestamp: string;
   file?: Omit<ChatFile, 'timestamp'>;
   status?: 'sent' | 'delivered' | 'seen';
-  isPinned?: boolean; // New property for pinning
+  isPinned?: boolean; 
 }
 
 interface Conversation extends Order {
@@ -62,6 +62,7 @@ interface Conversation extends Order {
   designerAvatarHint: string;
   lastMessage: string;
   lastMessageTimestamp: Date;
+  lastReadTimestamp?: Date; // New property
   unreadCount: number;
   isPinned: boolean;
   messages: Message[];
@@ -78,12 +79,13 @@ const mockConversationsData: Conversation[] = [
     designerAvatarHint: 'indian man software developer',
     lastMessage: 'Sure, I can have the revised wireframes ready by tomorrow morning. Does that work for you?',
     lastMessageTimestamp: new Date(new Date().setHours(new Date().getHours() - 2)),
+    lastReadTimestamp: new Date(new Date().setHours(new Date().getHours() - 2, 5)), // Designer read 5 mins after last message
     unreadCount: 2,
     isPinned: true,
     messages: [
       { id: 'msg1', sender: 'client', text: 'Hi Rohan, I had a quick question about the wireframes for the dashboard.', timestamp: '10:30 AM', status: 'seen' },
       { id: 'msg2', sender: 'designer', text: 'Hey! Of course, ask away. Happy to clarify anything.', timestamp: '10:31 AM', isPinned: true },
-      { id: 'msg3', sender: 'client', text: 'The new analytics section looks great, but could we add a date range filter at the top? I think that was missed from the brief.', timestamp: '10:33 AM', status: 'delivered' },
+      { id: 'msg3', sender: 'client', text: 'The new analytics section looks great, but could we add a date range filter at the top? I think that was missed from the brief.', timestamp: '10:33 AM', status: 'seen' },
       { id: 'msg4', sender: 'designer', text: 'Good catch! You\'re right, I can definitely add that in. It\'s a quick addition.', timestamp: '10:34 AM' },
       { id: 'msg5', sender: 'designer', text: 'Sure, I can have the revised wireframes ready by tomorrow morning. Does that work for you?', timestamp: '10:35 AM' },
     ],
@@ -119,6 +121,7 @@ const mockConversationsData: Conversation[] = [
     designerAvatarHint: 'indian woman graphic artist',
     lastMessage: 'Excellent! The campaign is performing well. Thanks for the quick turnaround.',
     lastMessageTimestamp: new Date(new Date().setDate(new Date().getDate() - 1)),
+    lastReadTimestamp: new Date(new Date().setDate(new Date().getDate() - 1, 30)),
     unreadCount: 0,
     isPinned: false,
     messages: [
@@ -138,6 +141,7 @@ function TimeAgo({ date }: { date: Date }) {
   const [fullDate, setFullDate] = React.useState('');
 
   React.useEffect(() => {
+    // This effect runs only on the client
     setTimeAgo(formatDistanceToNow(date, { addSuffix: true }));
     setFullDate(date.toLocaleString());
   }, [date]);
@@ -266,9 +270,9 @@ function PinnedMessages({
 // --- START DIALOGS FOR QUICK ACTIONS ---
 
 function AttachBrandAssetsDialog({ onSend }: { onSend: (text: string) => void }) {
-  const [brandKit, setBrandKit] = useState<BrandProfileFormData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
+  const [brandKit, setBrandKit] = React.useState<BrandProfileFormData | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [selectedAssets, setSelectedAssets] = React.useState<Set<string>>(new Set());
 
   // Simulate fetching the primary brand kit
   React.useEffect(() => {
@@ -407,6 +411,8 @@ function ChatView({
     const [isPinnedExpanded, setIsPinnedExpanded] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
+    const [isDesignerTyping, setIsDesignerTyping] = useState(false);
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const pinnedMessages = useMemo(() => {
         return conversation?.messages.filter(m => m.isPinned) || [];
@@ -473,6 +479,13 @@ function ChatView({
             };
             onSendMessage(conversation.id, fileMessage);
         });
+
+        // Simulate designer typing after client sends a message
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        setIsDesignerTyping(true);
+        typingTimeoutRef.current = setTimeout(() => {
+            setIsDesignerTyping(false);
+        }, 2000 + Math.random() * 2000); // Simulate typing for 2-4 seconds
 
         setNewMessage('');
         setFilesToUpload([]);
@@ -695,9 +708,19 @@ function ChatView({
                     </ScrollArea>
                 </TabsContent>
             </Tabs>
-            <CardFooter className="p-2 border-t flex flex-col gap-2">
-                 {filesToUpload.length > 0 && (
-                    <div className="w-full p-2 border rounded-md max-h-32 overflow-y-auto">
+            <div className="p-2 border-t">
+                {isDesignerTyping && (
+                    <div className="px-2 pb-1.5 text-xs text-muted-foreground flex items-center gap-2">
+                        <div className="flex gap-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.3s]"></span>
+                            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.15s]"></span>
+                            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce"></span>
+                        </div>
+                        {conversation.designerName} is typing...
+                    </div>
+                )}
+                {filesToUpload.length > 0 && (
+                    <div className="w-full p-2 border rounded-md max-h-32 overflow-y-auto mb-2">
                         <div className="grid grid-cols-2 gap-2">
                             {filesToUpload.map((file, index) => (
                                 <div key={index} className="flex items-center gap-2 p-1 bg-secondary rounded text-xs">
@@ -755,7 +778,12 @@ function ChatView({
                         <RequestUpdateDialog onSend={handleSendMessage} />
                     </Dialog>
                 </div>
-            </CardFooter>
+                 {conversation.lastReadTimestamp && (
+                    <div className="text-right text-xs text-muted-foreground pr-1 pt-1">
+                        Seen <TimeAgo date={conversation.lastReadTimestamp}/>
+                    </div>
+                )}
+            </div>
         </Card>
     );
 }
