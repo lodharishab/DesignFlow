@@ -6,7 +6,7 @@ import { useState, useMemo, type ReactElement, useRef, useCallback } from 'react
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { MessagesSquare, Search, Pin, PinOff, Send, PanelLeftClose, ArrowLeft, Paperclip, UploadCloud, X, File as FileIcon, FileText, Image as ImageIcon, Download, Check, CheckCheck, Eye } from "lucide-react";
+import { MessagesSquare, Search, Pin, PinOff, Send, PanelLeftClose, ArrowLeft, Paperclip, UploadCloud, X, File as FileIcon, FileText, Image as ImageIcon, Download, Check, CheckCheck, Eye, Briefcase, ChevronDown } from "lucide-react";
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,6 +18,13 @@ import { Mail, MailOpen, Archive } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from 'next/link';
 
 
 // --- MOCK DATA & INTERFACES ---
@@ -40,6 +47,9 @@ interface Message {
 }
 
 interface Conversation {
+  id: string; // Unique ID for the conversation, e.g., using orderId
+  orderId: string;
+  serviceName: string;
   designerId: string;
   designerName: string;
   designerAvatarUrl: string;
@@ -54,6 +64,9 @@ interface Conversation {
 
 const mockConversationsData: Conversation[] = [
   {
+    id: 'ORD7361P',
+    orderId: 'ORD7361P',
+    serviceName: 'E-commerce Website UI/UX',
     designerId: 'des002',
     designerName: 'Rohan Kapoor',
     designerAvatarUrl: 'https://placehold.co/100x100.png',
@@ -75,6 +88,27 @@ const mockConversationsData: Conversation[] = [
     ],
   },
   {
+    id: 'ORD1234Z', // New order with the same designer
+    orderId: 'ORD1234Z',
+    serviceName: 'Mobile App Splash Screen',
+    designerId: 'des002',
+    designerName: 'Rohan Kapoor',
+    designerAvatarUrl: 'https://placehold.co/100x100.png',
+    designerAvatarHint: 'indian man software developer',
+    lastMessage: 'Just confirming, you need this by Friday EOD?',
+    lastMessageTimestamp: new Date(new Date().setDate(new Date().getDate() - 2)),
+    unreadCount: 0,
+    isPinned: false,
+    messages: [
+        { id: 'msg_b1', sender: 'client', text: 'Following up on the splash screen project.', timestamp: '2 days ago', status: 'seen' },
+        { id: 'msg_b2', sender: 'designer', text: 'Just confirming, you need this by Friday EOD?', timestamp: '2 days ago' },
+    ],
+    sharedFiles: [],
+  },
+  {
+    id: 'ORD5050T',
+    orderId: 'ORD5050T',
+    serviceName: 'Social Media Campaign',
     designerId: 'des003',
     designerName: 'Aisha Khan',
     designerAvatarUrl: 'https://placehold.co/100x100.png',
@@ -90,21 +124,6 @@ const mockConversationsData: Conversation[] = [
     ],
     sharedFiles: [],
   },
-  {
-    designerId: 'des001',
-    designerName: 'Priya Sharma',
-    designerAvatarUrl: 'https://placehold.co/100x100.png',
-    designerAvatarHint: 'indian woman designer smiling',
-    lastMessage: 'Got it, I\'ll incorporate the feedback into the next round of logo concepts.',
-    lastMessageTimestamp: new Date(new Date().setDate(new Date().getDate() - 3)),
-    unreadCount: 0,
-    isPinned: false,
-    messages: [
-       { id: 'msg_p1', sender: 'client', text: 'Hi Priya, I\'ve attached my feedback on the initial logo concepts.', timestamp: '3 days ago', status: 'delivered' },
-       { id: 'msg_p2', sender: 'designer', text: 'Got it, I\'ll incorporate the feedback into the next round of logo concepts.', timestamp: '3 days ago' },
-    ],
-    sharedFiles: [],
-  },
 ];
 
 
@@ -115,6 +134,7 @@ function TimeAgo({ date }: { date: Date }) {
   const [fullDate, setFullDate] = React.useState('');
 
   React.useEffect(() => {
+    // This part runs only on the client, avoiding hydration mismatch
     setTimeAgo(formatDistanceToNow(date, { addSuffix: true }));
     setFullDate(date.toLocaleString());
   }, [date]);
@@ -142,12 +162,12 @@ function ConversationList({
                 <div className="p-2 space-y-1">
                     {conversations.length > 0 ? conversations.map(convo => (
                         <div
-                            key={convo.designerId}
+                            key={convo.id}
                             className={cn(
                                 "flex items-center gap-3 w-full text-left p-2 rounded-lg transition-colors relative group",
-                                selectedConversationId === convo.designerId ? "bg-primary/10" : "hover:bg-muted/50 cursor-pointer"
+                                selectedConversationId === convo.id ? "bg-primary/10" : "hover:bg-muted/50 cursor-pointer"
                             )}
-                             onClick={() => onSelect(convo.designerId)}
+                             onClick={() => onSelect(convo.id)}
                         >
                             <Avatar className="h-12 w-12 shrink-0">
                                 <AvatarImage src={convo.designerAvatarUrl} alt={convo.designerName} data-ai-hint={convo.designerAvatarHint} />
@@ -158,6 +178,7 @@ function ConversationList({
                                     <p className="font-semibold truncate flex items-center">{convo.designerName}</p>
                                     <p className="text-xs text-muted-foreground shrink-0"><TimeAgo date={convo.lastMessageTimestamp} /></p>
                                 </div>
+                                <p className="text-xs font-medium text-muted-foreground truncate">{convo.serviceName}</p>
                                 <div className="flex justify-between items-start gap-2">
                                      <p className="text-xs text-muted-foreground truncate">{convo.lastMessage}</p>
                                     {convo.unreadCount > 0 && (
@@ -172,7 +193,7 @@ function ConversationList({
                                             variant="ghost" 
                                             size="icon" 
                                             className="h-7 w-7" 
-                                            onClick={(e) => onTogglePin(e, convo.designerId)}
+                                            onClick={(e) => onTogglePin(e, convo.id)}
                                         >
                                             {convo.isPinned ? <PinOff className="h-4 w-4 text-primary" /> : <Pin className="h-4 w-4" />}
                                         </Button>
@@ -194,12 +215,16 @@ function ConversationList({
 
 function ChatView({ 
     conversation, 
+    relatedConversations,
+    onSelectConversation,
     onClose,
     onSendMessage
 }: { 
     conversation: Conversation | null, 
+    relatedConversations: Conversation[],
+    onSelectConversation: (id: string) => void,
     onClose: () => void,
-    onSendMessage: (designerId: string, message: Message) => void
+    onSendMessage: (conversationId: string, message: Message) => void
 }) {
     const [newMessage, setNewMessage] = useState('');
     const [isDragging, setIsDragging] = useState(false);
@@ -218,7 +243,7 @@ function ChatView({
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'}),
                 status: 'sent', // Initial status
             };
-            onSendMessage(conversation.designerId, textMessage);
+            onSendMessage(conversation.id, textMessage);
         }
 
         // Handle file messages
@@ -236,7 +261,7 @@ function ChatView({
                     url: URL.createObjectURL(file), // Generate a temporary local URL for preview
                 }
             };
-            onSendMessage(conversation.designerId, fileMessage);
+            onSendMessage(conversation.id, fileMessage);
         });
 
         setNewMessage('');
@@ -328,13 +353,27 @@ function ChatView({
                 </Avatar>
                 <div className="flex-grow">
                     <p className="font-semibold">{conversation.designerName}</p>
-                    <p className="text-xs text-muted-foreground flex items-center">
-                        <span className="relative flex h-2 w-2 mr-1.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                        </span>
-                        Online
-                    </p>
+                    {relatedConversations.length > 1 ? (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-auto p-0 text-xs text-muted-foreground flex items-center">
+                                    Project: {conversation.serviceName} ({conversation.orderId})
+                                    <ChevronDown className="h-4 w-4 ml-1" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start">
+                                <DropdownMenuLabel>Switch Project</DropdownMenuLabel>
+                                {relatedConversations.map(c => (
+                                     <DropdownMenuItem key={c.id} onSelect={() => onSelectConversation(c.id)}>
+                                        <Briefcase className="mr-2 h-4 w-4"/>
+                                        <span className="truncate">{c.serviceName}</span>
+                                     </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    ) : (
+                        <p className="text-xs text-muted-foreground">Project: {conversation.serviceName} ({conversation.orderId})</p>
+                    )}
                 </div>
                  <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0 hidden md:flex">
                     <PanelLeftClose className="h-5 w-5" />
@@ -468,9 +507,9 @@ export default function ClientMessagesPage() {
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const handleSendMessage = (designerId: string, message: Message) => {
+    const handleSendMessage = (conversationId: string, message: Message) => {
         setConversations(prev => prev.map(convo => {
-            if (convo.designerId === designerId) {
+            if (convo.id === conversationId) {
                 const newMessages = [...convo.messages, message];
                 const newSharedFiles = message.file ? 
                     [...convo.sharedFiles, { ...message.file, timestamp: new Date() }] : 
@@ -487,17 +526,17 @@ export default function ClientMessagesPage() {
         }));
     };
 
-    const handleTogglePin = (e: React.MouseEvent, designerId: string) => {
+    const handleTogglePin = (e: React.MouseEvent, conversationId: string) => {
         e.stopPropagation();
         setConversations(prev => {
-            const convoToUpdate = prev.find(c => c.designerId === designerId);
+            const convoToUpdate = prev.find(c => c.id === conversationId);
             if(convoToUpdate) {
                 toast({
                     title: `Conversation ${convoToUpdate.isPinned ? 'Unpinned' : 'Pinned'}`,
                     description: `The conversation with ${convoToUpdate.designerName} has been updated.`,
                 });
             }
-            return prev.map(c => c.designerId === designerId ? { ...c, isPinned: !c.isPinned } : c);
+            return prev.map(c => c.id === conversationId ? { ...c, isPinned: !c.isPinned } : c);
         });
     };
 
@@ -508,6 +547,8 @@ export default function ClientMessagesPage() {
             const lowerSearchTerm = searchTerm.toLowerCase();
             filtered = filtered.filter(c => 
                 c.designerName.toLowerCase().includes(lowerSearchTerm) ||
+                c.serviceName.toLowerCase().includes(lowerSearchTerm) ||
+                c.orderId.toLowerCase().includes(lowerSearchTerm) ||
                 c.lastMessage.toLowerCase().includes(lowerSearchTerm)
             );
         }
@@ -520,8 +561,13 @@ export default function ClientMessagesPage() {
     }, [conversations, searchTerm]);
     
     const selectedConversation = useMemo(() => {
-        return conversations.find(c => c.designerId === selectedConversationId) || null;
+        return conversations.find(c => c.id === selectedConversationId) || null;
     }, [conversations, selectedConversationId]);
+
+    const relatedConversationsForSelected = useMemo(() => {
+        if (!selectedConversation) return [];
+        return conversations.filter(c => c.designerId === selectedConversation.designerId);
+    }, [conversations, selectedConversation]);
 
     return (
         <div className="space-y-8">
@@ -539,7 +585,7 @@ export default function ClientMessagesPage() {
                              <div className="relative">
                                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input 
-                                    placeholder="Search by designer or message..." 
+                                    placeholder="Search designer, project..." 
                                     className="pl-9" 
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -560,6 +606,8 @@ export default function ClientMessagesPage() {
                 )}>
                    <ChatView 
                         conversation={selectedConversation} 
+                        relatedConversations={relatedConversationsForSelected}
+                        onSelectConversation={setSelectedConversationId}
                         onClose={() => setSelectedConversationId(null)}
                         onSendMessage={handleSendMessage}
                     />
