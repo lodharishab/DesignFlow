@@ -23,6 +23,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import Link from 'next/link';
 
@@ -230,6 +231,37 @@ function ChatView({
     const [isDragging, setIsDragging] = useState(false);
     const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredMessages = useMemo(() => {
+        if (!conversation) return [];
+        if (!searchTerm.trim()) {
+            return conversation.messages;
+        }
+        return conversation.messages.filter(message =>
+            message.text.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [conversation, searchTerm]);
+    
+    const highlightText = (text: string, highlight: string) => {
+        if (!highlight.trim()) {
+            return text;
+        }
+        const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+        return (
+            <span>
+                {parts.map((part, index) =>
+                    part.toLowerCase() === highlight.toLowerCase() ? (
+                        <mark key={index} className="bg-yellow-300 text-black px-0.5 rounded">
+                            {part}
+                        </mark>
+                    ) : (
+                        part
+                    )
+                )}
+            </span>
+        );
+    };
 
     const handleSendMessage = () => {
         if (!conversation || (!newMessage.trim() && filesToUpload.length === 0)) return;
@@ -375,6 +407,15 @@ function ChatView({
                         <p className="text-xs text-muted-foreground">Project: {conversation.serviceName} ({conversation.orderId})</p>
                     )}
                 </div>
+                <div className="relative ml-auto">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search in chat..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9 h-8 w-48"
+                    />
+                </div>
                  <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0 hidden md:flex">
                     <PanelLeftClose className="h-5 w-5" />
                  </Button>
@@ -386,7 +427,7 @@ function ChatView({
                 </TabsList>
                 <TabsContent value="chat" className="flex-grow flex flex-col min-h-0">
                     <ScrollArea className="flex-grow p-4 space-y-6">
-                        {conversation.messages.map(message => (
+                        {filteredMessages.length > 0 ? filteredMessages.map(message => (
                             <div key={message.id} className={cn("flex items-end gap-2", message.sender === 'client' ? 'justify-end' : '')}>
                                 {message.sender === 'designer' && (
                                     <Avatar className="h-8 w-8 shrink-0">
@@ -398,7 +439,7 @@ function ChatView({
                                     "rounded-lg px-3 py-2 max-w-[75%] break-words shadow-sm",
                                     message.sender === 'client' ? 'bg-primary text-primary-foreground' : 'bg-muted'
                                 )}>
-                                    {message.text && <p className="text-sm">{message.text}</p>}
+                                    {message.text && <p className="text-sm">{highlightText(message.text, searchTerm)}</p>}
                                     {message.file && (
                                         <div className="flex items-center gap-2 mt-1">
                                             {message.file.type === 'image' ? (
@@ -421,7 +462,11 @@ function ChatView({
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        )) : (
+                            <div className="text-center text-sm text-muted-foreground py-10">
+                                No messages found{searchTerm ? ` for "${searchTerm}"` : ''}.
+                            </div>
+                        )}
                     </ScrollArea>
                 </TabsContent>
                 <TabsContent value="media" className="flex-grow flex flex-col min-h-0">
