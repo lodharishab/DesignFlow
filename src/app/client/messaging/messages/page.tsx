@@ -6,7 +6,7 @@ import { useState, useMemo, type ReactElement, useRef, useCallback } from 'react
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { MessagesSquare, Search, Pin, PinOff, Send, PanelLeftClose, ArrowLeft, Paperclip, UploadCloud, X, File as FileIcon, FileText, Image as ImageIcon, Download, Check, CheckCheck, Eye, Briefcase, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { MessagesSquare, Search, Pin, PinOff, Send, PanelLeftClose, ArrowLeft, Paperclip, UploadCloud, X, File as FileIcon, FileText, Image as ImageIcon, Download, Check, CheckCheck, Eye, Briefcase, ChevronDown, ChevronsUpDown, Sparkles, AlertCircle } from "lucide-react";
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -26,6 +26,12 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import Link from 'next/link';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { getBrandKitById, type BrandProfileFormData } from '@/lib/brand-profile-db';
+import { initialOrdersData, type Order } from '@/components/admin/orders/orders-table-view';
+import { Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 // --- MOCK DATA & INTERFACES ---
@@ -48,10 +54,8 @@ interface Message {
   isPinned?: boolean; // New property for pinning
 }
 
-interface Conversation {
+interface Conversation extends Order {
   id: string; // Unique ID for the conversation, e.g., using orderId
-  orderId: string;
-  serviceName: string;
   designerId: string;
   designerName: string;
   designerAvatarUrl: string;
@@ -66,9 +70,8 @@ interface Conversation {
 
 const mockConversationsData: Conversation[] = [
   {
+    ...initialOrdersData.find(o => o.id === 'ORD7361P')!,
     id: 'ORD7361P',
-    orderId: 'ORD7361P',
-    serviceName: 'E-commerce Website UI/UX',
     designerId: 'des002',
     designerName: 'Rohan Kapoor',
     designerAvatarUrl: 'https://placehold.co/100x100.png',
@@ -90,9 +93,9 @@ const mockConversationsData: Conversation[] = [
     ],
   },
   {
-    id: 'ORD1234Z', // New order with the same designer
-    orderId: 'ORD1234Z',
-    serviceName: 'Mobile App Splash Screen',
+    ...initialOrdersData.find(o => o.id === 'ORD4011M')!,
+    id: 'ORD1234Z', // Using a different convo ID to simulate a different thread
+    orderId: 'ORD4011M',
     designerId: 'des002',
     designerName: 'Rohan Kapoor',
     designerAvatarUrl: 'https://placehold.co/100x100.png',
@@ -108,9 +111,8 @@ const mockConversationsData: Conversation[] = [
     sharedFiles: [],
   },
   {
+    ...initialOrdersData.find(o => o.id === 'ORD5050T')!,
     id: 'ORD5050T',
-    orderId: 'ORD5050T',
-    serviceName: 'Social Media Campaign',
     designerId: 'des003',
     designerName: 'Aisha Khan',
     designerAvatarUrl: 'https://placehold.co/100x100.png',
@@ -136,12 +138,10 @@ function TimeAgo({ date }: { date: Date }) {
   const [fullDate, setFullDate] = React.useState('');
 
   React.useEffect(() => {
-    // This part runs only on the client, avoiding hydration mismatch
     setTimeAgo(formatDistanceToNow(date, { addSuffix: true }));
     setFullDate(date.toLocaleString());
   }, [date]);
 
-  // Render a placeholder on the server and initial client render
   if (!timeAgo) {
       return null;
   }
@@ -263,6 +263,127 @@ function PinnedMessages({
     )
 }
 
+// --- START DIALOGS FOR QUICK ACTIONS ---
+
+function AttachBrandAssetsDialog({ onSend }: { onSend: (text: string) => void }) {
+  const [brandKit, setBrandKit] = useState<BrandProfileFormData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
+
+  // Simulate fetching the primary brand kit
+  React.useEffect(() => {
+    getBrandKitById('brand_1694589539226').then(kit => { // Using a known ID from mock data
+      setBrandKit(kit);
+      setIsLoading(false);
+    });
+  }, []);
+
+  const handleAssetSelect = (assetId: string, checked: boolean | 'indeterminate') => {
+    setSelectedAssets(prev => {
+      const newSet = new Set(prev);
+      if(checked) newSet.add(assetId);
+      else newSet.delete(assetId);
+      return newSet;
+    })
+  }
+
+  const handleSendAssets = () => {
+    if (selectedAssets.size === 0) return;
+    const messageText = `Shared ${selectedAssets.size} brand asset(s):\n- ${Array.from(selectedAssets).join('\n- ')}`;
+    onSend(messageText);
+  };
+  
+  const hasAssets = brandKit?.logoUrl || (brandKit?.colorsToUse && brandKit.colorsToUse.length > 0);
+
+  return (
+     <DialogContent>
+        <DialogHeader>
+            <DialogTitle>Attach Brand Assets</DialogTitle>
+            <DialogDescription>Select assets from your "{brandKit?.companyName}" profile to share.</DialogDescription>
+        </DialogHeader>
+        <div className="py-4">
+            {isLoading ? <Loader2 className="animate-spin mx-auto"/> : (
+                hasAssets ? (
+                <div className="space-y-4">
+                    {brandKit?.logoUrl && (
+                        <div className="flex items-center space-x-2">
+                           <Checkbox id="asset-logo" onCheckedChange={(c) => handleAssetSelect('Logo', c)} />
+                           <Label htmlFor="asset-logo" className="flex items-center gap-3 p-2 border rounded-md w-full">
+                             <Image src={brandKit.logoUrl} alt="logo" width={40} height={40} className="object-contain bg-muted p-1 rounded"/>
+                             <span>Brand Logo</span>
+                           </Label>
+                        </div>
+                    )}
+                     {brandKit?.colorsToUse && (
+                        <div className="flex items-center space-x-2">
+                           <Checkbox id="asset-colors" onCheckedChange={(c) => handleAssetSelect('Color Palette', c)} />
+                           <Label htmlFor="asset-colors" className="flex items-center gap-3 p-2 border rounded-md w-full">
+                               <div className="flex">
+                                    {brandKit.colorsToUse.split(',').map(c => c.trim()).map((color, index) => (
+                                        <div key={index} className="h-8 w-8 rounded-full border -ml-2 first:ml-0" style={{backgroundColor: color}}></div>
+                                    ))}
+                               </div>
+                               <span>Color Palette</span>
+                           </Label>
+                        </div>
+                    )}
+                </div>
+                ) : (
+                    <p className="text-center text-muted-foreground">No assets found in this brand profile.</p>
+                )
+            )}
+        </div>
+        <DialogFooter>
+            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+             <DialogClose asChild>
+                <Button onClick={handleSendAssets} disabled={selectedAssets.size === 0}>Send Assets</Button>
+            </DialogClose>
+        </DialogFooter>
+     </DialogContent>
+  )
+}
+
+function ShareProjectBriefDialog({ brief, onSend }: { brief: string | undefined, onSend: (text: string) => void }) {
+    return (
+        <DialogContent>
+            <DialogHeader><DialogTitle>Share Project Brief</DialogTitle></DialogHeader>
+            <div className="py-4 space-y-2">
+                <Label>The following project brief will be sent as a message:</Label>
+                <blockquote className="text-sm p-3 border bg-muted/50 rounded-md max-h-48 overflow-y-auto">
+                    {brief || "No project brief was provided for this order."}
+                </blockquote>
+            </div>
+            <DialogFooter>
+                <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                 <DialogClose asChild>
+                    <Button onClick={() => onSend(`Project Brief:\n${brief}`)} disabled={!brief}>Share Brief</Button>
+                 </DialogClose>
+            </DialogFooter>
+        </DialogContent>
+    )
+}
+
+function RequestUpdateDialog({ onSend }: { onSend: (text: string) => void }) {
+    const template = "Hi there, could you please provide a quick update on the project status when you get a moment? Thank you!";
+    return (
+        <DialogContent>
+             <DialogHeader><DialogTitle>Request an Update</DialogTitle></DialogHeader>
+             <div className="py-4">
+                <p className="text-sm">This pre-filled message will be sent to the designer:</p>
+                <p className="italic p-3 border bg-muted/50 rounded-md mt-2 text-muted-foreground">{template}</p>
+             </div>
+             <DialogFooter>
+                 <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                 <DialogClose asChild>
+                     <Button onClick={() => onSend(template)}>Send Request</Button>
+                </DialogClose>
+             </DialogFooter>
+        </DialogContent>
+    );
+}
+
+// --- END DIALOGS ---
+
 function ChatView({ 
     conversation, 
     relatedConversations,
@@ -321,14 +442,15 @@ function ChatView({
         );
     };
 
-    const handleSendMessage = () => {
-        if (!conversation || (!newMessage.trim() && filesToUpload.length === 0)) return;
+    const handleSendMessage = (text?: string) => {
+        const messageText = text || newMessage;
+        if (!conversation || (!messageText.trim() && filesToUpload.length === 0)) return;
 
-        if (newMessage.trim()) {
+        if (messageText.trim()) {
             const textMessage: Message = {
                 id: `msg_${Date.now()}`,
                 sender: 'client',
-                text: newMessage,
+                text: messageText,
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'}),
                 status: 'sent',
             };
@@ -593,10 +715,7 @@ function ChatView({
                     </div>
                 )}
                 <div className="flex items-center gap-2 w-full">
-                    <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
-                        <Paperclip className="h-5 w-5" />
-                    </Button>
-                     <input type="file" ref={fileInputRef} onChange={(e) => handleFileSelect(e.target.files)} className="hidden" multiple />
+                    <input type="file" ref={fileInputRef} onChange={(e) => handleFileSelect(e.target.files)} className="hidden" multiple />
                     <Textarea 
                         placeholder="Type your message..." 
                         rows={1} 
@@ -610,9 +729,31 @@ function ChatView({
                             }
                         }}
                     />
-                    <Button size="icon" onClick={handleSendMessage} disabled={!newMessage.trim() && filesToUpload.length === 0}>
+                    <Button size="icon" onClick={() => handleSendMessage()} disabled={!newMessage.trim() && filesToUpload.length === 0}>
                         <Send className="h-5 w-5" />
                     </Button>
+                </div>
+                 <div className="w-full flex items-center justify-between gap-2 pt-1">
+                    <div className="flex items-center gap-1">
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-xs h-7"><Sparkles className="mr-1.5 h-3.5 w-3.5"/>Attach Brand Assets</Button>
+                            </DialogTrigger>
+                            <AttachBrandAssetsDialog onSend={handleSendMessage} />
+                        </Dialog>
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-xs h-7"><FileText className="mr-1.5 h-3.5 w-3.5"/>Share Project Brief</Button>
+                            </DialogTrigger>
+                            <ShareProjectBriefDialog brief={conversation.clientBrief} onSend={handleSendMessage} />
+                        </Dialog>
+                    </div>
+                    <Dialog>
+                         <DialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-xs h-7"><AlertCircle className="mr-1.5 h-3.5 w-3.5"/>Request Update</Button>
+                        </DialogTrigger>
+                        <RequestUpdateDialog onSend={handleSendMessage} />
+                    </Dialog>
                 </div>
             </CardFooter>
         </Card>
