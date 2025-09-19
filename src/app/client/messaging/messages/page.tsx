@@ -6,7 +6,7 @@ import { useState, useMemo, type ReactElement, useRef, useCallback } from 'react
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { MessagesSquare, Search, Pin, PinOff, Send, PanelLeftClose, ArrowLeft, Paperclip, UploadCloud, X, File as FileIcon, FileText, Image as ImageIcon, Download, Check, CheckCheck, Eye, Briefcase, ChevronDown } from "lucide-react";
+import { MessagesSquare, Search, Pin, PinOff, Send, PanelLeftClose, ArrowLeft, Paperclip, UploadCloud, X, File as FileIcon, FileText, Image as ImageIcon, Download, Check, CheckCheck, Eye, Briefcase, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -45,6 +45,7 @@ interface Message {
   timestamp: string;
   file?: Omit<ChatFile, 'timestamp'>;
   status?: 'sent' | 'delivered' | 'seen';
+  isPinned?: boolean; // New property for pinning
 }
 
 interface Conversation {
@@ -78,7 +79,7 @@ const mockConversationsData: Conversation[] = [
     isPinned: true,
     messages: [
       { id: 'msg1', sender: 'client', text: 'Hi Rohan, I had a quick question about the wireframes for the dashboard.', timestamp: '10:30 AM', status: 'seen' },
-      { id: 'msg2', sender: 'designer', text: 'Hey! Of course, ask away. Happy to clarify anything.', timestamp: '10:31 AM' },
+      { id: 'msg2', sender: 'designer', text: 'Hey! Of course, ask away. Happy to clarify anything.', timestamp: '10:31 AM', isPinned: true },
       { id: 'msg3', sender: 'client', text: 'The new analytics section looks great, but could we add a date range filter at the top? I think that was missed from the brief.', timestamp: '10:33 AM', status: 'delivered' },
       { id: 'msg4', sender: 'designer', text: 'Good catch! You\'re right, I can definitely add that in. It\'s a quick addition.', timestamp: '10:34 AM' },
       { id: 'msg5', sender: 'designer', text: 'Sure, I can have the revised wireframes ready by tomorrow morning. Does that work for you?', timestamp: '10:35 AM' },
@@ -139,6 +140,11 @@ function TimeAgo({ date }: { date: Date }) {
     setTimeAgo(formatDistanceToNow(date, { addSuffix: true }));
     setFullDate(date.toLocaleString());
   }, [date]);
+
+  // Render a placeholder on the server and initial client render
+  if (!timeAgo) {
+      return null;
+  }
 
   return <span title={fullDate}>{timeAgo}</span>;
 }
@@ -214,24 +220,76 @@ function ConversationList({
     );
 }
 
+function PinnedMessages({ 
+    messages, 
+    onUnpin,
+    onJumpToMessage,
+    isExpanded,
+    setIsExpanded
+ }: { 
+    messages: Message[], 
+    onUnpin: (messageId: string) => void,
+    onJumpToMessage: (messageId: string) => void,
+    isExpanded: boolean,
+    setIsExpanded: (expanded: boolean) => void,
+ }) {
+    if (messages.length === 0) return null;
+
+    return (
+        <div className="p-2 border-b">
+            <Button variant="ghost" className="w-full justify-between h-auto py-2" onClick={() => setIsExpanded(!isExpanded)}>
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                    <Pin className="h-4 w-4 text-primary"/>
+                    Pinned Messages ({messages.length})
+                </div>
+                <ChevronsUpDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isExpanded && "rotate-180")}/>
+            </Button>
+            {isExpanded && (
+                <div className="space-y-2 mt-2 max-h-32 overflow-y-auto pr-2">
+                    {messages.map(msg => (
+                        <div key={msg.id} className="text-xs p-2 bg-muted rounded-md flex items-start justify-between gap-2 group">
+                            <button className="flex-grow text-left" onClick={() => onJumpToMessage(msg.id)}>
+                                <p className="font-semibold text-muted-foreground">{msg.sender === 'client' ? 'You' : 'Designer'}</p>
+                                <p className="line-clamp-2">{msg.text || 'File shared'}</p>
+                            </button>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100" onClick={() => onUnpin(msg.id)}>
+                                <PinOff className="h-4 w-4"/>
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    )
+}
+
 function ChatView({ 
     conversation, 
     relatedConversations,
     onSelectConversation,
     onClose,
-    onSendMessage
+    onSendMessage,
+    onTogglePinMessage
 }: { 
     conversation: Conversation | null, 
     relatedConversations: Conversation[],
     onSelectConversation: (id: string) => void,
     onClose: () => void,
-    onSendMessage: (conversationId: string, message: Message) => void
+    onSendMessage: (conversationId: string, message: Message) => void,
+    onTogglePinMessage: (conversationId: string, messageId: string) => void,
 }) {
     const [newMessage, setNewMessage] = useState('');
     const [isDragging, setIsDragging] = useState(false);
     const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isPinnedExpanded, setIsPinnedExpanded] = useState(true);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+    const pinnedMessages = useMemo(() => {
+        return conversation?.messages.filter(m => m.isPinned) || [];
+    }, [conversation]);
 
     const filteredMessages = useMemo(() => {
         if (!conversation) return [];
@@ -266,31 +324,29 @@ function ChatView({
     const handleSendMessage = () => {
         if (!conversation || (!newMessage.trim() && filesToUpload.length === 0)) return;
 
-        // Handle text message
         if (newMessage.trim()) {
             const textMessage: Message = {
                 id: `msg_${Date.now()}`,
                 sender: 'client',
                 text: newMessage,
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'}),
-                status: 'sent', // Initial status
+                status: 'sent',
             };
             onSendMessage(conversation.id, textMessage);
         }
 
-        // Handle file messages
         filesToUpload.forEach(file => {
             const fileMessage: Message = {
                 id: `msg_file_${Date.now()}_${file.name}`,
                 sender: 'client',
-                text: '', // Text is optional for file messages
+                text: '',
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 status: 'sent',
                 file: {
                     name: file.name,
                     size: file.size,
                     type: file.type.startsWith('image/') ? 'image' : (file.type === 'application/pdf' ? 'pdf' : 'other'),
-                    url: URL.createObjectURL(file), // Generate a temporary local URL for preview
+                    url: URL.createObjectURL(file),
                 }
             };
             onSendMessage(conversation.id, fileMessage);
@@ -307,25 +363,27 @@ function ChatView({
     };
   
     const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(true);
+      e.preventDefault(); e.stopPropagation(); setIsDragging(true);
     };
   
     const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
+      e.preventDefault(); e.stopPropagation(); setIsDragging(false);
     };
   
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
+      e.preventDefault(); e.stopPropagation(); setIsDragging(false);
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        handleFileSelect(e.dataTransfer.files);
-        e.dataTransfer.clearData();
+        handleFileSelect(e.dataTransfer.files); e.dataTransfer.clearData();
       }
+    };
+    
+    const handleJumpToMessage = (messageId: string) => {
+        const messageElement = messageRefs.current[messageId];
+        messageElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        messageElement?.classList.add('animate-pulse');
+        setTimeout(() => {
+             messageElement?.classList.remove('animate-pulse');
+        }, 2000)
     };
 
     if (!conversation) {
@@ -369,7 +427,7 @@ function ChatView({
                     className="absolute inset-0 z-20 bg-primary/20 border-2 border-dashed border-primary rounded-lg flex flex-col items-center justify-center"
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
-                    onDragOver={(e) => e.preventDefault()} // Necessary to allow drop
+                    onDragOver={(e) => e.preventDefault()}
                 >
                     <UploadCloud className="h-16 w-16 text-primary mb-4" />
                     <p className="font-semibold text-lg text-primary">Drop files to upload</p>
@@ -420,6 +478,7 @@ function ChatView({
                     <PanelLeftClose className="h-5 w-5" />
                  </Button>
             </CardHeader>
+            <PinnedMessages messages={pinnedMessages} onUnpin={(msgId) => onTogglePinMessage(conversation.id, msgId)} onJumpToMessage={handleJumpToMessage} isExpanded={isPinnedExpanded} setIsExpanded={setIsPinnedExpanded} />
             <Tabs defaultValue="chat" className="flex-grow flex flex-col min-h-0">
                 <TabsList className="grid w-full grid-cols-2 shrink-0">
                     <TabsTrigger value="chat">Chat</TabsTrigger>
@@ -428,7 +487,16 @@ function ChatView({
                 <TabsContent value="chat" className="flex-grow flex flex-col min-h-0">
                     <ScrollArea className="flex-grow p-4 space-y-6">
                         {filteredMessages.length > 0 ? filteredMessages.map(message => (
-                            <div key={message.id} className={cn("flex items-end gap-2", message.sender === 'client' ? 'justify-end' : '')}>
+                            <div 
+                                key={message.id} 
+                                ref={el => messageRefs.current[message.id] = el}
+                                className={cn("flex items-end gap-2 group", message.sender === 'client' ? 'justify-end' : '')}
+                            >
+                                {message.sender === 'client' && (
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => onTogglePinMessage(conversation.id, message.id)}>
+                                        <Pin className={cn("h-4 w-4", message.isPinned && "text-primary fill-current")} />
+                                    </Button>
+                                )}
                                 {message.sender === 'designer' && (
                                     <Avatar className="h-8 w-8 shrink-0">
                                         <AvatarImage src={conversation.designerAvatarUrl} alt={conversation.designerName} data-ai-hint={conversation.designerAvatarHint} />
@@ -436,9 +504,10 @@ function ChatView({
                                     </Avatar>
                                 )}
                                 <div className={cn(
-                                    "rounded-lg px-3 py-2 max-w-[75%] break-words shadow-sm",
+                                    "rounded-lg px-3 py-2 max-w-[75%] break-words shadow-sm relative",
                                     message.sender === 'client' ? 'bg-primary text-primary-foreground' : 'bg-muted'
                                 )}>
+                                    {message.isPinned && <Pin className="h-3 w-3 absolute top-1.5 left-1.5 text-primary-foreground/50"/>}
                                     {message.text && <p className="text-sm">{highlightText(message.text, searchTerm)}</p>}
                                     {message.file && (
                                         <div className="flex items-center gap-2 mt-1">
@@ -461,12 +530,18 @@ function ChatView({
                                         {message.sender === 'client' && <MessageStatusIcon status={message.status} />}
                                     </div>
                                 </div>
+                                {message.sender === 'designer' && (
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => onTogglePinMessage(conversation.id, message.id)}>
+                                        <Pin className={cn("h-4 w-4", message.isPinned && "text-primary fill-current")} />
+                                    </Button>
+                                )}
                             </div>
                         )) : (
                             <div className="text-center text-sm text-muted-foreground py-10">
                                 No messages found{searchTerm ? ` for "${searchTerm}"` : ''}.
                             </div>
                         )}
+                        <div ref={messagesEndRef} />
                     </ScrollArea>
                 </TabsContent>
                 <TabsContent value="media" className="flex-grow flex flex-col min-h-0">
@@ -570,6 +645,18 @@ export default function ClientMessagesPage() {
             return convo;
         }));
     };
+    
+    const handleTogglePinMessage = (conversationId: string, messageId: string) => {
+        setConversations(prev => prev.map(convo => {
+            if (convo.id === conversationId) {
+                const newMessages = convo.messages.map(msg => 
+                    msg.id === messageId ? { ...msg, isPinned: !msg.isPinned } : msg
+                );
+                return { ...convo, messages: newMessages };
+            }
+            return convo;
+        }));
+    };
 
     const handleTogglePin = (e: React.MouseEvent, conversationId: string) => {
         e.stopPropagation();
@@ -655,6 +742,7 @@ export default function ClientMessagesPage() {
                         onSelectConversation={setSelectedConversationId}
                         onClose={() => setSelectedConversationId(null)}
                         onSendMessage={handleSendMessage}
+                        onTogglePinMessage={handleTogglePinMessage}
                     />
                 </div>
             </div>
