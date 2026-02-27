@@ -1,6 +1,13 @@
 
 import type {NextConfig} from 'next';
 
+const replitDomain = process.env.REPLIT_DEV_DOMAIN;
+const devOrigins: string[] = [];
+if (replitDomain) {
+  devOrigins.push(`https://${replitDomain}`);
+}
+devOrigins.push("http://localhost:5000", "http://127.0.0.1:5000", "http://0.0.0.0:5000");
+
 const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -8,7 +15,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  allowedDevOrigins: ["*"],
+  allowedDevOrigins: devOrigins,
   images: {
     remotePatterns: [
       {

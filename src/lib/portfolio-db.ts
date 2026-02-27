@@ -1,43 +1,63 @@
-
 'use server';
-import { Collection, ObjectId } from 'mongodb';
-import { connectToDatabase, isDbEnabled } from './mongodb';
+import { query, queryOne, isDbEnabled } from './db';
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
-import { allPortfolioItemsData } from '@/app/portfolio/page'; // Import mock data
+import { allPortfolioItemsData } from '@/app/portfolio/page';
 
-// Type for database interaction, ensuring designerId is present and _id might not be (on creation)
 export interface PortfolioItemRecord extends Omit<PortfolioItem, '_id' | 'id'> {
-  _id?: ObjectId;
-  id: string; // Keep id as the slug/friendly ID
+  _id?: string;
+  id: string;
   designerId: string;
 }
 
+interface PortfolioRow {
+  id: string;
+  designer_id: string;
+  title: string;
+  category: string;
+  category_slug: string;
+  client_name: string | null;
+  project_date: string | null;
+  cover_image_url: string;
+  cover_image_hint: string;
+  project_description: string;
+  gallery_images: Array<{ url: string; hint: string; caption?: string }>;
+  tags: string[] | null;
+  views: number;
+  likes: number;
+  designer: { id: string; slug: string; name: string; avatarUrl?: string; imageHint?: string } | null;
+}
 
-async function getPortfolioCollection(): Promise<Collection<PortfolioItemRecord> | null> {
-    if (!isDbEnabled()) return null;
-    try {
-        const { db } = await connectToDatabase();
-        return db.collection<PortfolioItemRecord>('portfolioItems');
-    } catch (error) {
-        console.error("Failed to get portfolio collection:", error);
-        return null;
-    }
+function rowToItem(row: PortfolioRow): PortfolioItem {
+  return {
+    _id: row.id,
+    id: row.id,
+    designerId: row.designer_id,
+    title: row.title,
+    category: row.category,
+    categorySlug: row.category_slug,
+    clientName: row.client_name || undefined,
+    projectDate: row.project_date || undefined,
+    coverImageUrl: row.cover_image_url,
+    coverImageHint: row.cover_image_hint,
+    projectDescription: row.project_description,
+    galleryImages: row.gallery_images || [],
+    tags: row.tags || [],
+    views: row.views || 0,
+    likes: row.likes || 0,
+    designer: row.designer || undefined,
+  };
 }
 
 export async function getPortfolioItemsByDesignerId(designerId: string): Promise<PortfolioItem[]> {
-  const collection = await getPortfolioCollection();
-  if (!collection) {
-      console.log("DB not enabled. Returning mock portfolio items for designer.");
-      // Fallback to mock data if DB is not available
-      return allPortfolioItemsData.filter(item => item.designer?.id === designerId);
+  if (!isDbEnabled()) {
+    return allPortfolioItemsData.filter(item => item.designer?.id === designerId);
   }
   try {
-    const items = await collection.find({ designerId }).sort({ projectDate: -1 }).toArray();
-    
-    return items.map(item => ({
-      ...item,
-      _id: item._id?.toHexString(), // Convert ObjectId to string for frontend
-    })) as PortfolioItem[];
+    const rows = await query<PortfolioRow>(
+      'SELECT * FROM portfolio_items WHERE designer_id = $1 ORDER BY project_date DESC',
+      [designerId]
+    );
+    return rows.map(rowToItem);
   } catch (error) {
     console.error('Error fetching portfolio items by designer ID:', error);
     return [];
@@ -45,20 +65,12 @@ export async function getPortfolioItemsByDesignerId(designerId: string): Promise
 }
 
 export async function getPortfolioItemById(itemId: string): Promise<PortfolioItem | null> {
-    const collection = await getPortfolioCollection();
-    if (!collection) {
-      console.log("DB not enabled. Searching mock portfolio items.");
-      return allPortfolioItemsData.find(item => item.id === itemId) || null;
-    }
+  if (!isDbEnabled()) {
+    return allPortfolioItemsData.find(item => item.id === itemId) || null;
+  }
   try {
-    // Assuming 'id' is the unique slug. If using MongoDB's _id, adjust query.
-    const item = await collection.findOne({ id: itemId }); 
-    if (!item) return null;
-    
-    return {
-      ...item,
-      _id: item._id?.toHexString(),
-    } as PortfolioItem;
+    const row = await queryOne<PortfolioRow>('SELECT * FROM portfolio_items WHERE id = $1', [itemId]);
+    return row ? rowToItem(row) : null;
   } catch (error) {
     console.error('Error fetching portfolio item by ID:', error);
     return null;
@@ -68,93 +80,64 @@ export async function getPortfolioItemById(itemId: string): Promise<PortfolioIte
 export async function createPortfolioItem(
   itemData: Omit<PortfolioItem, '_id'> & { designerId: string }
 ): Promise<PortfolioItem | null> {
-    const collection = await getPortfolioCollection();
+  const itemWithStats = {
+    ...itemData,
+    views: Math.floor(Math.random() * 500),
+    likes: Math.floor(Math.random() * 100),
+  };
 
-    // Add views and likes to the new item data for sorting
-    const itemWithStats: Omit<PortfolioItem, '_id'> & { designerId: string } = {
-        ...itemData,
-        views: Math.floor(Math.random() * 500),
-        likes: Math.floor(Math.random() * 100),
-    };
-
-    if (!collection) {
-      console.log("DB not enabled. Simulating createPortfolioItem success without DB write.");
-       // Simulate success for prototyping without a DB.
-      allPortfolioItemsData.unshift(itemWithStats as PortfolioItem); // Add to mock data source
-      return {
-        ...itemWithStats,
-        _id: new ObjectId().toHexString(), // Generate a fake ID
-      };
-    }
-  try {
-    const { id, designerId, title, category, categorySlug, projectDescription, coverImageUrl, coverImageHint, galleryImages = [], tags = [], clientName, projectDate, views, likes } = itemWithStats;
-
-    const newItemRecord: PortfolioItemRecord = {
-      id, // slug
-      designerId,
-      title,
-      category,
-      categorySlug,
-      projectDescription,
-      coverImageUrl,
-      coverImageHint,
-      galleryImages,
-      tags,
-      clientName,
-      projectDate,
-      views,
-      likes,
-      // designer field is part of PortfolioItem but not PortfolioItemRecord for direct DB storage
-      // It can be populated on retrieval by joining/looking up designerData
-    };
-
-    const result = await collection.insertOne(newItemRecord);
-    if (!result.insertedId) {
-      throw new Error('Failed to insert portfolio item');
-    }
-    
+  if (!isDbEnabled()) {
+    allPortfolioItemsData.unshift(itemWithStats as PortfolioItem);
     return {
-      ...newItemRecord,
-      _id: result.insertedId.toHexString(),
-      designer: itemData.designer // Keep designer info for return if provided
-    } as PortfolioItem;
+      ...itemWithStats,
+      _id: `mock_${Date.now()}`,
+    };
+  }
 
+  try {
+    const row = await queryOne<PortfolioRow>(
+      `INSERT INTO portfolio_items (id, designer_id, title, category, category_slug, client_name, project_date, cover_image_url, cover_image_hint, project_description, gallery_images, tags, views, likes, designer)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+       RETURNING *`,
+      [itemWithStats.id, itemWithStats.designerId, itemWithStats.title, itemWithStats.category, itemWithStats.categorySlug, itemWithStats.clientName || null, itemWithStats.projectDate || null, itemWithStats.coverImageUrl, itemWithStats.coverImageHint, itemWithStats.projectDescription, JSON.stringify(itemWithStats.galleryImages || []), itemWithStats.tags || [], itemWithStats.views, itemWithStats.likes, JSON.stringify(itemWithStats.designer || null)]
+    );
+    return row ? rowToItem(row) : null;
   } catch (error) {
     console.error('Error creating portfolio item:', error);
-    // Consider more specific error handling or re-throwing
     return null;
   }
 }
 
 export async function updatePortfolioItem(
-  itemId: string, // This should be the MongoDB _id as string
-  designerId: string, // To verify ownership
+  itemId: string,
+  designerId: string,
   itemData: Partial<Omit<PortfolioItem, '_id' | 'id' | 'designerId'>>
 ): Promise<PortfolioItem | null> {
-  const collection = await getPortfolioCollection();
-    if (!collection) {
-      console.log("DB not enabled. Returning null for updatePortfolioItem.");
-      return null;
-    }
+  if (!isDbEnabled()) {
+    return null;
+  }
   try {
-    const _id = new ObjectId(itemId);
+    const setClauses: string[] = [];
+    const values: unknown[] = [];
+    let paramIndex = 1;
 
-    const result = await collection.findOneAndUpdate(
-      { _id, designerId },
-      { $set: itemData },
-      { returnDocument: 'after' }
+    if (itemData.title !== undefined) { setClauses.push(`title = $${paramIndex++}`); values.push(itemData.title); }
+    if (itemData.category !== undefined) { setClauses.push(`category = $${paramIndex++}`); values.push(itemData.category); }
+    if (itemData.categorySlug !== undefined) { setClauses.push(`category_slug = $${paramIndex++}`); values.push(itemData.categorySlug); }
+    if (itemData.projectDescription !== undefined) { setClauses.push(`project_description = $${paramIndex++}`); values.push(itemData.projectDescription); }
+    if (itemData.coverImageUrl !== undefined) { setClauses.push(`cover_image_url = $${paramIndex++}`); values.push(itemData.coverImageUrl); }
+    if (itemData.coverImageHint !== undefined) { setClauses.push(`cover_image_hint = $${paramIndex++}`); values.push(itemData.coverImageHint); }
+    if (itemData.galleryImages !== undefined) { setClauses.push(`gallery_images = $${paramIndex++}`); values.push(JSON.stringify(itemData.galleryImages)); }
+    if (itemData.tags !== undefined) { setClauses.push(`tags = $${paramIndex++}`); values.push(itemData.tags); }
+
+    if (setClauses.length === 0) return null;
+
+    values.push(itemId, designerId);
+    const row = await queryOne<PortfolioRow>(
+      `UPDATE portfolio_items SET ${setClauses.join(', ')} WHERE id = $${paramIndex++} AND designer_id = $${paramIndex} RETURNING *`,
+      values
     );
-
-    if (!result) {
-      console.warn(`Portfolio item not found or designer ID mismatch for update: itemId=${itemId}, designerId=${designerId}`);
-      return null;
-    }
-    
-    return {
-        ...result,
-        _id: result._id?.toHexString(),
-    } as PortfolioItem;
-
+    return row ? rowToItem(row) : null;
   } catch (error) {
     console.error('Error updating portfolio item:', error);
     return null;
@@ -162,15 +145,12 @@ export async function updatePortfolioItem(
 }
 
 export async function deletePortfolioItem(itemId: string, designerId: string): Promise<boolean> {
-   const collection = await getPortfolioCollection();
-    if (!collection) {
-      console.log("DB not enabled. Returning false for deletePortfolioItem.");
-      return false;
-    }
+  if (!isDbEnabled()) {
+    return false;
+  }
   try {
-    const _id = new ObjectId(itemId);
-    const result = await collection.deleteOne({ _id, designerId });
-    return result.deletedCount === 1;
+    const result = await query<{ id: string }>('DELETE FROM portfolio_items WHERE id = $1 AND designer_id = $2 RETURNING id', [itemId, designerId]);
+    return result.length > 0;
   } catch (error) {
     console.error('Error deleting portfolio item:', error);
     return false;

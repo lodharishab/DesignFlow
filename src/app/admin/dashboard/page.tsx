@@ -5,7 +5,7 @@ import { Briefcase, Users, ClipboardList, BarChart3, ArrowRight, UsersRound, Ind
 import Link from 'next/link';
 import { getAllBlogPosts } from '@/lib/blog-db'; // For blog post count
 import { designersData } from '@/lib/designer-data';
-import { isDbEnabled } from '@/lib/mongodb';
+import { isDbEnabled } from '@/lib/db';
 
 export default async function AdminDashboardPage() {
   let totalBlogPosts = 0;

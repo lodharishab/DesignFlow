@@ -8,7 +8,7 @@ A Next.js marketplace application for expert design services. Connects clients w
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 3.4, Radix UI components, shadcn/ui
 - **AI**: Google Genkit with Google AI
-- **Database**: MongoDB (via `mongodb` package)
+- **Database**: PostgreSQL (Replit built-in, via `pg` package)
 - **Auth/Backend**: Firebase
 - **State Management**: TanStack React Query
 - **Forms**: React Hook Form + Zod validation
@@ -19,15 +19,24 @@ A Next.js marketplace application for expert design services. Connects clients w
 - `src/app/` - Next.js App Router pages (auth, admin, client, designer, blog, etc.)
 - `src/components/` - Reusable UI components (admin, ai, blog, design-services, layout, shared, ui)
 - `src/ai/` - Genkit AI flows (announcements, blog posts, brand suggestions, designer bios, chat)
-- `src/lib/` - Utility libraries (MongoDB connection, etc.)
+- `src/lib/` - Utility libraries
+  - `db.ts` - PostgreSQL connection pool and query helpers
+  - `blog-db.ts` - Blog post CRUD operations
+  - `portfolio-db.ts` - Portfolio item CRUD operations
+  - `designer-data.ts` - Designer mock data
+  - `brand-profile-db.ts` - Brand profile (localStorage-based)
 - `src/hooks/` - Custom React hooks
 - `src/contexts/` - React context providers
-- `dataconnect/` - Firebase Data Connect schema and connectors
+
+## Database
+
+PostgreSQL tables:
+- `blog_posts` - Blog content with author, status, categories, tags, engagement metrics
+- `portfolio_items` - Designer portfolio projects with gallery images and tags
 
 ## Environment Variables
 
-- `MONGODB_URI` - MongoDB connection string
-- `MONGODB_DB_NAME` - MongoDB database name (defaults to `designflow_db`)
+- `DATABASE_URL` - PostgreSQL connection string (auto-provisioned by Replit)
 - `NEXT_PUBLIC_SITE_URL` - Public site URL
 
 ## Running
@@ -37,6 +46,7 @@ A Next.js marketplace application for expert design services. Connects clients w
 
 ## Configuration Notes
 
-- Next.js is configured with `allowedDevOrigins: ["*"]` to support Replit's proxy
+- Next.js `allowedDevOrigins` is configured dynamically using `REPLIT_DEV_DOMAIN` env var
 - Dev server binds to `0.0.0.0:5000`
 - TypeScript and ESLint errors are ignored during builds
+- Deployment configured as autoscale with `npm run build` and `npm run start`

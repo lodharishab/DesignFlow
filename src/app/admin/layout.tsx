@@ -302,10 +302,10 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                  <DropdownMenuItem>Settings</DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/admin/settings">Profile</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/admin/settings">Settings</Link></DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Log out</DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/login">Log out</Link></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

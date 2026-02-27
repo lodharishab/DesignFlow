@@ -281,7 +281,7 @@ export default function DesignerLayout({
                    <DropdownMenuItem asChild><Link href="/designer/applications">My Service Alerts</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link href="/designer/earnings">Earnings</Link></DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Log out</DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/login">Log out</Link></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

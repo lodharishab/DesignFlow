@@ -26,7 +26,7 @@ const activeOrdersMock = [
 const clientStats = [
     { title: "Active Orders", value: activeOrdersMock.length.toString(), icon: ShoppingCart, color: "text-blue-500", href: "/client/orders?status=active" },
     { title: "Completed Projects", value: "5", icon: CheckCircle2, color: "text-green-500", href: "/client/orders?status=completed" },
-    { title: "Total Spend", value: "₹55,000", icon: BarChart3, color: "text-purple-500" },
+    { title: "Total Spend", value: "₹55,000", icon: BarChart3, color: "text-purple-500", href: "/client/orders" },
     { title: "Pending Payments", value: "1", icon: Hourglass, color: "text-orange-500", href: "/client/orders?status=pending_payment" },
 ];
 
@@ -34,8 +34,8 @@ const quickActions = [
     { label: "Start New Project", href: "/design-services", icon: Sparkles, variant: "default" },
     { label: "Manage Brand Assets", href: "/client/brand-profile", icon: Briefcase, variant: "outline" },
     { label: "Upload Brand Asset", href: "/client/brand-profile", icon: Upload, variant: "outline" },
-    { label: "View Favorites", href: "#", icon: Heart, variant: "outline" },
-    { label: "Book Consultation", href: "#", icon: CalendarPlus, variant: "outline" },
+    { label: "View Favorites", href: "/client/orders", icon: Heart, variant: "outline" },
+    { label: "Book Consultation", href: "/contact-support", icon: CalendarPlus, variant: "outline" },
 ]
 
 const mockNotifications = [
