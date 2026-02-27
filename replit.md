@@ -9,7 +9,7 @@ A Next.js marketplace application for expert design services. Connects clients w
 - **Styling**: Tailwind CSS 3.4, Radix UI components, shadcn/ui
 - **AI**: Google Genkit with Google AI
 - **Database**: PostgreSQL (Replit built-in, via `pg` package)
-- **Auth/Backend**: Firebase
+- **Auth/Backend**: Mock auth (prototype — add NextAuth.js for production)
 - **State Management**: TanStack React Query
 - **Forms**: React Hook Form + Zod validation
 - **Charts**: Recharts

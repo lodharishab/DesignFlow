@@ -8,7 +8,7 @@ import type { Metadata, ResolvingMetadata } from 'next';
 import { DesignerProfileClientContent } from './designer-profile-client'; // Import the client component
 
 interface PageProps {
-  params: { designerSlug: string };
+  params: Promise<{ designerSlug: string }>;
 }
 
 // Simulating data fetching for generateMetadata & initial props
@@ -22,7 +22,7 @@ export async function generateMetadata(
   { params }: PageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const slug = params.designerSlug;
+  const { designerSlug: slug } = await params;
   const designer = await getDesignerData(slug);
 
   if (!designer) {
@@ -66,7 +66,8 @@ export async function generateMetadata(
 }
 
 export default async function DesignerPage({ params }: PageProps) {
-  const designer = await getDesignerData(params.designerSlug);
+  const { designerSlug } = await params;
+  const designer = await getDesignerData(designerSlug);
   // The client component DesignerProfileClientContent will handle the notFound case
   // if designer is null, based on the initialDesigner prop.
 

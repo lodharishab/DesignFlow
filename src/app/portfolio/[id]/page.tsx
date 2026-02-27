@@ -10,7 +10,7 @@ import { PortfolioItemDetailClientContent } from './portfolio-item-detail-client
 import { notFound } from 'next/navigation';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 // Simulating data fetching for generateMetadata & initial props
@@ -26,7 +26,7 @@ export async function generateMetadata(
   { params }: PageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const id = params.id;
+  const { id } = await params;
   const item = await getPortfolioItemData(id);
 
   if (!item) {
@@ -67,7 +67,8 @@ export async function generateMetadata(
 }
 
 export default async function PortfolioItemPage({ params }: PageProps) {
-  const item = await getPortfolioItemData(params.id);
+  const { id } = await params;
+  const item = await getPortfolioItemData(id);
 
   // If the item is not found by the server component, trigger a 404 immediately.
   // The client component also has a notFound check, but this is more direct.

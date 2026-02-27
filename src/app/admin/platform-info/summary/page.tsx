@@ -8,11 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from 'next/link';
 
 interface ProjectSummaryPageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 async function ProjectSummaryPage({ searchParams }: ProjectSummaryPageProps) {
-    const version = searchParams.version || '0.04';
+    const resolvedSearchParams = await searchParams;
+    const version = resolvedSearchParams.version || '0.04';
 
     const getFileNameForVersion = (v: string) => {
         if (v === '0.04') return 'project-summary.txt';

@@ -306,8 +306,8 @@ const serviceDetailsData: { [key: string]: ServiceDetailData } = {
 };
 
 interface PageProps {
-  params: { serviceId: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ serviceId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 // Server-side data fetching function
@@ -322,7 +322,7 @@ export async function generateMetadata(
   { params }: PageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const id = params.serviceId;
+  const { serviceId: id } = await params;
   const service = await getServiceData(id);
 
   if (!service) {
@@ -359,7 +359,8 @@ export async function generateMetadata(
 }
 
 export default async function ServicePage({ params }: PageProps) {
-  const service = await getServiceData(params.serviceId);
+  const { serviceId } = await params;
+  const service = await getServiceData(serviceId);
 
   if (!service) {
     notFound();

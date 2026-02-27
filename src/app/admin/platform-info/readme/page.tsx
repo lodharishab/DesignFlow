@@ -8,11 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 
 interface ReadmePageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 async function ReadmePage({ searchParams }: ReadmePageProps) {
-    const version = searchParams.version || '0.04';
+    const resolvedSearchParams = await searchParams;
+    const version = resolvedSearchParams.version || '0.04';
 
     const getFileNameForVersion = (v: string) => {
         if (v === '0.04') return 'README.md';
