@@ -13,10 +13,10 @@ interface ReadmePageProps {
 
 async function ReadmePage({ searchParams }: ReadmePageProps) {
     const resolvedSearchParams = await searchParams;
-    const version = resolvedSearchParams.version || '0.04';
+    const version = resolvedSearchParams.version || '0.05';
 
     const getFileNameForVersion = (v: string) => {
-        if (v === '0.04') return 'README.md';
+        if (v === '0.05') return 'README.md';
         return `README.v${v}.md`;
     }
 
@@ -31,7 +31,7 @@ async function ReadmePage({ searchParams }: ReadmePageProps) {
     };
 
     const content = await readFileContent(getFileNameForVersion(version as string));
-    const versions = ['0.04', '0.03', '0.02', '0.01'];
+    const versions = ['0.05', '0.04', '0.03', '0.02', '0.01'];
 
     return (
         <div className="space-y-8">
@@ -49,7 +49,7 @@ async function ReadmePage({ searchParams }: ReadmePageProps) {
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue={version as string} className="w-full">
-                        <TabsList className="grid w-full grid-cols-4">
+                        <TabsList className="grid w-full grid-cols-5">
                             {versions.map(v => (
                                 <TabsTrigger key={v} value={v} asChild>
                                     <Link href={`?version=${v}`}>v{v}</Link>

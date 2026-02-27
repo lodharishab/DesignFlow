@@ -1,7 +1,13 @@
 
-# DesignFlow - Project Overview, Pages, and Features (v0.04)
+# DesignFlow - Project Overview, Pages, and Features (v0.05)
+
+**Last Updated:** February 27, 2026
 
 This document provides a comprehensive summary of the DesignFlow Creative Services Marketplace project, detailing its structure, pages, and key features as currently implemented in the prototype.
+
+## Platform
+
+DesignFlow is hosted on Replit. It uses Replit's built-in PostgreSQL database and Replit AI Integrations for OpenAI access.
 
 ## I. Core Structure & Public Pages
 
@@ -84,7 +90,7 @@ An extensive, authenticated portal for platform administrators.
     *   **All Orders (`/admin/orders`)**: A comprehensive, filterable, and sortable table of all orders on the platform.
     *   **Status-Specific Views**: Separate pages that show pre-filtered lists of orders (e.g., In Progress, Completed, Cancelled).
     *   **Order Detail (`/admin/orders/details/[orderId]`)**: A detailed view of any order.
-*   **Blog Post Management (`/admin/blog`)**: Full CRUD functionality for blog posts using Server Actions.
+*   **Blog Post Management (`/admin/blog`)**: Full CRUD functionality for blog posts using Server Actions and PostgreSQL.
 *   **Messaging & Support**:
     *   **Direct Messages (`/admin/messaging/direct`)**: A UI for viewing and managing direct messages.
     *   **Chat Monitor (`/admin/messaging/monitor`)**: A UI to monitor chats between clients and designers.
@@ -93,6 +99,7 @@ An extensive, authenticated portal for platform administrators.
     *   **Reports (`/admin/reports`)**: A dashboard to view and manage user-submitted reports.
 *   **Payments & Revenue (`/admin/payments`)**: A dashboard for viewing transactions, managing payouts, and handling disputes.
 *   **Platform Settings (`/admin/settings`)**: A page with forms to manage various platform-wide settings (e.g., registration toggles, membership plans - simulated).
+*   **Platform Info (`/admin/platform-info`)**: README viewer with version tabs showing project documentation history.
 
 ## VI. E-commerce & Support
 
@@ -103,8 +110,8 @@ An extensive, authenticated portal for platform administrators.
 
 ## VII. Technical Aspects
 
-*   **Tech Stack**: Next.js (App Router), React, TypeScript, ShadCN UI Components, Tailwind CSS.
-*   **Data Handling**: Currently uses mock data defined in TypeScript files. Server Actions are used for forms in the admin (blog, portfolio).
-*   **Database Setup**: A basic MongoDB connection file (`src/lib/mongodb.ts`) and a sample database library (`src/lib/blog-db.ts`) are in place, ready for full integration.
-*   **AI Integration**: A Genkit setup file (`src/ai/genkit.ts`) is configured. AI flows are implemented for general conversation (Kira), content generation (blog ideas, announcements, designer bios), and branding suggestions.
-*   **Deployment**: Configured for easy deployment using Firebase App Hosting.
+*   **Tech Stack**: Next.js 15 (App Router, Turbopack), React 18, TypeScript, ShadCN UI Components, Tailwind CSS.
+*   **Data Handling**: Uses a mix of mock data (for users, services, orders) and PostgreSQL (for blog posts, portfolio items). Server Actions are used for database mutations.
+*   **Database**: Replit's built-in PostgreSQL database via the `pg` package. Tables: `blog_posts`, `portfolio_items`.
+*   **AI Integration**: OpenAI via Replit AI Integrations (`gpt-5-mini` model). AI flows are implemented for general conversation (Kira), content generation (blog ideas, announcements, designer bios), and branding suggestions.
+*   **Hosting & Deployment**: Hosted on Replit with built-in deployment support.

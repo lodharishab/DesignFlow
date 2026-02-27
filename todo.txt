@@ -1,16 +1,18 @@
 
 # DesignFlow Project - Future Enhancements & Important TODOs
 
+**Last Updated:** February 27, 2026
+
 ## I. Foundational & Core Functionality:
 
 1.  **Real Authentication & Authorization:**
-    *   Implement a robust solution like NextAuth.js or Firebase Authentication.
+    *   Implement a robust solution like NextAuth.js.
     *   Secure user accounts, role-based access control for client, designer, and admin areas.
 
-2.  **Full Database Integration (MongoDB):**
-    *   Define MongoDB schemas for all entities (users, services, orders, portfolio, blog, etc.).
-    *   Refactor all data fetching and mutation logic from mock data to use MongoDB (likely via Server Actions or API routes).
-    *   Ensure data persistence and dynamic content management.
+2.  **Full Database Integration (PostgreSQL):**
+    *   Define PostgreSQL schemas for all entities (users, services, orders, etc.).
+    *   Refactor all data fetching and mutation logic from mock data to use PostgreSQL (likely via Server Actions or API routes).
+    *   Blog posts and portfolio items already use PostgreSQL — extend this to remaining entities.
 
 3.  **Core Business Logic Implementation:**
     *   **Order Processing:** Implement actual order creation, payment processing workflows, and database status updates.
@@ -50,12 +52,11 @@
 
 ## III. Technical & Operational Improvements:
 
-9.  **Genkit for AI Features (Beyond Setup):**
+9.  **OpenAI for AI Features (Beyond Current Flows):**
     *   **Content Generation:** AI-assisted blog post drafting, service description generation, tagline suggestions.
     *   **Image Moderation/Tagging:** For user-uploaded content like portfolio items or profile pictures.
     *   **AI-Assisted Design Briefs:** Guide clients to create more effective briefs.
     *   **Smart Designer Matching:** AI-powered suggestions for matching clients with suitable designers based on project requirements and designer skills/portfolio.
-    *   **AI Image Generation for Placeholders/Inspiration:** Allow users to generate placeholder images or mood board elements.
 
 10. **Comprehensive Testing:**
     *   Implement unit tests (e.g., Jest/React Testing Library) for components and utility functions.
