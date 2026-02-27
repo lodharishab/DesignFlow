@@ -1,33 +1,19 @@
-
 'use server';
-/**
- * @fileOverview A simple conversational flow for Kira AI.
- */
-import { ai } from '@/ai/genkit';
-import { z } from 'zod';
 
-// Define the schema for the flow's input
-const KiraPromptSchema = z.string();
+import { openai } from '@/ai/genkit';
 
-// Define the flow
-const kiraFlow = ai.defineFlow(
-  {
-    name: 'kiraFlow',
-    inputSchema: KiraPromptSchema,
-    outputSchema: z.string(),
-  },
-  async (prompt) => {
-    const llmResponse = await ai.generate({
-      prompt: prompt,
-      // You can add more configuration here, like history, etc.
-    });
-
-    return llmResponse.text;
-  }
-);
-
-// Define an exported function that wraps the flow
 export async function askKira(prompt: string): Promise<string> {
-  // In a real app, you might add authentication or logging here.
-  return await kiraFlow(prompt);
+  const response = await openai.chat.completions.create({
+    model: 'gpt-5-mini',
+    messages: [
+      {
+        role: 'system',
+        content: 'You are Kira, a helpful and friendly AI assistant for DesignFlow, a creative services marketplace for India. You help clients and designers with questions about design, branding, and the platform.',
+      },
+      { role: 'user', content: prompt },
+    ],
+    max_completion_tokens: 8192,
+  });
+
+  return response.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
 }

@@ -23,7 +23,7 @@ const onest = Onest({
   variable: '--font-onest',
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002'; // Fallback for local dev
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || `https://${process.env.REPLIT_DEV_DOMAIN || 'localhost:5000'}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

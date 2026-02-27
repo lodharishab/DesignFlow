@@ -7,7 +7,7 @@ A Next.js marketplace application for expert design services. Connects clients w
 - **Framework**: Next.js 15.3.4 (App Router, Turbopack)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 3.4, Radix UI components, shadcn/ui
-- **AI**: Google Genkit with Google AI
+- **AI**: OpenAI (via Replit AI Integrations, gpt-5-mini model)
 - **Database**: PostgreSQL (Replit built-in, via `pg` package)
 - **Auth/Backend**: Mock auth (prototype — add NextAuth.js for production)
 - **State Management**: TanStack React Query
@@ -18,7 +18,9 @@ A Next.js marketplace application for expert design services. Connects clients w
 
 - `src/app/` - Next.js App Router pages (auth, admin, client, designer, blog, etc.)
 - `src/components/` - Reusable UI components (admin, ai, blog, design-services, layout, shared, ui)
-- `src/ai/` - Genkit AI flows (announcements, blog posts, brand suggestions, designer bios, chat)
+- `src/ai/` - AI flows using OpenAI (announcements, blog posts, brand suggestions, designer bios, chat)
+  - `genkit.ts` - OpenAI client initialization (uses Replit AI Integrations env vars)
+  - `flows/` - Individual AI flow modules
 - `src/lib/` - Utility libraries
   - `db.ts` - PostgreSQL connection pool and query helpers
   - `blog-db.ts` - Blog post CRUD operations
@@ -37,7 +39,8 @@ PostgreSQL tables:
 ## Environment Variables
 
 - `DATABASE_URL` - PostgreSQL connection string (auto-provisioned by Replit)
-- `NEXT_PUBLIC_SITE_URL` - Public site URL
+- `AI_INTEGRATIONS_OPENAI_BASE_URL` - OpenAI API base URL (auto-set by Replit AI Integrations)
+- `AI_INTEGRATIONS_OPENAI_API_KEY` - OpenAI API key (auto-set by Replit AI Integrations)
 
 ## Running
 
@@ -50,3 +53,4 @@ PostgreSQL tables:
 - Dev server binds to `0.0.0.0:5000`
 - TypeScript and ESLint errors are ignored during builds
 - Deployment configured as autoscale with `npm run build` and `npm run start`
+- AI features use OpenAI via Replit AI Integrations (no separate API key needed)
