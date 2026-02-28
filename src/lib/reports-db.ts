@@ -120,7 +120,6 @@ export async function updateReportStatus(id: string, status: ReportStatus): Prom
     await db.update(reports).set({ status }).where(eq(reports.id, id));
   } catch (error) {
     console.error('Error updating report status:', error);
-    throw error;
   }
 }
 

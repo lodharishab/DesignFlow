@@ -4,7 +4,7 @@ import { getOpenAI } from '@/ai/genkit';
 
 export async function summarizeChat(chatHistory: string): Promise<string> {
   const response = await getOpenAI().chat.completions.create({
-    model: 'gpt-5-mini',
+    model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',

@@ -7,7 +7,7 @@ export async function generateBrandSuggestions(request: BrandSuggestionsRequest)
   const existingTagsLine = request.existingTags ? `\n- Existing Brand Tags: ${request.existingTags}` : '';
 
   const response = await getOpenAI().chat.completions.create({
-    model: 'gpt-5-mini',
+    model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',

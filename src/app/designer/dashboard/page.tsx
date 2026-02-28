@@ -29,16 +29,21 @@ import {
 import { ClientOnly } from '@/components/shared/client-only';
 import { getNotificationsByUser, type Notification } from '@/lib/notifications-db';
 import { getOrdersByDesignerId } from '@/lib/orders-db';
+import { getReviewsByDesignerId } from '@/lib/reviews-db';
+import type { Order } from '@/lib/types';
 
 const CURRENT_DESIGNER_ID = 'des001';
 
 function DesignerDashboardPageContent() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [recentActiveOrders, setRecentActiveOrders] = useState<any[]>([]);
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
+  const [avgRating, setAvgRating] = useState<number>(0);
 
   useEffect(() => {
     getNotificationsByUser(CURRENT_DESIGNER_ID).then(setNotifications);
     getOrdersByDesignerId(CURRENT_DESIGNER_ID).then(orders => {
+      setAllOrders(orders);
       setRecentActiveOrders(orders.filter(o => o.status === 'In Progress' || o.status === 'Awaiting Client Review').slice(0, 5).map(o => ({
         id: o.id,
         serviceName: o.serviceName || 'Untitled Service',
@@ -48,22 +53,36 @@ function DesignerDashboardPageContent() {
         progress: 0,
       })));
     });
+    getReviewsByDesignerId(CURRENT_DESIGNER_ID).then(reviews => {
+      if (reviews.length > 0) {
+        const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+        setAvgRating(parseFloat((sum / reviews.length).toFixed(1)));
+      }
+    });
   }, []);
+
+  // Compute stats from real data
+  const totalOrders = allOrders.length;
+  const completedOrders = allOrders.filter(o => o.status === 'Completed' || o.status === 'completed').length;
+  const pendingOrders = allOrders.filter(o => o.status === 'In Progress' || o.status === 'in_progress' || o.status === 'pending_assignment').length;
+  const totalEarnings = allOrders
+    .filter(o => o.status === 'Completed' || o.status === 'completed')
+    .reduce((acc, o) => acc + (o.totalPrice || 0), 0);
   
   const upcomingDeadlines = recentActiveOrders
     .filter(order => order.status === 'In Progress' || order.status === 'Awaiting Client Review')
-    .sort((a, b) => a.deadline.getTime() - b.deadline.getTime())
+    .sort((a: any, b: any) => a.deadline.getTime() - b.deadline.getTime())
     .slice(0, 3);
   
-  const profileCompleteness = 75; // Mock data for profile completion
+  const profileCompleteness = 75; // Will be computed from real profile data when auth is implemented
 
   const designerStats = [
-    { title: 'Total Orders', value: '12', icon: Briefcase, href: '/designer/orders', color: 'text-blue-500' },
-    { title: 'Completed Orders', value: '8', icon: CheckCircle, href: '/designer/orders?status=Completed', color: 'text-green-500' },
-    { title: 'Pending Orders', value: '4', icon: Clock, href: '/designer/orders?status=In Progress', color: 'text-orange-500' },
-    { title: 'Total Earnings', value: '₹85,500', icon: IndianRupee, href: '/designer/earnings', color: 'text-purple-500' },
-    { title: 'My Rating', value: '4.7/5', icon: Star, href: '/designer/performance/reviews', color: 'text-yellow-500' },
-    { title: 'Portfolio Views', value: '1,204', icon: Eye, href: '/designer/portfolio?view=analytics', color: 'text-pink-500' },
+    { title: 'Total Orders', value: totalOrders.toString(), icon: Briefcase, href: '/designer/orders', color: 'text-blue-500' },
+    { title: 'Completed Orders', value: completedOrders.toString(), icon: CheckCircle, href: '/designer/orders?status=Completed', color: 'text-green-500' },
+    { title: 'Pending Orders', value: pendingOrders.toString(), icon: Clock, href: '/designer/orders?status=In Progress', color: 'text-orange-500' },
+    { title: 'Total Earnings', value: `₹${totalEarnings.toLocaleString('en-IN')}`, icon: IndianRupee, href: '/designer/earnings', color: 'text-purple-500' },
+    { title: 'My Rating', value: avgRating > 0 ? `${avgRating}/5` : 'N/A', icon: Star, href: '/designer/performance/reviews', color: 'text-yellow-500' },
+    { title: 'Portfolio Views', value: '—', icon: Eye, href: '/designer/portfolio?view=analytics', color: 'text-pink-500' },
   ];
 
   const quickActions = [

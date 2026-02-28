@@ -1,7 +1,7 @@
 'use server';
 import { db, isDbEnabled } from './db';
 import { services, serviceTiers, serviceCategories, serviceSubcategories, serviceApprovedDesigners } from './schema';
-import { eq, desc, inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import type { ServiceTierData, ServiceData, ServiceCategory, ServiceSubCategory } from './types';
 export type { ServiceTierData, ServiceData, ServiceCategory, ServiceSubCategory };
 

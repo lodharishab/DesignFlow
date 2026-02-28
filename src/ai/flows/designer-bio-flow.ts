@@ -5,7 +5,7 @@ import type { DesignerBioRequest, DesignerBioResponse } from './designer-bio-typ
 
 export async function generateDesignerBio(request: DesignerBioRequest): Promise<DesignerBioResponse> {
   const response = await getOpenAI().chat.completions.create({
-    model: 'gpt-5-mini',
+    model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',

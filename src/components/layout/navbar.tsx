@@ -27,13 +27,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function Navbar() {
-  const { isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu, toggleAiChat, isLoggedIn, setIsLoggedIn } = useUI();
-  const mockCartItemCount = 3; // Mock data for cart item count
+  const { isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu, toggleAiChat, isLoggedIn, setIsLoggedIn, userRole, setUserRole } = useUI();
+  const [cartItemCount, setCartItemCount] = React.useState(0);
+
+  // Load cart count when logged in
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      import('@/lib/cart-db').then(mod => {
+        mod.getCartByUser('client001').then(items => {
+          setCartItemCount(items?.length ?? 0);
+        }).catch(() => setCartItemCount(0));
+      });
+    } else {
+      setCartItemCount(0);
+    }
+  }, [isLoggedIn]);
 
   // Function to handle logout, setting global state to false
   const handleLogout = () => {
     setIsLoggedIn(false);
-    // In a real app, you would also clear tokens, etc.
+    setUserRole(null);
   }
 
   return (
@@ -56,9 +69,9 @@ export function Navbar() {
           <Button variant="ghost" asChild>
             <Link href="/cart" className="relative">
               <ShoppingCart className="h-5 w-5" />
-              {mockCartItemCount > 0 && (
+              {cartItemCount > 0 && (
                 <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                  {mockCartItemCount}
+                  {cartItemCount}
                 </Badge>
               )}
               <span className="sr-only">View Cart</span>
@@ -86,7 +99,7 @@ export function Navbar() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild><Link href="/client/dashboard">Dashboard</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href={userRole === 'admin' ? '/admin/dashboard' : userRole === 'designer' ? '/designer/dashboard' : '/client/dashboard'}>Dashboard</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link href="/client/orders">My Orders</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link href="/client/profile">Settings</Link></DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -159,7 +172,7 @@ export function Navbar() {
                 {isLoggedIn ? (
                   <>
                      <Button variant="default" className="w-full justify-start py-6 text-base" asChild onClick={() => setIsMobileMenuOpen(false)}>
-                      <Link href="/client/dashboard">
+                      <Link href={userRole === 'admin' ? '/admin/dashboard' : userRole === 'designer' ? '/designer/dashboard' : '/client/dashboard'}>
                         <UserCircle className="mr-3 h-5 w-5" />
                         My Dashboard
                       </Link>

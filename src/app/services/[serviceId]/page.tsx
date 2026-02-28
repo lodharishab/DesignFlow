@@ -67,7 +67,7 @@ async function getServiceData(id: string): Promise<ServiceDetailData | null> {
       name: d.name,
       avatarUrl: d.avatarUrl,
       rating: d.clientRatingAverage ?? 4.8,
-      projectsCompleted: Math.floor(Math.random() * 50) + 20,
+      projectsCompleted: 0, // Will be computed from completed orders when available
       imageHint: d.imageHint,
     }));
 

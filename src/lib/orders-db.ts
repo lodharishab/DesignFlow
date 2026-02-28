@@ -1,6 +1,6 @@
 'use server';
 import { db, isDbEnabled } from './db';
-import { orders, orderEvents, orderMilestones, orderAttachments } from './schema';
+import { orders, orderEvents, orderMilestones } from './schema';
 import { eq, desc, and, inArray } from 'drizzle-orm';
 import type { OrderStatus, OrderEvent, Milestone, OrderAttachment, Order } from './types';
 export type { OrderStatus, OrderEvent, Milestone, OrderAttachment, Order };

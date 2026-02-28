@@ -5,7 +5,7 @@ import type { BlogPostRequest, BlogPostResponse } from './blog-post-types';
 
 export async function generateBlogPostIdeas(request: BlogPostRequest): Promise<BlogPostResponse> {
   const response = await getOpenAI().chat.completions.create({
-    model: 'gpt-5-mini',
+    model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',

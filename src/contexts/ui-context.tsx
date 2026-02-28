@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { getBrandKits, type BrandProfileFormData } from '@/lib/brand-profile-db';
 
+export type UserRole = 'client' | 'designer' | 'admin' | null;
+
 interface UIContextType {
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -14,6 +16,8 @@ interface UIContextType {
   toggleAiChat: () => void;
   isLoggedIn: boolean;
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+  userRole: UserRole;
+  setUserRole: React.Dispatch<React.SetStateAction<UserRole>>;
   // New brand kit management state
   brandKits: BrandProfileFormData[];
   activeBrandKit: BrandProfileFormData | null;
@@ -27,6 +31,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<UserRole>(null);
 
   // New state for brand kits
   const [brandKits, setBrandKits] = useState<BrandProfileFormData[]>([]);
@@ -62,6 +67,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
       isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu, 
       isAiChatOpen, setIsAiChatOpen, toggleAiChat,
       isLoggedIn, setIsLoggedIn,
+      userRole, setUserRole,
       brandKits, activeBrandKit, setActiveBrandKit, loadBrandKits
     }}>
       {children}

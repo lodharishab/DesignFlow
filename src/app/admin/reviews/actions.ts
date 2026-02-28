@@ -2,32 +2,30 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { mockReviewsData } from './data';
-import type { Review } from './data';
-
+import { updateReview } from '@/lib/reviews-db';
+import type { AdminReview } from '@/lib/types';
 
 export interface ReviewActionResult {
   success: boolean;
   message: string;
-  review?: Review;
+  review?: AdminReview;
 }
 
-export async function updateReviewStatusAction(reviewId: string, newStatus: Review['status']): Promise<ReviewActionResult> {
-  // This is a simulation. In a real app, you would update the database.
-  console.log(`Simulating update for review ${reviewId} to status ${newStatus}`);
-  
-  const reviewIndex = mockReviewsData.findIndex(r => r.id === reviewId);
-  if (reviewIndex === -1) {
-    return { success: false, message: "Review not found." };
+export async function updateReviewStatusAction(reviewId: string, newStatus: 'Pending' | 'Approved' | 'Hidden'): Promise<ReviewActionResult> {
+  try {
+    const updated = await updateReview(reviewId, { status: newStatus });
+    if (!updated) {
+      return { success: false, message: "Review not found or update failed." };
+    }
+    
+    revalidatePath('/admin/reviews');
+    revalidatePath(`/admin/reviews/edit/${reviewId}`);
+    
+    return { success: true, message: "Status updated successfully.", review: updated };
+  } catch (error) {
+    console.error(`Failed to update review ${reviewId} status:`, error);
+    return { success: false, message: "An unexpected error occurred while updating the review status." };
   }
-  
-  mockReviewsData[reviewIndex].status = newStatus;
-  
-  // Revalidate paths to reflect changes
-  revalidatePath('/admin/reviews');
-  // You might also revalidate public pages where reviews are shown
-  
-  return { success: true, message: "Status updated successfully." };
 }
 
 
@@ -48,19 +46,22 @@ export async function updateReviewDetailsAction(
     return { success: false, message: "Invalid rating value." };
   }
 
-  console.log(`Simulating update for review ${reviewId} with rating: ${rating} and text: "${reviewText}"`);
+  try {
+    const updated = await updateReview(reviewId, {
+      rating,
+      reviewText: reviewText || '',
+    });
 
-  const reviewIndex = mockReviewsData.findIndex(r => r.id === reviewId);
-  if (reviewIndex === -1) {
-    return { success: false, message: "Review not found." };
+    if (!updated) {
+      return { success: false, message: "Review not found or update failed." };
+    }
+
+    revalidatePath('/admin/reviews');
+    revalidatePath(`/admin/reviews/edit/${reviewId}`);
+    
+    return { success: true, message: "Review details updated successfully.", review: updated };
+  } catch (error) {
+    console.error(`Failed to update review ${reviewId} details:`, error);
+    return { success: false, message: "An unexpected error occurred while updating the review." };
   }
-
-  // Update the mock data
-  mockReviewsData[reviewIndex].rating = rating;
-  mockReviewsData[reviewIndex].reviewText = reviewText;
-
-  revalidatePath('/admin/reviews');
-  revalidatePath(`/admin/reviews/edit/${reviewId}`);
-  
-  return { success: true, message: "Review details updated successfully.", review: mockReviewsData[reviewIndex] };
 }

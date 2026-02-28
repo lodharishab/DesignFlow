@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Navbar } from '@/components/layout/navbar';
@@ -16,50 +16,15 @@ import { useRouter } from 'next/navigation';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useUI } from '@/contexts/ui-context';
-
-interface CartItem {
-  id: string;
-  name: string;
-  tierName?: string;
-  price: number;
-  imageUrl: string;
-  imageHint: string;
-  quantity: number; 
-}
-
-const initialMockCartItems: CartItem[] = [
-  {
-    id: '1',
-    name: 'Modern Logo Design',
-    tierName: 'Standard',
-    price: 9999,
-    imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'startup logo',
-    quantity: 1,
-  },
-  {
-    id: '2',
-    name: 'Social Media Pack', 
-    tierName: 'Basic',
-    price: 2499,
-    imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'social media graphics',
-    quantity: 1,
-  },
-  {
-    id: '4',
-    name: 'UI/UX Web Design Mockup', 
-    price: 15999, 
-    imageUrl: 'https://placehold.co/600x400.png',
-    imageHint: 'website design',
-    quantity: 1,
-  }
-];
+import { getCartByUser, removeFromCart } from '@/lib/cart-db';
+import type { CartItem as DBCartItem } from '@/lib/types';
 
 const TAX_RATE = 0.18; // 18% GST
+const CURRENT_CLIENT_ID = 'client001'; // Will be replaced when auth is implemented
 
 function CartPageContent() {
-  const [cartItems, setCartItems] = useState<CartItem[]>(initialMockCartItems);
+  const [cartItems, setCartItems] = useState<DBCartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -67,16 +32,44 @@ function CartPageContent() {
   const [showOtpStep, setShowOtpStep] = useState(false);
   const [otp, setOtp] = useState('');
 
-  const handleRemoveItem = (itemId: string) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
+  const loadCart = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const items = await getCartByUser(CURRENT_CLIENT_ID);
+      setCartItems(items);
+    } catch (error) {
+      console.error('Failed to load cart:', error);
+      toast({ title: "Error", description: "Failed to load your cart. Please try again.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    loadCart();
+  }, [loadCart]);
+
+  const handleRemoveItem = async (itemId: string) => {
     const removedItem = cartItems.find(item => item.id === itemId);
-    if (removedItem) {
-        toast({
-            title: "Item Removed",
-            description: `"${removedItem.name}" has been removed from your cart.`,
-            variant: "destructive",
-            duration: 3000,
-        });
+    // Optimistic update
+    setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
+    
+    const success = await removeFromCart(itemId);
+    if (success && removedItem) {
+      toast({
+        title: "Item Removed",
+        description: `"${removedItem.name}" has been removed from your cart.`,
+        variant: "destructive",
+        duration: 3000,
+      });
+    } else if (!success) {
+      // Revert optimistic update
+      await loadCart();
+      toast({
+        title: "Error",
+        description: "Failed to remove item. Please try again.",
+        variant: "destructive",
+      });
     }
   };
   
@@ -136,7 +129,14 @@ function CartPageContent() {
             </div>
         </div>
         
-        {cartItems.length === 0 ? (
+        {isLoading ? (
+          <Card className="text-center py-16 shadow-lg">
+            <CardContent className="space-y-4">
+              <Loader2 className="mx-auto h-12 w-12 text-muted-foreground animate-spin" />
+              <p className="text-muted-foreground">Loading your cart...</p>
+            </CardContent>
+          </Card>
+        ) : cartItems.length === 0 ? (
           <Card className="text-center py-16 shadow-lg">
             <CardContent className="space-y-4">
               <PackageSearch className="mx-auto h-20 w-20 text-muted-foreground opacity-50" />
@@ -155,11 +155,11 @@ function CartPageContent() {
                   <div className="flex flex-col sm:flex-row">
                     <div className="relative sm:w-40 h-40 sm:h-auto shrink-0">
                       <Image
-                        src={item.imageUrl}
+                        src={item.imageUrl || 'https://placehold.co/600x400.png'}
                         alt={item.name}
                         fill
                         style={{ objectFit: 'cover' }}
-                        data-ai-hint={item.imageHint}
+                        data-ai-hint={item.imageHint || 'design service'}
                         className="sm:rounded-l-lg sm:rounded-tr-none rounded-t-lg"
                       />
                     </div>

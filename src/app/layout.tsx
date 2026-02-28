@@ -91,8 +91,8 @@ export default function RootLayout({
           <ClientOnly><MobileBottomNav /></ClientOnly>
           <ClientOnly><FloatingKiraButton /></ClientOnly>
           <ClientOnly><AiChatSidebar /></ClientOnly>
+          <ClientOnly><Toaster /></ClientOnly>
         </UIProvider>
-        <ClientOnly><Toaster /></ClientOnly>
       </body>
     </html>
   );

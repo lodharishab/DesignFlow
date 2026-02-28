@@ -5,7 +5,7 @@ import type { AnnouncementRequest, AnnouncementResponse } from './announcement-t
 
 export async function generateAnnouncement(request: AnnouncementRequest): Promise<AnnouncementResponse> {
   const response = await getOpenAI().chat.completions.create({
-    model: 'gpt-5-mini',
+    model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',

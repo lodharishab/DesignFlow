@@ -1,7 +1,7 @@
 'use server';
 import { db, isDbEnabled } from './db';
 import { portfolioItems } from './schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import type { PortfolioItem, PortfolioItemRecord } from './types';
 export type { PortfolioItem, PortfolioItemRecord };
 import { allPortfolioItemsData } from '@/lib/portfolio-data';
@@ -131,11 +131,8 @@ export async function updatePortfolioItem(
 
     const rows = await db.update(portfolioItems)
       .set(updateValues)
-      .where(eq(portfolioItems.id, itemId))
+      .where(and(eq(portfolioItems.id, itemId), eq(portfolioItems.designerId, designerId)))
       .returning();
-
-    // Verify designer ownership
-    if (rows[0] && rows[0].designerId !== designerId) return null;
 
     return rows[0] ? rowToItem(rows[0]) : null;
   } catch (error) {
@@ -150,11 +147,10 @@ export async function deletePortfolioItem(itemId: string, designerId: string): P
   }
   try {
     const rows = await db.delete(portfolioItems)
-      .where(eq(portfolioItems.id, itemId))
-      .returning({ id: portfolioItems.id, designerId: portfolioItems.designerId });
+      .where(and(eq(portfolioItems.id, itemId), eq(portfolioItems.designerId, designerId)))
+      .returning({ id: portfolioItems.id });
 
-    // Verify designer ownership
-    return rows.length > 0 && rows[0].designerId === designerId;
+    return rows.length > 0;
   } catch (error) {
     console.error('Error deleting portfolio item:', error);
     return false;

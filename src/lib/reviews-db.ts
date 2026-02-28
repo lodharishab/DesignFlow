@@ -1,12 +1,9 @@
 'use server';
 import { db, isDbEnabled } from './db';
 import { reviews } from './schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import type { DesignerReview, AdminReview } from './types';
 export type { DesignerReview, AdminReview };
-
-/** Import the hardcoded fallback data — will be removed once all data is in DB */
-import { mockDesignerReviews as MOCK_REVIEWS } from './reviews-data';
 
 function rowToDesignerReview(row: typeof reviews.$inferSelect): DesignerReview {
   return {
@@ -43,23 +40,22 @@ function rowToAdminReview(row: typeof reviews.$inferSelect): AdminReview {
 
 export async function getReviewsByDesignerId(designerId: string): Promise<DesignerReview[]> {
   if (!isDbEnabled()) {
-    return MOCK_REVIEWS;
+    return [];
   }
   try {
     const rows = await db.select().from(reviews)
       .where(eq(reviews.recipientId, designerId))
       .orderBy(desc(reviews.reviewDate));
-    if (rows.length === 0) return MOCK_REVIEWS; // Fallback if DB is empty
     return rows.map(rowToDesignerReview);
   } catch (e) {
     console.error('Error fetching reviews for designer:', e);
-    return MOCK_REVIEWS;
+    return [];
   }
 }
 
 export async function getReviewsByOrderId(orderId: string): Promise<DesignerReview[]> {
   if (!isDbEnabled()) {
-    return MOCK_REVIEWS.filter(r => r.orderId === orderId);
+    return [];
   }
   try {
     const rows = await db.select().from(reviews)
@@ -68,24 +64,13 @@ export async function getReviewsByOrderId(orderId: string): Promise<DesignerRevi
     return rows.map(rowToDesignerReview);
   } catch (e) {
     console.error('Error fetching reviews for order:', e);
-    return MOCK_REVIEWS.filter(r => r.orderId === orderId);
+    return [];
   }
 }
 
 export async function getAllReviews(): Promise<AdminReview[]> {
   if (!isDbEnabled()) {
-    return MOCK_REVIEWS.map(r => ({
-      id: r.id,
-      orderId: r.orderId,
-      authorName: r.clientName,
-      authorRole: 'Client' as const,
-      recipientName: '',
-      serviceName: r.serviceName,
-      rating: r.rating,
-      reviewText: r.reviewText,
-      reviewDate: r.reviewDate,
-      status: 'Approved' as const,
-    }));
+    return [];
   }
   try {
     const rows = await db.select().from(reviews).orderBy(desc(reviews.reviewDate));
@@ -98,14 +83,13 @@ export async function getAllReviews(): Promise<AdminReview[]> {
 
 export async function getFeaturedReviews(limit: number = 3): Promise<DesignerReview[]> {
   if (!isDbEnabled()) {
-    return MOCK_REVIEWS.filter(r => r.isFeatured).slice(0, limit);
+    return [];
   }
   try {
     const rows = await db.select().from(reviews)
       .where(eq(reviews.isFeatured, true))
       .orderBy(desc(reviews.reviewDate))
       .limit(limit);
-    if (rows.length === 0) return MOCK_REVIEWS.filter(r => r.isFeatured).slice(0, limit);
     return rows.map(rowToDesignerReview);
   } catch (e) {
     console.error('Error fetching featured reviews:', e);

@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { MessageSquare, Send, User, Mail, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { submitContactFormAction } from './actions';
 
 export default function ContactSupportPage() {
   const { toast } = useToast();
@@ -21,7 +22,7 @@ export default function ContactSupportPage() {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !subject || !message) {
       toast({
@@ -32,19 +33,33 @@ export default function ContactSupportPage() {
       return;
     }
     setIsSending(true);
-    // Simulate API call
-    console.log("Support message:", { name, email, subject, message });
-    setTimeout(() => {
+    try {
+      const result = await submitContactFormAction({ name, email, subject, message });
+      if (result.success) {
+        toast({
+          title: "Message Sent",
+          description: result.message,
+        });
+        setName('');
+        setEmail('');
+        setSubject('');
+        setMessage('');
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Message Sent (Simulated)",
-        description: "Thank you for contacting us! We'll get back to you shortly.",
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
       });
-      setName('');
-      setEmail('');
-      setSubject('');
-      setMessage('');
+    } finally {
       setIsSending(false);
-    }, 1500);
+    }
   };
 
 

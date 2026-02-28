@@ -1,7 +1,7 @@
 'use server';
 import { db, isDbEnabled } from './db';
 import { transactions, payoutRequests, paymentMethods } from './schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import type { Transaction, PayoutRequest, PaymentMethod } from './types';
 export type { Transaction, PayoutRequest, PaymentMethod };
 

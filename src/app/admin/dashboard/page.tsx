@@ -5,33 +5,46 @@ import { Briefcase, Users, ClipboardList, BarChart3, ArrowRight, UsersRound, Ind
 import Link from 'next/link';
 import { getAllBlogPosts } from '@/lib/blog-db';
 import { getAllDesigners } from '@/lib/designer-db';
+import { getAllServices } from '@/lib/services-db';
+import { getAllOrders } from '@/lib/orders-db';
+import { getAllReviews } from '@/lib/reviews-db';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
   let totalBlogPosts = 0;
-  try {
-    const blogPosts = await getAllBlogPosts();
-    totalBlogPosts = blogPosts.length;
-  } catch (error) {
-    console.error("Failed to fetch blog posts for dashboard:", error);
-  }
-
   let pendingDesigners = 0;
+  let totalServices = 0;
+  let pendingOrders = 0;
+  let newReviews = 0;
+  let activeDesigners = 0;
+
   try {
-    const designers = await getAllDesigners();
+    const [blogPosts, designers, services, orders, reviewsList] = await Promise.all([
+      getAllBlogPosts(),
+      getAllDesigners(),
+      getAllServices(),
+      getAllOrders(),
+      getAllReviews(),
+    ]);
+
+    totalBlogPosts = blogPosts.length;
     pendingDesigners = designers.filter(d => d.adminRanking === null || (d.adminRanking !== undefined && d.adminRanking < 2)).length;
+    activeDesigners = designers.filter(d => d.adminRanking !== null && d.adminRanking >= 2).length;
+    totalServices = services.length;
+    pendingOrders = orders.filter(o => o.status === 'pending_assignment' || o.status === 'pending').length;
+    newReviews = reviewsList.filter(r => r.status === 'Pending').length;
   } catch (error) {
-    console.error("Failed to fetch designers for dashboard:", error);
+    console.error("Failed to fetch dashboard stats:", error);
   }
 
   const stats = [
-    { title: "Total Services", value: "25", icon: Briefcase, color: "text-blue-500", bgColor: "bg-blue-100 dark:bg-blue-900", href: "/admin/services" },
-    { title: "Active Designers", value: "150", icon: Users, color: "text-green-500", bgColor: "bg-green-100 dark:bg-green-900", href: "/admin/designers" },
-    { title: "Pending Orders", value: "12", icon: ClipboardList, color: "text-yellow-500", bgColor: "bg-yellow-100 dark:bg-yellow-900", href: "/admin/orders/pending-assignment" },
+    { title: "Total Services", value: totalServices.toString(), icon: Briefcase, color: "text-blue-500", bgColor: "bg-blue-100 dark:bg-blue-900", href: "/admin/services" },
+    { title: "Active Designers", value: activeDesigners.toString(), icon: Users, color: "text-green-500", bgColor: "bg-green-100 dark:bg-green-900", href: "/admin/designers" },
+    { title: "Pending Orders", value: pendingOrders.toString(), icon: ClipboardList, color: "text-yellow-500", bgColor: "bg-yellow-100 dark:bg-yellow-900", href: "/admin/orders/pending-assignment" },
     { title: "Pending Applications", value: pendingDesigners.toString(), icon: UserCheck, color: "text-orange-500", bgColor: "bg-orange-100 dark:bg-orange-900", href: "/admin/designers?status=pending-approval" },
     { title: "Total Blog Posts", value: totalBlogPosts.toString(), icon: Newspaper, color: "text-indigo-500", bgColor: "bg-indigo-100 dark:bg-indigo-900", href: "/admin/blog/posts" },
-    { title: "New Reviews", value: "3", icon: Star, color: "text-pink-500", bgColor: "bg-pink-100 dark:bg-pink-900", href: "/admin/reviews" },
+    { title: "Pending Reviews", value: newReviews.toString(), icon: Star, color: "text-pink-500", bgColor: "bg-pink-100 dark:bg-pink-900", href: "/admin/reviews" },
   ];
 
   const quickLinks = [
@@ -66,7 +79,7 @@ export default async function AdminDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">+5% from last month (example)</p>
+                <p className="text-xs text-muted-foreground">Current count</p>
               </CardContent>
             </Link>
           </Card>

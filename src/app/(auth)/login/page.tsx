@@ -22,7 +22,7 @@ interface LoginFormErrors {
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setIsLoggedIn } = useUI(); // Use the context to set login state
+  const { setIsLoggedIn, setUserRole } = useUI();
   const redirectUrl = searchParams.get('redirect') || '';
 
   const [loginMethod, setLoginMethod] = useState<'otp' | 'password'>('otp');
@@ -42,7 +42,15 @@ function LoginPageContent() {
   }
 
   const handleLoginSuccess = () => {
-     setIsLoggedIn(true); // Set global logged-in state to true
+     setIsLoggedIn(true);
+     // Set role based on simulated phone number
+     if (phoneNumber.includes('111')) {
+       setUserRole('admin');
+     } else if (phoneNumber.includes('222')) {
+       setUserRole('designer');
+     } else {
+       setUserRole('client');
+     }
      toast({
         title: "Login Successful!",
         description: "You have been successfully logged in."
@@ -56,7 +64,7 @@ function LoginPageContent() {
     if (phoneNumber.includes('111')) {
       router.push('/admin/dashboard');
     } else if (phoneNumber.includes('222')) {
-      router.push('/designer/dashboard'); // Changed from pending-approval to dashboard
+      router.push('/designer/dashboard');
     } else {
       router.push('/client/dashboard'); 
     }

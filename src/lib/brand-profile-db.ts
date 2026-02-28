@@ -7,7 +7,7 @@
  */
 import { db, isDbEnabled } from './db';
 import { brandProfiles } from './schema';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { BrandProfileFormData } from './types';
 export type { BrandProfileFormData };
 

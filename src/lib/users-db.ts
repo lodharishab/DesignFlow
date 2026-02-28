@@ -1,7 +1,7 @@
 'use server';
 import { db, isDbEnabled } from './db';
 import { users } from './schema';
-import { eq, desc, inArray } from 'drizzle-orm';
+import { eq, desc, inArray, isNotNull, sql } from 'drizzle-orm';
 import type { User } from './types';
 export type { User };
 
@@ -47,9 +47,10 @@ export async function getUserById(id: string): Promise<User | null> {
 export async function getUsersByRole(role: string): Promise<User[]> {
   if (!isDbEnabled()) return [];
   try {
-    // Filter users whose roles array contains the given role
-    const allUsers = await db.select().from(users).orderBy(desc(users.joinDate));
-    return allUsers.filter(u => u.roles?.includes(role)).map(rowToUser);
+    const rows = await db.select().from(users)
+      .where(sql`${role} = ANY(${users.roles})`)
+      .orderBy(desc(users.joinDate));
+    return rows.map(rowToUser);
   } catch (e) {
     console.error(`Error fetching users by role ${role}:`, e);
     return [];
@@ -59,8 +60,10 @@ export async function getUsersByRole(role: string): Promise<User[]> {
 export async function getStaffMembers(): Promise<User[]> {
   if (!isDbEnabled()) return [];
   try {
-    const allUsers = await db.select().from(users).orderBy(desc(users.joinDate));
-    return allUsers.filter(u => u.staffRole !== null).map(rowToUser);
+    const rows = await db.select().from(users)
+      .where(isNotNull(users.staffRole))
+      .orderBy(desc(users.joinDate));
+    return rows.map(rowToUser);
   } catch (e) {
     console.error('Error fetching staff members:', e);
     return [];

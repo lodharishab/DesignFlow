@@ -2,7 +2,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createPortfolioItem } from '@/lib/portfolio-db';
+import { createPortfolioItem, updatePortfolioItem, deletePortfolioItem } from '@/lib/portfolio-db';
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 
 const MOCK_DESIGNER_ID = "des001"; 
@@ -133,15 +133,62 @@ export async function addPortfolioItemAction(prevState: any, formData: FormData)
   }
 }
 
-export async function updatePortfolioItemAction(itemId: string, formData: FormData) {
-  console.log("Update action called for", itemId, formData.get('title'));
-  revalidatePath('/designer/portfolio');
-  revalidatePath(`/portfolio/${itemId}`); 
-  // Consider redirecting after successful update via useFormState
+export async function updatePortfolioItemAction(itemId: string, formData: FormData): Promise<AddPortfolioResult> {
+  const errors: AddPortfolioResult['errors'] = {};
+
+  const title = formData.get('title') as string;
+  const category = formData.get('category') as string;
+  const projectDescription = formData.get('projectDescription') as string;
+  const coverImageHint = formData.get('coverImageHint') as string;
+  const tagsString = formData.get('tags') as string;
+
+  if (!title || title.length < 5) errors.title = 'Title must be at least 5 characters.';
+  if (!category) errors.category = 'Category is required.';
+  if (!projectDescription || projectDescription.length < 20) errors.projectDescription = 'Description must be at least 20 characters.';
+
+  if (Object.keys(errors).length > 0) {
+    return { success: false, message: 'Validation failed. Please check the fields.', errors };
+  }
+
+  try {
+    const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()).filter(Boolean) : [];
+    const categorySlug = category.toLowerCase().replace(/\s+/g, '-');
+
+    const updatedItem = await updatePortfolioItem(itemId, MOCK_DESIGNER_ID, {
+      title,
+      category,
+      categorySlug,
+      projectDescription,
+      coverImageHint: coverImageHint || title,
+      tags,
+    });
+
+    if (updatedItem) {
+      revalidatePath('/designer/portfolio');
+      revalidatePath(`/portfolio/${itemId}`);
+      revalidatePath('/portfolio');
+      return { success: true, message: 'Portfolio item updated successfully!', item: updatedItem };
+    } else {
+      return { success: false, message: 'Failed to update portfolio item.', errors: { general: 'Database error or item not found.' } };
+    }
+  } catch (error) {
+    console.error("Error in updatePortfolioItemAction:", error);
+    return { success: false, message: 'An unexpected error occurred.', errors: { general: 'Server error.' } };
+  }
 }
 
-export async function deletePortfolioItemAction(itemId: string) {
-  console.log("Delete action called for", itemId);
-  revalidatePath('/designer/portfolio');
-  revalidatePath('/portfolio');
+export async function deletePortfolioItemAction(itemId: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const deleted = await deletePortfolioItem(itemId, MOCK_DESIGNER_ID);
+    if (deleted) {
+      revalidatePath('/designer/portfolio');
+      revalidatePath('/portfolio');
+      return { success: true, message: 'Portfolio item deleted successfully.' };
+    } else {
+      return { success: false, message: 'Failed to delete portfolio item. It may not exist.' };
+    }
+  } catch (error) {
+    console.error("Error in deletePortfolioItemAction:", error);
+    return { success: false, message: 'An unexpected error occurred while deleting.' };
+  }
 }

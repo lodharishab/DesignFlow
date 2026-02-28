@@ -5,17 +5,16 @@ import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { PortfolioPageContent } from './portfolio-page-client'; // Import the new client component
-import type { Metadata } from 'next'; // Import Metadata type
+import type { Metadata } from 'next';
 
-// // Re-enable metadata export - TEMPORARILY COMMENTED OUT
-// export const metadata: Metadata = {
-//   title: 'Design Portfolio | DesignFlow',
-//   description: 'Explore a curated collection of stunning design projects by talented designers on DesignFlow. Get inspired for your next creative endeavor.',
-//   openGraph: {
-//     title: 'Design Portfolio Showcase | DesignFlow',
-//     description: 'Discover exceptional design work across various categories, from branding to UI/UX, crafted by our expert designers.',
-//   },
-// };
+export const metadata: Metadata = {
+  title: 'Design Portfolio | DesignFlow',
+  description: 'Explore a curated collection of stunning design projects by talented designers on DesignFlow. Get inspired for your next creative endeavor.',
+  openGraph: {
+    title: 'Design Portfolio Showcase | DesignFlow',
+    description: 'Discover exceptional design work across various categories, from branding to UI/UX, crafted by our expert designers.',
+  },
+};
 
 export default function PortfolioPage() {
   return (
