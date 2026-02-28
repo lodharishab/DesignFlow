@@ -5,7 +5,7 @@ import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
-import { PortfolioShowcaseCard } from '@/app/page'; 
+import { PortfolioShowcaseCard } from '@/components/shared/portfolio-showcase-card'; 
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Palette, Share2, Printer, Laptop, Brush as BrushIconLucide, Package as PackageIcon, Film, Presentation, Camera, ArrowRight, Sparkles, Eye, Briefcase } from 'lucide-react';

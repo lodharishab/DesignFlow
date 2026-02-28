@@ -1,12 +1,12 @@
 'use server';
 
-import { openai } from '@/ai/genkit';
+import { getOpenAI } from '@/ai/genkit';
 import type { BrandSuggestionsRequest, BrandSuggestionsResponse } from './brand-suggestions-types';
 
 export async function generateBrandSuggestions(request: BrandSuggestionsRequest): Promise<BrandSuggestionsResponse> {
   const existingTagsLine = request.existingTags ? `\n- Existing Brand Tags: ${request.existingTags}` : '';
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-5-mini',
     messages: [
       {

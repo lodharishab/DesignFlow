@@ -1,10 +1,10 @@
 'use server';
 
-import { openai } from '@/ai/genkit';
+import { getOpenAI } from '@/ai/genkit';
 import type { DesignerBioRequest, DesignerBioResponse } from './designer-bio-types';
 
 export async function generateDesignerBio(request: DesignerBioRequest): Promise<DesignerBioResponse> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-5-mini',
     messages: [
       {

@@ -1,10 +1,10 @@
 'use server';
 
-import { openai } from '@/ai/genkit';
+import { getOpenAI } from '@/ai/genkit';
 import type { AnnouncementRequest, AnnouncementResponse } from './announcement-types';
 
 export async function generateAnnouncement(request: AnnouncementRequest): Promise<AnnouncementResponse> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-5-mini',
     messages: [
       {

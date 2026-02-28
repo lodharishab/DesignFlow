@@ -1,9 +1,9 @@
 'use server';
 
-import { openai } from '@/ai/genkit';
+import { getOpenAI } from '@/ai/genkit';
 
 export async function summarizeChat(chatHistory: string): Promise<string> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-5-mini',
     messages: [
       {

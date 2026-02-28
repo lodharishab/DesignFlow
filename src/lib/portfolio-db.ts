@@ -4,7 +4,7 @@ import { portfolioItems } from './schema';
 import { eq, desc } from 'drizzle-orm';
 import type { PortfolioItem, PortfolioItemRecord } from './types';
 export type { PortfolioItem, PortfolioItemRecord };
-import { allPortfolioItemsData } from '@/app/portfolio/page';
+import { allPortfolioItemsData } from '@/lib/portfolio-data';
 
 function rowToItem(row: typeof portfolioItems.$inferSelect): PortfolioItem {
   return {
