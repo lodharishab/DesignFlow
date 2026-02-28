@@ -2,23 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { cartItems } from './schema';
 import { eq, and } from 'drizzle-orm';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface CartItem {
-  id: string;
-  userId: string;
-  serviceId?: string;
-  tierId?: string;
-  name: string;
-  tierName?: string;
-  price: number;
-  imageUrl?: string;
-  imageHint?: string;
-  quantity: number;
-}
+import type { CartItem } from './types';
+export type { CartItem };
 
 // ============================================================================
 // Row mapper

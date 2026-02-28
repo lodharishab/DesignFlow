@@ -8,30 +8,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-export interface PortfolioItem {
-  _id?: string; // MongoDB ID
-  id: string; // Slug / friendly ID
-  designerId?: string; // ID of the designer who created this
-  title: string; // Specific project title
-  category: string; // Service category - this will be the main "title" on the card
-  categorySlug: string;
-  clientName?: string;
-  projectDate?: string;
-  coverImageUrl: string;
-  coverImageHint: string;
-  projectDescription: string;
-  galleryImages: Array<{ url: string; hint: string; caption?: string }>;
-  tags?: string[];
-  views?: number;
-  likes?: number;
-  designer?: { 
-    id: string;
-    slug: string; 
-    name: string; 
-    avatarUrl?: string; 
-    imageHint?: string;
-  };
-}
+import type { PortfolioItem } from '@/lib/types';
+export type { PortfolioItem };
 
 interface PortfolioItemCardProps {
   item: PortfolioItem;

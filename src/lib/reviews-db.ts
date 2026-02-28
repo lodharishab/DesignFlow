@@ -2,37 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { reviews } from './schema';
 import { eq, desc, and } from 'drizzle-orm';
-
-// Re-export the interface for consumers migrating from reviews-data.ts
-export interface DesignerReview {
-  id: string;
-  orderId: string;
-  clientName: string;
-  clientAvatarUrl: string;
-  clientAvatarHint: string;
-  serviceName: string;
-  category: string;
-  rating: number;
-  reviewText?: string;
-  reviewDate: Date;
-  isFeatured?: boolean;
-  isReported?: boolean;
-  revisions: number;
-}
-
-// Admin-facing review interface
-export interface AdminReview {
-  id: string;
-  orderId: string;
-  authorName: string;
-  authorRole: string;
-  recipientName: string;
-  serviceName: string;
-  rating: number;
-  reviewText?: string;
-  reviewDate: Date;
-  status: 'Pending' | 'Approved' | 'Hidden';
-}
+import type { DesignerReview, AdminReview } from './types';
+export type { DesignerReview, AdminReview };
 
 /** Import the hardcoded fallback data — will be removed once all data is in DB */
 import { mockDesignerReviews as MOCK_REVIEWS } from './reviews-data';

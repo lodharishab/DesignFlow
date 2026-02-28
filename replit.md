@@ -8,7 +8,7 @@ A Next.js marketplace application for expert design services. Connects clients w
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 3.4, Radix UI components, shadcn/ui
 - **AI**: OpenAI (via Replit AI Integrations, gpt-5-mini model)
-- **Database**: PostgreSQL (Replit built-in, via `pg` package)
+- **Database**: PostgreSQL (Neon-backed, via `@neondatabase/serverless` + Drizzle ORM)
 - **Auth/Backend**: Mock auth (prototype — add NextAuth.js for production)
 - **State Management**: TanStack React Query
 - **Forms**: React Hook Form + Zod validation
@@ -22,19 +22,31 @@ A Next.js marketplace application for expert design services. Connects clients w
   - `genkit.ts` - OpenAI client initialization (uses Replit AI Integrations env vars)
   - `flows/` - Individual AI flow modules
 - `src/lib/` - Utility libraries
-  - `db.ts` - PostgreSQL connection pool and query helpers
-  - `blog-db.ts` - Blog post CRUD operations
-  - `portfolio-db.ts` - Portfolio item CRUD operations
-  - `designer-data.ts` - Designer mock data
-  - `brand-profile-db.ts` - Brand profile (localStorage-based)
+  - `types.ts` - All shared TypeScript interfaces and types (single source of truth)
+  - `schema.ts` - Drizzle ORM table definitions (comprehensive schema)
+  - `db.ts` - Neon serverless + Drizzle ORM connection
+  - `*-db.ts` - Server action files for each domain (blog, portfolio, services, orders, etc.)
+  - `designer-data.ts` - Designer mock/fallback data
 - `src/hooks/` - Custom React hooks
 - `src/contexts/` - React context providers
+- `drizzle.config.ts` - Drizzle Kit configuration
 
 ## Database
 
-PostgreSQL tables:
-- `blog_posts` - Blog content with author, status, categories, tags, engagement metrics
-- `portfolio_items` - Designer portfolio projects with gallery images and tags
+PostgreSQL via Neon serverless with Drizzle ORM. Schema defined in `src/lib/schema.ts` with tables for:
+- Users, designer profiles, site settings
+- Service categories, subcategories, services, service tiers
+- Orders, order events, milestones, attachments
+- Transactions, payout requests, payment methods, cart items
+- Conversations, messages, chat files
+- Blog posts, portfolio items, brand profiles
+- Notifications, audit logs, disputes, reviews/reports
+
+## Architecture Notes
+
+- **Server Actions**: All `*-db.ts` files use `'use server'` directive. Only async functions can be exported from these files. All interfaces/types live in `src/lib/types.ts` and are re-exported via `export type {}` from the db files for backward compatibility.
+- **Fallback data**: Most db files include mock data fallback when `DATABASE_URL` is not set, controlled by `isDbEnabled()`.
+- **DB scripts**: `npm run db:push` (sync schema), `npm run db:generate` (generate migrations), `npm run db:studio` (Drizzle Studio), `npm run db:seed` (seed data).
 
 ## Environment Variables
 

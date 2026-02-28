@@ -2,55 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { services, serviceTiers, serviceCategories, serviceSubcategories, serviceApprovedDesigners } from './schema';
 import { eq, desc, inArray } from 'drizzle-orm';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface ServiceTierData {
-  id: string;
-  serviceId: string;
-  name: string;
-  price: number;
-  description?: string;
-  deliveryTimeMin?: number;
-  deliveryTimeMax?: number;
-  deliveryTimeUnit?: string;
-  scope?: string[];
-  iconName?: string;
-}
-
-export interface ServiceData {
-  id: string;
-  name: string;
-  generalDescription?: string;
-  longDescription?: string;
-  category?: string;
-  categorySlug?: string;
-  tags?: string[];
-  imageUrl?: string;
-  imageHint?: string;
-  status: string;
-  tiers: ServiceTierData[];
-}
-
-export interface ServiceCategory {
-  id: string;
-  name: string;
-  description?: string;
-  slug?: string;
-  serviceCount?: number;
-}
-
-export interface ServiceSubCategory {
-  id: string;
-  name: string;
-  description?: string;
-  parentCategoryId?: string;
-  parentCategoryName?: string;
-  slug?: string;
-  serviceCount?: number;
-}
+import type { ServiceTierData, ServiceData, ServiceCategory, ServiceSubCategory } from './types';
+export type { ServiceTierData, ServiceData, ServiceCategory, ServiceSubCategory };
 
 // ============================================================================
 // Row mappers

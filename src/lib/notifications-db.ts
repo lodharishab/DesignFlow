@@ -2,24 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { notifications } from './schema';
 import { eq, desc, and } from 'drizzle-orm';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface Notification {
-  id: string;
-  userId: string;
-  type: string;
-  title: string;
-  message?: string;
-  relatedOrderId?: string;
-  relatedPortfolioId?: string;
-  priority: string;
-  isRead: boolean;
-  isArchived: boolean;
-  createdAt: Date;
-}
+import type { Notification } from './types';
+export type { Notification };
 
 // ============================================================================
 // Row mapper

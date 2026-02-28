@@ -2,60 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { conversations, messages, chatFiles } from './schema';
 import { eq, desc, or, and } from 'drizzle-orm';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface Conversation {
-  id: string;
-  orderId?: string;
-  participantOneId?: string;
-  participantTwoId?: string;
-  participantOneName?: string;
-  participantTwoName?: string;
-  participantOneAvatarUrl?: string;
-  participantTwoAvatarUrl?: string;
-  participantOneAvatarHint?: string;
-  participantTwoAvatarHint?: string;
-  lastMessage?: string;
-  lastMessageTimestamp?: Date;
-  lastReadTimestampOne?: Date;
-  lastReadTimestampTwo?: Date;
-  unreadCountOne: number;
-  unreadCountTwo: number;
-  isPinnedOne: boolean;
-  isPinnedTwo: boolean;
-  isArchived: boolean;
-  isMuted: boolean;
-  messages?: Message[];
-  sharedFiles?: ChatFile[];
-}
-
-export interface Message {
-  id: string;
-  conversationId: string;
-  senderId?: string;
-  senderRole?: string;
-  text?: string;
-  timestamp: Date;
-  status: string;
-  isPinned: boolean;
-  fileUrl?: string;
-  fileName?: string;
-  fileSize?: number;
-  fileType?: string;
-}
-
-export interface ChatFile {
-  id: string;
-  conversationId: string;
-  name: string;
-  size?: number;
-  type?: string;
-  url: string;
-  timestamp: Date;
-}
+import type { Conversation, Message, ChatFile } from './types';
+export type { Conversation, Message, ChatFile };
 
 // ============================================================================
 // Row mappers

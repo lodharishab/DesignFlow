@@ -2,28 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { blogPosts } from './schema';
 import { eq, desc } from 'drizzle-orm';
-
-export interface BlogPost {
-  _id?: string;
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  authorName: string;
-  authorId?: string;
-  authorAvatarUrl?: string;
-  authorAvatarHint?: string;
-  publishDate: Date;
-  status: 'Published' | 'Draft' | 'Scheduled';
-  featuredImageUrl: string;
-  featuredImageHint: string;
-  category?: string;
-  categorySlug?: string;
-  tags?: string[];
-  views?: number;
-  likes?: number;
-  comments?: number;
-}
+import type { BlogPost } from './types';
+export type { BlogPost };
 
 const MOCK_BLOG_POSTS: BlogPost[] = [
   {

@@ -2,48 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { transactions, payoutRequests, paymentMethods } from './schema';
 import { eq, desc, and } from 'drizzle-orm';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface Transaction {
-  id: string;
-  orderId?: string;
-  userId?: string;
-  date: Date;
-  type: string;
-  status: string;
-  amount: number;
-  description?: string;
-  paymentMethod?: string;
-  clientName?: string;
-  designerName?: string;
-}
-
-export interface PayoutRequest {
-  id: string;
-  designerId?: string;
-  orderId?: string;
-  orderName?: string;
-  amount: number;
-  reason?: string;
-  status: string;
-  requestDate: Date;
-  repaidAmount: number;
-}
-
-export interface PaymentMethod {
-  id: string;
-  userId: string;
-  userName?: string;
-  userRole?: string;
-  methodType: string;
-  identifier: string;
-  isPrimary: boolean;
-  status: string;
-  lastUpdated: Date;
-}
+import type { Transaction, PayoutRequest, PaymentMethod } from './types';
+export type { Transaction, PayoutRequest, PaymentMethod };
 
 // ============================================================================
 // Row mappers

@@ -2,35 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { disputes, disputeTimelineEvents } from './schema';
 import { eq, desc } from 'drizzle-orm';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface Dispute {
-  id: string;
-  orderId: string;
-  designerId?: string;
-  serviceName?: string;
-  servicePrice?: number;
-  orderDeadline?: Date;
-  clientName?: string;
-  disputeType: string;
-  status: string;
-  lastUpdated: Date;
-  clientClaim?: string;
-  designerResponse?: string;
-  adminNotes?: string;
-  timeline?: DisputeTimelineEvent[];
-}
-
-export interface DisputeTimelineEvent {
-  id: string;
-  disputeId: string;
-  actor: string;
-  action: string;
-  timestamp: Date;
-}
+import type { Dispute, DisputeTimelineEvent } from './types';
+export type { Dispute, DisputeTimelineEvent };
 
 // ============================================================================
 // Row mappers

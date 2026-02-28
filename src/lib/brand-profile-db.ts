@@ -8,29 +8,8 @@
 import { db, isDbEnabled } from './db';
 import { brandProfiles } from './schema';
 import { eq, and } from 'drizzle-orm';
-
-export interface BrandProfileFormData {
-  [key: string]: any;
-  id: string;
-  companyName: string;
-  companyWebsite: string;
-  industry: string;
-  companySize: string;
-  targetAudience: string;
-  brandValues: string;
-  tags?: string[];
-  preferredDesignStyle: string;
-  colorsToUse: string;
-  colorsToAvoid: string;
-  notesForDesigners: string;
-  communicationPreference: string;
-  feedbackStyle: string;
-  brandGuidelinesLink: string;
-  existingAssetsLink: string;
-  logoUrl?: string | null;
-  projectTypes: string[];
-  isFavorite?: boolean;
-}
+import type { BrandProfileFormData } from './types';
+export type { BrandProfileFormData };
 
 const defaultBrandProfile: BrandProfileFormData = {
   id: 'default',

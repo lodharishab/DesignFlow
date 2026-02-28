@@ -2,21 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { users } from './schema';
 import { eq, desc, inArray } from 'drizzle-orm';
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  mobileNumber?: string;
-  roles: string[];
-  avatarUrl?: string;
-  avatarHint?: string;
-  joinDate: Date;
-  lastLogin: Date | null;
-  status: string;
-  phone?: string;
-  staffRole?: string;
-}
+import type { User } from './types';
+export type { User };
 
 function rowToUser(row: typeof users.$inferSelect): User {
   return {

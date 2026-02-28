@@ -2,47 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { siteSettings, auditLogs } from './schema';
 import { eq, desc } from 'drizzle-orm';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface SiteSettings {
-  id: string;
-  platformName: string;
-  contactEmail?: string;
-  defaultCurrency: string;
-  allowClientRegistrations: boolean;
-  allowDesignerRegistrations: boolean;
-  termsUrl?: string;
-  privacyUrl?: string;
-  enableMemberships: boolean;
-  clientBasicPlanName?: string;
-  clientBasicPlanPrice?: string;
-  clientPremiumPlanName?: string;
-  clientPremiumPlanPrice?: string;
-  designerBasicPlanName?: string;
-  designerBasicPlanPrice?: string;
-  designerProPlanName?: string;
-  designerProPlanPrice?: string;
-  enableFreeTrial: boolean;
-  trialDurationDays: number;
-  adminNotificationEmail?: string;
-  stripeApiKey?: string;
-  paypalClientId?: string;
-}
-
-export interface AuditLog {
-  id: string;
-  action: string;
-  actorId?: string;
-  actorName?: string;
-  targetType?: string;
-  targetId?: string;
-  targetName?: string;
-  timestamp: Date;
-  notes?: string;
-}
+import type { SiteSettings, AuditLog } from './types';
+export type { SiteSettings, AuditLog };
 
 // ============================================================================
 // Row mappers

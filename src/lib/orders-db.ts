@@ -2,69 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { orders, orderEvents, orderMilestones, orderAttachments } from './schema';
 import { eq, desc, and, inArray } from 'drizzle-orm';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export type OrderStatus = 'Pending Assignment' | 'In Progress' | 'Awaiting Client Review' | 'Revision Requested' | 'Completed' | 'Cancelled' | 'Refunded';
-
-export interface OrderEvent {
-  id: string;
-  orderId: string;
-  timestamp: Date;
-  event: string;
-  actor?: string;
-  notes?: string;
-}
-
-export interface Milestone {
-  id: string;
-  orderId: string;
-  title: string;
-  dueDate?: Date;
-  amount?: number;
-  status: string;
-}
-
-export interface OrderAttachment {
-  id: string;
-  orderId: string;
-  name: string;
-  url: string;
-  type?: string;
-  submittedAt?: Date;
-}
-
-export interface Order {
-  id: string;
-  clientName: string;
-  clientId?: string;
-  designerName?: string;
-  designerId?: string;
-  serviceName: string;
-  serviceId?: string;
-  serviceTier?: string;
-  serviceScope?: string[];
-  orderDate: Date;
-  dueDate?: Date;
-  status: OrderStatus;
-  totalAmount: number;
-  currency: string;
-  paymentMethod?: string;
-  transactionId?: string;
-  clientBrief?: string;
-  briefAttachments?: Array<{ name: string; url: string; type: string }>;
-  deliverables?: Array<{ name: string; url: string; submittedAt: string }>;
-  revisionNotes?: string;
-  revisionRequestDate?: Date;
-  revisionsAllowed: number;
-  revisionsUsed: number;
-  privateNotes?: string;
-  privateNotesLastEdited?: Date;
-  orderEvents: OrderEvent[];
-  milestones?: Milestone[];
-}
+import type { OrderStatus, OrderEvent, Milestone, OrderAttachment, Order } from './types';
+export type { OrderStatus, OrderEvent, Milestone, OrderAttachment, Order };
 
 // ============================================================================
 // Row mappers

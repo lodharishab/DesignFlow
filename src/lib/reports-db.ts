@@ -2,25 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { reports } from './schema';
 import { eq, desc } from 'drizzle-orm';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export type ReportStatus = 'Open' | 'In Progress' | 'Resolved';
-
-export interface Report {
-  id: string;
-  orderId?: string;
-  reporterId?: string;
-  reporterName: string;
-  reportedUserId?: string;
-  reportedUserName?: string;
-  subject: string;
-  details?: string;
-  reportDate: Date;
-  status: ReportStatus;
-}
+import type { ReportStatus, Report } from './types';
+export type { ReportStatus, Report };
 
 // ============================================================================
 // Row mapper

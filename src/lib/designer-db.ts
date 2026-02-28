@@ -2,32 +2,8 @@
 import { db, isDbEnabled } from './db';
 import { designerProfiles } from './schema';
 import { eq, desc } from 'drizzle-orm';
-
-// Re-export the interface so consumers can migrate from designer-data.ts
-export interface DesignerProfile {
-  id: string;
-  slug: string;
-  name: string;
-  email?: string;
-  avatarUrl: string;
-  imageHint: string;
-  bio: string;
-  specialties: string[];
-  location?: string;
-  memberSince?: Date;
-  website?: string;
-  socialLinks?: { platform: string; url: string }[];
-  profileCompletenessScore?: number;
-  adminRanking?: number;
-  clientRatingAverage?: number | null;
-  clientRatingCount?: number;
-  overallRanking?: number;
-  badges?: ('Top Rated' | 'Rising Talent' | 'On-Time Delivery' | 'Verified')[];
-  // Admin-view fields
-  status?: string;
-  servicesApproved?: number;
-  portfolioLink?: string;
-}
+import type { DesignerProfile } from './types';
+export type { DesignerProfile };
 
 /** Import the hardcoded fallback data — will be removed once all data is in DB */
 import { designersData as MOCK_DESIGNERS } from './designer-data';

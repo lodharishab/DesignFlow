@@ -2,15 +2,9 @@
 import { db, isDbEnabled } from './db';
 import { portfolioItems } from './schema';
 import { eq, desc } from 'drizzle-orm';
-import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
-export type { PortfolioItem };
+import type { PortfolioItem, PortfolioItemRecord } from './types';
+export type { PortfolioItem, PortfolioItemRecord };
 import { allPortfolioItemsData } from '@/app/portfolio/page';
-
-export interface PortfolioItemRecord extends Omit<PortfolioItem, '_id' | 'id'> {
-  _id?: string;
-  id: string;
-  designerId: string;
-}
 
 function rowToItem(row: typeof portfolioItems.$inferSelect): PortfolioItem {
   return {
