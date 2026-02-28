@@ -13,8 +13,7 @@ import { Star, ArrowLeft, Loader2, Save, Edit3, PackageSearch } from 'lucide-rea
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { updateReviewDetailsAction, type ReviewActionResult } from '@/app/admin/reviews/actions';
-import { mockReviewsData } from '@/app/admin/reviews/data';
-import type { Review } from '@/app/admin/reviews/data';
+import { getAllReviews, type AdminReview as Review } from '@/lib/reviews-db';
 
 function EditReviewForm({ review }: { review: Review }) {
   const [state, formAction] = useActionState(updateReviewDetailsAction, { success: false, message: '' });
@@ -101,9 +100,11 @@ function EditReviewContent() {
 
   useEffect(() => {
     if (reviewId) {
-      const foundReview = mockReviewsData.find(r => r.id === reviewId);
-      setReview(foundReview || null);
-      setIsLoading(false);
+      getAllReviews().then(reviews => {
+        const foundReview = reviews.find(r => r.id === reviewId);
+        setReview(foundReview || null);
+        setIsLoading(false);
+      });
     }
   }, [reviewId]);
 

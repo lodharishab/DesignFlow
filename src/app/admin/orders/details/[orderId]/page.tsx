@@ -34,8 +34,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { initialOrdersData } from '@/components/admin/orders/orders-table-view';
-import type { Order } from '@/components/admin/orders/orders-table-view';
+import { getOrderById } from '@/lib/orders-db';
+import type { Order } from '@/lib/orders-db';
 
 const getStatusBadgeVariant = (status: Order['status']) => {
   switch (status) {
@@ -65,19 +65,20 @@ export default function AdminOrderDetailPage(): ReactElement {
   useEffect(() => {
     if (orderId) {
       setIsLoading(true);
-      const foundOrder = initialOrdersData.find(o => o.id === orderId);
-      if (foundOrder) {
-        setOrder(foundOrder);
-      } else {
-        toast({
-          title: "Error",
-          description: "Order not found.",
-          variant: "destructive",
-          duration: 3000,
-        });
-        router.push('/admin/orders');
-      }
-      setIsLoading(false);
+      getOrderById(orderId).then(foundOrder => {
+        if (foundOrder) {
+          setOrder(foundOrder);
+        } else {
+          toast({
+            title: "Error",
+            description: "Order not found.",
+            variant: "destructive",
+            duration: 3000,
+          });
+          router.push('/admin/orders');
+        }
+        setIsLoading(false);
+      });
     }
   }, [orderId, router, toast]);
 

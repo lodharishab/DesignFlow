@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo, type FormEvent } from 'react';
+import React, { useState, type ReactElement, useMemo, type FormEvent, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { initialOrdersData, type Order } from '@/components/admin/orders/orders-table-view';
+import { getOrdersByDesignerId, type Order } from '@/lib/orders-db';
 import { useToast } from '@/hooks/use-toast';
 
 const MOCK_DESIGNER_ID = 'des002'; // For filtering orders
@@ -125,8 +125,12 @@ function NewDisputeModal({ onDisputeOpened }: { onDisputeOpened: (dispute: Dispu
     const [description, setDescription] = useState('');
     const [attachment, setAttachment] = useState<File | null>(null);
 
-    const designerOrders = useMemo(() => {
-        return initialOrdersData.filter(o => o.designerId === MOCK_DESIGNER_ID && (o.status === 'In Progress' || o.status === 'Completed'));
+    const [designerOrders, setDesignerOrders] = useState<Order[]>([]);
+
+    useEffect(() => {
+      getOrdersByDesignerId(MOCK_DESIGNER_ID).then(orders => {
+        setDesignerOrders(orders.filter(o => o.status === 'In Progress' || o.status === 'Completed'));
+      });
     }, []);
 
     const handleSubmit = (e: FormEvent) => {

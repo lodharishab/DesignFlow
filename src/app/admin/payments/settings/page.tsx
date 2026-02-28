@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo } from 'react';
+import { useState, useEffect, type ReactElement, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,36 +11,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Settings, CreditCard, Banknote, ShieldCheck, User, Eye, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
-
-type MethodType = 'Card' | 'UPI' | 'PayPal' | 'Bank Transfer';
-type VerificationStatus = 'Verified' | 'Pending' | 'Rejected';
-
-interface PaymentMethod {
-  id: string;
-  userId: string;
-  userName: string;
-  userRole: 'Client' | 'Designer';
-  methodType: MethodType;
-  identifier: string; // e.g., **** **** **** 4242 or abc***@okhdfc
-  isPrimary: boolean;
-  status: VerificationStatus;
-  lastUpdated: Date;
-}
-
-const mockPaymentMethods: PaymentMethod[] = [
-  { id: 'pm_1', userId: 'usr001', userName: 'Priya Sharma', userRole: 'Client', methodType: 'Card', identifier: '**** **** **** 4242', isPrimary: true, status: 'Verified', lastUpdated: new Date(2024, 5, 1) },
-  { id: 'pm_2', userId: 'usr003', userName: 'Aarav Patel', userRole: 'Client', methodType: 'UPI', identifier: 'aarav.patel@okhdfc', isPrimary: true, status: 'Verified', lastUpdated: new Date(2024, 4, 20) },
-  { id: 'pm_3', userId: 'usr006', userName: 'Sneha Reddy', userRole: 'Client', methodType: 'Card', identifier: '**** **** **** 5555', isPrimary: false, status: 'Pending', lastUpdated: new Date(2024, 6, 18) },
-  { id: 'pm_4', userId: 'usr002', userName: 'Rohan Kapoor', userRole: 'Designer', methodType: 'Bank Transfer', identifier: '********5678', isPrimary: true, status: 'Verified', lastUpdated: new Date(2023, 11, 5) },
-  { id: 'pm_5', userId: 'des003', userName: 'Aisha Khan', userRole: 'Designer', methodType: 'PayPal', identifier: 'aisha.k***@example.com', isPrimary: true, status: 'Verified', lastUpdated: new Date(2024, 1, 20) },
-  { id: 'pm_6', userId: 'des004', userName: 'Vikram Singh', userRole: 'Designer', methodType: 'Bank Transfer', identifier: '********1121', isPrimary: true, status: 'Rejected', lastUpdated: new Date(2024, 3, 10) },
-];
+import { getAllPaymentMethods, type PaymentMethod } from '@/lib/transactions-db';
 
 
 function PaymentMethodsTable({ methods }: { methods: PaymentMethod[] }) {
     const { toast } = useToast();
     
-    const getStatusBadgeVariant = (status: VerificationStatus) => {
+    const getStatusBadgeVariant = (status: string) => {
         switch (status) {
             case 'Verified': return 'default';
             case 'Pending': return 'secondary';
@@ -119,9 +96,14 @@ function PaymentMethodsTable({ methods }: { methods: PaymentMethod[] }) {
 }
 
 export default function AdminPaymentSettingsPage(): ReactElement {
-  
-  const clientMethods = useMemo(() => mockPaymentMethods.filter(m => m.userRole === 'Client'), []);
-  const designerMethods = useMemo(() => mockPaymentMethods.filter(m => m.userRole === 'Designer'), []);
+  const [allPaymentMethods, setAllPaymentMethods] = useState<PaymentMethod[]>([]);
+
+  useEffect(() => {
+    getAllPaymentMethods().then(setAllPaymentMethods);
+  }, []);
+
+  const clientMethods = useMemo(() => allPaymentMethods.filter(m => m.userRole === 'Client'), [allPaymentMethods]);
+  const designerMethods = useMemo(() => allPaymentMethods.filter(m => m.userRole === 'Designer'), [allPaymentMethods]);
 
   return (
     <div className="space-y-8">

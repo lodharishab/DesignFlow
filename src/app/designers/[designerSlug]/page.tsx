@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
-import { designersData, type DesignerProfile } from '@/lib/designer-data';
+import { getDesignerBySlug, type DesignerProfile } from '@/lib/designer-db';
 import type { Metadata, ResolvingMetadata } from 'next';
 import { DesignerProfileClientContent } from './designer-profile-client'; // Import the client component
 
@@ -11,12 +11,12 @@ interface PageProps {
   params: Promise<{ designerSlug: string }>;
 }
 
-// Simulating data fetching for generateMetadata & initial props
+// Fetch designer data from DB
 async function getDesignerData(slug: string): Promise<DesignerProfile | null> {
-  // In a real app, fetch from your DB here
-  await new Promise(resolve => setTimeout(resolve, 0)); // Simulate async
-  return designersData.find(d => d.slug === slug) || null;
+  return getDesignerBySlug(slug);
 }
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(
   { params }: PageProps,
@@ -51,11 +51,9 @@ export async function generateMetadata(
         ...previousImages,
       ],
       type: 'profile',
-      profile: {
-        firstName: designer.name.split(' ')[0],
-        lastName: designer.name.split(' ').slice(1).join(' '),
-        username: designer.slug,
-      },
+      firstName: designer.name.split(' ')[0],
+      lastName: designer.name.split(' ').slice(1).join(' '),
+      username: designer.slug,
     },
      twitter: {
       card: 'summary', 

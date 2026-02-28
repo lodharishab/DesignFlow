@@ -49,6 +49,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
+import { getNotificationsByUser, type Notification } from '@/lib/notifications-db';
+import { formatDistanceToNow } from 'date-fns';
+
+const CURRENT_DESIGNER_ID = 'des001';
 
 
 const navItems = [
@@ -87,44 +91,20 @@ const navItems = [
   { href: '/designer/profile', icon: UserCircle, label: 'Profile' },
 ];
 
-const mockHeaderNotifications = [
-    {
-        id: 'notif1',
-        icon: MessageSquare,
-        title: "New Message from Priya S.",
-        description: "Regarding order ORD7361P: 'Looks great! Can we try a different color?'",
-        time: "15m ago",
-        href: "/designer/orders/ORD7361P",
-        isRead: false,
-    },
-    {
-        id: 'notif2',
-        icon: Briefcase,
-        title: "New Order Assigned",
-        description: "You've been assigned to order ORDXYZ123: 'Business Card Design'.",
-        time: "1h ago",
-        href: "/designer/orders/ORDXYZ123",
-        isRead: false,
-    },
-    {
-        id: 'notif3',
-        icon: CheckCircle,
-        title: "Order Approved",
-        description: "Client has approved the final delivery for order ORDFGHIJ.",
-        time: "2 days ago",
-        href: "/designer/orders/ORDFGHIJ",
-        isRead: true,
-    },
-];
-
 export default function DesignerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const unreadCount = mockHeaderNotifications.filter(n => !n.isRead).length;
+  const [headerNotifications, setHeaderNotifications] = useState<Notification[]>([]);
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    getNotificationsByUser(CURRENT_DESIGNER_ID).then(setHeaderNotifications);
+  }, []);
+
+  const unreadCount = headerNotifications.filter(n => !n.isRead).length;
 
    useEffect(() => {
     const initiallyOpen: Record<string, boolean> = {};
@@ -234,16 +214,16 @@ export default function DesignerLayout({
                 <DropdownMenuContent className="w-80" align="end">
                     <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {mockHeaderNotifications.length > 0 ? (
+                    {headerNotifications.length > 0 ? (
                         <>
-                            {mockHeaderNotifications.map(notification => (
+                            {headerNotifications.map(notification => (
                                 <DropdownMenuItem key={notification.id} asChild className="p-3 cursor-pointer">
-                                    <Link href={notification.href}>
-                                        <notification.icon className="h-5 w-5 mr-3 text-primary shrink-0" />
+                                    <Link href={'#'}>
+                                        <Bell className="h-5 w-5 mr-3 text-primary shrink-0" />
                                         <div className="flex-grow">
                                             <p className="font-semibold text-sm">{notification.title}</p>
-                                            <p className="text-xs text-muted-foreground">{notification.description}</p>
-                                            <p className="text-xs text-muted-foreground/70 mt-1">{notification.time}</p>
+                                            <p className="text-xs text-muted-foreground">{notification.message}</p>
+                                            <p className="text-xs text-muted-foreground/70 mt-1">{notification.createdAt ? formatDistanceToNow(notification.createdAt, { addSuffix: true }) : ''}</p>
                                         </div>
                                     </Link>
                                 </DropdownMenuItem>

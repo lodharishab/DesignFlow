@@ -11,11 +11,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Mail, Briefcase, MapPin, CalendarDays, ExternalLink, Star, Palette, Users, MessageSquare, PackageSearch, ThumbsUp } from 'lucide-react';
 import { PortfolioItemCard, type PortfolioItem } from '@/components/shared/portfolio-item-card';
-import { allPortfolioItemsData } from '@/app/portfolio/page'; 
-import { type DesignerProfile } from '@/lib/designer-data';
+import { getAllPortfolioItems } from '@/lib/portfolio-db';
+import { type DesignerProfile } from '@/lib/designer-db';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
-import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data'; // Import review data
+import { getReviewsByDesignerId, type DesignerReview } from '@/lib/reviews-db';
 import { cn } from '@/lib/utils';
 
 interface DesignerProfileClientContentProps {
@@ -35,12 +35,16 @@ export function DesignerProfileClientContent({ initialDesigner }: DesignerProfil
   useEffect(() => {
     if (initialDesigner) {
       setDesigner(initialDesigner);
-      const portfolio = allPortfolioItemsData.filter(item => item.designer?.id === initialDesigner.id);
-      setDesignerPortfolio(portfolio);
 
-      // Filter for featured reviews for this designer
-      const reviews = mockDesignerReviews.filter(review => review.isFeatured);
-      setFeaturedReviews(reviews);
+      getAllPortfolioItems().then(allItems => {
+        const portfolio = allItems.filter(item => item.designer?.id === initialDesigner.id);
+        setDesignerPortfolio(portfolio);
+      });
+
+      // Fetch featured reviews for this designer from DB
+      getReviewsByDesignerId(initialDesigner.id).then(reviews => {
+        setFeaturedReviews(reviews.filter(review => review.isFeatured));
+      });
 
       setIsLoading(false);
     } else if (!isLoading && !initialDesigner) { 

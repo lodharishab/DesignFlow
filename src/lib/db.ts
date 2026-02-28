@@ -1,40 +1,23 @@
-import { Pool } from 'pg';
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
+import * as schema from './schema';
 
-let pool: Pool | null = null;
-
-function getPool(): Pool {
-  if (!pool) {
-    pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      max: 10,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
-    });
+function getConnectionString(): string {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error('DATABASE_URL environment variable is not set');
   }
-  return pool;
+  return url;
 }
 
-export async function query<T = Record<string, unknown>>(
-  text: string,
-  params?: unknown[]
-): Promise<T[]> {
-  const client = await getPool().connect();
-  try {
-    const result = await client.query(text, params);
-    return result.rows as T[];
-  } finally {
-    client.release();
-  }
-}
+const sql = neon(getConnectionString());
+export const db = drizzle(sql, { schema });
 
-export async function queryOne<T = Record<string, unknown>>(
-  text: string,
-  params?: unknown[]
-): Promise<T | null> {
-  const rows = await query<T>(text, params);
-  return rows[0] || null;
-}
-
+/**
+ * @deprecated Will be removed once all consumers use Drizzle queries directly.
+ * Kept temporarily for backward compatibility during migration.
+ */
 export function isDbEnabled(): boolean {
   return !!process.env.DATABASE_URL;
 }
+

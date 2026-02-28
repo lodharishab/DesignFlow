@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingCart, MessageSquare, Briefcase, ArrowRight, BarChart3, Sparkles, CheckCircle2, Bell, Package, IndianRupee, Hourglass, Star, Upload, Heart, CalendarPlus } from 'lucide-react';
@@ -15,20 +16,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getOrdersByClientId, type Order } from '@/lib/orders-db';
+import { getNotificationsByUser, type Notification as DbNotification } from '@/lib/notifications-db';
+import { formatDistanceToNow } from 'date-fns';
 
-// Mock data for active orders - consistent with /client/orders page
-const activeOrdersMock = [
-  { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', status: 'In Progress', designer: 'Rohan K.', orderDate: '2024-07-01', total: '₹24,999.00', tier: 'Premium' },
-  { id: 'ORD1038K', serviceName: 'Social Media Campaign Graphics', status: 'Pending Assignment', designer: 'N/A', orderDate: '2024-07-05', total: '₹7,999.00', tier: 'Standard' },
-  { id: 'ORD5050T', serviceName: 'Mobile App Icon Set', status: 'Awaiting Client Review', designer: 'Aisha K.', orderDate: '2024-07-10', total: '₹4,999.00', tier: 'Standard' },
-];
-
-const clientStats = [
-    { title: "Active Orders", value: activeOrdersMock.length.toString(), icon: ShoppingCart, color: "text-blue-500", href: "/client/orders?status=active" },
-    { title: "Completed Projects", value: "5", icon: CheckCircle2, color: "text-green-500", href: "/client/orders?status=completed" },
-    { title: "Total Spend", value: "₹55,000", icon: BarChart3, color: "text-purple-500", href: "/client/orders" },
-    { title: "Pending Payments", value: "1", icon: Hourglass, color: "text-orange-500", href: "/client/orders?status=pending_payment" },
-];
+const CURRENT_CLIENT_ID = 'client001';
 
 const quickActions = [
     { label: "Start New Project", href: "/design-services", icon: Sparkles, variant: "default" },
@@ -38,35 +30,25 @@ const quickActions = [
     { label: "Book Consultation", href: "/contact-support", icon: CalendarPlus, variant: "outline" },
 ]
 
-const mockNotifications = [
-    {
-        id: 'notif1',
-        icon: Package,
-        title: "Deliverable Submitted",
-        description: "Your first draft for 'E-commerce Website UI/UX' is ready for review.",
-        time: "15m ago",
-        href: "/client/orders/ORD7361P",
-    },
-    {
-        id: 'notif2',
-        icon: MessageSquare,
-        title: "New Message",
-        description: "You have a new message from designer Rohan K. regarding your project.",
-        time: "1h ago",
-        href: "/client/orders/ORD7361P",
-    },
-    {
-        id: 'notif3',
-        icon: CheckCircle2,
-        title: "Order Completed",
-        description: "Your order 'Startup Logo & Brand Identity' has been marked as complete.",
-        time: "2 days ago",
-        href: "/client/orders/ORD2945S",
-    },
-];
-
-
 export default function ClientDashboardPage() {
+  const [activeOrders, setActiveOrders] = useState<Order[]>([]);
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
+  const [notifications, setNotifications] = useState<DbNotification[]>([]);
+
+  useEffect(() => {
+    getOrdersByClientId(CURRENT_CLIENT_ID).then(orders => {
+      setAllOrders(orders);
+      setActiveOrders(orders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled' && o.status !== 'Refunded'));
+    });
+    getNotificationsByUser(CURRENT_CLIENT_ID).then(setNotifications);
+  }, []);
+
+  const clientStats = useMemo(() => [
+    { title: "Active Orders", value: activeOrders.length.toString(), icon: ShoppingCart, color: "text-blue-500", href: "/client/orders?status=active" },
+    { title: "Completed Projects", value: allOrders.filter(o => o.status === 'Completed').length.toString(), icon: CheckCircle2, color: "text-green-500", href: "/client/orders?status=completed" },
+    { title: "Total Spend", value: `₹${allOrders.reduce((sum, o) => sum + o.totalAmount, 0).toLocaleString('en-IN')}`, icon: BarChart3, color: "text-purple-500", href: "/client/orders" },
+    { title: "Pending Payments", value: allOrders.filter(o => o.status === 'Pending Assignment').length.toString(), icon: Hourglass, color: "text-orange-500", href: "/client/orders?status=pending_payment" },
+  ], [activeOrders, allOrders]);
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -78,9 +60,9 @@ export default function ClientDashboardPage() {
                         <Bell className="h-5 w-5" />
                         <span className="sr-only">Notifications</span>
                     </Button>
-                    {mockNotifications.length > 0 && (
+                    {notifications.length > 0 && (
                         <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                            {mockNotifications.length}
+                            {notifications.length}
                         </Badge>
                     )}
                 </div>
@@ -88,16 +70,16 @@ export default function ClientDashboardPage() {
             <DropdownMenuContent className="w-80" align="end">
                 <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {mockNotifications.length > 0 ? (
+                {notifications.length > 0 ? (
                     <>
-                        {mockNotifications.map(notification => (
+                        {notifications.map(notification => (
                             <DropdownMenuItem key={notification.id} asChild className="p-3 cursor-pointer">
-                                <Link href={notification.href}>
-                                    <notification.icon className="h-5 w-5 mr-3 text-primary shrink-0" />
+                                <Link href={notification.relatedOrderId ? `/client/orders/${notification.relatedOrderId}` : '#'}>
+                                    <Bell className="h-5 w-5 mr-3 text-primary shrink-0" />
                                     <div className="flex-grow">
                                         <p className="font-semibold text-sm">{notification.title}</p>
-                                        <p className="text-xs text-muted-foreground">{notification.description}</p>
-                                        <p className="text-xs text-muted-foreground/70 mt-1">{notification.time}</p>
+                                        <p className="text-xs text-muted-foreground">{notification.message}</p>
+                                        <p className="text-xs text-muted-foreground/70 mt-1">{notification.createdAt ? formatDistanceToNow(notification.createdAt, { addSuffix: true }) : ''}</p>
                                     </div>
                                 </Link>
                             </DropdownMenuItem>
@@ -161,17 +143,17 @@ export default function ClientDashboardPage() {
             <CardDescription>Track your ongoing design projects here.</CardDescription>
           </CardHeader>
           <CardContent>
-            {activeOrdersMock.length > 0 ? (
+            {activeOrders.length > 0 ? (
               <ul className="space-y-4">
-                {activeOrdersMock.map(order => (
+                {activeOrders.map(order => (
                   <li key={order.id} className="p-4 border rounded-lg bg-secondary/30 hover:shadow-sm transition-shadow">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                       <div className="flex-grow">
                         <Link href={`/client/orders/${order.id}`} className="hover:underline">
                             <h3 className="font-semibold text-md group-hover:text-primary">{order.serviceName}</h3>
                         </Link>
-                        <p className="text-xs text-muted-foreground">ID: {order.id} | Tier: {order.tier}</p>
-                        <p className="text-sm text-muted-foreground mt-1">Status: <span className="font-medium text-primary">{order.status}</span> | Designer: {order.designer}</p>
+                        <p className="text-xs text-muted-foreground">ID: {order.id} | Tier: {order.serviceTier || 'Standard'}</p>
+                        <p className="text-sm text-muted-foreground mt-1">Status: <span className="font-medium text-primary">{order.status}</span> | Designer: {order.designerName || 'N/A'}</p>
                       </div>
                       <Button variant="outline" size="sm" asChild className="shrink-0">
                         <Link href={`/client/orders/${order.id}`}>View Details</Link>

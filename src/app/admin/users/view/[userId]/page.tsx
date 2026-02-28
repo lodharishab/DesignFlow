@@ -7,23 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UsersRound, ArrowLeft, PackageSearch } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-// Mock user data for placeholder
-interface UserDetail {
-  id: string;
-  name: string;
-  email: string;
-  roles: string[];
-  joinDate: string;
-  lastLogin?: string;
-  status: string;
-  // Add more fields as needed
-}
-
-const mockUsers: { [key: string]: UserDetail } = {
-  'usr001': { id: 'usr001', name: 'Priya Sharma', email: 'priya.sharma@example.in', roles: ['Client'], joinDate: '2023-01-15', lastLogin: '2024-07-01', status: 'Active' },
-  'staff001': { id: 'staff001', name: 'Aditi Singh', email: 'aditi.admin@example.in', roles: ['Admin'], joinDate: '2022-05-10', lastLogin: '2024-07-04', status: 'Active' },
-};
+import { getUserById, type User } from '@/lib/users-db';
 
 
 export default function AdminViewUserPage() {
@@ -31,15 +15,15 @@ export default function AdminViewUserPage() {
   const router = useRouter();
   const userId = params.userId as string;
 
-  const [user, setUser] = useState<UserDetail | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (userId) {
-      // Simulate data fetching
-      const foundUser = mockUsers[userId];
-      setUser(foundUser || null);
-      setIsLoading(false);
+      getUserById(userId).then(foundUser => {
+        setUser(foundUser);
+        setIsLoading(false);
+      });
     }
   }, [userId]);
 
@@ -88,8 +72,8 @@ export default function AdminViewUserPage() {
           <p><span className="font-semibold">Email:</span> {user.email}</p>
           <p><span className="font-semibold">Roles:</span> {user.roles.join(', ')}</p>
           <p><span className="font-semibold">Status:</span> {user.status}</p>
-          <p><span className="font-semibold">Join Date:</span> {user.joinDate}</p>
-          <p><span className="font-semibold">Last Login:</span> {user.lastLogin || 'Never'}</p>
+          <p><span className="font-semibold">Join Date:</span> {user.joinDate instanceof Date ? user.joinDate.toLocaleDateString() : String(user.joinDate)}</p>
+          <p><span className="font-semibold">Last Login:</span> {user.lastLogin instanceof Date ? user.lastLogin.toLocaleDateString() : 'Never'}</p>
           
           <div className="pt-6">
             <h3 className="font-semibold text-lg mb-2">Placeholder Sections:</h3>

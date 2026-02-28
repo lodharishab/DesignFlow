@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from 'react';
-import { useState, type ReactElement, useMemo } from 'react';
+import { useState, useEffect, type ReactElement, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageSquare, Bell, PackageSearch, Briefcase, UserCircle, Palette, Link as LinkIconLucide, AlertTriangle, Search, Calendar as CalendarIcon, Archive, ArchiveRestore, Mail, MailOpen } from "lucide-react";
 import { format, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { Icon as LucideIconType } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,7 +20,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import type { DateRange } from "react-day-picker";
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { getNotificationsByUser, markNotificationAsRead, archiveNotification, type Notification as DbNotification } from '@/lib/notifications-db';
 
+const CURRENT_DESIGNER_ID = 'des001';
 
 type NotificationType = 'New Order' | 'Revision Request' | 'Order Approved' | 'Category Approved' | 'Category Rejected' | 'Message';
 type NotificationPriority = 'High' | 'Medium' | 'Low';
@@ -38,23 +40,38 @@ interface Notification {
   createdAt: Date;
 }
 
-const mockNotifications: Notification[] = [
-  { id: 'notif_1', type: 'Revision Request', title: 'Revision Request on ORD9274R', message: "Client Riya Sen has requested revisions for the 'Wedding Invitation Design' project.", relatedOrderId: 'ORD9274R', priority: 'High', isRead: false, isArchived: false, createdAt: new Date(new Date().setHours(new Date().getHours() - 1)) },
-  { id: 'notif_2', type: 'New Order', title: 'New Order: Mobile App Icon Set', message: 'You have been assigned to order ORD4011M by client Mohan Das.', relatedOrderId: 'ORD4011M', priority: 'Medium', isRead: false, isArchived: false, createdAt: new Date(new Date().setDate(new Date().getDate() - 1)) },
-  { id: 'notif_3', type: 'Category Approved', title: 'Category Approved: Packaging Design', message: 'Your request to be approved for the Packaging Design category has been successful. You will now receive project alerts.', priority: 'Low', isRead: true, isArchived: false, createdAt: new Date(new Date().setDate(new Date().getDate() - 2)) },
-  { id: 'notif_4', type: 'Order Approved', title: 'Order Approved: ORD2945S', message: 'Client Sunita Rao has approved the final delivery for your project.', relatedOrderId: 'ORD2945S', priority: 'Low', isRead: true, isArchived: true, createdAt: new Date(new Date().setDate(new Date().getDate() - 3)) },
-  { id: 'notif_5', type: 'Message', title: 'New Message from Client', message: 'Client Riya Sen sent a message regarding ORD9274R.', relatedOrderId: 'ORD9274R', priority: 'Medium', isRead: true, isArchived: false, createdAt: new Date(new Date().setDate(new Date().getDate() - 4)) },
-  { id: 'notif_6', type: 'Category Rejected', title: 'Category Request Update', message: 'Your request for Motion Graphics was not approved at this time.', priority: 'Low', isRead: true, isArchived: true, createdAt: new Date(new Date().setDate(new Date().getDate() - 5)) },
-];
+function mapDbNotification(n: DbNotification): Notification {
+  return {
+    id: n.id,
+    type: (n.type || 'Message') as NotificationType,
+    title: n.title,
+    message: n.message || '',
+    relatedOrderId: n.relatedOrderId,
+    relatedPortfolioId: n.relatedPortfolioId,
+    priority: (n.priority || 'Medium') as NotificationPriority,
+    isRead: n.isRead,
+    isArchived: n.isArchived,
+    createdAt: n.createdAt,
+  };
+}
 
-
-const uniqueNotificationTypes = Array.from(new Set(mockNotifications.map(n => n.type)));
 const uniquePriorities: NotificationPriority[] = ['High', 'Medium', 'Low'];
 
 function NotificationsTab() {
   const router = useRouter();
   const { toast } = useToast();
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  useEffect(() => {
+    getNotificationsByUser(CURRENT_DESIGNER_ID).then(dbNotifs =>
+      setNotifications(dbNotifs.map(mapDbNotification))
+    );
+  }, []);
+
+  const uniqueNotificationTypes = useMemo(() =>
+    Array.from(new Set(notifications.map(n => n.type))),
+    [notifications]
+  );
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -91,7 +108,7 @@ function NotificationsTab() {
     }
   };
 
-  const getNotificationIcon = (type: NotificationType): LucideIconType => {
+  const getNotificationIcon = (type: NotificationType): LucideIcon => {
       switch(type) {
           case 'New Order': return Briefcase;
           case 'Revision Request': return AlertTriangle;

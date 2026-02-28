@@ -8,7 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, PackageSearch, ArrowRight, Info, CalendarDays, FileText, IndianRupee, Clock, CheckCircle2, ListFilter, AlertTriangle, Eye, ArrowUpDown, ChevronUp, ChevronDown, Star } from 'lucide-react';
 import { format } from 'date-fns';
-import { useState, useMemo, type ReactElement } from 'react';
+import { useState, useEffect, useMemo, type ReactElement } from 'react';
+import { getOrdersByClientId, type Order } from '@/lib/orders-db';
+
+const CURRENT_CLIENT_ID = 'client001';
 
 type OrderStatus = 'In Progress' | 'Pending Assignment' | 'Completed' | 'Awaiting Client Review' | 'Cancelled';
 type SortableOrderKeys = 'id' | 'serviceName' | 'orderDate' | 'status' | 'total';
@@ -21,13 +24,15 @@ interface ClientOrder {
   total: number;
 }
 
-const mockClientOrders: ClientOrder[] = [
-  { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', status: 'In Progress', orderDate: new Date(2024, 6, 1), total: 24999.00 },
-  { id: 'ORD1038K', serviceName: 'Social Media Campaign Graphics', status: 'Pending Assignment', orderDate: new Date(2024, 6, 5), total: 7999.00 },
-  { id: 'ORD2945S', serviceName: 'Startup Logo & Brand Identity', status: 'Completed', orderDate: new Date(2024, 5, 20), total: 19999.00 },
-  { id: 'ORD5050T', serviceName: 'Mobile App Icon Set', status: 'Awaiting Client Review', orderDate: new Date(2024, 6, 10), total: 4999.00 },
-  { id: 'ORD0112C', serviceName: 'Festival Banner Design', status: 'Cancelled', orderDate: new Date(2024, 6, 12), total: 2499.00 },
-];
+function mapDbToClientOrder(o: Order): ClientOrder {
+  return {
+    id: o.id,
+    serviceName: o.serviceName,
+    status: o.status as OrderStatus,
+    orderDate: o.orderDate,
+    total: o.totalAmount,
+  };
+}
 
 const statusFilters: { label: string; value: OrderStatus | 'All'; icon?: React.ElementType }[] = [
   { label: 'All', value: 'All', icon: ListFilter },
@@ -38,8 +43,14 @@ const statusFilters: { label: string; value: OrderStatus | 'All'; icon?: React.E
 
 
 export default function ClientOrdersPage(): ReactElement {
-  const [orders, setOrders] = useState<ClientOrder[]>(mockClientOrders);
+  const [orders, setOrders] = useState<ClientOrder[]>([]);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
+
+  useEffect(() => {
+    getOrdersByClientId(CURRENT_CLIENT_ID).then(dbOrders =>
+      setOrders(dbOrders.map(mapDbToClientOrder))
+    );
+  }, []);
   const [sortConfig, setSortConfig] = useState<{ key: SortableOrderKeys | null; direction: 'ascending' | 'descending' }>({
     key: 'orderDate',
     direction: 'descending',
@@ -107,7 +118,7 @@ export default function ClientOrdersPage(): ReactElement {
         My Orders
       </h1>
 
-      {mockClientOrders.length === 0 ? (
+      {orders.length === 0 ? (
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="font-headline">No Orders Yet</CardTitle>

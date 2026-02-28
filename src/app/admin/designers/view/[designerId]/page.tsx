@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UsersRound, ArrowLeft, PackageSearch, User } from 'lucide-react';
 import { useEffect, useState, Suspense } from 'react';
-import { initialUsersData, type User as UserData } from '@/app/admin/users/page';
+import { initialUsersData, type User as UserData } from '@/app/admin/users/users-data';
 
 function DesignerViewContent() {
   const params = useParams();

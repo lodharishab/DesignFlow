@@ -103,7 +103,7 @@ export default {
   },
   plugins: [
     require('tailwindcss-animate'),
-    function({ addUtilities }) {
+    function({ addUtilities }: { addUtilities: (utilities: Record<string, Record<string, string>>) => void }) {
       addUtilities({
         '.pause-animation': {
           'animation-play-state': 'paused',

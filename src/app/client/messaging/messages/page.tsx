@@ -29,7 +29,7 @@ import Link from 'next/link';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { getBrandKitById, type BrandProfileFormData } from '@/lib/brand-profile-db';
-import { initialOrdersData, type Order } from '@/components/admin/orders/orders-table-view';
+import { getAllOrders, type Order } from '@/lib/orders-db';
 import { Loader2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -56,6 +56,7 @@ interface Message {
 
 interface Conversation extends Order {
   id: string; // Unique ID for the conversation, e.g., using orderId
+  orderId?: string;
   designerId: string;
   designerName: string;
   designerAvatarUrl: string;
@@ -69,9 +70,12 @@ interface Conversation extends Order {
   sharedFiles: ChatFile[];
 }
 
-const mockConversationsData: Conversation[] = [
+function buildConversations(allOrders: Order[]): Conversation[] {
+  const findOrder = (id: string) => allOrders.find(o => o.id === id);
+  const emptyOrder: Order = { id: '', clientName: '', clientId: '', serviceName: '', serviceId: '', totalAmount: 0, currency: 'INR', status: 'Pending Assignment', orderDate: new Date(), revisionsAllowed: 0, revisionsUsed: 0, orderEvents: [], milestones: [] };
+  return [
   {
-    ...initialOrdersData.find(o => o.id === 'ORD7361P')!,
+    ...(findOrder('ORD7361P') || emptyOrder),
     id: 'ORD7361P',
     designerId: 'des002',
     designerName: 'Rohan Kapoor',
@@ -79,7 +83,7 @@ const mockConversationsData: Conversation[] = [
     designerAvatarHint: 'indian man software developer',
     lastMessage: 'Sure, I can have the revised wireframes ready by tomorrow morning. Does that work for you?',
     lastMessageTimestamp: new Date(new Date().setHours(new Date().getHours() - 2)),
-    lastReadTimestamp: new Date(new Date().setHours(new Date().getHours() - 2, 5)), // Designer read 5 mins after last message
+    lastReadTimestamp: new Date(new Date().setHours(new Date().getHours() - 2, 5)),
     unreadCount: 2,
     isPinned: true,
     messages: [
@@ -95,8 +99,8 @@ const mockConversationsData: Conversation[] = [
     ],
   },
   {
-    ...initialOrdersData.find(o => o.id === 'ORD4011M')!,
-    id: 'ORD1234Z', // Using a different convo ID to simulate a different thread
+    ...(findOrder('ORD4011M') || emptyOrder),
+    id: 'ORD1234Z',
     orderId: 'ORD4011M',
     designerId: 'des002',
     designerName: 'Rohan Kapoor',
@@ -113,7 +117,7 @@ const mockConversationsData: Conversation[] = [
     sharedFiles: [],
   },
   {
-    ...initialOrdersData.find(o => o.id === 'ORD5050T')!,
+    ...(findOrder('ORD5050T') || emptyOrder),
     id: 'ORD5050T',
     designerId: 'des003',
     designerName: 'Aisha Khan',
@@ -121,7 +125,7 @@ const mockConversationsData: Conversation[] = [
     designerAvatarHint: 'indian woman graphic artist',
     lastMessage: 'Excellent! The campaign is performing well. Thanks for the quick turnaround.',
     lastMessageTimestamp: new Date(new Date().setDate(new Date().getDate() - 1)),
-    lastReadTimestamp: new Date(new Date().setDate(new Date().getDate() - 1, 30)),
+    lastReadTimestamp: new Date(new Date().setDate(new Date().getDate() - 1)),
     unreadCount: 0,
     isPinned: false,
     messages: [
@@ -131,7 +135,8 @@ const mockConversationsData: Conversation[] = [
     ],
     sharedFiles: [],
   },
-];
+  ];
+}
 
 
 // --- UTILITY COMPONENTS ---
@@ -624,7 +629,7 @@ function ChatView({
                         {filteredMessages.length > 0 ? filteredMessages.map(message => (
                             <div 
                                 key={message.id} 
-                                ref={el => messageRefs.current[message.id] = el}
+                                ref={el => { messageRefs.current[message.id] = el; }}
                                 className={cn("flex items-end gap-2 group", message.sender === 'client' ? 'justify-end' : '')}
                             >
                                 {message.sender === 'client' && (
@@ -792,9 +797,16 @@ function ChatView({
 
 export default function ClientMessagesPage() {
     const { toast } = useToast();
-    const [conversations, setConversations] = useState<Conversation[]>(mockConversationsData);
+    const [conversations, setConversations] = useState<Conversation[]>([]);
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Load orders and build conversations
+    React.useEffect(() => {
+      getAllOrders().then(orders => {
+        setConversations(buildConversations(orders));
+      });
+    }, []);
 
     const handleSendMessage = (conversationId: string, message: Message) => {
         setConversations(prev => prev.map(convo => {
@@ -849,7 +861,7 @@ export default function ClientMessagesPage() {
             filtered = filtered.filter(c => 
                 c.designerName.toLowerCase().includes(lowerSearchTerm) ||
                 c.serviceName.toLowerCase().includes(lowerSearchTerm) ||
-                c.orderId.toLowerCase().includes(lowerSearchTerm) ||
+                (c.orderId || '').toLowerCase().includes(lowerSearchTerm) ||
                 c.lastMessage.toLowerCase().includes(lowerSearchTerm)
             );
         }

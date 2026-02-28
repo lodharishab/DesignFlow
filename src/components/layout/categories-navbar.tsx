@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Popover,
@@ -9,36 +10,19 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, LayoutGrid, Briefcase, Palette, Laptop, Printer, Brush as BrushIconLucide, ArrowRight, Film, Presentation, Share2, Package as PackageIcon, Newspaper } from 'lucide-react';
+import { getAllSubCategories, type ServiceSubCategory } from '@/lib/services-db';
 
 // Standardized category data, aligned with /services page filters
 const standardizedCategories = [
   { id: 'cat001', name: 'Logo Design', slug: 'logo-design', icon: Palette },
-  { id: 'cat002', name: 'UI/UX Design', slug: 'ui-ux-design', icon: Laptop }, // Standardized name and slug
-  { id: 'cat003', name: 'Print Design', slug: 'print-design', icon: Printer }, // Standardized name and slug
-  { id: 'cat004', name: 'Illustration', slug: 'illustration', icon: BrushIconLucide }, // Standardized name and slug
-  { id: 'cat005', name: 'Social Media', slug: 'social-media', icon: Share2 }, // Standardized name and slug
-  { id: 'cat006', name: 'Packaging', slug: 'packaging', icon: PackageIcon }, // Standardized name and slug
+  { id: 'cat002', name: 'UI/UX Design', slug: 'ui-ux-design', icon: Laptop },
+  { id: 'cat003', name: 'Print Design', slug: 'print-design', icon: Printer },
+  { id: 'cat004', name: 'Illustration', slug: 'illustration', icon: BrushIconLucide },
+  { id: 'cat005', name: 'Social Media', slug: 'social-media', icon: Share2 },
+  { id: 'cat006', name: 'Packaging', slug: 'packaging', icon: PackageIcon },
   { id: 'cat007', name: 'Motion Graphics', slug: 'motion-graphics', icon: Film },
   { id: 'cat008', name: 'Presentations', slug: 'presentations', icon: Presentation },
-  // Note: 'Photography' is on services page filters but not in original navbar categories. Can be added if needed.
 ];
-
-// Subcategories based on the original structure, linked to standardized parent IDs
-const mockSubCategories = [
-  { id: 'subcat001', name: 'Minimalist Logos', parentCategoryId: 'cat001', slug: 'minimalist-logos' },
-  { id: 'subcat002', name: 'Vintage Logos', parentCategoryId: 'cat001', slug: 'vintage-logos' },
-  { id: 'subcat003', name: 'Mobile App UI', parentCategoryId: 'cat002', slug: 'mobile-app-ui' }, // Parent is now UI/UX Design
-  { id: 'subcat004', name: 'Landing Page UX', parentCategoryId: 'cat002', slug: 'landing-page-ux' }, // Parent is now UI/UX Design
-  { id: 'subcat005', name: 'Business Cards', parentCategoryId: 'cat003', slug: 'business-cards' }, // Parent is now Print Design
-  { id: 'subcat006', name: 'Flyers & Posters', parentCategoryId: 'cat003', slug: 'flyers-posters' }, // Parent is now Print Design
-  { id: 'subcat007', name: 'Character Design', parentCategoryId: 'cat004', slug: 'character-design' }, // Parent is now Illustration
-  { id: 'subcat008', name: 'Instagram Stories', parentCategoryId: 'cat005', slug: 'instagram-stories' }, // Parent is now Social Media
-];
-
-const menuStructure = standardizedCategories.map(category => ({
-  ...category,
-  subcategories: mockSubCategories.filter(sub => sub.parentCategoryId === category.id)
-}));
 
 // Key categories to feature directly in the navbar, using standardized data
 const featuredCategoriesInNavbar = [
@@ -46,10 +30,20 @@ const featuredCategoriesInNavbar = [
   standardizedCategories.find(c => c.slug === 'ui-ux-design')!,
   standardizedCategories.find(c => c.slug === 'print-design')!,
   standardizedCategories.find(c => c.slug === 'illustration')!,
-].filter(Boolean); // Filter out undefined in case a slug isn't found (robustness)
+].filter(Boolean);
 
 
 export function CategoriesNavbar() {
+  const [subCategories, setSubCategories] = useState<ServiceSubCategory[]>([]);
+
+  useEffect(() => {
+    getAllSubCategories().then(setSubCategories);
+  }, []);
+
+  const menuStructure = standardizedCategories.map(category => ({
+    ...category,
+    subcategories: subCategories.filter(sub => sub.parentCategoryId === category.id)
+  }));
   return (
     <nav className="sticky top-16 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/50 shadow-sm hidden md:block">
       <div className="container mx-auto px-5 flex h-14 items-center">

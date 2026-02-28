@@ -238,9 +238,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                   </SidebarMenuItem>
                 );
               } else {
-                const isActive =
+                const isActive = !!(
                   (item.href === '/admin/dashboard' && pathname === item.href) ||
-                  (item.href && item.href !== '/admin/dashboard' && pathname.startsWith(item.href));
+                  (item.href && item.href !== '/admin/dashboard' && pathname.startsWith(item.href)));
                 
                 return (
                   <SidebarMenuItem key={item.label}>

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState, type ReactElement, useCallback } from 'react';
+import { useMemo, useState, useEffect, type ReactElement, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { PieChart as PieChartIcon, ArrowLeft, BarChart2, Award, FileText, Calendar as CalendarIcon, Check, Settings, Bell, MoreHorizontal, Download, ThumbsUp, ShieldCheck } from "lucide-react";
@@ -9,8 +9,8 @@ import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, Responsiv
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { format, sub, startOfDay, endOfDay } from 'date-fns';
-import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
-import { mockDisputesData } from '@/app/designer/performance/disputes/data'; // Import dispute data
+import { getReviewsByDesignerId, type DesignerReview } from '@/lib/reviews-db';
+import { getAllDisputes, type Dispute as DbDispute } from '@/lib/disputes-db';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -33,6 +33,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const CURRENT_DESIGNER_ID = 'des001';
+
 
 const categoryChartConfig = {
     avgRating: { label: "Avg. Rating", color: "hsl(var(--chart-1))" },
@@ -50,7 +52,7 @@ const starDistributionChartConfig = {
 
 type ReportView = 'monthly' | 'category' | 'clients' | 'revisions' | 'turnaround';
 
-function AnalyticsCard() {
+function AnalyticsCard({ allReviews }: { allReviews: DesignerReview[] }) {
     const [timeframe, setTimeframe] = useState("lifetime");
 
     const filteredData = useMemo(() => {
@@ -59,8 +61,8 @@ function AnalyticsCard() {
         if (timeframe === "30d") startDate = sub(now, { days: 30 });
         else if (timeframe === "6m") startDate = sub(now, { months: 6 });
 
-        return mockDesignerReviews.filter(r => r.reviewDate >= startDate);
-    }, [timeframe]);
+        return allReviews.filter(r => r.reviewDate >= startDate);
+    }, [timeframe, allReviews]);
     
     const analytics = useMemo(() => {
         if (filteredData.length === 0) {
@@ -134,7 +136,7 @@ function AnalyticsCard() {
                                                     <RechartsTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
                                                     <Bar dataKey="count" layout="vertical" radius={4}>
                                                         {analytics.starDistribution.map((entry) => (
-                                                            <Cell key={`cell-${entry.rating}`} fill={starDistributionChartConfig[entry.rating]?.color} />
+                                                            <Cell key={`cell-${entry.rating}`} fill={(starDistributionChartConfig as Record<string, { color?: string }>)[String(entry.rating)]?.color} />
                                                         ))}
                                                     </Bar>
                                                 </BarChart>
@@ -163,11 +165,11 @@ function AnalyticsCard() {
     );
 }
 
-function DisputeAnalyticsCard() {
+function DisputeAnalyticsCard({ disputes }: { disputes: DbDispute[] }) {
     const analytics = useMemo(() => {
-        const totalDisputes = mockDisputesData.length;
-        const resolvedDesignerFavor = mockDisputesData.filter(d => d.status === 'Resolved (Designer Favor)').length;
-        const resolvedClientFavor = mockDisputesData.filter(d => d.status === 'Resolved (Client Favor)').length;
+        const totalDisputes = disputes.length;
+        const resolvedDesignerFavor = disputes.filter(d => d.status === 'Resolved (Designer Favor)').length;
+        const resolvedClientFavor = disputes.filter(d => d.status === 'Resolved (Client Favor)').length;
         const totalResolved = resolvedDesignerFavor + resolvedClientFavor;
         const winRate = totalResolved > 0 ? (resolvedDesignerFavor / totalResolved) * 100 : 100;
 
@@ -177,7 +179,7 @@ function DisputeAnalyticsCard() {
             resolvedClientFavor,
             winRate: winRate.toFixed(0),
         };
-    }, []);
+    }, [disputes]);
 
     return (
         <Card className="shadow-lg">
@@ -433,7 +435,14 @@ function ReportActions({ onExport, onSchedule }: { onExport: (format: 'csv' | 'p
 
 export default function DesignerReportsPage(): ReactElement {
     const [reportView, setReportView] = useState<ReportView>('category');
+    const [allReviews, setAllReviews] = useState<DesignerReview[]>([]);
+    const [allDisputes, setAllDisputes] = useState<DbDispute[]>([]);
     const { toast } = useToast();
+
+    useEffect(() => {
+      getReviewsByDesignerId(CURRENT_DESIGNER_ID).then(setAllReviews);
+      getAllDisputes().then(setAllDisputes);
+    }, []);
 
     const handleExport = useCallback((format: 'csv' | 'pdf' | 'excel') => {
         if (format === 'csv') {
@@ -459,7 +468,7 @@ export default function DesignerReportsPage(): ReactElement {
 
     const categoryPerformance = useMemo(() => {
         const categoryPerformanceMap: Record<string, { totalRating: number, totalRevisions: number, count: number }> = {};
-        mockDesignerReviews.forEach(review => {
+        allReviews.forEach(review => {
             if (!categoryPerformanceMap[review.category]) {
                 categoryPerformanceMap[review.category] = { totalRating: 0, totalRevisions: 0, count: 0 };
             }
@@ -473,7 +482,7 @@ export default function DesignerReportsPage(): ReactElement {
             avgRating: parseFloat((data.totalRating / data.count).toFixed(2)),
             avgRevisions: parseFloat((data.totalRevisions / data.count).toFixed(2)),
         }));
-    }, []);
+    }, [allReviews]);
 
     const renderReport = () => {
         switch(reportView) {
@@ -544,8 +553,8 @@ export default function DesignerReportsPage(): ReactElement {
             </CardContent>
         </Card>
         
-        <AnalyticsCard />
-        <DisputeAnalyticsCard />
+        <AnalyticsCard allReviews={allReviews} />
+        <DisputeAnalyticsCard disputes={allDisputes} />
 
         <Card>
             <CardHeader>

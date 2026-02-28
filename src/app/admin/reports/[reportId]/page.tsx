@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ShieldAlert, ArrowLeft, Loader2, User, Calendar, ClipboardList, PackageSearch } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { mockReportsData, type Report } from '@/app/admin/reports/data';
+import { getReportById, type Report } from '@/lib/reports-db';
 import { format } from 'date-fns';
 import {
   Select,
@@ -34,9 +34,10 @@ function ReportDetailContent() {
 
   useEffect(() => {
     if (reportId) {
-      const foundReport = mockReportsData.find(r => r.id === reportId);
-      setReport(foundReport || null);
-      setIsLoading(false);
+      getReportById(reportId).then(found => {
+        setReport(found);
+        setIsLoading(false);
+      });
     }
   }, [reportId]);
 

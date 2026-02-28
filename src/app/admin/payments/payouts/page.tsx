@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement } from 'react';
+import { useState, useEffect, type ReactElement } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -10,29 +10,17 @@ import { SendToBack, CheckCircle2, RefreshCw, CircleOff, ArrowLeft } from "lucid
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
-
-type PayoutStatus = 'Pending' | 'Processing' | 'Paid' | 'Failed' | 'Cancelled';
-interface PendingPayout {
-  id: string;
-  designerName: string;
-  designerId: string;
-  amount: number;
-  status: PayoutStatus;
-  scheduledDate: Date;
-  relatedOrderIds: string[];
-}
-
-const mockPendingPayouts: PendingPayout[] = [
-  { id: 'PAYOUT001', designerName: 'Vikram Singh', designerId: 'des004', amount: 6299.10, status: 'Pending', scheduledDate: new Date(2024, 6, 18), relatedOrderIds: ['ORD6531A'] },
-  { id: 'PAYOUT002', designerName: 'Rohan Kapoor', designerId: 'des002', amount: 15000.00, status: 'Processing', scheduledDate: new Date(2024, 6, 20), relatedOrderIds: ['ORD7361P', 'ORDXXXX1'] },
-  { id: 'PAYOUT003', designerName: 'Aisha Khan', designerId: 'des003', amount: 8500.00, status: 'Failed', scheduledDate: new Date(2024, 6, 17), relatedOrderIds: ['ORDXXXX2'] },
-];
+import { getAllPayoutRequests, type PayoutRequest } from '@/lib/transactions-db';
 
 export default function AdminPayoutsPage(): ReactElement {
     const { toast } = useToast();
-    const [pendingPayouts, setPendingPayouts] = useState<PendingPayout[]>(mockPendingPayouts);
+    const [pendingPayouts, setPendingPayouts] = useState<PayoutRequest[]>([]);
+
+    useEffect(() => {
+      getAllPayoutRequests().then(setPendingPayouts);
+    }, []);
     
-    const handlePayoutStatusChange = (payoutId: string, newStatus: PayoutStatus) => {
+    const handlePayoutStatusChange = (payoutId: string, newStatus: string) => {
         setPendingPayouts(prevPayouts => 
             prevPayouts.map(p => p.id === payoutId ? {...p, status: newStatus} : p)
         );
@@ -42,7 +30,7 @@ export default function AdminPayoutsPage(): ReactElement {
         });
     };
 
-    const getStatusBadgeVariant = (status: PayoutStatus) => {
+    const getStatusBadgeVariant = (status: string) => {
         switch (status) {
         case 'Paid': return 'default';
         case 'Pending': return 'secondary';
@@ -87,10 +75,10 @@ export default function AdminPayoutsPage(): ReactElement {
                             <TableRow key={payout.id}>
                                 <TableCell className="font-medium">{payout.id}</TableCell>
                                 <TableCell>
-                                <Link href={`/admin/designers/edit/${payout.designerId}`} className="font-medium text-primary hover:underline">{payout.designerName}</Link>
+                                <Link href={`/admin/designers/edit/${payout.designerId}`} className="font-medium text-primary hover:underline">{payout.designerId}</Link>
                                 </TableCell>
                                 <TableCell className="text-right font-medium">₹{payout.amount.toLocaleString('en-IN')}</TableCell>
-                                <TableCell className="text-xs">{format(payout.scheduledDate, 'MMM d, yyyy')}</TableCell>
+                                <TableCell className="text-xs">{format(payout.requestDate, 'MMM d, yyyy')}</TableCell>
                                 <TableCell>
                                 <Badge variant={getStatusBadgeVariant(payout.status)} className="capitalize">{payout.status}</Badge>
                                 </TableCell>

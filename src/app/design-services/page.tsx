@@ -9,13 +9,14 @@ import { PortfolioShowcaseCard } from '@/app/page';
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Palette, Share2, Printer, Laptop, Brush as BrushIconLucide, Package as PackageIcon, Film, Presentation, Camera, ArrowRight, Sparkles, Eye, Briefcase } from 'lucide-react';
-import type { Icon as LucideIconType } from 'lucide-react';
-import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page'; 
+import type { LucideIcon } from 'lucide-react';
+import { getAllPortfolioItems } from '@/lib/portfolio-db';
+import { getAllServices } from '@/lib/services-db';
 import type { Metadata } from 'next';
 import { PopularServicesSection, type ServiceData } from '@/components/design-services/popular-services-section';
 
 // Data for the Service Categories Carousel
-const serviceCategoriesData: Array<{ name: string; slug: string; icon: LucideIconType; description: string; shortDesc: string; }> = [
+const serviceCategoriesData: Array<{ name: string; slug: string; icon: LucideIcon; description: string; shortDesc: string; }> = [
   { name: 'Logo Design', slug: 'logo-design', icon: Palette, description: 'Craft unique brand identities that resonate with your audience and reflect your business values.', shortDesc: 'Brand identities that resonate.' },
   { name: 'Web UI/UX', slug: 'web-ui-ux', icon: Laptop, description: 'User-centric web and app interfaces designed for seamless experiences on all devices.', shortDesc: 'User-centric web & app UI/UX.' },
   { name: 'Print Materials', slug: 'print-materials', icon: Printer, description: 'Eye-catching brochures, flyers, and business cards that make a lasting impression for your business.', shortDesc: 'Brochures, flyers, cards.' },
@@ -26,32 +27,10 @@ const serviceCategoriesData: Array<{ name: string; slug: string; icon: LucideIco
   { name: 'Presentations', slug: 'presentations', icon: Presentation, description: 'Professional pitch decks and presentations that convey your message with impact.', shortDesc: 'Impactful pitch decks.' },
 ];
 
-// MOCK A LARGER SET OF POPULAR SERVICES WITH GUARANTEED UNIQUE IDs
-const mockAllPopularServices: ServiceData[] = [
-  { id: 'pop-item-1', name: 'Modern Logo Design', description: 'Unique logos for brands.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'startup logo' },
-  { id: 'pop-item-2', name: 'UI/UX Web Design Mockup', description: 'User-friendly web mockups.', tiers: [{name: 'Standard', price: 15999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design' },
-  { id: 'pop-item-3', name: 'Social Media Pack', description: 'Engaging posts for campaigns.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media marketing' },
-  { id: 'pop-item-4', name: 'Brochure Design', description: 'Professional business brochures.', tiers: [{name: 'Standard', price: 7999}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'business brochure' },
-  { id: 'pop-item-5', name: 'Custom Illustration Set', description: 'Unique illustrations for your brand.', tiers: [{name: 'Standard', price: 6999}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'digital art' },
-  { id: 'pop-item-6', name: 'Packaging Concept Design', description: 'Creative product packaging.', tiers: [{name: 'Standard', price: 11999}], category: 'Packaging', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product packaging' },
-  { id: 'pop-item-7', name: 'Animated Logo Intro', description: 'Dynamic logo animations.', tiers: [{name: 'Standard', price: 8999}], category: 'Motion Graphics', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo animation' },
-  { id: 'pop-item-8', name: 'Investor Pitch Deck', description: 'Compelling presentation designs.', tiers: [{name: 'Standard', price: 12999}], category: 'Presentations', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'pitch deck' },
-  { id: 'pop-item-9', name: 'App Icon Set', description: 'Modern app icons for iOS/Android.', tiers: [{name: 'Standard', price: 3999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'app icon' },
-  { id: 'pop-item-10', name: 'Product Photography Retouching', description: 'E-commerce photo editing.', tiers: [{name: 'Standard', price: 2999}], category: 'Photography', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'photo editing' },
-  { id: 'pop-item-11', name: 'Infographic Design Service', description: 'Data visualization infographics.', tiers: [{name: 'Standard', price: 5999}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'infographic' },
-  { id: 'pop-item-12', name: 'Brand Style Guide', description: 'Comprehensive brand guidelines.', tiers: [{name: 'Standard', price: 14999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'brand guide' },
-  { id: 'pop-item-13', name: 'Website Landing Page UI', description: 'High-converting landing pages.', tiers: [{name: 'Standard', price: 9999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'landing page' },
-  { id: 'pop-item-14', name: 'Short Social Video Ad', description: 'Engaging video ads for socials.', tiers: [{name: 'Standard', price: 7500}], category: 'Motion Graphics', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'video ad' },
-  { id: 'pop-item-15', name: 'Book Cover Design', description: 'Captivating book cover art.', tiers: [{name: 'Standard', price: 6500}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'book cover' },
-  { id: 'pop-item-16', name: 'Vector Character Mascot', description: 'Custom mascot design.', tiers: [{name: 'Standard', price: 9000}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'mascot design' },
-  { id: 'pop-item-17', name: 'Food Menu Design', description: 'Appetizing restaurant menus.', tiers: [{name: 'Standard', price: 5500}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'menu design' },
-  { id: 'pop-item-18', name: 'Email Newsletter Template', description: 'Branded email templates.', tiers: [{name: 'Standard', price: 4500}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'email template' }
-];
-
+// ITEMS_PER_PAGE for initial load
 const ITEMS_PER_PAGE = 6;
-const initialPopularServices = mockAllPopularServices.slice(0, ITEMS_PER_PAGE);
 
-const portfolioGlanceItems: PortfolioItem[] = globalPortfolioItems.slice(0, 3);
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Discover Design Services | DesignFlow',
@@ -63,7 +42,27 @@ export const metadata: Metadata = {
 };
 
 
-export default function DesignServicesPage() {
+export default async function DesignServicesPage() {
+  // Fetch services and portfolio from DB
+  const [dbServices, dbPortfolioItems] = await Promise.all([
+    getAllServices(),
+    getAllPortfolioItems(),
+  ]);
+
+  // Map DB ServiceData to PopularServicesSection ServiceData
+  const allPopularServices: ServiceData[] = dbServices.map(s => ({
+    id: s.id,
+    name: s.name,
+    description: s.generalDescription || '',
+    tiers: s.tiers.map(t => ({ name: t.name as 'Basic' | 'Standard' | 'Premium', price: t.price })),
+    category: s.category || '',
+    imageUrl: s.imageUrl || 'https://placehold.co/600x400.png',
+    imageHint: s.imageHint || s.name.toLowerCase(),
+  }));
+
+  const initialPopularServices = allPopularServices.slice(0, ITEMS_PER_PAGE);
+  const portfolioGlanceItems: PortfolioItem[] = dbPortfolioItems.slice(0, 3);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -132,7 +131,7 @@ export default function DesignServicesPage() {
             </p>
             <PopularServicesSection 
               initialServices={initialPopularServices} 
-              allServices={mockAllPopularServices} 
+              allServices={allPopularServices} 
             />
             <div className="text-center mt-16">
               <Button size="lg" asChild variant="outline">

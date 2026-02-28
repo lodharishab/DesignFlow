@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement } from 'react';
+import { useState, useEffect, type ReactElement } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -9,30 +9,16 @@ import { Button } from '@/components/ui/button';
 import { ShieldAlert, ArrowLeft, Eye } from "lucide-react";
 import { format } from 'date-fns';
 import Link from 'next/link';
-
-type DisputeStatus = 'Open' | 'Under Review' | 'Resolved - Client Favored' | 'Resolved - Designer Favored';
-interface Dispute {
-  id: string;
-  paymentId: string;
-  orderId: string;
-  clientName: string;
-  designerName: string;
-  reason: string;
-  status: DisputeStatus;
-  disputeDate: Date;
-}
-
-const mockDisputes: Dispute[] = [
-    { id: 'DISP001', paymentId: 'txn_Olcftg87sHjkl', orderId: 'ORD7361P', clientName: 'Priya Sharma', designerName: 'Rohan Kapoor', reason: 'Deliverable not as described', status: 'Under Review', disputeDate: new Date(2024, 6, 18) },
-    { id: 'DISP002', paymentId: 'txn_refund_md01', orderId: 'ORD4011M', clientName: 'Mohan Das', designerName: 'Sunita Reddy', reason: 'Did not receive full refund', status: 'Open', disputeDate: new Date(2024, 6, 19) },
-    { id: 'DISP003', paymentId: 'txn_Nnbvcxz87Uyt', orderId: 'ORD2945S', clientName: 'Sunita Rao', designerName: 'Priya Sharma', reason: 'Duplicate charge reported', status: 'Resolved - Client Favored', disputeDate: new Date(2024, 6, 1) },
-];
-
+import { getAllDisputes, type Dispute } from '@/lib/disputes-db';
 
 export default function AdminDisputesPage(): ReactElement {
-    const [disputes, setDisputes] = useState<Dispute[]>(mockDisputes);
+    const [disputes, setDisputes] = useState<Dispute[]>([]);
 
-    const getStatusBadgeVariant = (status: DisputeStatus) => {
+    useEffect(() => {
+      getAllDisputes().then(setDisputes);
+    }, []);
+
+    const getStatusBadgeVariant = (status: string) => {
         switch (status) {
         case 'Resolved - Client Favored':
         case 'Resolved - Designer Favored':
@@ -84,13 +70,13 @@ export default function AdminDisputesPage(): ReactElement {
                                     </TableCell>
                                     <TableCell>
                                         <div className="text-xs space-y-0.5">
-                                            <p>Client: {dispute.clientName}</p>
-                                            <p className="text-muted-foreground">Designer: {dispute.designerName}</p>
+                                            <p>Client: {dispute.clientName || 'N/A'}</p>
+                                            <p className="text-muted-foreground">Service: {dispute.serviceName || 'N/A'}</p>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-xs text-muted-foreground">{dispute.reason}</TableCell>
+                                    <TableCell className="text-xs text-muted-foreground">{dispute.disputeType}</TableCell>
                                     <TableCell><Badge variant={getStatusBadgeVariant(dispute.status)} className="capitalize whitespace-nowrap">{dispute.status}</Badge></TableCell>
-                                    <TableCell className="text-xs">{format(dispute.disputeDate, 'MMM d, yyyy')}</TableCell>
+                                    <TableCell className="text-xs">{format(dispute.lastUpdated, 'MMM d, yyyy')}</TableCell>
                                     <TableCell className="text-right">
                                         <Button variant="outline" size="sm" disabled>
                                             <Eye className="mr-2 h-4 w-4" /> Details

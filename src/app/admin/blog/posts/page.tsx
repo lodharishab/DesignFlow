@@ -7,6 +7,8 @@ import { getAllBlogPosts } from '@/lib/blog-db';
 import { BlogPostsTable } from './components/blog-posts-table';
 
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminBlogPostsPage() {
   // Fetch initial data on the server
   const posts = await getAllBlogPosts();

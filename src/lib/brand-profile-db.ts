@@ -1,23 +1,21 @@
-
-'use client';
+'use server';
 
 /**
- * @fileOverview A client-side library for managing a user's brand profile data.
- * This service handles saving and loading brand profile information to/from
- * the browser's localStorage for offline/prototyping scenarios.
+ * @fileOverview Server-side library for managing a user's brand profile data.
+ * Uses Drizzle ORM with Neon PostgreSQL. Falls back to in-memory mock
+ * when DATABASE_URL is not set (temporary, will be removed).
  */
-
-// MOCK USER ID - In a real app, this would come from an authentication context.
-const MOCK_USER_ID = 'client_user_123';
-const LOCAL_STORAGE_KEY = `brand_kits_${MOCK_USER_ID}`;
+import { db, isDbEnabled } from './db';
+import { brandProfiles } from './schema';
+import { eq, and } from 'drizzle-orm';
 
 export interface BrandProfileFormData {
-  [key: string]: any; // Allow for flexible fields
-  id: string; // Unique ID for the brand kit
+  [key: string]: any;
+  id: string;
   companyName: string;
   companyWebsite: string;
   industry: string;
-  companySize: string,
+  companySize: string;
   targetAudience: string;
   brandValues: string;
   tags?: string[];
@@ -31,103 +29,183 @@ export interface BrandProfileFormData {
   existingAssetsLink: string;
   logoUrl?: string | null;
   projectTypes: string[];
-  isFavorite?: boolean; // Changed from isPinned
+  isFavorite?: boolean;
 }
 
-export const defaultBrandProfile: BrandProfileFormData = {
-    id: 'default',
-    companyName: "", 
-    companyWebsite: "", 
-    industry: "",
-    companySize: "", 
-    targetAudience: "", 
-    brandValues: "",
-    tags: [], 
-    preferredDesignStyle: "", 
-    colorsToUse: "",
-    colorsToAvoid: "", 
-    communicationPreference: "Platform Chat",
-    feedbackStyle: "", 
-    notesForDesigners: "", 
-    brandGuidelinesLink: "",
-    existingAssetsLink: "", 
-    logoUrl: null,
-    projectTypes: [],
-    isFavorite: false, // Default to not favorite
+const defaultBrandProfile: BrandProfileFormData = {
+  id: 'default',
+  companyName: '',
+  companyWebsite: '',
+  industry: '',
+  companySize: '',
+  targetAudience: '',
+  brandValues: '',
+  tags: [],
+  preferredDesignStyle: '',
+  colorsToUse: '',
+  colorsToAvoid: '',
+  communicationPreference: 'Platform Chat',
+  feedbackStyle: '',
+  notesForDesigners: '',
+  brandGuidelinesLink: '',
+  existingAssetsLink: '',
+  logoUrl: null,
+  projectTypes: [],
+  isFavorite: false,
 };
 
+export async function getDefaultBrandProfile(): Promise<BrandProfileFormData> {
+  return { ...defaultBrandProfile };
+}
+
+// Temporary mock user ID — will be replaced once authentication is integrated
+const MOCK_USER_ID = 'client_user_123';
+
+function rowToProfile(row: typeof brandProfiles.$inferSelect): BrandProfileFormData {
+  return {
+    id: row.id,
+    companyName: row.companyName,
+    companyWebsite: row.companyWebsite || '',
+    industry: row.industry || '',
+    companySize: row.companySize || '',
+    targetAudience: row.targetAudience || '',
+    brandValues: row.brandValues || '',
+    tags: row.tags || [],
+    preferredDesignStyle: row.preferredDesignStyle || '',
+    colorsToUse: row.colorsToUse || '',
+    colorsToAvoid: row.colorsToAvoid || '',
+    notesForDesigners: row.notesForDesigners || '',
+    communicationPreference: row.communicationPreference || 'Platform Chat',
+    feedbackStyle: row.feedbackStyle || '',
+    brandGuidelinesLink: row.brandGuidelinesLink || '',
+    existingAssetsLink: row.existingAssetsLink || '',
+    logoUrl: row.logoUrl || null,
+    projectTypes: row.projectTypes || [],
+    isFavorite: row.isFavorite || false,
+  };
+}
 
 /**
  * Retrieves all brand kits for the user.
- * @returns An array of brand profile data, or an empty array if not found.
+ * @param userId - The user ID whose brand kits to retrieve (defaults to MOCK_USER_ID during migration)
  */
-export async function getBrandKits(): Promise<BrandProfileFormData[]> {
-    console.log('Simulating getBrandKits...');
-    try {
-        await new Promise(resolve => setTimeout(resolve, 200)); // Simulate network delay
-        const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (localData) {
-            console.log('Brand kits loaded from localStorage (simulation).');
-            const parsedKits: Partial<BrandProfileFormData>[] = JSON.parse(localData);
-            // Ensure all fields are present, merging with defaults.
-            const completeKits = parsedKits.map(kit => ({
-                ...defaultBrandProfile,
-                ...kit,
-            }));
-            return completeKits as BrandProfileFormData[];
-        }
-        // If no data, populate with a default example
-        const exampleKit = { ...defaultBrandProfile, id: `brand_${Date.now()}`, companyName: "My First Brand" };
-        await saveBrandKits([exampleKit]);
-        return [exampleKit];
-    } catch (error) {
-        console.error('Error getting brand kits:', error);
-        return [];
-    }
+export async function getBrandKits(userId?: string): Promise<BrandProfileFormData[]> {
+  const uid = userId || MOCK_USER_ID;
+  if (!isDbEnabled()) {
+    return [{ ...defaultBrandProfile, id: `brand_fallback`, companyName: 'My First Brand' }];
+  }
+  try {
+    const rows = await db.select().from(brandProfiles).where(eq(brandProfiles.userId, uid));
+    return rows.map(rowToProfile);
+  } catch (error) {
+    console.error('Error getting brand kits:', error);
+    return [];
+  }
 }
-
 
 /**
- * Saves all brand kits for the user. Accepts a function to update kits.
+ * Saves/upserts brand kits for the user. Accepts a function to update kits.
  * @param updater A function that receives the previous kits and returns the new kits array.
+ * @param userId - The user ID (defaults to MOCK_USER_ID during migration)
  */
-export async function saveBrandKits(updater: (prevKits: BrandProfileFormData[]) => BrandProfileFormData[]): Promise<void> {
-    console.log('Simulating saveBrandKits with updater...');
-    try {
-        await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
-        const currentKits = await getBrandKits();
-        const newKits = updater(currentKits);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newKits));
-        console.log('All brand kits saved to localStorage (simulation).', newKits);
-    } catch (error) {
-        console.error('Error saving brand kits:', error);
-    }
-}
+export async function saveBrandKits(
+  updater: BrandProfileFormData[] | ((prevKits: BrandProfileFormData[]) => BrandProfileFormData[]),
+  userId?: string
+): Promise<void> {
+  const uid = userId || MOCK_USER_ID;
+  if (!isDbEnabled()) return;
 
+  try {
+    const currentKits = await getBrandKits(uid);
+    const newKits = typeof updater === 'function' ? updater(currentKits) : updater;
+    const existingIds = new Set(currentKits.map(k => k.id));
+
+    for (const kit of newKits) {
+      if (existingIds.has(kit.id)) {
+        // Update existing
+        await db.update(brandProfiles).set({
+          companyName: kit.companyName,
+          companyWebsite: kit.companyWebsite || null,
+          industry: kit.industry || null,
+          companySize: kit.companySize || null,
+          targetAudience: kit.targetAudience || null,
+          brandValues: kit.brandValues || null,
+          tags: kit.tags || [],
+          preferredDesignStyle: kit.preferredDesignStyle || null,
+          colorsToUse: kit.colorsToUse || null,
+          colorsToAvoid: kit.colorsToAvoid || null,
+          notesForDesigners: kit.notesForDesigners || null,
+          communicationPreference: kit.communicationPreference || 'Platform Chat',
+          feedbackStyle: kit.feedbackStyle || null,
+          brandGuidelinesLink: kit.brandGuidelinesLink || null,
+          existingAssetsLink: kit.existingAssetsLink || null,
+          logoUrl: kit.logoUrl || null,
+          projectTypes: kit.projectTypes || [],
+          isFavorite: kit.isFavorite || false,
+        }).where(eq(brandProfiles.id, kit.id));
+      } else {
+        // Insert new
+        await db.insert(brandProfiles).values({
+          id: kit.id,
+          userId: uid,
+          companyName: kit.companyName,
+          companyWebsite: kit.companyWebsite || null,
+          industry: kit.industry || null,
+          companySize: kit.companySize || null,
+          targetAudience: kit.targetAudience || null,
+          brandValues: kit.brandValues || null,
+          tags: kit.tags || [],
+          preferredDesignStyle: kit.preferredDesignStyle || null,
+          colorsToUse: kit.colorsToUse || null,
+          colorsToAvoid: kit.colorsToAvoid || null,
+          notesForDesigners: kit.notesForDesigners || null,
+          communicationPreference: kit.communicationPreference || 'Platform Chat',
+          feedbackStyle: kit.feedbackStyle || null,
+          brandGuidelinesLink: kit.brandGuidelinesLink || null,
+          existingAssetsLink: kit.existingAssetsLink || null,
+          logoUrl: kit.logoUrl || null,
+          projectTypes: kit.projectTypes || [],
+          isFavorite: kit.isFavorite || false,
+        });
+      }
+    }
+
+    // Delete kits removed by the updater
+    const newIds = new Set(newKits.map(k => k.id));
+    for (const existingId of existingIds) {
+      if (!newIds.has(existingId)) {
+        await db.delete(brandProfiles).where(eq(brandProfiles.id, existingId));
+      }
+    }
+  } catch (error) {
+    console.error('Error saving brand kits:', error);
+  }
+}
 
 /**
  * Retrieves a single brand kit by its ID.
- * @param id The ID of the brand kit to retrieve.
- * @returns The brand profile data or null if not found.
  */
-export async function getBrandKitById(id: string): Promise<BrandProfileFormData | null> {
-  const kits = await getBrandKits();
-  const kit = kits.find(k => k.id === id);
-  return kit || null;
+export async function getBrandKitById(id: string, userId?: string): Promise<BrandProfileFormData | null> {
+  if (!isDbEnabled()) {
+    return { ...defaultBrandProfile, id, companyName: 'My First Brand' };
+  }
+  try {
+    const rows = await db.select().from(brandProfiles).where(eq(brandProfiles.id, id));
+    return rows[0] ? rowToProfile(rows[0]) : null;
+  } catch (error) {
+    console.error(`Error getting brand kit ${id}:`, error);
+    return null;
+  }
 }
 
 /**
  * Deletes a single brand kit by its ID.
- * @param id The ID of the brand kit to delete.
- * @returns True if deletion was successful, false otherwise.
  */
 export async function deleteBrandKit(id: string): Promise<boolean> {
+  if (!isDbEnabled()) return false;
   try {
-    const kits = await getBrandKits();
-    const newKits = kits.filter(k => k.id !== id);
-    // Use the functional update version of saveBrandKits
-    await saveBrandKits(() => newKits);
-    return true;
+    const rows = await db.delete(brandProfiles).where(eq(brandProfiles.id, id)).returning({ id: brandProfiles.id });
+    return rows.length > 0;
   } catch (error) {
     console.error(`Error deleting brand kit ${id}:`, error);
     return false;
@@ -136,20 +214,19 @@ export async function deleteBrandKit(id: string): Promise<boolean> {
 
 /**
  * Toggles the favorite status of a brand kit.
- * @param id The ID of the brand kit to favorite/unfavorite.
- * @returns The updated brand kit or null if not found.
  */
 export async function toggleFavoriteBrandKit(id: string): Promise<BrandProfileFormData | null> {
-  let updatedKit: BrandProfileFormData | null = null;
-  await saveBrandKits(prevKits => {
-    const newKits = prevKits.map(kit => {
-      if (kit.id === id) {
-        updatedKit = { ...kit, isFavorite: !kit.isFavorite };
-        return updatedKit;
-      }
-      return kit;
-    });
-    return newKits;
-  });
-  return updatedKit;
+  if (!isDbEnabled()) return null;
+  try {
+    // First get the current value
+    const current = await db.select({ isFavorite: brandProfiles.isFavorite }).from(brandProfiles).where(eq(brandProfiles.id, id));
+    if (current.length === 0) return null;
+
+    const newValue = !current[0].isFavorite;
+    const rows = await db.update(brandProfiles).set({ isFavorite: newValue }).where(eq(brandProfiles.id, id)).returning();
+    return rows[0] ? rowToProfile(rows[0]) : null;
+  } catch (error) {
+    console.error(`Error toggling favorite for brand kit ${id}:`, error);
+    return null;
+  }
 }

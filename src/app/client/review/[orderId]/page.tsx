@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Star, ArrowLeft, Loader2, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { initialOrdersData, type Order } from '@/components/admin/orders/orders-table-view';
+import { getOrderById, type Order } from '@/lib/orders-db';
 
 function LeaveReviewContent() {
   const router = useRouter();
@@ -28,9 +28,10 @@ function LeaveReviewContent() {
 
   useEffect(() => {
     if (orderId) {
-      const foundOrder = initialOrdersData.find(o => o.id === orderId && o.status === 'Completed');
-      setOrder(foundOrder || null);
-      setIsLoading(false);
+      getOrderById(orderId).then(found => {
+        setOrder(found && found.status === 'Completed' ? found : null);
+        setIsLoading(false);
+      });
     }
   }, [orderId]);
 

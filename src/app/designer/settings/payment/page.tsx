@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, type FormEvent } from 'react';
+import { useState, useEffect, type ReactElement, type FormEvent } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +33,9 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { getPaymentMethodsByUser, getPayoutRequestsByDesigner, type PaymentMethod as DbPaymentMethod, type PayoutRequest } from '@/lib/transactions-db';
 
+const CURRENT_DESIGNER_ID = 'des001';
 
 interface PayoutMethod {
   id: string;
@@ -43,17 +45,35 @@ interface PayoutMethod {
   status: 'Verified' | 'Pending';
 }
 
-const mockPayoutMethods: PayoutMethod[] = [
-  { id: 'meth_1', type: 'Bank Account', details: '**** **** **** 5678', isPrimary: true, status: 'Verified' },
-  { id: 'meth_2', type: 'UPI', details: 'designer@okhdfc', isPrimary: false, status: 'Pending' },
-];
+function mapDbToPayoutMethod(m: DbPaymentMethod): PayoutMethod {
+  return {
+    id: m.id,
+    type: (m.methodType || 'Bank Account') as PayoutMethod['type'],
+    details: m.identifier,
+    isPrimary: m.isPrimary,
+    status: (m.status === 'Verified' ? 'Verified' : 'Pending') as PayoutMethod['status'],
+  };
+}
 
-const mockPayoutHistory = [
-    { id: 'po_1', date: new Date(2024, 6, 15), amount: 12500.50, method: 'Bank Transfer', status: 'Completed', relatedOrderId: 'ORD2945S' },
-    { id: 'po_2', date: new Date(2024, 6, 1), amount: 8200.00, method: 'Bank Transfer', status: 'Completed', relatedOrderId: 'ORD1038K' },
-    { id: 'po_3', date: new Date(2024, 5, 15), amount: 15300.00, method: 'Bank Transfer', status: 'Completed', relatedOrderId: 'ORD7361P' },
-    { id: 'po_4', date: new Date(2024, 5, 1), amount: 5500.75, method: 'Failed', relatedOrderId: 'ORD6531A' },
-];
+interface PayoutHistoryItem {
+  id: string;
+  date: Date;
+  amount: number;
+  method: string;
+  status: string;
+  relatedOrderId?: string;
+}
+
+function mapDbToPayout(p: PayoutRequest): PayoutHistoryItem {
+  return {
+    id: p.id,
+    date: p.requestDate,
+    amount: p.amount,
+    method: p.reason || 'Bank Transfer',
+    status: p.status,
+    relatedOrderId: p.orderId,
+  };
+}
 
 const countryCurrencyMap: Record<string, string> = {
     'India': 'INR',
@@ -67,8 +87,18 @@ const currencies = ['INR', 'USD', 'GBP', 'EUR'];
 
 export default function DesignerPaymentSettingsPage(): ReactElement {
   const { toast } = useToast();
-  const [methods, setMethods] = useState<PayoutMethod[]>(mockPayoutMethods);
+  const [methods, setMethods] = useState<PayoutMethod[]>([]);
+  const [payoutHistory, setPayoutHistory] = useState<PayoutHistoryItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    getPaymentMethodsByUser(CURRENT_DESIGNER_ID).then(dbMethods =>
+      setMethods(dbMethods.map(mapDbToPayoutMethod))
+    );
+    getPayoutRequestsByDesigner(CURRENT_DESIGNER_ID).then(dbPayouts =>
+      setPayoutHistory(dbPayouts.map(mapDbToPayout))
+    );
+  }, []);
   
   // State for Bank Transfer form
   const [accountHolderName, setAccountHolderName] = useState('');
@@ -554,7 +584,7 @@ export default function DesignerPaymentSettingsPage(): ReactElement {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {mockPayoutHistory.map(payout => (
+                    {payoutHistory.map(payout => (
                         <TableRow key={payout.id}>
                             <TableCell>{format(payout.date, 'MMM d, yyyy')}</TableCell>
                             <TableCell className="font-medium">₹{payout.amount.toLocaleString('en-IN')}</TableCell>

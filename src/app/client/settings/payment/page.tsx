@@ -1,19 +1,38 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CreditCard, PlusCircle } from 'lucide-react';
+import { getPaymentMethodsByUser, type PaymentMethod } from '@/lib/transactions-db';
 
-// Mock data for saved cards
-const mockSavedMethods = [
-  { id: 'card_1', type: 'Visa', last4: '4242', expiry: '08/26' },
-  { id: 'card_2', type: 'Mastercard', last4: '5555', expiry: '11/25' },
-];
+const CURRENT_CLIENT_ID = 'client001';
+
+interface SavedMethod {
+  id: string;
+  type: string;
+  last4: string;
+  expiry: string;
+}
+
+function mapDbToSavedMethod(m: PaymentMethod): SavedMethod {
+  return {
+    id: m.id,
+    type: m.methodType,
+    last4: m.identifier.slice(-4),
+    expiry: '',
+  };
+}
 
 export default function ClientPaymentSettingsPage() {
-  const [paymentMethods, setPaymentMethods] = useState(mockSavedMethods);
+  const [paymentMethods, setPaymentMethods] = useState<SavedMethod[]>([]);
+
+  useEffect(() => {
+    getPaymentMethodsByUser(CURRENT_CLIENT_ID).then(dbMethods =>
+      setPaymentMethods(dbMethods.map(mapDbToSavedMethod))
+    );
+  }, []);
 
   return (
     <div className="space-y-8">

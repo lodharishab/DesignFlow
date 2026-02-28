@@ -13,35 +13,29 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Briefcase, CalendarDays, Tag, UserCircle, PackageSearch, Lightbulb, ExternalLink, Tags, ThumbsUp, Star } from 'lucide-react';
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
+import { getFeaturedReviews } from '@/lib/reviews-db';
+import type { DesignerReview } from '@/lib/reviews-db';
 import { cn } from '@/lib/utils';
 
 interface PortfolioItemDetailClientContentProps {
-  initialItem: PortfolioItem | null; // Allow null if item might not be found server-side initially
+  initialItem: PortfolioItem | null;
 }
 
 export function PortfolioItemDetailClientContent({ initialItem }: PortfolioItemDetailClientContentProps) {
   const router = useRouter();
-  // Initialize state with the server-passed prop.
   const [item, setItem] = useState<PortfolioItem | null>(initialItem);
   const [featuredReviews, setFeaturedReviews] = useState<DesignerReview[]>([]);
-  // isLoading is true initially only if initialItem is null (e.g. during Suspense fallback)
   const [isLoading, setIsLoading] = useState<boolean>(!initialItem); 
 
-  // This effect handles the case where initialItem might be null (e.g., if data fetching failed server-side but wasn't caught by `notFound` there)
-  // Or if we want to show a loading state even if initialItem is provided (though less common for this pattern)
   useEffect(() => {
     if (initialItem) {
       setItem(initialItem);
-      // Filter reviews that are featured. In a real app, you might link reviews to projects.
-      // For this prototype, we'll just show any of the designer's featured reviews.
-      const reviews = mockDesignerReviews.filter(review => review.isFeatured);
-      setFeaturedReviews(reviews);
-      setIsLoading(false); // Data is ready
+      // Fetch featured reviews from DB
+      getFeaturedReviews(10).then(reviews => {
+        setFeaturedReviews(reviews);
+      });
+      setIsLoading(false);
     } else if (!isLoading) { 
-      // This condition implies initialItem was null and we are not in an initial loading state,
-      // meaning the server determined it wasn't found, or an error occurred.
-      // This is a client-side fallback for notFound.
       notFound();
     }
   }, [initialItem, isLoading]);

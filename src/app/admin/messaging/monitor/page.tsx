@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, type ReactElement, useCallback } from 'react';
+import { useState, useEffect, useMemo, type ReactElement, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ import {
   Download,
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getAllConversations, getMessagesByConversation, type Conversation as DbConversation, type Message as DbMessage } from '@/lib/messaging-db';
 
 
 type ChatStatus = 'Active' | 'Idle' | 'Escalated' | 'Closed' | 'Flagged';
@@ -57,16 +58,35 @@ interface MonitoredChat {
     messages: MonitoredChatMessage[];
 }
 
-const mockMonitoredChats: MonitoredChat[] = [
-    { threadId: 'thr_ord_7361p', orderId: 'ORD7361P', clientName: 'Priya Sharma', clientAvatar: 'https://placehold.co/100x100.png', designerName: 'Rohan Kapoor', designerAvatar: 'https://placehold.co/100x100.png', lastActivity: new Date(new Date().setHours(new Date().getHours() - 2)), unreadCount: 3, assignedTo: null, status: 'Active', messages: [{id: 'msg_1', sender: 'Rohan Kapoor', text: 'Here are the first concepts.', timestamp: new Date(new Date().setHours(new Date().getHours() - 3))}, {id: 'msg_2', sender: 'Priya Sharma', text: 'Looks great! Can we try a different color?', timestamp: new Date(new Date().setHours(new Date().getHours() - 2))}] },
-    { threadId: 'thr_ord_1038k', orderId: 'ORD1038K', clientName: 'Rajesh Kumar', clientAvatar: 'https://placehold.co/100x100.png', designerName: 'Aisha Khan', designerAvatar: 'https://placehold.co/100x100.png', lastActivity: new Date(new Date().setDate(new Date().getDate() - 3)), unreadCount: 0, assignedTo: 'Support Tier 2', status: 'Escalated', messages: [] },
-    { threadId: 'thr_ord_5050t', orderId: 'ORD5050T', clientName: 'Anjali Iyer', clientAvatar: 'https://placehold.co/100x100.png', designerName: 'Vikram Singh', designerAvatar: 'https://placehold.co/100x100.png', lastActivity: new Date(new Date().setDate(new Date().getDate() - 5)), unreadCount: 0, assignedTo: null, status: 'Idle', messages: [] },
-    { threadId: 'thr_ord_2945s', orderId: 'ORD2945S', clientName: 'Sunita Rao', clientAvatar: 'https://placehold.co/100x100.png', designerName: 'Priya Sharma', designerAvatar: 'https://placehold.co/100x100.png', lastActivity: new Date(new Date().setDate(new Date().getDate() - 10)), unreadCount: 0, assignedTo: null, status: 'Closed', messages: [] },
-];
+function mapDbToMonitoredChat(c: DbConversation): MonitoredChat {
+  return {
+    threadId: c.id,
+    orderId: c.orderId || '',
+    clientName: c.participantOneName || 'Client',
+    clientAvatar: c.participantOneAvatarUrl || 'https://placehold.co/100x100.png',
+    designerName: c.participantTwoName || 'Designer',
+    designerAvatar: c.participantTwoAvatarUrl || 'https://placehold.co/100x100.png',
+    lastActivity: c.lastMessageTimestamp ? new Date(c.lastMessageTimestamp) : new Date(),
+    unreadCount: c.unreadCountOne + c.unreadCountTwo,
+    assignedTo: null,
+    status: c.isArchived ? 'Closed' : (c.unreadCountOne + c.unreadCountTwo > 0 ? 'Active' : 'Idle'),
+    messages: (c.messages || []).map(m => ({
+      id: m.id,
+      sender: m.senderRole || 'Unknown',
+      text: m.text || '',
+      timestamp: new Date(m.timestamp),
+      isFlagged: false,
+    })),
+  };
+}
 
 
 export default function AdminMonitorChatsPage() {
-  const [chats, setChats] = useState<MonitoredChat[]>(mockMonitoredChats);
+  const [chats, setChats] = useState<MonitoredChat[]>([]);
+
+  useEffect(() => {
+    getAllConversations().then(convs => setChats(convs.map(mapDbToMonitoredChat)));
+  }, []);
   const [selectedChat, setSelectedChat] = useState<MonitoredChat | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | ChatStatus>('All');

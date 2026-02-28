@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
-import { allPortfolioItemsData } from '@/app/portfolio/page'; // Assuming this is where the full data source is
+import { getPortfolioItemById } from '@/lib/portfolio-db';
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
 import type { Metadata, ResolvingMetadata } from 'next';
 import { PortfolioItemDetailClientContent } from './portfolio-item-detail-client';
@@ -13,14 +13,12 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-// Simulating data fetching for generateMetadata & initial props
-// In a real app, this would fetch from your DB.
+// Fetch portfolio item from DB
 async function getPortfolioItemData(id: string): Promise<PortfolioItem | null> {
-  // Simulate async operation, e.g., database call
-  await new Promise(resolve => setTimeout(resolve, 0));
-  const item = allPortfolioItemsData.find(p => p.id === id);
-  return item || null;
+  return getPortfolioItemById(id);
 }
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(
   { params }: PageProps,

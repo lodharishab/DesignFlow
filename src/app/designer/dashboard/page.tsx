@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,70 +27,28 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ClientOnly } from '@/components/shared/client-only';
+import { getNotificationsByUser, type Notification } from '@/lib/notifications-db';
+import { getOrdersByDesignerId } from '@/lib/orders-db';
 
-
-const mockHeaderNotifications = [
-    {
-        id: 'notif1',
-        icon: MessageSquare,
-        title: "New Message from Priya S.",
-        description: "Regarding order ORD7361P: 'Looks great! Can we try a different color?'",
-        time: "15m ago",
-        href: "/designer/orders/ORD7361P",
-        isRead: false,
-    },
-    {
-        id: 'notif2',
-        icon: Briefcase,
-        title: "New Order Assigned",
-        description: "You've been assigned to order ORDXYZ123: 'Business Card Design'.",
-        time: "1h ago",
-        href: "/designer/orders/ORDXYZ123",
-        isRead: false,
-    },
-    {
-        id: 'notif3',
-        icon: CheckCircle,
-        title: "Order Approved",
-        description: "Client has approved the final delivery for order ORDFGHIJ.",
-        time: "2 days ago",
-        href: "/designer/orders/ORDFGHIJ",
-        isRead: true,
-    },
-];
-
-const mockDashboardNotifications = [
-    {
-        id: 'cat_req_appr',
-        type: 'Service Category Request',
-        icon: CheckCircle,
-        title: "Category Approved",
-        description: "Your request for 'Packaging Design' has been approved. You can now receive alerts for these projects.",
-        time: "5m ago",
-        href: "/designer/applications",
-        isRead: false
-    },
-    {
-        id: 'cat_req_rej',
-        type: 'Service Category Request',
-        icon: AlertTriangle,
-        title: "Category Rejected",
-        description: "Your request for 'Motion Graphics' was rejected. Please ensure your portfolio has relevant examples.",
-        time: "30m ago",
-        href: "/designer/applications",
-        isRead: false
-    },
-    ...mockHeaderNotifications.slice(1)
-];
+const CURRENT_DESIGNER_ID = 'des001';
 
 function DesignerDashboardPageContent() {
-  const recentActiveOrders = [
-    { id: 'ORD7361P', serviceName: 'E-commerce Website UI/UX', client: 'Priya S.', deadline: new Date(new Date().setDate(new Date().getDate() + 5)), status: 'In Progress', progress: 60 },
-    { id: 'ORD4011M', serviceName: 'Mobile App Icon Set', client: 'Mohan D.', deadline: new Date(new Date().setDate(new Date().getDate() - 2)), status: 'In Progress', progress: 25 },
-    { id: 'ORDABCDE', serviceName: 'Festival Social Media Posts', client: 'Ritu G.', deadline: new Date(new Date().setDate(new Date().getDate() + 2)), status: 'Awaiting Client Review', progress: 90 },
-    { id: 'ORDFGHIJ', serviceName: 'Brochure for Print', client: 'Anil K.', deadline: new Date(new Date().setDate(new Date().getDate() + 8)), status: 'In Progress', progress: 40 },
-    { id: 'ORDKLMNO', serviceName: 'Pitch Deck Presentation', client: 'Sunita M.', deadline: new Date(new Date().setDate(new Date().getDate() + 15)), status: 'In Progress', progress: 10 },
-  ];
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [recentActiveOrders, setRecentActiveOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    getNotificationsByUser(CURRENT_DESIGNER_ID).then(setNotifications);
+    getOrdersByDesignerId(CURRENT_DESIGNER_ID).then(orders => {
+      setRecentActiveOrders(orders.filter(o => o.status === 'In Progress' || o.status === 'Awaiting Client Review').slice(0, 5).map(o => ({
+        id: o.id,
+        serviceName: o.serviceName || 'Untitled Service',
+        client: o.clientName || 'Client',
+        deadline: o.dueDate ? new Date(o.dueDate) : new Date(),
+        status: o.status,
+        progress: 0,
+      })));
+    });
+  }, []);
   
   const upcomingDeadlines = recentActiveOrders
     .filter(order => order.status === 'In Progress' || order.status === 'Awaiting Client Review')
@@ -204,16 +162,16 @@ function DesignerDashboardPageContent() {
               </CardTitle>
           </CardHeader>
           <CardContent>
-              {mockDashboardNotifications.length > 0 ? (
+              {notifications.length > 0 ? (
                   <ul className="space-y-3">
-                      {mockDashboardNotifications.slice(0, 3).map(notification => (
+                      {notifications.slice(0, 3).map(notification => (
                           <li key={notification.id}>
-                              <Link href={notification.href} className="block hover:bg-muted/50 p-2 rounded-md">
+                              <Link href={'#'} className="block hover:bg-muted/50 p-2 rounded-md">
                                   <div className="flex items-start gap-3">
-                                      <notification.icon className={cn("h-4 w-4 mt-1 shrink-0", getNotificationIconColor(notification.title))} />
+                                      <Bell className={cn("h-4 w-4 mt-1 shrink-0", getNotificationIconColor(notification.title || ''))} />
                                       <div>
                                           <p className="font-semibold text-sm leading-tight">{notification.title}</p>
-                                          <p className="text-xs text-muted-foreground">{notification.time}</p>
+                                          <p className="text-xs text-muted-foreground">{notification.createdAt ? formatDistanceToNow(notification.createdAt, { addSuffix: true }) : ''}</p>
                                       </div>
                                   </div>
                               </Link>

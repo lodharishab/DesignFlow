@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { format, isPast, formatDistanceToNow } from 'date-fns';
-import { initialOrdersData, type Order as BaseOrder, type OrderStatus } from '@/components/admin/orders/orders-table-view';
+import { getOrdersByDesignerId, type Order as BaseOrder, type OrderStatus } from '@/lib/orders-db';
 
 const MOCK_DESIGNER_ID = 'des002';
 
@@ -65,9 +65,10 @@ export default function DesignerOrdersPage(): ReactElement {
   });
 
   useEffect(() => {
-    const designerOrders = initialOrdersData.filter(order => order.designerId === MOCK_DESIGNER_ID);
-    setAssignedOrders(designerOrders as Order[]);
-    setIsLoading(false);
+    getOrdersByDesignerId(MOCK_DESIGNER_ID).then(orders => {
+      setAssignedOrders(orders as Order[]);
+      setIsLoading(false);
+    });
   }, []);
 
   const requestSort = (key: SortableDesignerOrderKeys) => {

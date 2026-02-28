@@ -8,7 +8,7 @@ import { useState, useEffect, useRef, type ReactNode } from 'react'; // these ar
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap as ZapIcon, Clock, Package, Tag, Icon as LucideIconType, Tags, IndianRupee, Camera, Film, Presentation, Palette, UserCircle } from 'lucide-react';
+import { Check, MessageSquare, ShoppingCart, Star, Users, Shield, Zap as ZapIcon, Clock, Package, Tag, type LucideIcon, Tags, IndianRupee, Camera, Film, Presentation, Palette, UserCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { ServiceDetailData, ServiceTierData, ApprovedDesignerData } from './page';
 
 // Helper function to map icon names to Lucide components
-const iconMap: Record<string, LucideIconType> = {
+const iconMap: Record<string, LucideIcon> = {
   Shield,
   Star,
   Zap: ZapIcon, // Corrected: Use the imported alias if original name conflicts

@@ -3,27 +3,27 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Briefcase, Users, ClipboardList, BarChart3, ArrowRight, UsersRound, IndianRupee, UserCheck, Newspaper, Edit, Star } from 'lucide-react';
 import Link from 'next/link';
-import { getAllBlogPosts } from '@/lib/blog-db'; // For blog post count
-import { designersData } from '@/lib/designer-data';
-import { isDbEnabled } from '@/lib/db';
+import { getAllBlogPosts } from '@/lib/blog-db';
+import { getAllDesigners } from '@/lib/designer-db';
+
+export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
   let totalBlogPosts = 0;
-  if(isDbEnabled()) {
-    try {
-      const blogPosts = await getAllBlogPosts();
-      totalBlogPosts = blogPosts.length;
-    } catch (error) {
-      console.error("Failed to fetch blog posts for dashboard:", error);
-      // Let totalBlogPosts remain 0
-    }
-  } else {
+  try {
     const blogPosts = await getAllBlogPosts();
     totalBlogPosts = blogPosts.length;
+  } catch (error) {
+    console.error("Failed to fetch blog posts for dashboard:", error);
   }
 
-
-  const pendingDesigners = designersData.filter(d => d.adminRanking === null || d.adminRanking < 2).length; // Example logic for pending
+  let pendingDesigners = 0;
+  try {
+    const designers = await getAllDesigners();
+    pendingDesigners = designers.filter(d => d.adminRanking === null || (d.adminRanking !== undefined && d.adminRanking < 2)).length;
+  } catch (error) {
+    console.error("Failed to fetch designers for dashboard:", error);
+  }
 
   const stats = [
     { title: "Total Services", value: "25", icon: Briefcase, color: "text-blue-500", bgColor: "bg-blue-100 dark:bg-blue-900", href: "/admin/services" },

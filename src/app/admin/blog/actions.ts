@@ -7,7 +7,7 @@ import { createBlogPost, updateBlogPost, type BlogPost } from '@/lib/blog-db'; /
 export interface BlogActionResult {
   success: boolean;
   message?: string;
-  errors?: Partial<Record<keyof Omit<BlogPost, '_id' | 'publishDate'> | 'publishDateString' | 'general', string>>;
+  errors?: Partial<Record<keyof Omit<BlogPost, '_id' | 'publishDate'> | 'slug' | 'publishDateString' | 'general', string>>;
   post?: BlogPost;
 }
 

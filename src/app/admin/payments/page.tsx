@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo, ChangeEvent, useCallback } from 'react';
+import { useState, useEffect, type ReactElement, useMemo, ChangeEvent, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -41,37 +41,7 @@ import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-
-type TransactionStatus = 'Completed' | 'Pending' | 'Failed' | 'Refunded' | 'On Hold';
-type TransactionType = 'Sale' | 'Payout' | 'Refund' | 'Fee';
-
-interface Transaction {
-  id: string;
-  orderId: string;
-  date: Date;
-  type: TransactionType;
-  status: TransactionStatus;
-  amount: number;
-  paymentMethod?: 'Razorpay' | 'PhonePe' | 'Bank Transfer';
-  clientName: string;
-  designerName?: string;
-}
-
-// Mock data now includes related transactions to better simulate a ledger
-const mockTransactions: Transaction[] = [
-  { id: 'txn_Olcftg87sHjkl', orderId: 'ORD7361P', date: new Date(2024, 6, 1), type: 'Sale', status: 'On Hold', amount: 24999, paymentMethod: 'Razorpay', clientName: 'Priya Sharma', designerName: 'Rohan Kapoor' },
-  { id: 'txn_HghtrDEWAq789', orderId: 'ORD1038K', date: new Date(2024, 6, 5), type: 'Sale', status: 'On Hold', amount: 7999, paymentMethod: 'PhonePe', clientName: 'Rajesh Kumar', designerName: 'Priya Sharma' },
-  { id: 'txn_Nnbvcxz87Uyt', orderId: 'ORD2945S', date: new Date(2024, 5, 20), type: 'Sale', status: 'Completed', amount: 19999, paymentMethod: 'Razorpay', clientName: 'Sunita Rao', designerName: 'Priya Sharma' },
-  { id: 'txn_payout_ps01', orderId: 'ORD2945S', date: new Date(2024, 6, 14), type: 'Payout', status: 'Completed', amount: -17999.10, paymentMethod: 'Bank Transfer', clientName: 'Sunita Rao', designerName: 'Priya Sharma' },
-  { id: 'txn_fee_ps01', orderId: 'ORD2945S', date: new Date(2024, 6, 14), type: 'Fee', status: 'Completed', amount: -1999.90, clientName: 'Sunita Rao', designerName: 'Priya Sharma' },
-  { id: 'txn_Kkjhgf56Qwe', orderId: 'ORD8872V', date: new Date(2024, 6, 8), type: 'Sale', status: 'Failed', amount: 2499, paymentMethod: 'Razorpay', clientName: 'Vikram Mehta' },
-  { id: 'txn_Qoiuyt09Mnb', orderId: 'ORD6531A', date: new Date(2024, 6, 10), type: 'Sale', status: 'Completed', amount: 6999, paymentMethod: 'PhonePe', clientName: 'Anjali Iyer', designerName: 'Vikram Singh' },
-  { id: 'txn_payout_vs01', orderId: 'ORD6531A', date: new Date(2024, 6, 18), type: 'Payout', status: 'Pending', amount: -6299.10, paymentMethod: 'Bank Transfer', clientName: 'Anjali Iyer', designerName: 'Vikram Singh' },
-  { id: 'txn_fee_vs01', orderId: 'ORD6531A', date: new Date(2024, 6, 18), type: 'Fee', status: 'Pending', amount: -699.90, clientName: 'Anjali Iyer', designerName: 'Vikram Singh' },
-  { id: 'txn_Xyz123abcDef', orderId: 'ORD4011M', date: new Date(2024, 5, 25), type: 'Sale', status: 'Refunded', amount: 4999, paymentMethod: 'Razorpay', clientName: 'Mohan Das', designerName: 'Sunita Reddy' },
-  { id: 'txn_refund_md01', orderId: 'ORD4011M', date: new Date(2024, 6, 2), type: 'Refund', status: 'Completed', amount: -4999, clientName: 'Mohan Das' },
-  { id: 'txn_BT_WEDINV_RIYA01', orderId: 'ORD9274R', date: new Date(2024, 4, 15), type: 'Sale', status: 'On Hold', amount: 9999, paymentMethod: 'Bank Transfer', clientName: 'Riya Sen', designerName: 'Arjun Mehta' },
-];
+import { getAllTransactions, type Transaction } from '@/lib/transactions-db';
 
 type SortableKeys = 'id' | 'date' | 'type' | 'status' | 'clientName' | 'amount';
 
@@ -167,7 +137,12 @@ const quickLinks = [
 
 export default function AdminPaymentsPage(): ReactElement {
   const { toast } = useToast();
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+
+  useEffect(() => {
+    getAllTransactions().then(setAllTransactions);
+  }, []);
   
   const [filters, setFilters] = useState({
     transactionId: '',
@@ -198,11 +173,11 @@ export default function AdminPaymentsPage(): ReactElement {
   };
 
   const displayedTransactions = useMemo(() => {
-    let sortableItems = [...mockTransactions];
+    let sortableItems = [...allTransactions];
 
     sortableItems = sortableItems.filter(txn => {
       const idMatch = !filters.transactionId || txn.id.toLowerCase().includes(filters.transactionId.toLowerCase());
-      const orderIdMatch = !filters.orderId || txn.orderId.toLowerCase().includes(filters.orderId.toLowerCase());
+      const orderIdMatch = !filters.orderId || (txn.orderId || '').toLowerCase().includes(filters.orderId.toLowerCase());
       const statusMatch = filters.status === 'All' || txn.status === filters.status;
       const typeMatch = filters.type === 'All' || txn.type === filters.type;
       return idMatch && orderIdMatch && statusMatch && typeMatch;
@@ -252,7 +227,7 @@ export default function AdminPaymentsPage(): ReactElement {
       setSelectedTransaction(null);
   }
 
-  const getStatusBadgeVariant = (status: TransactionStatus) => {
+  const getStatusBadgeVariant = (status: Transaction['status']) => {
     switch (status) {
       case 'Completed': return 'default';
       case 'Pending':
@@ -263,10 +238,10 @@ export default function AdminPaymentsPage(): ReactElement {
     }
   };
 
-   const totalRevenue = mockTransactions.filter(t => t.type === 'Sale' && (t.status === 'Completed' || t.status === 'On Hold')).reduce((acc, t) => acc + t.amount, 0);
-   const pendingInEscrow = mockTransactions.filter(t => t.type === 'Sale' && t.status === 'On Hold').reduce((acc, t) => acc + t.amount, 0);
-   const releasedPayments = mockTransactions.filter(t => t.type === 'Payout' && t.status === 'Completed').reduce((acc, t) => acc + Math.abs(t.amount), 0);
-   const advancesGiven = mockTransactions.filter(t => t.type === 'Payout' && t.status === 'Pending').reduce((acc, t) => acc + Math.abs(t.amount), 0);
+   const totalRevenue = allTransactions.filter(t => t.type === 'Sale' && (t.status === 'Completed' || t.status === 'On Hold')).reduce((acc, t) => acc + t.amount, 0);
+   const pendingInEscrow = allTransactions.filter(t => t.type === 'Sale' && t.status === 'On Hold').reduce((acc, t) => acc + t.amount, 0);
+   const releasedPayments = allTransactions.filter(t => t.type === 'Payout' && t.status === 'Completed').reduce((acc, t) => acc + Math.abs(t.amount), 0);
+   const advancesGiven = allTransactions.filter(t => t.type === 'Payout' && t.status === 'Pending').reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
    const statCards = [
      { title: "Total Revenue", value: totalRevenue, icon: IndianRupee, trend: "+10.2%" },
@@ -277,7 +252,7 @@ export default function AdminPaymentsPage(): ReactElement {
   
    const selectedLedger = useMemo(() => {
      if (!selectedTransaction) return [];
-     return mockTransactions.filter(t => t.orderId === selectedTransaction.orderId).sort((a,b) => b.date.getTime() - a.date.getTime());
+     return allTransactions.filter(t => t.orderId === selectedTransaction.orderId).sort((a,b) => b.date.getTime() - a.date.getTime());
    }, [selectedTransaction]);
    
    const selectedEscrowBalance = useMemo(() => {
@@ -294,7 +269,7 @@ export default function AdminPaymentsPage(): ReactElement {
       txn.status,
       txn.amount.toString(),
       txn.paymentMethod || 'N/A',
-      `"${txn.clientName.replace(/"/g, '""')}"`,
+      `"${(txn.clientName || 'N/A').replace(/"/g, '""')}"`,
       txn.designerName ? `"${txn.designerName.replace(/"/g, '""')}"` : 'N/A'
     ]);
 

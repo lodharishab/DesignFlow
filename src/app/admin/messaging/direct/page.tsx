@@ -36,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { summarizeChat } from '@/ai/flows/summarize-chat-flow';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
+import { getAllConversations, getMessagesByConversation, type Conversation as DbConversation, type Message as DbMessage } from '@/lib/messaging-db';
 
 
 interface Message {
@@ -59,72 +60,26 @@ interface Conversation {
   messages: Message[];
 }
 
-const mockConversations: Conversation[] = [
-  {
-    userId: 'usr001',
-    userName: 'Priya Sharma',
-    avatarUrl: 'https://placehold.co/100x100.png',
-    avatarHint: 'indian woman client',
-    lastMessage: 'Great, thanks for the update! Looking forward to the designs.',
-    lastMessageTimestamp: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
-    isRead: false,
-    isArchived: false,
-    isMuted: false,
-    isPinned: true,
-    messages: [
-      { id: 'msg1', sender: 'admin', text: 'Hi Priya, just wanted to let you know your assigned designer has started working on the project.', timestamp: '11:30 AM' },
-      { id: 'msg2', sender: 'user', text: 'Great, thanks for the update! Looking forward to the designs.', timestamp: '11:32 AM' },
-    ],
-  },
-  {
-    userId: 'usr002',
-    userName: 'Rohan Kapoor',
-    avatarUrl: 'https://placehold.co/100x100.png',
-    avatarHint: 'indian man designer',
-    lastMessage: 'Yes, I have submitted my portfolio for the new category.',
-    lastMessageTimestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    isRead: true,
-    isArchived: false,
-    isMuted: false,
-    isPinned: false,
-    messages: [
-       { id: 'msg3', sender: 'admin', text: 'Hi Rohan, did you get a chance to submit your portfolio for the Web UI/UX category?', timestamp: '9:00 AM' },
-       { id: 'msg4', sender: 'user', text: 'Yes, I have submitted my portfolio for the new category.', timestamp: '9:05 AM' },
-    ]
-  },
-  {
-    userId: 'usr003',
-    userName: 'Aarav Patel',
-    avatarUrl: 'https://placehold.co/100x100.png',
-    avatarHint: 'indian person avatar',
-    lastMessage: 'Okay, I understand the policy. Thanks for clarifying.',
-    lastMessageTimestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-    isRead: true,
-    isArchived: true,
-    isMuted: false,
-    isPinned: false,
-     messages: [
-        { id: 'msg5', sender: 'user', text: 'I had a question about my last order.', timestamp: 'Yesterday' },
-        { id: 'msg6', sender: 'admin', text: 'Hi Aarav, of course. How can I help?', timestamp: 'Yesterday' },
-        { id: 'msg7', sender: 'user', text: 'Why was it marked as suspended?', timestamp: 'Yesterday' },
-        { id: 'msg8', sender: 'admin', text: 'There was an issue with the provided brief, which we have now resolved. Your project is active again.', timestamp: 'Yesterday' },
-        { id: 'msg9', sender: 'user', text: 'Okay, I understand the policy. Thanks for clarifying.', timestamp: 'Yesterday' },
-    ]
-  },
-  {
-    userId: 'usr004',
-    userName: 'Sneha Reddy',
-    avatarUrl: 'https://placehold.co/100x100.png',
-    avatarHint: 'indian woman professional',
-    lastMessage: 'Perfect, thank you!',
-    lastMessageTimestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    isRead: true,
-    isArchived: false,
-    isMuted: true,
-    isPinned: false,
-    messages: []
-  },
-];
+function mapDbConversation(c: DbConversation): Conversation {
+  return {
+    userId: c.participantOneId || c.id,
+    userName: c.participantOneName || 'User',
+    avatarUrl: c.participantOneAvatarUrl || 'https://placehold.co/100x100.png',
+    avatarHint: c.participantOneAvatarHint || 'avatar',
+    lastMessage: c.lastMessage || '',
+    lastMessageTimestamp: c.lastMessageTimestamp ? new Date(c.lastMessageTimestamp) : new Date(),
+    isRead: c.unreadCountTwo === 0,
+    isArchived: c.isArchived,
+    isMuted: c.isMuted,
+    isPinned: c.isPinnedTwo,
+    messages: (c.messages || []).map(m => ({
+      id: m.id,
+      sender: (m.senderRole === 'admin' ? 'admin' : 'user') as 'admin' | 'user',
+      text: m.text || '',
+      timestamp: m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+    })),
+  };
+}
 
 type FilterType = 'all' | 'unread' | 'archived' | 'muted';
 type SortType = 'date' | 'name';
@@ -140,11 +95,17 @@ function TimeAgo({ date }: { date: Date }) {
 }
 
 export default function AdminDirectMessagesPage() {
-  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [filterBy, setFilterBy] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortType>('date');
   const { toast } = useToast();
+
+  useEffect(() => {
+    getAllConversations().then(dbConvs => {
+      setConversations(dbConvs.map(mapDbConversation));
+    });
+  }, []);
 
   const handleConversationUpdate = (updatedConversation: Conversation) => {
     setConversations(prev =>

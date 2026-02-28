@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState, type ReactElement } from 'react';
+import { useMemo, useState, useEffect, type ReactElement } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,7 @@ import { Star, Clock, CheckCheck, GitCommitHorizontal, ShieldAlert, Cloud, Messa
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { mockDesignerReviews, type DesignerReview } from '@/lib/reviews-data';
+import { getReviewsByDesignerId, type DesignerReview } from '@/lib/reviews-db';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { formatDistanceToNow, subDays } from 'date-fns';
 import Link from 'next/link';
@@ -24,6 +24,8 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+
+const CURRENT_DESIGNER_ID = 'des001';
 
 
 // --- KPI Data & Component ---
@@ -102,11 +104,11 @@ function KpiCard({ title, value, unit, icon: Icon, description }: { title: strin
 const positiveKeywords = ['amazing', 'great', 'professional', 'excellent', 'fantastic', 'fast', 'quick', 'easy', 'love', 'happy', 'pleasure', 'perfect'];
 const negativeKeywords = ['delay', 'issue', 'problem', 'slow', 'difficult', 'bad', 'poor', 'unprofessional', 'revisions'];
 
-function ReviewTagCloud() {
+function ReviewTagCloud({ reviews: reviewsForCloud }: { reviews: DesignerReview[] }) {
     const keywordData = useMemo(() => {
         const counts: Record<string, { count: number, sentiment: 'positive' | 'negative' | 'neutral' }> = {};
 
-        mockDesignerReviews.forEach(review => {
+        reviewsForCloud.forEach(review => {
             const text = (review.reviewText || '').toLowerCase();
             const words = text.replace(/[.,!]/g, '').split(/\s+/);
             words.forEach(word => {
@@ -140,7 +142,7 @@ function ReviewTagCloud() {
             fontSize: 12 + ( (keyword.count - minCount) / (maxCount - minCount + 1) ) * 16, // scale from 12px to 28px
         }));
 
-    }, []);
+    }, [reviewsForCloud]);
     
     const getSentimentClass = (sentiment: 'positive' | 'negative' | 'neutral') => {
         switch (sentiment) {
@@ -192,8 +194,12 @@ type StatusFilter = 'all' | 'featured' | 'needsAction';
 type DateFilter = 'all' | '30d';
 
 export default function DesignerReviewsPage(): ReactElement {
-  const [reviews, setReviews] = useState<DesignerReview[]>(mockDesignerReviews);
+  const [reviews, setReviews] = useState<DesignerReview[]>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    getReviewsByDesignerId(CURRENT_DESIGNER_ID).then(setReviews);
+  }, []);
 
   const [ratingFilter, setRatingFilter] = useState<RatingFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -240,7 +246,7 @@ export default function DesignerReviewsPage(): ReactElement {
       variant={filterState === value ? "default" : "outline"} 
       size="sm"
       className="h-8"
-      onClick={() => setFilterState(prev => (prev === value ? 'all' : value))}
+      onClick={() => setFilterState((prev: string) => (prev === value ? 'all' : value))}
     >
       {children}
       {label}
@@ -253,7 +259,7 @@ export default function DesignerReviewsPage(): ReactElement {
             {kpiData.map(kpi => <KpiCard key={kpi.title} {...kpi} />)}
         </div>
 
-        <ReviewTagCloud />
+        <ReviewTagCloud reviews={reviews} />
 
         <Card className="shadow-lg">
         <CardHeader>

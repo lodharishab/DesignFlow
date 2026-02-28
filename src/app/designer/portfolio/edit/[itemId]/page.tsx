@@ -7,22 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Palette, ArrowLeft, PackageSearch } from 'lucide-react';
 import { useEffect, useState } from 'react';
-// import { PortfolioForm } from '@/app/designer/portfolio/components/portfolio-form'; // For future use
-// import { getPortfolioItemById } from '@/lib/portfolio-db'; // For future use
-// import type { PortfolioItem } from '@/components/shared/portfolio-item-card'; // For future use
-
-// Mock data structure for a portfolio item - replace with actual data fetching
-interface PortfolioItemDetail {
-  id: string;
-  title: string;
-  category: string;
-  // ... other fields
-}
-
-const mockPortfolioItems: { [key: string]: PortfolioItemDetail } = {
-  'ecomm-reimagined-platform-india': { id: 'ecomm-reimagined-platform-india', title: 'E-commerce Reimagined for Indian Market', category: 'Web UI/UX' },
-  // Add more mock items if needed for testing different IDs
-};
+import { getPortfolioItemById, type PortfolioItem } from '@/lib/portfolio-db';
 
 
 export default function EditPortfolioItemPage() {
@@ -30,17 +15,16 @@ export default function EditPortfolioItemPage() {
   const router = useRouter();
   const itemId = params.itemId as string;
 
-  const [item, setItem] = useState<PortfolioItemDetail | null>(null);
+  const [item, setItem] = useState<PortfolioItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
 
   useEffect(() => {
     if (itemId) {
-      // Simulate data fetching
-      // const fetchedItem = await getPortfolioItemById(itemId); // Future db call
-      const fetchedItem = mockPortfolioItems[itemId]; // Using mock data
-      setItem(fetchedItem || null);
-      setIsLoading(false);
+      getPortfolioItemById(itemId).then(fetchedItem => {
+        setItem(fetchedItem || null);
+        setIsLoading(false);
+      });
     }
   }, [itemId]);
 

@@ -31,6 +31,8 @@ import {
 } from "@/components/ui/alert-dialog";
 
 
+import { getAllNotifications, type Notification as DbNotification } from '@/lib/notifications-db';
+
 type AudienceType = 'all' | 'role' | 'user';
 type ScheduleType = 'now' | 'later';
 type AnnouncementStatus = 'Sent' | 'Scheduled' | 'Draft';
@@ -49,11 +51,18 @@ interface Announcement {
   importance: AnnouncementImportance;
 }
 
-const mockAnnouncements: Announcement[] = [
-  { id: 'ann001', title: 'New Feature: Brand Profiles!', audience: 'All Users', audienceType: 'all', status: 'Sent', scheduledTime: new Date('2024-07-10T10:00:00'), message: 'We have just launched Brand Profiles for clients! You can now save your brand information to help designers understand your needs better.', importance: 'Normal' },
-  { id: 'ann002', title: 'Diwali Campaign Reminder', audience: 'Designers', audienceType: 'role', selectedRole: 'Designers', status: 'Sent', scheduledTime: new Date('2024-07-05T15:30:00'), message: 'A reminder to all designers: The Diwali campaign submission deadline is approaching. Please ensure all your related projects are on track.', importance: 'Normal' },
-  { id: 'ann003', title: 'Scheduled Maintenance', audience: 'All Users', audienceType: 'all', status: 'Scheduled', scheduledTime: new Date('2024-08-28T18:00:00'), message: 'The platform will be down for scheduled maintenance for approximately 30 minutes. We apologize for any inconvenience.', importance: 'High' },
-];
+function mapNotificationToAnnouncement(n: DbNotification): Announcement {
+  return {
+    id: n.id,
+    title: n.title || 'Untitled',
+    audience: 'All Users',
+    audienceType: 'all',
+    status: n.isRead ? 'Sent' : 'Scheduled',
+    scheduledTime: n.createdAt,
+    message: n.message || '',
+    importance: n.type === 'alert' ? 'High' : 'Normal',
+  };
+}
 
 function AiAssistDialog({ onAccept }: { onAccept: (content: AnnouncementResponse) => void }) {
   const [prompt, setPrompt] = useState('');
@@ -141,7 +150,13 @@ function AiAssistDialog({ onAccept }: { onAccept: (content: AnnouncementResponse
 
 export default function AdminAnnouncementsPage(): ReactElement {
   const { toast } = useToast();
-  const [announcements, setAnnouncements] = useState<Announcement[]>(mockAnnouncements);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+
+  useEffect(() => {
+    getAllNotifications().then(notifs => {
+      setAnnouncements(notifs.map(mapNotificationToAnnouncement));
+    });
+  }, []);
   const [sortBy, setSortBy] = useState<SortByType>('newest');
   
   const formRef = useRef<HTMLDivElement>(null);

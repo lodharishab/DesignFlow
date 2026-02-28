@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo } from 'react';
+import { useState, useEffect, type ReactElement, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
-import { initialOrdersData, type Order, type PaymentTransaction } from '@/components/admin/orders/orders-table-view';
+import { getAllOrders, type Order } from '@/lib/orders-db';
 
 type PayoutRequestStatus = 'Pending' | 'Approved' | 'Rejected';
 interface PayoutRequest {
@@ -37,7 +37,11 @@ export default function AdminPayoutRequestsPage(): ReactElement {
     const { toast } = useToast();
     const router = useRouter();
     const [payoutRequests, setPayoutRequests] = useState<PayoutRequest[]>(mockPayoutRequests);
-    const [orders, setOrders] = useState<Order[]>(initialOrdersData);
+    const [orders, setOrders] = useState<Order[]>([]);
+
+    useEffect(() => {
+      getAllOrders().then(setOrders);
+    }, []);
 
     const handlePayoutRequestStatusChange = (requestId: string, newStatus: PayoutRequestStatus) => {
         const request = payoutRequests.find(req => req.id === requestId);
@@ -62,21 +66,6 @@ export default function AdminPayoutRequestsPage(): ReactElement {
                         orderToUpdate.milestones[milestoneIndex].status = 'Paid';
                     }
                 }
-                
-                // Add payment transaction record
-                const newPayment: PaymentTransaction = {
-                    id: `payout_${request.id}`,
-                    date: new Date(),
-                    type: 'Payout',
-                    status: 'Completed',
-                    amount: -request.amount, // Payouts are negative amounts
-                    description: `Payout approved: ${request.reason}`
-                };
-                
-                if (!orderToUpdate.payments) {
-                    orderToUpdate.payments = [];
-                }
-                orderToUpdate.payments.push(newPayment);
 
                 updatedOrders[orderIndex] = orderToUpdate;
                 setOrders(updatedOrders);

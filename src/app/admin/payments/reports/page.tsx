@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, type ReactElement } from 'react';
+import { useState, useEffect, useMemo, type ReactElement } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { PieChart as PieChartIcon, ArrowLeft } from "lucide-react";
@@ -10,41 +10,17 @@ import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, Responsiv
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { format } from 'date-fns';
-
-type TransactionStatus = 'Completed' | 'Pending' | 'Failed' | 'Refunded' | 'On Hold';
-type TransactionType = 'Sale' | 'Payout' | 'Refund' | 'Fee';
-
-interface Transaction {
-  id: string;
-  orderId: string;
-  date: Date;
-  type: TransactionType;
-  status: TransactionStatus;
-  amount: number;
-  paymentMethod?: 'Razorpay' | 'PhonePe' | 'Bank Transfer';
-  clientName: string;
-  designerName?: string;
-}
-
-const mockTransactions: Transaction[] = [
-  { id: 'txn_Olcftg87sHjkl', orderId: 'ORD7361P', date: new Date(2024, 6, 1), type: 'Sale', status: 'On Hold', amount: 24999, paymentMethod: 'Razorpay', clientName: 'Priya Sharma', designerName: 'Rohan Kapoor' },
-  { id: 'txn_HghtrDEWAq789', orderId: 'ORD1038K', date: new Date(2024, 6, 5), type: 'Sale', status: 'On Hold', amount: 7999, paymentMethod: 'PhonePe', clientName: 'Rajesh Kumar', designerName: 'Priya Sharma' },
-  { id: 'txn_Nnbvcxz87Uyt', orderId: 'ORD2945S', date: new Date(2024, 5, 20), type: 'Sale', status: 'Completed', amount: 19999, paymentMethod: 'Razorpay', clientName: 'Sunita Rao', designerName: 'Priya Sharma' },
-  { id: 'txn_payout_ps01', orderId: 'ORD2945S', date: new Date(2024, 6, 14), type: 'Payout', status: 'Completed', amount: -17999.10, paymentMethod: 'Bank Transfer', clientName: 'Sunita Rao', designerName: 'Priya Sharma' },
-  { id: 'txn_fee_ps01', orderId: 'ORD2945S', date: new Date(2024, 6, 14), type: 'Fee', status: 'Completed', amount: -1999.90, clientName: 'Sunita Rao', designerName: 'Priya Sharma' },
-  { id: 'txn_Kkjhgf56Qwe', orderId: 'ORD8872V', date: new Date(2024, 6, 8), type: 'Sale', status: 'Failed', amount: 2499, paymentMethod: 'Razorpay', clientName: 'Vikram Mehta' },
-  { id: 'txn_Qoiuyt09Mnb', orderId: 'ORD6531A', date: new Date(2024, 6, 10), type: 'Sale', status: 'Completed', amount: 6999, paymentMethod: 'PhonePe', clientName: 'Anjali Iyer', designerName: 'Vikram Singh' },
-  { id: 'txn_payout_vs01', orderId: 'ORD6531A', date: new Date(2024, 6, 18), type: 'Payout', status: 'Pending', amount: -6299.10, paymentMethod: 'Bank Transfer', clientName: 'Anjali Iyer', designerName: 'Vikram Singh' },
-  { id: 'txn_fee_vs01', orderId: 'ORD6531A', date: new Date(2024, 6, 18), type: 'Fee', status: 'Pending', amount: -699.90, clientName: 'Anjali Iyer', designerName: 'Vikram Singh' },
-  { id: 'txn_Xyz123abcDef', orderId: 'ORD4011M', date: new Date(2024, 5, 25), type: 'Sale', status: 'Refunded', amount: 4999, paymentMethod: 'Razorpay', clientName: 'Mohan Das', designerName: 'Sunita Reddy' },
-  { id: 'txn_refund_md01', orderId: 'ORD4011M', date: new Date(2024, 6, 2), type: 'Refund', status: 'Completed', amount: -4999, clientName: 'Mohan Das' },
-  { id: 'txn_BT_WEDINV_RIYA01', orderId: 'ORD9274R', date: new Date(2024, 4, 15), type: 'Sale', status: 'On Hold', amount: 9999, paymentMethod: 'Bank Transfer', clientName: 'Riya Sen', designerName: 'Arjun Mehta' },
-];
+import { getAllTransactions, type Transaction } from '@/lib/transactions-db';
 
 export default function AdminReportsPage(): ReactElement {
+    const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+
+    useEffect(() => {
+      getAllTransactions().then(setAllTransactions);
+    }, []);
 
     const revenueByMonthData = useMemo(() => {
-        const sales = mockTransactions.filter(t => t.type === 'Sale' && t.status === 'Completed');
+        const sales = allTransactions.filter(t => t.type === 'Sale' && t.status === 'Completed');
         const monthlyRevenue: { [key: string]: number } = {};
 
         sales.forEach(sale => {
@@ -58,7 +34,7 @@ export default function AdminReportsPage(): ReactElement {
         return Object.entries(monthlyRevenue)
             .map(([month, revenue]) => ({ month, revenue }))
             .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime()); // Sort by date
-    }, []);
+    }, [allTransactions]);
     const revenueChartConfig = {
       revenue: {
         label: "Revenue (₹)",
@@ -67,14 +43,14 @@ export default function AdminReportsPage(): ReactElement {
     } satisfies ChartConfig;
     
     const fundsChartData = useMemo(() => {
-      const released = mockTransactions
+      const released = allTransactions
         .filter(t => t.type === 'Payout' && t.status === 'Completed')
         .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-      const escrow = mockTransactions
+      const escrow = allTransactions
         .filter(t => t.type === 'Sale' && t.status === 'On Hold')
         .reduce((sum, t) => sum + t.amount, 0);
       return [{ name: 'Funds', escrow, released }];
-    }, []);
+    }, [allTransactions]);
     const fundsChartConfig = {
       escrow: { label: "In Escrow", color: "hsl(var(--chart-2))" },
       released: { label: "Released", color: "hsl(var(--chart-3))" },
@@ -89,18 +65,18 @@ export default function AdminReportsPage(): ReactElement {
     } satisfies ChartConfig;
     
     const statusChartData = useMemo(() => {
-        const statusCounts = mockTransactions.reduce((acc, t) => {
+        const statusCounts = allTransactions.reduce((acc, t) => {
             if (t.type !== 'Sale') return acc;
             acc[t.status] = (acc[t.status] || 0) + 1;
             return acc;
-        }, {} as Record<TransactionStatus, number>);
+        }, {} as Record<string, number>);
         
         return Object.entries(statusCounts).map(([name, value]) => ({
             name,
             value,
             fill: statusChartConfig[name as keyof typeof statusChartConfig]?.color || 'hsl(var(--muted))'
         }));
-    }, []);
+    }, [allTransactions]);
 
     return (
         <div className="space-y-8">

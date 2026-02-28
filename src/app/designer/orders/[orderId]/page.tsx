@@ -62,7 +62,7 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, isPast, differenceInDays } from 'date-fns';
-import { initialOrdersData, type Order as BaseOrder, type OrderStatus, type OrderEvent, type Milestone } from '@/components/admin/orders/orders-table-view'; 
+import { getOrderById, type Order as BaseOrder, type OrderStatus, type OrderEvent, type Milestone } from '@/lib/orders-db'; 
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -89,33 +89,23 @@ interface Order extends BaseOrder {
 }
 
 // Add mock milestone and analytics data to some orders
-const ordersWithEnhancements: Order[] = initialOrdersData.map(order => {
+function enhanceOrder(order: BaseOrder): Order {
   if (order.id === 'ORD7361P') {
     return {
       ...order,
-      activeBrandKitName: "BharatRetail Solutions", // Add active brand
-      milestones: [
-        { id: 'm1_7361p', title: 'Phase 1: Wireframes & UX Flow', dueDate: new Date(2024, 6, 8), amount: 8000, status: 'Paid' },
-        { id: 'm2_7361p', title: 'UI Design & Style Guide', dueDate: new Date(2024, 6, 20), amount: 12000, status: 'Delivered' },
-        { id: 'm3_7361p', title: 'Final Assets & Prototype', dueDate: new Date(2024, 6, 28), amount: 4999, status: 'Pending' },
-      ]
+      activeBrandKitName: "BharatRetail Solutions",
     };
   }
   if (order.id === 'ORD4011M') {
       return {
           ...order,
-          activeBrandKitName: "My First Brand", // Add active brand
-          milestones: [
-              { id: 'm4_4011m', title: 'Initial Icon Concepts (5 icons)', dueDate: new Date(2024, 5, 28), amount: 2500, status: 'Paid' },
-              { id: 'm5_4011m', title: 'Final Icon Set (10 icons)', dueDate: new Date(2024, 6, 2), amount: 2499, status: 'Pending' },
-          ]
+          activeBrandKitName: "My First Brand",
       }
   }
-  // Let's assume order ORD2945S belongs to designer des002 now to test analytics
   if (order.id === 'ORD2945S') {
     return {
         ...order,
-        designerId: MOCK_DESIGNER_ID, // Assign to current designer
+        designerId: MOCK_DESIGNER_ID,
         analytics: {
             completionDate: new Date(2024, 6, 12),
             totalDeliveryTimeDays: differenceInDays(new Date(2024, 6, 12), order.orderDate),
@@ -126,7 +116,7 @@ const ordersWithEnhancements: Order[] = initialOrdersData.map(order => {
     }
   }
   return order;
-});
+}
 // --- End of interfaces and data enhancements ---
 
 
@@ -172,23 +162,25 @@ function DesignerOrderDetailPageContent(): ReactElement {
   useEffect(() => {
     if (orderId) {
       setIsLoading(true);
-      const foundOrder = ordersWithEnhancements.find(o => o.id === orderId && o.designerId === MOCK_DESIGNER_ID);
-      if (foundOrder) {
-        setOrder({...foundOrder, orderEvents: [...foundOrder.orderEvents].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime())});
-        setPrivateNotes(foundOrder.privateNotes || '');
-        if (foundOrder.status === 'Revision Requested' && foundOrder.revisionsUsed >= foundOrder.revisionsAllowed) {
-            setShowRevisionModal(true);
+      getOrderById(orderId).then(raw => {
+        const foundOrder = raw && raw.designerId === MOCK_DESIGNER_ID ? enhanceOrder(raw) : null;
+        if (foundOrder) {
+          setOrder({...foundOrder, orderEvents: [...foundOrder.orderEvents].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime())});
+          setPrivateNotes(foundOrder.privateNotes || '');
+          if (foundOrder.status === 'Revision Requested' && foundOrder.revisionsUsed >= foundOrder.revisionsAllowed) {
+              setShowRevisionModal(true);
+          }
+        } else {
+          toast({
+            title: "Error",
+            description: "Order not found or not assigned to you.",
+            variant: "destructive",
+            duration: 3000,
+          });
+          router.push('/designer/orders');
         }
-      } else {
-        toast({
-          title: "Error",
-          description: "Order not found or not assigned to you.",
-          variant: "destructive",
-          duration: 3000,
-        });
-        router.push('/designer/orders');
-      }
-      setIsLoading(false);
+        setIsLoading(false);
+      });
     }
   }, [orderId, router, toast]);
 
@@ -196,6 +188,8 @@ function DesignerOrderDetailPageContent(): ReactElement {
     if (!newMessage.trim() || !order) return;
     setIsSendingMessage(true);
     const newEvent: OrderEvent = {
+        id: `evt_msg_${Date.now()}`,
+        orderId: order.id,
         timestamp: new Date(),
         event: `Message from Designer: ${newMessage}`,
         actor: order.designerName || 'Designer',
@@ -224,10 +218,12 @@ function DesignerOrderDetailPageContent(): ReactElement {
     const newDeliverable = {
         name: fileToUpload.name,
         url: '#', 
-        submittedAt: new Date(),
+        submittedAt: new Date().toISOString(),
     };
     const submissionType = order.status === 'Revision Requested' ? 'Revisions' : 'Deliverable';
     const newEvent: OrderEvent = {
+        id: `evt_del_${Date.now()}`,
+        orderId: order.id,
         timestamp: new Date(),
         event: `${submissionType} submitted: ${fileToUpload.name} (${deliverableDescription})`,
         actor: order.designerName || 'Designer',
@@ -278,6 +274,8 @@ function DesignerOrderDetailPageContent(): ReactElement {
         return;
     }
     const newEvent: OrderEvent = {
+        id: `evt_note_${Date.now()}`,
+        orderId: order.id,
         timestamp: new Date(),
         event: `Note from Designer: ${privateNotes}`,
         actor: order.designerName || 'Designer',
@@ -515,7 +513,7 @@ function DesignerOrderDetailPageContent(): ReactElement {
                             {order.deliverables.map((file, idx) => (
                             <li key={idx} className="p-2 border rounded-md bg-secondary/50 flex justify-between items-center">
                                 <span>{file.name} ({format(file.submittedAt, 'PPp')})</span>
-                                <Button variant="ghost" size="xs" asChild><Link href={file.url} target="_blank">Download</Link></Button>
+                                <Button variant="ghost" size="sm" asChild><Link href={file.url} target="_blank">Download</Link></Button>
                             </li>
                             ))}
                         </ul>
@@ -655,7 +653,7 @@ function RequestPayoutDialog({ order }: { order: Order }) {
                 {pendingMilestones.length > 0 ? (
                   pendingMilestones.map(m => (
                     <SelectItem key={m.id} value={m.id}>
-                      {m.title} (Up to ₹{m.amount.toLocaleString('en-IN')})
+                      {m.title} (Up to ₹{(m.amount || 0).toLocaleString('en-IN')})
                     </SelectItem>
                   ))
                 ) : (
@@ -693,8 +691,8 @@ function MilestoneView({ order }: { order: Order }) {
     }
   };
   
-  const totalAmount = milestones.reduce((acc, m) => acc + m.amount, 0);
-  const paidAmount = milestones.filter(m => m.status === 'Paid').reduce((acc, m) => acc + m.amount, 0);
+  const totalAmount = milestones.reduce((acc, m) => acc + (m.amount || 0), 0);
+  const paidAmount = milestones.filter(m => m.status === 'Paid').reduce((acc, m) => acc + (m.amount || 0), 0);
   const progressPercentage = totalAmount > 0 ? (paidAmount / totalAmount) * 100 : 0;
 
 
@@ -715,8 +713,8 @@ function MilestoneView({ order }: { order: Order }) {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-medium text-sm">{milestone.title}</p>
-                    <p className="text-xs text-muted-foreground">Due: {format(milestone.dueDate, 'MMM d, yyyy')}</p>
-                    <p className="text-xs text-muted-foreground">Amount: ₹{milestone.amount.toLocaleString('en-IN')}</p>
+                    <p className="text-xs text-muted-foreground">Due: {milestone.dueDate ? format(milestone.dueDate, 'MMM d, yyyy') : 'TBD'}</p>
+                    <p className="text-xs text-muted-foreground">Amount: ₹{(milestone.amount || 0).toLocaleString('en-IN')}</p>
                   </div>
                   {getMilestoneStatusBadge(milestone.status)}
                 </div>

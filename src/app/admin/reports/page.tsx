@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo } from 'react';
+import { useState, useEffect, type ReactElement, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,7 +20,7 @@ import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { format } from 'date-fns';
 import { updateReportStatusAction } from '@/app/admin/reports/actions';
-import { mockReportsData, type Report } from '@/app/admin/reports/data';
+import { getAllReports, type Report } from '@/lib/reports-db';
 import {
   Select,
   SelectContent,
@@ -34,7 +34,11 @@ type SortableReportKeys = 'id' | 'subject' | 'reporterName' | 'reportDate' | 'st
 
 export default function AdminReportsPage(): ReactElement {
   const { toast } = useToast();
-  const [reports, setReports] = useState<Report[]>(mockReportsData);
+  const [reports, setReports] = useState<Report[]>([]);
+
+  useEffect(() => {
+    getAllReports().then(setReports);
+  }, []);
   const [statusFilter, setStatusFilter] = useState<'All' | Report['status']>('All');
   const [sortConfig, setSortConfig] = useState<{ key: SortableReportKeys; direction: 'ascending' | 'descending' }>({
     key: 'reportDate',
@@ -73,7 +77,8 @@ export default function AdminReportsPage(): ReactElement {
         description: `Report ${reportId} has been set to ${newStatus}.`,
       });
     } else {
-      setReports(mockReportsData);
+      setReports([]);
+      getAllReports().then(setReports);
       toast({
         title: "Error",
         description: result.message,

@@ -8,8 +8,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Bell, Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIcon, Film, Presentation, Loader2, PlusCircle, Upload, FileText } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { designersData, type DesignerProfile } from '@/lib/designer-data';
-import type { Icon as LucideIconType } from 'lucide-react';
+import { getDesignerById, type DesignerProfile } from '@/lib/designer-db';
+import type { LucideIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ interface ServiceCategoryOption {
   id: string;
   name: string;
   slug: string;
-  icon: LucideIconType;
+  icon: LucideIcon;
   description: string;
 }
 
@@ -145,18 +145,17 @@ export default function DesignerServicesNotificationsPage() {
   const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferences>({});
 
   useEffect(() => {
-    const foundDesigner = designersData.find(d => d.id === CURRENT_DESIGNER_ID);
-    if (foundDesigner) {
-      setDesigner(foundDesigner);
-      // Simulate loading saved preferences or initializing based on specialties
-      const initialPrefs: NotificationPreferences = {};
-      availableServiceCategories.forEach(cat => {
-        // Example: auto-subscribe if the category name is among their specialties
-        initialPrefs[cat.slug] = foundDesigner.specialties?.includes(cat.name) || false;
-      });
-      setNotificationPrefs(initialPrefs);
-    }
-    setIsLoading(false);
+    getDesignerById(CURRENT_DESIGNER_ID).then(foundDesigner => {
+      if (foundDesigner) {
+        setDesigner(foundDesigner);
+        const initialPrefs: NotificationPreferences = {};
+        availableServiceCategories.forEach(cat => {
+          initialPrefs[cat.slug] = foundDesigner.specialties?.includes(cat.name) || false;
+        });
+        setNotificationPrefs(initialPrefs);
+      }
+      setIsLoading(false);
+    });
   }, []);
 
   const handlePreferenceChange = (categorySlug: string, isSubscribed: boolean) => {

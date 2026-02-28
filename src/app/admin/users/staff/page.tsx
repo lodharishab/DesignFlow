@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo } from 'react';
+import { useState, useEffect, type ReactElement, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -24,43 +24,27 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { getStaffMembers, type User } from '@/lib/users-db';
 
-type StaffRole = 'Admin' | 'Manager' | 'Support Staff' | 'Accounts';
-type StaffStatus = 'Active' | 'Suspended';
-
-interface StaffMember {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: StaffRole;
-  status: StaffStatus;
-  joinDate: Date;
-  lastLogin: Date | null;
-}
-
-const mockStaffData: StaffMember[] = [
-  { id: 'staff001', name: 'Aditi Singh', email: 'aditi.admin@designflow.in', phone: '9876543211', role: 'Admin', status: 'Active', joinDate: new Date(2022, 5, 10), lastLogin: new Date(new Date().setDate(new Date().getDate() - 1)) },
-  { id: 'staff002', name: 'Raj Mehta', email: 'raj.manager@designflow.in', phone: '9876543212', role: 'Manager', status: 'Active', joinDate: new Date(2023, 1, 1), lastLogin: new Date(new Date().setDate(new Date().getDate() - 2)) },
-  { id: 'staff003', name: 'Sonia Gupta', email: 'sonia.support@designflow.in', phone: '9876543213', role: 'Support Staff', status: 'Active', joinDate: new Date(2023, 3, 15), lastLogin: new Date(new Date().setHours(new Date().getHours() - 4)) },
-  { id: 'staff004', name: 'Anil Kumar', email: 'anil.accounts@designflow.in', phone: '9876543214', role: 'Accounts', status: 'Suspended', joinDate: new Date(2022, 9, 20), lastLogin: new Date(new Date().setMonth(new Date().getMonth() - 2)) },
-];
-
-const availableRoles: StaffRole[] = ['Admin', 'Manager', 'Support Staff', 'Accounts'];
-const availableStatuses: StaffStatus[] = ['Active', 'Suspended'];
+const availableRoles = ['Admin', 'Manager', 'Support Staff', 'Accounts'];
+const availableStatuses = ['Active', 'Suspended'];
 
 export default function StaffManagementPage(): ReactElement {
-  const [staff, setStaff] = useState<StaffMember[]>(mockStaffData);
+  const [staff, setStaff] = useState<User[]>([]);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState<StaffRole | 'All'>('All');
-  const [statusFilter, setStatusFilter] = useState<StaffStatus | 'All'>('All');
+  const [roleFilter, setRoleFilter] = useState<string>('All');
+  const [statusFilter, setStatusFilter] = useState<string>('All');
+
+  useEffect(() => {
+    getStaffMembers().then(setStaff);
+  }, []);
 
   const filteredStaff = useMemo(() => {
     return staff.filter(member => {
       const searchTermLower = searchTerm.toLowerCase();
       const searchMatch = !searchTerm || member.name.toLowerCase().includes(searchTermLower) || member.email.toLowerCase().includes(searchTermLower);
-      const roleMatch = roleFilter === 'All' || member.role === roleFilter;
+      const roleMatch = roleFilter === 'All' || member.staffRole === roleFilter;
       const statusMatch = statusFilter === 'All' || member.status === statusFilter;
       return searchMatch && roleMatch && statusMatch;
     });
@@ -76,7 +60,7 @@ export default function StaffManagementPage(): ReactElement {
     });
   };
 
-  const getStatusBadgeVariant = (status: StaffMember['status']) => {
+  const getStatusBadgeVariant = (status: string) => {
     return status === 'Active' ? 'default' : 'destructive';
   };
 
@@ -146,7 +130,7 @@ export default function StaffManagementPage(): ReactElement {
                   <TableRow key={member.id}>
                     <TableCell className="font-medium">{member.name}</TableCell>
                     <TableCell>
-                      <Badge variant={member.role === 'Admin' ? 'default' : 'secondary'}>{member.role}</Badge>
+                      <Badge variant={member.staffRole === 'Admin' ? 'default' : 'secondary'}>{member.staffRole || 'Staff'}</Badge>
                     </TableCell>
                     <TableCell>
                       <p className="flex items-center text-sm"><Mail className="mr-2 h-4 w-4 text-muted-foreground"/>{member.email}</p>

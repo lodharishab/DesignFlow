@@ -6,6 +6,8 @@ import { BlogPostCard } from '@/components/blog/blog-post-card';
 import { getAllBlogPosts, type BlogPost } from '@/lib/blog-db';
 import { Newspaper } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'DesignFlow Blog - Insights, Trends & Tips',
   description: 'Stay updated with the latest design trends, tips for clients and designers, and news from DesignFlow India.',

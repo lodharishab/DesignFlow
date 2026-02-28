@@ -10,58 +10,21 @@ import { CheckCircle, Users, Briefcase, UserPlus, Award, Tag, Zap, ShieldCheck, 
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect, useMemo } from 'react'; 
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card'; 
 import { cn } from '@/lib/utils';
-import { allPortfolioItemsData as globalPortfolioItems } from '@/app/portfolio/page'; 
+import { getAllPortfolioItems } from '@/lib/portfolio-db';
+import { getAllServices, type ServiceData } from '@/lib/services-db';
+import { getFeaturedReviews, type DesignerReview } from '@/lib/reviews-db';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-
-const featuredServices = [
-  { id: '1', name: 'Modern Logo Design', description: 'Unique logos for brands, startups, and businesses. Get a memorable identity that resonates with your target audience.', tiers: [{name: 'Standard', price: 9999}], category: 'Logo Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'startup logo' },
-  { id: '2', name: 'Social Media Pack', description: 'Engaging posts for festivals and social media campaigns. Boost your online presence effectively.', tiers: [{name: 'Standard', price: 4999}], category: 'Social Media', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media graphics' },
-  { id: '3', name: 'Professional Brochure Design', description: 'Professional brochures for businesses, perfect for marketing and events. Make a lasting impression.', tiers: [{name: 'Standard', price: 7999}], category: 'Print Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'business brochure' },
-  { id: '4', name: 'UI/UX Web Design Mockup', description: 'User-friendly web mockups, focusing on great user experience and modern aesthetics.', tiers: [{name: 'Standard', price: 15999}], category: 'UI/UX Design', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design' },
-  { id: '5', name: 'Custom Illustration', description: 'Illustrations with traditional or modern styles, bringing your unique ideas to life beautifully.', tiers: [{name: 'Standard', price: 7999}], category: 'Illustration', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'digital art' },
-  { id: '6', name: 'Packaging Design Concept', description: 'Creative packaging concepts for products, designed to stand out on the shelves.', tiers: [{name: 'Standard', price: 12999}], category: 'Packaging', imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product packaging' },
-];
 
 const clientBenefits = [
   { icon: Award, title: 'Expert Designers', description: 'Connect with vetted, top-tier designers. Our curated network ensures your project is handled by skilled professionals who understand your needs.' },
   { icon: Tag, title: 'Transparent Pricing', description: 'Say goodbye to budget surprises. Our fixed-price service packages mean you know the cost upfront, ensuring clarity and control.' },
   { icon: Zap, title: 'Streamlined Process', description: 'From intuitive briefs to efficient delivery, our platform simplifies every step. Get your designs faster, with less hassle and more collaboration.' },
   { icon: ShieldCheck, title: 'Quality Guaranteed', description: 'Your satisfaction is our success. We stand behind the quality of our designers\' work, offering revisions and support to ensure exceptional results.' },
-];
-
-const portfolioItemsData: PortfolioItem[] = globalPortfolioItems.slice(0, 6);
-
-
-const testimonials = [
-  {
-    name: 'Rohan Sharma',
-    title: 'Founder, Edutech Startup',
-    avatarUrl: 'https://placehold.co/100x100.png',
-    avatarHint: 'indian man startup founder',
-    rating: 5,
-    review: 'DesignFlow made finding a top-tier designer in India incredibly easy. The quality of work for our branding was exceptional and the process was seamless. Highly recommended!',
-  },
-  {
-    name: 'Priya Patel',
-    title: 'Marketing Head, FMCG Brand',
-    avatarUrl: 'https://placehold.co/100x100.png',
-    avatarHint: 'indian woman marketing professional',
-    rating: 5,
-    review: 'The designer we worked with for our social media campaign was fantastic. They understood the cultural nuances perfectly. The platform is user-friendly and transparent.',
-  },
-  {
-    name: 'Anil Kumar',
-    title: 'Cafe Owner, Jaipur',
-    avatarUrl: 'https://placehold.co/100x100.png',
-    avatarHint: 'indian man small business owner',
-    rating: 4,
-    review: 'I needed a new menu and some flyers for my cafe. DesignFlow provided a very professional and affordable solution. The final print designs looked amazing!',
-  },
 ];
 
 
@@ -134,6 +97,15 @@ export const PortfolioShowcaseCard: React.FC<PortfolioShowcaseCardProps> = ({ it
 
 export default function HomePage() {
   const [userType, setUserType] = useState<'client' | 'designer'>('client');
+  const [featuredServices, setFeaturedServices] = useState<ServiceData[]>([]);
+  const [portfolioItemsData, setPortfolioItemsData] = useState<PortfolioItem[]>([]);
+  const [testimonials, setTestimonials] = useState<DesignerReview[]>([]);
+
+  useEffect(() => {
+    getAllServices().then(services => setFeaturedServices(services.slice(0, 6)));
+    getAllPortfolioItems().then(items => setPortfolioItemsData(items.slice(0, 6)));
+    getFeaturedReviews(3).then(setTestimonials);
+  }, []);
 
   const clientJourney = [
     {
@@ -306,7 +278,7 @@ export default function HomePage() {
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredServices.map(service => (
-                <ServiceCard key={service.id} {...service} />
+                <ServiceCard key={service.id} id={service.id} name={service.name} description={service.generalDescription || ''} category={service.category || ''} tiers={service.tiers.map(t => ({name: t.name as 'Basic' | 'Standard' | 'Premium', price: t.price}))} imageUrl={service.imageUrl || 'https://placehold.co/600x400.png'} imageHint={service.imageHint} />
               ))}
             </div>
             <div className="text-center mt-16">
@@ -354,16 +326,16 @@ export default function HomePage() {
                   <CardContent className="p-6 flex-grow">
                     <div className="flex items-center mb-4">
                       <Avatar className="h-12 w-12 mr-4">
-                        <AvatarImage src={testimonial.avatarUrl} alt={testimonial.name} data-ai-hint={testimonial.avatarHint} />
-                        <AvatarFallback>{testimonial.name.substring(0,1)}</AvatarFallback>
+                        <AvatarImage src={testimonial.clientAvatarUrl || 'https://placehold.co/100x100.png'} alt={testimonial.clientName} data-ai-hint={testimonial.clientAvatarHint || 'client'} />
+                        <AvatarFallback>{testimonial.clientName.substring(0,1)}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-semibold text-foreground">{testimonial.name}</p>
-                        <p className="text-xs text-muted-foreground">{testimonial.title}</p>
+                        <p className="font-semibold text-foreground">{testimonial.clientName}</p>
+                        <p className="text-xs text-muted-foreground">{testimonial.serviceName}</p>
                       </div>
                     </div>
                     <blockquote className="text-muted-foreground border-l-2 border-primary pl-4 italic">
-                      {testimonial.review}
+                      {testimonial.reviewText}
                     </blockquote>
                   </CardContent>
                   <CardFooter className="p-6 pt-0">

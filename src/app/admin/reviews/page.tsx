@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo } from 'react';
+import { useState, useEffect, type ReactElement, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { updateReviewStatusAction } from '@/app/admin/reviews/actions';
-import { mockReviewsData, type Review } from '@/app/admin/reviews/data';
+import { getAllReviews, type AdminReview as Review } from '@/lib/reviews-db';
 import { Input } from '@/components/ui/input';
 
 type SortableReviewKeys = 'reviewText' | 'authorName' | 'rating' | 'status' | 'reviewDate';
@@ -23,7 +23,11 @@ type DateFilter = 'All' | '1m' | '3m' | '1y';
 
 export default function AdminReviewsPage(): ReactElement {
   const { toast } = useToast();
-  const [reviews, setReviews] = useState<Review[]>(mockReviewsData);
+  const [reviews, setReviews] = useState<Review[]>([]);
+
+  useEffect(() => {
+    getAllReviews().then(setReviews);
+  }, []);
   
   // Filtering and sorting states
   const [statusFilter, setStatusFilter] = useState<'All' | Review['status']>('All');
@@ -70,7 +74,7 @@ export default function AdminReviewsPage(): ReactElement {
       });
     } else {
       // Revert UI on failure
-       setReviews(mockReviewsData); // or re-fetch from source
+       getAllReviews().then(setReviews); // re-fetch from DB
        toast({
         title: "Error",
         description: result.message,

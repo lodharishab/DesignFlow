@@ -9,13 +9,35 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, FileText, Loader2, UploadCloud, Link as LinkIcon, Eye, Font, MessageSquare as MessageSquareIcon, CheckSquare, Tag, X, Check, CheckboxIcon, ArrowLeft } from 'lucide-react';
+import { Sparkles, Save, Building, Globe, Users, Palette, Paintbrush, FileText, Loader2, UploadCloud, Link as LinkIcon, Eye, Type, MessageSquare as MessageSquareIcon, CheckSquare, Tag, X, Check, CheckIcon, ArrowLeft } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { useDebouncedEffect } from '@/hooks/use-debounced-effect';
-import { getBrandKitById, saveBrandKits, type BrandProfileFormData, defaultBrandProfile } from '@/lib/brand-profile-db';
+import { getBrandKitById, saveBrandKits, type BrandProfileFormData } from '@/lib/brand-profile-db';
+
+const defaultBrandProfile: BrandProfileFormData = {
+  id: 'default',
+  companyName: '',
+  companyWebsite: '',
+  industry: '',
+  companySize: '',
+  targetAudience: '',
+  brandValues: '',
+  tags: [],
+  preferredDesignStyle: '',
+  colorsToUse: '',
+  colorsToAvoid: '',
+  communicationPreference: 'Platform Chat',
+  feedbackStyle: '',
+  notesForDesigners: '',
+  brandGuidelinesLink: '',
+  existingAssetsLink: '',
+  logoUrl: null,
+  projectTypes: [],
+  isFavorite: false,
+};
 import { Checkbox } from '@/components/ui/checkbox';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';

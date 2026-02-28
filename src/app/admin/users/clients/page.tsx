@@ -13,7 +13,7 @@ import {
   Mail, 
   Eye
 } from 'lucide-react';
-import { initialUsersData, type User } from '@/app/admin/users/page';
+import { initialUsersData, type User } from '@/app/admin/users/users-data';
 
 export default function AdminClientsPage(): ReactElement {
   const [clients, setClients] = useState<User[]>([]);

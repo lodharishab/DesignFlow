@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo, ChangeEvent, FormEvent, useCallback } from 'react';
+import { useState, useEffect, type ReactElement, useMemo, ChangeEvent, FormEvent, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +43,7 @@ import { Calendar } from '@/components/ui/calendar';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
-import { initialOrdersData, type Order } from '@/components/admin/orders/orders-table-view';
+import { getAllOrders, getOrdersByDesignerId, type Order } from '@/lib/orders-db';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -128,6 +128,12 @@ export default function DesignerEarningsPage(): ReactElement {
   
   // State for chart expansion
   const [expandedChart, setExpandedChart] = useState<string | null>(null);
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
+
+  // Fetch orders for chart data
+  useEffect(() => {
+    getAllOrders().then(setAllOrders);
+  }, []);
 
   const getStatusBadgeVariant = (status: TransactionStatus) => {
     switch (status) {
@@ -228,7 +234,7 @@ export default function DesignerEarningsPage(): ReactElement {
     transactions
       .filter(t => t.type === 'Earning' && t.status === 'Completed')
       .forEach(t => {
-        const order = initialOrdersData.find(o => o.id === t.orderId);
+        const order = allOrders.find(o => o.id === t.orderId);
         if (order) {
           const category = order.serviceName.includes('Logo') ? 'Logo Design' :
                            order.serviceName.includes('UI/UX') ? 'UI/UX' :
@@ -245,7 +251,7 @@ export default function DesignerEarningsPage(): ReactElement {
         value,
         fill: categoryColors[colorIndex++ % categoryColors.length],
     }));
-  }, [transactions]);
+  }, [transactions, allOrders]);
   
   const pieChartConfig: ChartConfig = useMemo(() => {
     return pieChartData.reduce((acc, entry) => {
@@ -259,7 +265,7 @@ export default function DesignerEarningsPage(): ReactElement {
     transactions
       .filter(t => t.type === 'Earning' && t.status === 'Completed')
       .forEach(t => {
-        const order = initialOrdersData.find(o => o.id === t.orderId);
+        const order = allOrders.find(o => o.id === t.orderId);
         if (order) {
           const client = order.clientName;
           if (!clientData[client]) {
@@ -273,15 +279,15 @@ export default function DesignerEarningsPage(): ReactElement {
       .map(([name, revenue]) => ({ name, revenue }))
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5);
-  }, [transactions]);
+  }, [transactions, allOrders]);
   
    const barChartConfig: ChartConfig = {
     revenue: { label: "Revenue", color: "hsl(var(--chart-2))" },
   };
 
   const activeOrdersForPayoutRequest = useMemo(() => {
-    return initialOrdersData.filter(order => order.designerId === MOCK_DESIGNER_ID && order.status === 'In Progress');
-  }, []);
+    return allOrders.filter(order => order.designerId === MOCK_DESIGNER_ID && order.status === 'In Progress');
+  }, [allOrders]);
 
   const handlePayoutRequestFormChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;

@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { allPortfolioItemsData } from './page'; // Import from the page.tsx which exports it
+import { getAllPortfolioItems } from '@/lib/portfolio-db';
 
 const ITEMS_PER_LOAD = 6;
 const MAX_SCROLL_LOADS = 2;
@@ -19,8 +19,13 @@ export const PortfolioPageContent = () => {
   const searchParams = useSearchParams();
   const initialCategorySlug = searchParams.get('category');
 
+  const [allItems, setAllItems] = useState<PortfolioItem[]>([]);
   const [activeCategorySlug, setActiveCategorySlug] = useState<string | null>(initialCategorySlug);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    getAllPortfolioItems().then(setAllItems);
+  }, []);
 
   useEffect(() => {
     setActiveCategorySlug(initialCategorySlug);
@@ -28,21 +33,21 @@ export const PortfolioPageContent = () => {
 
   const uniqueCategories = useMemo(() => {
     const categoriesMap = new Map<string, { name: string, slug: string }>();
-    allPortfolioItemsData.forEach(item => {
+    allItems.forEach(item => {
       if (!categoriesMap.has(item.categorySlug)) {
         categoriesMap.set(item.categorySlug, { name: item.category, slug: item.categorySlug });
       }
     });
     return Array.from(categoriesMap.values()).sort((a,b) => a.name.localeCompare(b.name));
-  }, []);
+  }, [allItems]);
 
   const uniqueTags = useMemo(() => {
     const tagsSet = new Set<string>();
-    allPortfolioItemsData.forEach(item => {
+    allItems.forEach(item => {
       item.tags?.forEach(tag => tagsSet.add(tag.toLowerCase()));
     });
     return Array.from(tagsSet).sort();
-  }, []);
+  }, [allItems]);
 
   const handleCategoryClick = useCallback((slug: string | null) => {
     setActiveCategorySlug(slug);
@@ -63,12 +68,12 @@ export const PortfolioPageContent = () => {
   }, []);
 
   const filteredPortfolioItems = useMemo(() => {
-    return allPortfolioItemsData.filter(item => {
+    return allItems.filter(item => {
       const categoryMatch = !activeCategorySlug || item.categorySlug === activeCategorySlug;
       const tagsMatch = selectedTags.size === 0 || item.tags?.some(tag => selectedTags.has(tag.toLowerCase()));
       return categoryMatch && tagsMatch;
     });
-  }, [activeCategorySlug, selectedTags]);
+  }, [allItems, activeCategorySlug, selectedTags]);
 
   // State for pagination/infinite scroll
   const [displayedPortfolioItems, setDisplayedPortfolioItems] = useState<PortfolioItem[]>([]);

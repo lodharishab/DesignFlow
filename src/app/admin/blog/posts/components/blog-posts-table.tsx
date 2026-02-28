@@ -69,7 +69,7 @@ export function BlogPostsTable({ initialPosts }: BlogPostsTableProps): ReactElem
     const [selectedPostIds, setSelectedPostIds] = useState<Set<string>>(new Set());
     
     const uniqueCategories = useMemo(() => {
-        const categories = new Set(initialPosts.map(post => post.category).filter(Boolean));
+        const categories = new Set(initialPosts.map(post => post.category).filter((c): c is string => Boolean(c)));
         return ['All', ...Array.from(categories).sort()];
     }, [initialPosts]);
 

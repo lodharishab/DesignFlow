@@ -2,8 +2,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { mockReportsData } from './data';
-import type { Report } from './data';
+import { updateReportStatus, type Report } from '@/lib/reports-db';
 
 export interface ReportActionResult {
   success: boolean;
@@ -12,17 +11,14 @@ export interface ReportActionResult {
 }
 
 export async function updateReportStatusAction(reportId: string, newStatus: Report['status']): Promise<ReportActionResult> {
-  // This is a simulation. In a real app, you would update the database.
-  console.log(`Simulating update for report ${reportId} to status ${newStatus}`);
+  console.log(`Updating report ${reportId} to status ${newStatus}`);
   
-  const reportIndex = mockReportsData.findIndex(r => r.id === reportId);
-  if (reportIndex === -1) {
-    return { success: false, message: "Report not found." };
+  try {
+    await updateReportStatus(reportId, newStatus);
+    revalidatePath('/admin/reports');
+    return { success: true, message: "Status updated successfully." };
+  } catch (e) {
+    console.error('Error updating report status:', e);
+    return { success: false, message: "Failed to update report status." };
   }
-  
-  mockReportsData[reportIndex].status = newStatus;
-  
-  revalidatePath('/admin/reports');
-  
-  return { success: true, message: "Status updated successfully." };
 }

@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Star, ArrowLeft, Loader2, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { initialOrdersData, type Order } from '@/components/admin/orders/orders-table-view';
+import { getOrderById, type Order } from '@/lib/orders-db';
 
 // This is the designer's ID for the prototype
 const MOCK_DESIGNER_ID = 'des002'; 
@@ -31,14 +31,10 @@ function LeaveReviewContent() {
 
   useEffect(() => {
     if (orderId) {
-      // Find an order that belongs to this designer and is completed
-      const foundOrder = initialOrdersData.find(o => 
-        o.id === orderId && 
-        o.designerId === MOCK_DESIGNER_ID &&
-        o.status === 'Completed'
-      );
-      setOrder(foundOrder || null);
-      setIsLoading(false);
+      getOrderById(orderId).then(found => {
+        setOrder(found && found.designerId === MOCK_DESIGNER_ID && found.status === 'Completed' ? found : null);
+        setIsLoading(false);
+      });
     }
   }, [orderId]);
 

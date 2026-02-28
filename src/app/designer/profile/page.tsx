@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, Save, UserCircle, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, Loader2, Star, Languages, Clock, UserCog, Phone, AtSign, Camera, Wand2, Sparkles, AlertCircle, Tag, X, Calendar, Power, Bell, ShieldCheck, KeyRound, Smartphone, Monitor, Award, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { designersData, type DesignerProfile } from '@/lib/designer-data';
+import { getDesignerById, type DesignerProfile } from '@/lib/designer-db';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
@@ -56,6 +56,7 @@ interface LoginActivity {
     timestamp: Date;
 }
 
+// TODO: Replace with a real login_activity DB table when available
 const mockLoginActivity: LoginActivity[] = [
     { ip: '103.22.201.12', device: 'Chrome on macOS', location: 'Mumbai, IN', timestamp: new Date() },
     { ip: '45.112.88.210', device: 'Firefox on Windows', location: 'Delhi, IN', timestamp: new Date(new Date().setDate(new Date().getDate() - 2)) },
@@ -257,12 +258,13 @@ export default function DesignerProfilePage() {
 
 
   useEffect(() => {
-    const foundDesigner = designersData.find(d => d.id === CURRENT_DESIGNER_ID);
-    if (foundDesigner) {
-      setDesigner(foundDesigner);
-      captureInitialState(foundDesigner);
-    }
-    setIsLoading(false);
+    getDesignerById(CURRENT_DESIGNER_ID).then(foundDesigner => {
+      if (foundDesigner) {
+        setDesigner(foundDesigner);
+        captureInitialState(foundDesigner);
+      }
+      setIsLoading(false);
+    });
   }, []);
 
   const handleSocialLinkChange = (index: number, value: string) => {
@@ -547,7 +549,7 @@ export default function DesignerProfilePage() {
                         <TooltipProvider>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             {badgeData.map(badge => {
-                                const hasBadge = designer.badges?.includes(badge.name);
+                                const hasBadge = designer.badges?.includes(badge.name as typeof designer.badges[number]);
                                 return (
                                 <Tooltip key={badge.name}>
                                     <TooltipTrigger asChild>

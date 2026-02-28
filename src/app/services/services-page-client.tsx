@@ -6,13 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Palette, Share2, Printer, Laptop, Brush as BrushIcon, Package as PackageIconLucide, ListFilter, Search, Check, Tag, Film, Presentation, Camera } from 'lucide-react'; 
-import type { Icon as LucideIconType } from 'lucide-react'; 
+import type { LucideIcon } from 'lucide-react'; 
 import { useState, useMemo, useEffect } from 'react'; 
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useSearchParams } from 'next/navigation';
+import { getAllServices, type ServiceData as DbServiceData } from '@/lib/services-db';
 
 interface ServiceTier {
   name: 'Basic' | 'Standard' | 'Premium';
@@ -31,120 +32,24 @@ interface Service {
   tags?: string[];
 }
 
-const services: Service[] = [
-  { 
-    id: '1', name: 'Modern Logo Design', 
-    description: 'Unique logos for brands, startups, and businesses. Get a memorable identity that resonates with your target audience.', 
-    category: 'Logo Design', categorySlug: 'logo-design',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'startup logo',
-    tags: ['branding', 'startup', 'vector logo', 'e-commerce logo', 'brand identity'],
-    tiers: [
-      { name: 'Basic', price: 4999 }, { name: 'Standard', price: 9999 }, { name: 'Premium', price: 14999 },
-    ]
-  },
-  { 
-    id: '2', name: 'Social Media Pack', 
-    description: 'Engaging posts for Instagram, Facebook, optimized for festivals, regional trends, and audience engagement.', 
-    category: 'Social Media', categorySlug: 'social-media',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'social media graphics',
-    tags: ['instagram marketing', 'festival creatives', 'regional content', 'whatsapp status', 'social media marketing'],
-    tiers: [
-      { name: 'Basic', price: 2499 }, { name: 'Standard', price: 4999 },
-    ]
-  },
-  { 
-    id: '3', name: 'Professional Brochure Design', 
-    description: 'Tri-fold or bi-fold brochures for businesses and events. Ideal for marketing collateral and corporate profiles.', 
-    category: 'Print Design', categorySlug: 'print-design',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'company brochure',
-    tags: ['marketing material', 'event brochure', 'corporate profile', 'print ads', 'catalogue design'],
-    tiers: [
-      { name: 'Standard', price: 7999 }, { name: 'Premium', price: 12999 },
-    ]
-  },
-  { 
-    id: '4', name: 'UI/UX Web Design Mockup', 
-    description: 'High-fidelity mockups for websites, considering modern UI patterns and accessibility.', 
-    category: 'UI/UX Design', categorySlug: 'ui-ux-design',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'website design mockup',
-    tags: ['responsive design', 'mobile first', 'figma design', 'e-commerce ui', 'landing page design'],
-    tiers: [
-      { name: 'Standard', price: 15999 }, { name: 'Premium', price: 23999 },
-    ]
-  },
-  { 
-    id: '5', name: 'Custom Illustration', 
-    description: 'Unique illustrations with options for various art styles, modern digital art for diverse applications.', 
-    category: 'Illustration', categorySlug: 'illustration',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'digital illustration art',
-    tags: ['digital art', 'character design', 'folk art', 'custom graphics', 'vector illustration'],
-    tiers: [
-      { name: 'Basic', price: 3999 }, { name: 'Standard', price: 7999 }, { name: 'Premium', price: 11999 },
-    ]
-  },
-  { 
-    id: '6', name: 'Packaging Design Concept', 
-    description: 'Creative packaging concepts for FMCG, sweets, or artisanal products, designed for the retail landscape.', 
-    category: 'Packaging', categorySlug: 'packaging',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product packaging concept',
-    tags: ['product packaging', 'fmcg design', 'label design', 'sustainable packaging', 'box design'],
-    tiers: [
-      { name: 'Standard', price: 12999 }, { name: 'Premium', price: 19999 },
-    ]
-  },
-  { 
-    id: '7', name: 'Basic Logo Sketch', 
-    description: 'Quick logo sketches exploring design motifs and modern ideas for initial concept development.', 
-    category: 'Logo Design', categorySlug: 'logo-design',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'logo sketch design',
-    tags: ['logo ideation', 'concept sketch', 'design motifs', 'quick design', 'brainstorming'],
-    tiers: [ { name: 'Basic', price: 2499 }, ]
-  },
-  { 
-    id: '8', name: 'Animated Explainer Video', 
-    description: 'Short animated videos (2D) to explain your product/service, with voiceover options for wider reach.', 
-    category: 'Motion Graphics', categorySlug: 'motion-graphics',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'explainer video character animation',
-    tags: ['2d animation', 'marketing video', 'product demo', 'voiceover services', 'video marketing'],
-    tiers: [ { name: 'Standard', price: 19999 }, { name: 'Premium', price: 34999 } ]
-  },
-  { 
-    id: '9', name: 'Business Presentation Design', 
-    description: 'Professional presentations for businesses, investors, and conferences, ensuring clarity and impact.', 
-    category: 'Presentations', categorySlug: 'presentations',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'business ppt slide design',
-    tags: ['pitch deck', 'corporate presentation', 'powerpoint design', 'investor deck', 'keynote slides'],
-    tiers: [ { name: 'Standard', price: 8999 }, { name: 'Premium', price: 15999 } ]
-  },
-  {
-    id: '10', name: 'App Icon Design',
-    description: 'Memorable and scalable app icons for iOS and Android, designed to appeal to a global mobile user base.',
-    category: 'UI/UX Design', categorySlug: 'ui-ux-design',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'mobile app icon',
-    tags: ['app icon', 'ios design', 'android design', 'mobile branding', 'icon set'],
-    tiers: [{ name: 'Standard', price: 3999 }, { name: 'Premium', price: 6999 }],
-  },
-  {
-    id: '11', name: 'E-commerce Product Photography Editing',
-    description: 'Professional editing and retouching for e-commerce product photos, suitable for online marketplaces.',
-    category: 'Photography', categorySlug: 'photography',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'product photo editing services',
-    tags: ['photo retouching', 'background removal', 'amazon', 'ebay', 'image enhancement'],
-    tiers: [{ name: 'Basic', price: 1999 }, { name: 'Standard', price: 4999 }],
-  },
-  {
-    id: '12', name: 'Infographic Design',
-    description: 'Visually compelling infographics to present data and information clearly for diverse audiences.',
-    category: 'Illustration', categorySlug: 'illustration',
-    imageUrl: 'https://placehold.co/600x400.png', imageHint: 'data infographic visualization',
-    tags: ['data visualization', 'report design', 'visual content', 'content marketing'],
-    tiers: [{ name: 'Standard', price: 6999 }, { name: 'Premium', price: 11999 }],
-  },
-];
+// Map DB service to local Service type
+function mapDbService(s: DbServiceData): Service {
+  return {
+    id: s.id,
+    name: s.name,
+    description: s.generalDescription || '',
+    category: s.category || '',
+    categorySlug: s.categorySlug || '',
+    imageUrl: s.imageUrl || 'https://placehold.co/600x400.png',
+    imageHint: s.imageHint || s.name.toLowerCase(),
+    tiers: s.tiers.map(t => ({ name: t.name as 'Basic' | 'Standard' | 'Premium', price: t.price })),
+    tags: s.tags || [],
+  };
+}
 
 interface CategoryFilterItem {
   name: string;
-  icon: LucideIconType;
+  icon: LucideIcon;
   slug: string;
 }
 
@@ -155,7 +60,7 @@ const categoryFilters: CategoryFilterItem[] = [
   { name: 'UI/UX Design', icon: Laptop, slug: 'ui-ux-design' },
   { name: 'Illustration', icon: BrushIcon, slug: 'illustration' },
   { name: 'Packaging', icon: PackageIconLucide, slug: 'packaging' },
-  { name: 'Motion Graphics', icon: Film, slug: 'motion-graphics' }, 
+  { name: 'Motion Graphics', icon: Film, slug: 'motion-graphics' },
   { name: 'Presentations', icon: Presentation, slug: 'presentations' },
   { name: 'Photography', icon: Camera, slug: 'photography' },
 ];
@@ -166,19 +71,31 @@ const sortOptions = [
   { value: 'price-desc', label: 'Price: High to Low' },
 ];
 
-const uniqueTags = Array.from(new Set(services.flatMap(service => service.tags || []).map(tag => tag.toLowerCase()))).sort();
-const uniqueTierNames = Array.from(new Set(services.flatMap(service => service.tiers.map(tier => tier.name)))).sort();
-
-
 export function ServicesPageClientContent() {
   const searchParams = useSearchParams(); 
   const initialCategorySlug = searchParams.get('category');
 
+  const [services, setServices] = useState<Service[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [selectedTiers, setSelectedTiers] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<string>('relevance');
+
+  // Load services from DB
+  useEffect(() => {
+    getAllServices().then(dbServices => setServices(dbServices.map(mapDbService)));
+  }, []);
+
+  // Derived filter values
+  const uniqueTags = useMemo(() => 
+    Array.from(new Set(services.flatMap(service => service.tags || []).map(tag => tag.toLowerCase()))).sort(),
+    [services]
+  );
+  const uniqueTierNames = useMemo(() => 
+    Array.from(new Set(services.flatMap(service => service.tiers.map(tier => tier.name)))).sort(),
+    [services]
+  );
 
   useEffect(() => {
     if (initialCategorySlug) {
@@ -257,7 +174,7 @@ export function ServicesPageClientContent() {
     }
 
     return filtered;
-  }, [activeCategory, selectedTags, selectedTiers, searchTerm, sortBy]);
+  }, [services, activeCategory, selectedTags, selectedTiers, searchTerm, sortBy]);
 
 
   return (

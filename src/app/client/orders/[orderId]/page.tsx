@@ -10,18 +10,13 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, ShoppingBag, Calendar, FileText, MessageSquare, User, PackageSearch, IndianRupee, Star, Users as UsersIcon, Loader2, Save, History } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { initialOrdersData, type Order as BaseOrder } from '@/components/admin/orders/orders-table-view';
+import { getOrderById, type Order as BaseOrder } from '@/lib/orders-db';
 import { format, formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 
-// Mock data structure for an order - replace with actual data fetching
+// Direct DB fetch for order detail
 interface OrderDetail extends BaseOrder {}
-
-const mockOrdersData: { [key: string]: OrderDetail } = initialOrdersData.reduce((acc, order) => {
-    acc[order.id] = order;
-    return acc;
-}, {} as { [key: string]: OrderDetail });
 
 
 export default function ClientOrderDetailPage() {
@@ -33,10 +28,10 @@ export default function ClientOrderDetailPage() {
 
   useEffect(() => {
     if (orderId) {
-      // Simulate data fetching
-      const foundOrder = mockOrdersData[orderId];
-      setOrder(foundOrder || null);
-      setIsLoading(false);
+      getOrderById(orderId).then(found => {
+        setOrder(found || null);
+        setIsLoading(false);
+      });
     }
   }, [orderId]);
 
@@ -112,10 +107,10 @@ export default function ClientOrderDetailPage() {
               <p className="font-semibold text-muted-foreground flex items-center"><Calendar className="mr-2 h-4 w-4" />Order Date</p>
               <p>{format(order.orderDate, 'PPp')}</p>
             </div>
-            {order.deliveryDate && (
+            {order.dueDate && (
               <div>
                 <p className="font-semibold text-muted-foreground flex items-center"><Calendar className="mr-2 h-4 w-4" />Expected/Completed Date</p>
-                <p>{format(new Date(order.deliveryDate), 'PPp')}</p>
+                <p>{format(new Date(order.dueDate), 'PPp')}</p>
               </div>
             )}
             {order.designerName && (
@@ -126,12 +121,12 @@ export default function ClientOrderDetailPage() {
             )}
           </div>
 
-          {order.briefSummary && (
+          {order.clientBrief && (
             <>
               <Separator />
               <div>
                 <h3 className="text-lg font-semibold mb-2 flex items-center"><FileText className="mr-2 h-5 w-5 text-primary" />Brief Summary</h3>
-                <p className="text-muted-foreground bg-secondary/50 p-3 rounded-md">{order.briefSummary}</p>
+                <p className="text-muted-foreground bg-secondary/50 p-3 rounded-md">{order.clientBrief}</p>
               </div>
             </>
           )}

@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 import { CheckCircle, Printer, Download, Brush, PackageSearch } from 'lucide-react';
-import { initialOrdersData, type Order } from '@/components/admin/orders/orders-table-view';
+import { getOrderById, type Order } from '@/lib/orders-db';
 import { format } from 'date-fns';
 
 function InvoiceContent() {
@@ -24,10 +24,10 @@ function InvoiceContent() {
 
   useEffect(() => {
     if (orderId) {
-      // Simulate data fetching
-      const foundOrder = initialOrdersData.find(o => o.id === orderId);
-      setOrder(foundOrder || null);
-      setIsLoading(false);
+      getOrderById(orderId).then(found => {
+        setOrder(found);
+        setIsLoading(false);
+      });
     }
   }, [orderId]);
   

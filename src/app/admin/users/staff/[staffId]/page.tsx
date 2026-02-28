@@ -25,39 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { getUserById, type User } from '@/lib/users-db';
+import { getAuditLogsByActor, type AuditLog } from '@/lib/settings-db';
 
-// Mock Data
-type StaffRole = 'Super Admin' | 'Finance Admin' | 'Support Staff' | 'Read-Only Auditor';
-type StaffStatus = 'Active' | 'Suspended';
+type StaffStatus = 'Active' | 'Inactive';
 
-interface StaffMember {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: StaffRole;
-  status: StaffStatus;
-  joinDate: Date;
-  lastLogin: Date | null;
-  avatarUrl: string;
-  avatarHint: string;
-}
-
-const mockStaffData: StaffMember[] = [
-  { id: 'staff001', name: 'Aditi Singh', email: 'aditi.admin@designflow.in', phone: '9876543211', role: 'Super Admin', status: 'Active', joinDate: new Date(2022, 5, 10), lastLogin: new Date(new Date().setDate(new Date().getDate() - 1)), avatarUrl: 'https://placehold.co/100x100.png', avatarHint: 'woman avatar' },
-  { id: 'staff002', name: 'Raj Mehta', email: 'raj.manager@designflow.in', phone: '9876543212', role: 'Support Staff', status: 'Active', joinDate: new Date(2023, 1, 1), lastLogin: new Date(new Date().setDate(new Date().getDate() - 2)), avatarUrl: 'https://placehold.co/100x100.png', avatarHint: 'man avatar' },
-  { id: 'staff003', name: 'Sonia Gupta', email: 'sonia.support@designflow.in', phone: '9876543213', role: 'Support Staff', status: 'Active', joinDate: new Date(2023, 3, 15), lastLogin: new Date(new Date().setHours(new Date().getHours() - 4)), avatarUrl: 'https://placehold.co/100x100.png', avatarHint: 'person avatar' },
-  { id: 'staff004', name: 'Anil Kumar', email: 'anil.accounts@designflow.in', phone: '9876543214', role: 'Finance Admin', status: 'Suspended', joinDate: new Date(2022, 9, 20), lastLogin: new Date(new Date().setMonth(new Date().getMonth() - 2)), avatarUrl: 'https://placehold.co/100x100.png', avatarHint: 'man silhouette' },
-];
-
-const mockActivityHistory = [
-    { action: 'Approved Designer Application', target: 'Priya Sharma', timestamp: new Date(new Date().setDate(new Date().getDate() - 1)) },
-    { action: 'Updated Order Status', target: 'ORD7361P', timestamp: new Date(new Date().setDate(new Date().getDate() - 1)) },
-    { action: 'Published Blog Post', target: 'Top 5 Logo Trends', timestamp: new Date(new Date().setDate(new Date().getDate() - 2)) },
-    { action: 'Suspended User Account', target: 'Charlie Brown', timestamp: new Date(new Date().setDate(new Date().getDate() - 3)) },
-];
-
-const rolesAndPermissions: Record<StaffRole, string[]> = {
+const rolesAndPermissions: Record<string, string[]> = {
     'Super Admin': [
         'Full platform access',
         'Manage all users (clients, designers, staff)',
@@ -92,19 +65,25 @@ function StaffDetailContent() {
   const { toast } = useToast();
   const staffId = params.staffId as string;
 
-  const [staff, setStaff] = useState<StaffMember | null>(null);
+  const [staff, setStaff] = useState<User | null>(null);
+  const [activityHistory, setActivityHistory] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<StaffRole>('Support Staff');
+  const [selectedRole, setSelectedRole] = useState<string>('Support Staff');
 
   useEffect(() => {
     if (staffId) {
-      const foundStaff = mockStaffData.find(s => s.id === staffId);
-      if (foundStaff) {
-        setStaff(foundStaff);
-        setSelectedRole(foundStaff.role);
-      }
-      setIsLoading(false);
+      Promise.all([
+        getUserById(staffId),
+        getAuditLogsByActor(staffId)
+      ]).then(([foundStaff, logs]) => {
+        if (foundStaff) {
+          setStaff(foundStaff);
+          setSelectedRole(foundStaff.staffRole || 'Support Staff');
+        }
+        setActivityHistory(logs);
+        setIsLoading(false);
+      });
     }
   }, [staffId]);
 
@@ -162,7 +141,7 @@ function StaffDetailContent() {
                 <CardHeader>
                     <div className="flex items-center space-x-4">
                         <Avatar className="h-20 w-20">
-                            <AvatarImage src={staff.avatarUrl} alt={staff.name} data-ai-hint={staff.avatarHint} />
+                            <AvatarImage src={staff.avatarUrl} alt={staff.name} data-ai-hint={staff.avatarHint || 'avatar'} />
                             <AvatarFallback>{staff.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div>
@@ -191,11 +170,11 @@ function StaffDetailContent() {
                         </div>
                          <div>
                             <p className="font-semibold text-muted-foreground flex items-center mb-1"><Activity className="mr-2 h-4 w-4" />Account Status</p>
-                            <Badge variant={getStatusBadgeVariant(staff.status)}>{staff.status}</Badge>
+                            <Badge variant={getStatusBadgeVariant(staff.status as StaffStatus)}>{staff.status}</Badge>
                         </div>
                          <div>
                             <p className="font-semibold text-muted-foreground flex items-center mb-1"><ShieldCheck className="mr-2 h-4 w-4" />Current Role</p>
-                            <Badge variant="secondary">{staff.role}</Badge>
+                            <Badge variant="secondary">{staff.staffRole || 'Staff'}</Badge>
                         </div>
                     </div>
                 </CardContent>
@@ -216,10 +195,10 @@ function StaffDetailContent() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {mockActivityHistory.map((log, index) => (
-                                <TableRow key={index}>
+                            {activityHistory.map((log) => (
+                                <TableRow key={log.id}>
                                     <TableCell><Badge variant="outline">{log.action}</Badge></TableCell>
-                                    <TableCell>{log.target}</TableCell>
+                                    <TableCell>{log.targetName || log.targetId || '-'}</TableCell>
                                     <TableCell className="text-xs text-muted-foreground">{formatDistanceToNow(log.timestamp, { addSuffix: true })}</TableCell>
                                 </TableRow>
                             ))}
@@ -237,7 +216,7 @@ function StaffDetailContent() {
                 <CardContent className="space-y-4">
                      <div>
                         <Label htmlFor="role-select">Change Role</Label>
-                        <Select value={selectedRole} onValueChange={(value: StaffRole) => setSelectedRole(value)}>
+                        <Select value={selectedRole} onValueChange={(value: string) => setSelectedRole(value)}>
                             <SelectTrigger id="role-select">
                                 <SelectValue placeholder="Select a role" />
                             </SelectTrigger>
@@ -254,7 +233,7 @@ function StaffDetailContent() {
                             {permissionsForSelectedRole.map(perm => <li key={perm}>{perm}</li>)}
                         </ul>
                      </div>
-                      <Button onClick={handleUpdateRole} disabled={isUpdatingRole || selectedRole === staff.role} className="w-full">
+                      <Button onClick={handleUpdateRole} disabled={isUpdatingRole || selectedRole === staff.staffRole} className="w-full">
                         {isUpdatingRole ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ShieldCheck className="mr-2 h-4 w-4"/>}
                         {isUpdatingRole ? 'Updating...' : 'Update Role'}
                       </Button>

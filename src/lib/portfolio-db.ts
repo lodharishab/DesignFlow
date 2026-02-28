@@ -1,6 +1,9 @@
 'use server';
-import { query, queryOne, isDbEnabled } from './db';
+import { db, isDbEnabled } from './db';
+import { portfolioItems } from './schema';
+import { eq, desc } from 'drizzle-orm';
 import type { PortfolioItem } from '@/components/shared/portfolio-item-card';
+export type { PortfolioItem };
 import { allPortfolioItemsData } from '@/app/portfolio/page';
 
 export interface PortfolioItemRecord extends Omit<PortfolioItem, '_id' | 'id'> {
@@ -9,38 +12,20 @@ export interface PortfolioItemRecord extends Omit<PortfolioItem, '_id' | 'id'> {
   designerId: string;
 }
 
-interface PortfolioRow {
-  id: string;
-  designer_id: string;
-  title: string;
-  category: string;
-  category_slug: string;
-  client_name: string | null;
-  project_date: string | null;
-  cover_image_url: string;
-  cover_image_hint: string;
-  project_description: string;
-  gallery_images: Array<{ url: string; hint: string; caption?: string }>;
-  tags: string[] | null;
-  views: number;
-  likes: number;
-  designer: { id: string; slug: string; name: string; avatarUrl?: string; imageHint?: string } | null;
-}
-
-function rowToItem(row: PortfolioRow): PortfolioItem {
+function rowToItem(row: typeof portfolioItems.$inferSelect): PortfolioItem {
   return {
     _id: row.id,
     id: row.id,
-    designerId: row.designer_id,
+    designerId: row.designerId || undefined,
     title: row.title,
-    category: row.category,
-    categorySlug: row.category_slug,
-    clientName: row.client_name || undefined,
-    projectDate: row.project_date || undefined,
-    coverImageUrl: row.cover_image_url,
-    coverImageHint: row.cover_image_hint,
-    projectDescription: row.project_description,
-    galleryImages: row.gallery_images || [],
+    category: row.category || '',
+    categorySlug: row.categorySlug || '',
+    clientName: row.clientName || undefined,
+    projectDate: row.projectDate || undefined,
+    coverImageUrl: row.coverImageUrl || '',
+    coverImageHint: row.coverImageHint || '',
+    projectDescription: row.projectDescription || '',
+    galleryImages: row.galleryImages || [],
     tags: row.tags || [],
     views: row.views || 0,
     likes: row.likes || 0,
@@ -48,15 +33,25 @@ function rowToItem(row: PortfolioRow): PortfolioItem {
   };
 }
 
+export async function getAllPortfolioItems(): Promise<PortfolioItem[]> {
+  if (!isDbEnabled()) return allPortfolioItemsData;
+  try {
+    const rows = await db.select().from(portfolioItems).orderBy(desc(portfolioItems.projectDate));
+    return rows.map(rowToItem);
+  } catch (error) {
+    console.error('Error fetching all portfolio items:', error);
+    return [];
+  }
+}
+
 export async function getPortfolioItemsByDesignerId(designerId: string): Promise<PortfolioItem[]> {
   if (!isDbEnabled()) {
     return allPortfolioItemsData.filter(item => item.designer?.id === designerId);
   }
   try {
-    const rows = await query<PortfolioRow>(
-      'SELECT * FROM portfolio_items WHERE designer_id = $1 ORDER BY project_date DESC',
-      [designerId]
-    );
+    const rows = await db.select().from(portfolioItems)
+      .where(eq(portfolioItems.designerId, designerId))
+      .orderBy(desc(portfolioItems.projectDate));
     return rows.map(rowToItem);
   } catch (error) {
     console.error('Error fetching portfolio items by designer ID:', error);
@@ -69,8 +64,8 @@ export async function getPortfolioItemById(itemId: string): Promise<PortfolioIte
     return allPortfolioItemsData.find(item => item.id === itemId) || null;
   }
   try {
-    const row = await queryOne<PortfolioRow>('SELECT * FROM portfolio_items WHERE id = $1', [itemId]);
-    return row ? rowToItem(row) : null;
+    const rows = await db.select().from(portfolioItems).where(eq(portfolioItems.id, itemId));
+    return rows[0] ? rowToItem(rows[0]) : null;
   } catch (error) {
     console.error('Error fetching portfolio item by ID:', error);
     return null;
@@ -95,13 +90,24 @@ export async function createPortfolioItem(
   }
 
   try {
-    const row = await queryOne<PortfolioRow>(
-      `INSERT INTO portfolio_items (id, designer_id, title, category, category_slug, client_name, project_date, cover_image_url, cover_image_hint, project_description, gallery_images, tags, views, likes, designer)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-       RETURNING *`,
-      [itemWithStats.id, itemWithStats.designerId, itemWithStats.title, itemWithStats.category, itemWithStats.categorySlug, itemWithStats.clientName || null, itemWithStats.projectDate || null, itemWithStats.coverImageUrl, itemWithStats.coverImageHint, itemWithStats.projectDescription, JSON.stringify(itemWithStats.galleryImages || []), itemWithStats.tags || [], itemWithStats.views, itemWithStats.likes, JSON.stringify(itemWithStats.designer || null)]
-    );
-    return row ? rowToItem(row) : null;
+    const rows = await db.insert(portfolioItems).values({
+      id: itemWithStats.id,
+      designerId: itemWithStats.designerId,
+      title: itemWithStats.title,
+      category: itemWithStats.category,
+      categorySlug: itemWithStats.categorySlug,
+      clientName: itemWithStats.clientName || null,
+      projectDate: itemWithStats.projectDate || null,
+      coverImageUrl: itemWithStats.coverImageUrl,
+      coverImageHint: itemWithStats.coverImageHint,
+      projectDescription: itemWithStats.projectDescription,
+      galleryImages: itemWithStats.galleryImages || [],
+      tags: itemWithStats.tags || [],
+      views: itemWithStats.views,
+      likes: itemWithStats.likes,
+      designer: itemWithStats.designer || null,
+    }).returning();
+    return rows[0] ? rowToItem(rows[0]) : null;
   } catch (error) {
     console.error('Error creating portfolio item:', error);
     return null;
@@ -117,27 +123,27 @@ export async function updatePortfolioItem(
     return null;
   }
   try {
-    const setClauses: string[] = [];
-    const values: unknown[] = [];
-    let paramIndex = 1;
+    const updateValues: Record<string, unknown> = {};
+    if (itemData.title !== undefined) updateValues.title = itemData.title;
+    if (itemData.category !== undefined) updateValues.category = itemData.category;
+    if (itemData.categorySlug !== undefined) updateValues.categorySlug = itemData.categorySlug;
+    if (itemData.projectDescription !== undefined) updateValues.projectDescription = itemData.projectDescription;
+    if (itemData.coverImageUrl !== undefined) updateValues.coverImageUrl = itemData.coverImageUrl;
+    if (itemData.coverImageHint !== undefined) updateValues.coverImageHint = itemData.coverImageHint;
+    if (itemData.galleryImages !== undefined) updateValues.galleryImages = itemData.galleryImages;
+    if (itemData.tags !== undefined) updateValues.tags = itemData.tags;
 
-    if (itemData.title !== undefined) { setClauses.push(`title = $${paramIndex++}`); values.push(itemData.title); }
-    if (itemData.category !== undefined) { setClauses.push(`category = $${paramIndex++}`); values.push(itemData.category); }
-    if (itemData.categorySlug !== undefined) { setClauses.push(`category_slug = $${paramIndex++}`); values.push(itemData.categorySlug); }
-    if (itemData.projectDescription !== undefined) { setClauses.push(`project_description = $${paramIndex++}`); values.push(itemData.projectDescription); }
-    if (itemData.coverImageUrl !== undefined) { setClauses.push(`cover_image_url = $${paramIndex++}`); values.push(itemData.coverImageUrl); }
-    if (itemData.coverImageHint !== undefined) { setClauses.push(`cover_image_hint = $${paramIndex++}`); values.push(itemData.coverImageHint); }
-    if (itemData.galleryImages !== undefined) { setClauses.push(`gallery_images = $${paramIndex++}`); values.push(JSON.stringify(itemData.galleryImages)); }
-    if (itemData.tags !== undefined) { setClauses.push(`tags = $${paramIndex++}`); values.push(itemData.tags); }
+    if (Object.keys(updateValues).length === 0) return null;
 
-    if (setClauses.length === 0) return null;
+    const rows = await db.update(portfolioItems)
+      .set(updateValues)
+      .where(eq(portfolioItems.id, itemId))
+      .returning();
 
-    values.push(itemId, designerId);
-    const row = await queryOne<PortfolioRow>(
-      `UPDATE portfolio_items SET ${setClauses.join(', ')} WHERE id = $${paramIndex++} AND designer_id = $${paramIndex} RETURNING *`,
-      values
-    );
-    return row ? rowToItem(row) : null;
+    // Verify designer ownership
+    if (rows[0] && rows[0].designerId !== designerId) return null;
+
+    return rows[0] ? rowToItem(rows[0]) : null;
   } catch (error) {
     console.error('Error updating portfolio item:', error);
     return null;
@@ -149,8 +155,12 @@ export async function deletePortfolioItem(itemId: string, designerId: string): P
     return false;
   }
   try {
-    const result = await query<{ id: string }>('DELETE FROM portfolio_items WHERE id = $1 AND designer_id = $2 RETURNING id', [itemId, designerId]);
-    return result.length > 0;
+    const rows = await db.delete(portfolioItems)
+      .where(eq(portfolioItems.id, itemId))
+      .returning({ id: portfolioItems.id, designerId: portfolioItems.designerId });
+
+    // Verify designer ownership
+    return rows.length > 0 && rows[0].designerId === designerId;
   } catch (error) {
     console.error('Error deleting portfolio item:', error);
     return false;

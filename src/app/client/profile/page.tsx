@@ -8,26 +8,32 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { UserCircle, Mail, Phone, Lock, Save, Edit3, CreditCard, Bell, Building, Image as ImageIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { getUserById, type User } from '@/lib/users-db';
 
-// Mock client data
-const mockClientData = {
-  name: "Priya Sharma",
-  email: "priya.sharma@example.in",
-  avatarUrl: "https://placehold.co/100x100.png",
-  avatarHint: "indian woman client",
-  companyName: "BharatRetail Solutions",
-  mobile: "9876543210",
-};
+const CURRENT_CLIENT_ID = 'client001';
 
 export default function ClientProfilePage() {
   const { toast } = useToast();
-  const [name, setName] = useState(mockClientData.name);
-  const [email, setEmail] = useState(mockClientData.email); 
-  const [companyName, setCompanyName] = useState(mockClientData.companyName);
-  const [mobile, setMobile] = useState(mockClientData.mobile);
+  const [clientData, setClientData] = useState<User | null>(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [mobile, setMobile] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    getUserById(CURRENT_CLIENT_ID).then(user => {
+      if (user) {
+        setClientData(user);
+        setName(user.name);
+        setEmail(user.email);
+        setCompanyName(''); // No company field on User type yet
+        setMobile(user.mobileNumber || user.phone || '');
+      }
+    });
+  }, []);
 
   const handleProfileUpdate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,8 +61,8 @@ export default function ClientProfilePage() {
           <CardHeader>
             <div className="flex items-center space-x-4">
                 <Avatar className="h-20 w-20">
-                    <AvatarImage src={mockClientData.avatarUrl} alt={mockClientData.name} data-ai-hint={mockClientData.avatarHint} />
-                    <AvatarFallback>{mockClientData.name.substring(0,1)}</AvatarFallback>
+                    <AvatarImage src={clientData?.avatarUrl || 'https://placehold.co/100x100.png'} alt={clientData?.name || 'Client'} data-ai-hint={clientData?.avatarHint || 'client avatar'} />
+                    <AvatarFallback>{(clientData?.name || 'C').substring(0,1)}</AvatarFallback>
                 </Avatar>
                 <div>
                     <CardTitle>Edit Profile</CardTitle>

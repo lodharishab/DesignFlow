@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type ReactElement, useMemo } from 'react';
+import { useState, useEffect, type ReactElement, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,46 +16,31 @@ import Link from 'next/link';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-
-type StaffAction = 'Login' | 'Logout' | 'Order Update' | 'Service Edit' | 'User Suspension' | 'Payout Processed';
-interface StaffActivityLog {
-  id: string;
-  staffId: string;
-  staffName: string;
-  action: StaffAction;
-  targetId: string;
-  targetType: 'User' | 'Order' | 'Service' | 'System';
-  ipAddress: string;
-  timestamp: Date;
-}
-
-const mockStaffActivity: StaffActivityLog[] = [
-  { id: 'act_001', staffId: 'staff001', staffName: 'Aditi Singh', action: 'Order Update', targetId: 'ORD7361P', targetType: 'Order', ipAddress: '103.22.201.12', timestamp: new Date(new Date().setHours(new Date().getHours() - 2)) },
-  { id: 'act_002', staffId: 'staff002', staffName: 'Raj Mehta', action: 'User Suspension', targetId: 'usr003', targetType: 'User', ipAddress: '115.98.45.210', timestamp: new Date(new Date().setDate(new Date().getDate() - 1)) },
-  { id: 'act_003', staffId: 'staff001', staffName: 'Aditi Singh', action: 'Login', targetId: 'System', targetType: 'System', ipAddress: '103.22.201.12', timestamp: new Date(new Date().setHours(new Date().getHours() - 8)) },
-  { id: 'act_004', staffId: 'staff004', staffName: 'Anil Kumar', action: 'Payout Processed', targetId: 'PAYOUT002', targetType: 'Order', ipAddress: '202.168.1.5', timestamp: new Date(new Date().setDate(new Date().getDate() - 2)) },
-  { id: 'act_005', staffId: 'staff003', staffName: 'Sonia Gupta', action: 'Service Edit', targetId: 'SVC001IN', targetType: 'Service', ipAddress: '15.206.110.15', timestamp: new Date(new Date().setDate(new Date().getDate() - 3)) },
-];
-
-const uniqueStaffNames = Array.from(new Set(mockStaffActivity.map(log => log.staffName))).sort();
-const uniqueActionTypes: StaffAction[] = ['Login', 'Logout', 'Order Update', 'Service Edit', 'User Suspension', 'Payout Processed'];
-
+import { getAllAuditLogs, type AuditLog } from '@/lib/settings-db';
 
 export default function StaffActivityLogsPage(): ReactElement {
+    const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [actionFilter, setActionFilter] = useState<'All' | StaffAction>('All');
+    const [actionFilter, setActionFilter] = useState<string>('All');
     const [staffFilter, setStaffFilter] = useState<string>('All');
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
+    useEffect(() => {
+      getAllAuditLogs().then(setAuditLogs);
+    }, []);
+
+    const uniqueStaffNames = useMemo(() => Array.from(new Set(auditLogs.map(log => log.actorName || 'Unknown'))).sort(), [auditLogs]);
+    const uniqueActionTypes = useMemo(() => Array.from(new Set(auditLogs.map(log => log.action))).sort(), [auditLogs]);
+
     const filteredLogs = useMemo(() => {
-        return mockStaffActivity.filter(log => {
+        return auditLogs.filter(log => {
             const searchTermLower = searchTerm.toLowerCase();
             const searchMatch = !searchTerm || 
-                                log.targetId.toLowerCase().includes(searchTermLower) || 
-                                log.ipAddress.includes(searchTermLower);
+                                log.targetId?.toLowerCase().includes(searchTermLower) || 
+                                log.notes?.toLowerCase().includes(searchTermLower);
 
             const actionMatch = actionFilter === 'All' || log.action === actionFilter;
-            const staffMatch = staffFilter === 'All' || log.staffName === staffFilter;
+            const staffMatch = staffFilter === 'All' || log.actorName === staffFilter;
             const dateMatch = !dateRange || (
                 dateRange.from && dateRange.to &&
                 log.timestamp >= dateRange.from && log.timestamp <= dateRange.to
@@ -63,7 +48,7 @@ export default function StaffActivityLogsPage(): ReactElement {
             
             return searchMatch && actionMatch && staffMatch && dateMatch;
         }).sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
-    }, [searchTerm, actionFilter, staffFilter, dateRange]);
+    }, [auditLogs, searchTerm, actionFilter, staffFilter, dateRange]);
 
 
     return (
@@ -138,8 +123,8 @@ export default function StaffActivityLogsPage(): ReactElement {
                             {filteredLogs.map(log => (
                                 <TableRow key={log.id}>
                                     <TableCell>
-                                        <Link href={`/admin/users/staff/${log.staffId}`} className="font-medium text-primary hover:underline">
-                                            {log.staffName}
+                                        <Link href={`/admin/users/staff/${log.actorId}`} className="font-medium text-primary hover:underline">
+                                            {log.actorName || 'Unknown'}
                                         </Link>
                                     </TableCell>
                                     <TableCell><Badge variant="secondary">{log.action}</Badge></TableCell>
@@ -148,7 +133,7 @@ export default function StaffActivityLogsPage(): ReactElement {
                                         <p className="text-xs text-muted-foreground">{log.targetType}</p>
                                     </TableCell>
                                     <TableCell className="text-xs text-muted-foreground">{format(log.timestamp, 'PPpp')}</TableCell>
-                                    <TableCell className="font-mono text-xs">{log.ipAddress}</TableCell>
+                                    <TableCell className="font-mono text-xs">{log.notes || '-'}</TableCell>
                                 </TableRow>
                             ))}
                             {filteredLogs.length === 0 && (

@@ -16,78 +16,35 @@ import Link from 'next/link';
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-
-// In a real app, these values would be fetched and saved to a backend.
-interface SiteSettings {
-  platformName: string;
-  contactEmail: string;
-  defaultCurrency: string;
-  allowClientRegistrations: boolean;
-  allowDesignerRegistrations: boolean;
-  termsUrl: string;
-  privacyUrl: string;
-  enableMemberships: boolean;
-  clientBasicPlanName: string;
-  clientBasicPlanPrice: string;
-  clientPremiumPlanName: string;
-  clientPremiumPlanPrice: string;
-  designerBasicPlanName: string;
-  designerBasicPlanPrice: string;
-  designerProPlanName: string;
-  designerProPlanPrice: string;
-  enableFreeTrial: boolean;
-  trialDurationDays: number;
-  adminNotificationEmail: string;
-  stripeApiKey: string; // Placeholder
-  paypalClientId: string; // Placeholder
-}
-
-interface AuditLog {
-  id: string;
-  action: 'User Update' | 'Service Edit' | 'Order Status Change' | 'Settings Change' | 'Designer Approved';
-  actor: {
-    id: string;
-    name: string;
-  };
-  target: {
-    type: 'User' | 'Service' | 'Order' | 'Platform';
-    id: string;
-    name?: string;
-  };
-  timestamp: Date;
-  notes?: string;
-}
-
-const mockAuditLogs: AuditLog[] = [
-    { id: 'log_001', action: 'Order Status Change', actor: { id: 'admin001', name: 'Admin User' }, target: { type: 'Order', id: 'ORD7361P', name: 'E-commerce Website UI/UX' }, timestamp: new Date(new Date().setDate(new Date().getDate() - 1)), notes: 'Status changed from Pending to In Progress' },
-    { id: 'log_002', action: 'Designer Approved', actor: { id: 'admin002', name: 'Super Admin' }, target: { type: 'User', id: 'des007', name: 'Neha Joshi' }, timestamp: new Date(new Date().setDate(new Date().getDate() - 2)), notes: 'Approved for Print Design category.' },
-    { id: 'log_003', action: 'Service Edit', actor: { id: 'admin001', name: 'Admin User' }, target: { type: 'Service', id: '1', name: 'Modern Logo Design' }, timestamp: new Date(new Date().setDate(new Date().getDate() - 3)), notes: 'Updated price for Premium tier.' },
-    { id: 'log_004', action: 'Settings Change', actor: { id: 'admin002', name: 'Super Admin' }, target: { type: 'Platform', id: 'registration_settings', name: 'User Registrations' }, timestamp: new Date(new Date().setDate(new Date().getDate() - 4)), notes: 'Disabled new designer registrations.' },
-    { id: 'log_005', action: 'User Update', actor: { id: 'admin001', name: 'Admin User' }, target: { type: 'User', id: 'usr003', name: 'Charlie Brown' }, timestamp: new Date(new Date().setDate(new Date().getDate() - 5)), notes: 'Suspended user account.' },
-];
-
-const uniqueActors = Array.from(new Set(mockAuditLogs.map(log => log.actor.name))).sort();
-const uniqueActions = Array.from(new Set(mockAuditLogs.map(log => log.action))).sort();
+import { getAllAuditLogs, getSiteSettings, updateSiteSettings, type AuditLog, type SiteSettings } from '@/lib/settings-db';
 
 function AuditLogsSection() {
+    const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [actionFilter, setActionFilter] = useState('All');
     const [actorFilter, setActorFilter] = useState('All');
 
+    useEffect(() => {
+      getAllAuditLogs().then(setAuditLogs);
+    }, []);
+
+    const uniqueActors = useMemo(() => Array.from(new Set(auditLogs.map(log => log.actorName || 'Unknown'))).sort(), [auditLogs]);
+    const uniqueActions = useMemo(() => Array.from(new Set(auditLogs.map(log => log.action))).sort(), [auditLogs]);
+
     const filteredLogs = useMemo(() => {
-        return mockAuditLogs.filter(log => {
+        return auditLogs.filter(log => {
             const searchTermLower = searchTerm.toLowerCase();
             const searchMatch = !searchTerm ||
-                log.target.id.toLowerCase().includes(searchTermLower) ||
-                log.target.name?.toLowerCase().includes(searchTermLower) ||
+                log.targetId?.toLowerCase().includes(searchTermLower) ||
+                log.targetName?.toLowerCase().includes(searchTermLower) ||
                 log.notes?.toLowerCase().includes(searchTermLower);
 
             const actionMatch = actionFilter === 'All' || log.action === actionFilter;
-            const actorMatch = actorFilter === 'All' || log.actor.name === actorFilter;
+            const actorMatch = actorFilter === 'All' || log.actorName === actorFilter;
 
             return searchMatch && actionMatch && actorMatch;
         });
-    }, [searchTerm, actionFilter, actorFilter]);
+    }, [auditLogs, searchTerm, actionFilter, actorFilter]);
 
     return (
         <Card className="shadow-lg">
@@ -140,10 +97,10 @@ function AuditLogsSection() {
                             <TableRow key={log.id}>
                                 <TableCell><Badge variant="secondary">{log.action}</Badge></TableCell>
                                 <TableCell>
-                                    <span className="font-medium">{log.target.name || log.target.id}</span>
-                                    <span className="block text-xs text-muted-foreground">{log.target.type}: {log.target.id}</span>
+                                    <span className="font-medium">{log.targetName || log.targetId}</span>
+                                    <span className="block text-xs text-muted-foreground">{log.targetType}: {log.targetId}</span>
                                 </TableCell>
-                                <TableCell>{log.actor.name}</TableCell>
+                                <TableCell>{log.actorName}</TableCell>
                                 <TableCell className="text-xs text-muted-foreground" title={format(log.timestamp, 'PPpp')}>
                                     {formatDistanceToNow(log.timestamp, { addSuffix: true })}
                                 </TableCell>
@@ -162,6 +119,7 @@ function AuditLogsSection() {
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>({
+    id: 'default',
     platformName: "DesignFlow",
     contactEmail: "admin@designflow.com",
     defaultCurrency: "INR",
@@ -185,6 +143,10 @@ export default function AdminSettingsPage() {
     paypalClientId: "",
   });
 
+  useEffect(() => {
+    getSiteSettings().then(setSettings);
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setSettings(prev => ({ ...prev, [id]: value }));
@@ -195,7 +157,9 @@ export default function AdminSettingsPage() {
   };
 
   const handleSaveSettings = () => {
-    console.log("Settings saved (simulated):", settings);
+    updateSiteSettings(settings).then(() => {
+      console.log("Settings saved:", settings);
+    });
   };
 
   return (
