@@ -69,6 +69,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from '@/lib/utils';
+import { useUI } from '@/contexts/ui-context';
+import { Badge } from '@/components/ui/badge';
 
 const navItems = [
   { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -161,6 +163,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
   const pathname = usePathname();
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
   const { toggleSidebar } = useSidebar();
+  const { userRole } = useUI();
+  const isSuperAdmin = userRole === 'super_admin';
 
   useEffect(() => {
     const initiallyOpen: Record<string, boolean> = {};
@@ -190,6 +194,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
             <Brush className="w-7 h-7 text-primary" />
             <span className="font-semibold font-headline text-xl">DesignFlow</span>
           </Link>
+          {isSuperAdmin && (
+            <Badge variant="destructive" className="mt-2 w-fit text-xs">Super Admin</Badge>
+          )}
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
@@ -287,17 +294,20 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="https://placehold.co/100x100.png" alt="Admin User" data-ai-hint="person avatar" />
-                      <AvatarFallback>AD</AvatarFallback>
+                      <AvatarImage src="https://placehold.co/100x100.png" alt={isSuperAdmin ? 'Super Admin' : 'Admin User'} data-ai-hint="person avatar" />
+                      <AvatarFallback>{isSuperAdmin ? 'SA' : 'AD'}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">Admin User</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium leading-none">{isSuperAdmin ? 'Super Admin' : 'Admin User'}</p>
+                        {isSuperAdmin && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Super</Badge>}
+                      </div>
                       <p className="text-xs leading-none text-muted-foreground">
-                        admin@designflow.com
+                        {isSuperAdmin ? 'super.admin@designflow.com' : 'admin@designflow.com'}
                       </p>
                     </div>
                   </DropdownMenuLabel>

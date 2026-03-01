@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { getBrandKits, type BrandProfileFormData } from '@/lib/brand-profile-db';
 
-export type UserRole = 'client' | 'designer' | 'admin' | null;
+export type UserRole = 'client' | 'designer' | 'admin' | 'super_admin' | null;
 
 interface UIContextType {
   isMobileMenuOpen: boolean;

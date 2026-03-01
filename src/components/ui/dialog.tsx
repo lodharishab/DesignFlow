@@ -1,112 +1,104 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { X } from "lucide-react"
+import * as React from 'react';
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+} from '@heroui/react';
+import { cn } from '@/lib/utils';
+import { X } from 'lucide-react';
 
-import { cn } from "@/lib/utils"
+const DialogContext = React.createContext<{
+  isOpen: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
+}>({
+  isOpen: false,
+  onOpen: () => {},
+  onClose: () => {},
+  onOpenChange: () => {},
+});
 
-const Dialog = DialogPrimitive.Root
-
-const DialogTrigger = DialogPrimitive.Trigger
-
-const DialogPortal = DialogPrimitive.Portal
-
-const DialogClose = DialogPrimitive.Close
-
-const DialogOverlay = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay
-    ref={ref}
-    className={cn(
-      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className
-    )}
-    {...props}
-  />
-))
-DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
-
-const DialogContent = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DialogPortal>
-    <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
-        className
-      )}
-      {...props}
-    >
+const Dialog = ({ children, open, onOpenChange, ...props }: { children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }) => {
+  const disclosure = useDisclosure({ isOpen: open, onOpenChange });
+  return (
+    <DialogContext.Provider value={{ ...disclosure, onOpenChange: onOpenChange || disclosure.onOpenChange }}>
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
-  </DialogPortal>
-))
-DialogContent.displayName = DialogPrimitive.Content.displayName
+    </DialogContext.Provider>
+  );
+};
 
-const DialogHeader = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "flex flex-col space-y-1.5 text-center sm:text-left",
-      className
-    )}
-    {...props}
-  />
-)
-DialogHeader.displayName = "DialogHeader"
+const DialogTrigger = ({ children, asChild, ...props }: { children: React.ReactNode; asChild?: boolean }) => {
+  const { onOpen } = React.useContext(DialogContext);
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as any, { onClick: onOpen });
+  }
+  return <button onClick={onOpen} {...props}>{children}</button>;
+};
 
-const DialogFooter = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className
-    )}
-    {...props}
-  />
-)
-DialogFooter.displayName = "DialogFooter"
+const DialogPortal = ({ children }: { children: React.ReactNode }) => <>{children}</>;
 
-const DialogTitle = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    ref={ref}
-    className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
-      className
-    )}
-    {...props}
-  />
-))
-DialogTitle.displayName = DialogPrimitive.Title.displayName
+const DialogOverlay = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => <div ref={ref} className={cn('fixed inset-0 z-50 bg-black/60 backdrop-blur-sm', className)} {...props} />
+);
+DialogOverlay.displayName = 'DialogOverlay';
 
-const DialogDescription = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props}
-  />
-))
-DialogDescription.displayName = DialogPrimitive.Description.displayName
+const DialogClose = ({ children, ...props }: React.HTMLAttributes<HTMLButtonElement>) => {
+  const { onClose } = React.useContext(DialogContext);
+  return <button onClick={onClose} {...props}>{children}</button>;
+};
+
+const DialogContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement> & { children: React.ReactNode }>(
+  ({ className, children, ...props }, ref) => {
+    const { isOpen, onOpenChange } = React.useContext(DialogContext);
+    return (
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        backdrop="blur"
+        radius="lg"
+        shadow="lg"
+        size="lg"
+        classNames={{
+          base: cn('bg-content1 border border-default-200', className),
+          closeButton: 'hover:bg-default-100 active:bg-default-200',
+        }}
+      >
+        <ModalContent>
+          {(onClose) => <>{children}</>}
+        </ModalContent>
+      </Modal>
+    );
+  }
+);
+DialogContent.displayName = 'DialogContent';
+
+const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <ModalHeader className={cn('flex flex-col gap-1', className)} {...(props as any)} />
+);
+
+const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <ModalFooter className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)} {...(props as any)} />
+);
+
+const DialogTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, ...props }, ref) => (
+    <h2 ref={ref} className={cn('text-lg font-semibold leading-none tracking-tight', className)} {...props} />
+  )
+);
+DialogTitle.displayName = 'DialogTitle';
+
+const DialogDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+  ({ className, ...props }, ref) => (
+    <p ref={ref} className={cn('text-sm text-default-500', className)} {...props} />
+  )
+);
+DialogDescription.displayName = 'DialogDescription';
 
 export {
   Dialog,
@@ -119,4 +111,4 @@ export {
   DialogFooter,
   DialogTitle,
   DialogDescription,
-}
+};

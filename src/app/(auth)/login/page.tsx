@@ -44,7 +44,9 @@ function LoginPageContent() {
   const handleLoginSuccess = () => {
      setIsLoggedIn(true);
      // Set role based on simulated phone number
-     if (phoneNumber.includes('111')) {
+     if (phoneNumber.includes('000')) {
+       setUserRole('super_admin');
+     } else if (phoneNumber.includes('111')) {
        setUserRole('admin');
      } else if (phoneNumber.includes('222')) {
        setUserRole('designer');
@@ -61,7 +63,9 @@ function LoginPageContent() {
         return;
     }
 
-    if (phoneNumber.includes('111')) {
+    if (phoneNumber.includes('000')) {
+      router.push('/admin/dashboard');
+    } else if (phoneNumber.includes('111')) {
       router.push('/admin/dashboard');
     } else if (phoneNumber.includes('222')) {
       router.push('/designer/dashboard');

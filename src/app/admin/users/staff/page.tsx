@@ -26,7 +26,7 @@ import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { getStaffMembers, type User } from '@/lib/users-db';
 
-const availableRoles = ['Admin', 'Manager', 'Support Staff', 'Accounts'];
+const availableRoles = ['Super Admin', 'Admin', 'Manager', 'Support Staff', 'Accounts'];
 const availableStatuses = ['Active', 'Suspended'];
 
 export default function StaffManagementPage(): ReactElement {

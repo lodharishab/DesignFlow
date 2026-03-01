@@ -65,7 +65,7 @@ import {
 
 import { initialUsersData, type User } from './users-data';
 
-const availableRoles = ['Client', 'Designer', 'Admin', 'Guest'];
+const availableRoles = ['Client', 'Designer', 'Admin', 'Super Admin', 'Guest'];
 type UserStatus = 'Active' | 'Suspended';
 const availableStatuses: UserStatus[] = ['Active', 'Suspended'];
 type SortableUserKeys = 'name' | 'email' | 'joinDate' | 'lastLogin';

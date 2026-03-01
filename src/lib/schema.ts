@@ -18,7 +18,7 @@ export const users = pgTable('users', {
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
   mobileNumber: text('mobile_number'),
-  roles: text('roles').array().notNull().default([]),          // ['Client'] | ['Designer'] | ['Admin'] | etc.
+  roles: text('roles').array().notNull().default([]),          // ['Client'] | ['Designer'] | ['Admin'] | ['Super Admin'] | etc.
   avatarUrl: text('avatar_url'),
   avatarHint: text('avatar_hint'),
   joinDate: timestamp('join_date', { withTimezone: true }).defaultNow(),
@@ -26,7 +26,7 @@ export const users = pgTable('users', {
   status: text('status').notNull().default('Active'),           // 'Active' | 'Suspended'
   // Staff-specific fields (null for non-staff)
   phone: text('phone'),
-  staffRole: text('staff_role'),                                // 'Admin' | 'Manager' | 'Support Staff' | 'Accounts'
+  staffRole: text('staff_role'),                                // 'Super Admin' | 'Admin' | 'Manager' | 'Support Staff' | 'Accounts'
   passwordHash: text('password_hash'),
 });
 

@@ -1,9 +1,15 @@
 
+import type { Metadata } from 'next';
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service | DesignFlow',
+  description: 'DesignFlow terms of service — rules and conditions for using our platform.',
+};
 
 export default function TermsOfServicePage() {
   return (

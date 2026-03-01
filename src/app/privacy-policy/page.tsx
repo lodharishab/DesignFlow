@@ -1,9 +1,15 @@
 
+import type { Metadata } from 'next';
 import { Navbar } from '@/components/layout/navbar';
 import { CategoriesNavbar } from '@/components/layout/categories-navbar';
 import { Footer } from '@/components/layout/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy | DesignFlow',
+  description: 'DesignFlow privacy policy — how we collect, use, and protect your data.',
+};
 
 export default function PrivacyPolicyPage() {
   return (

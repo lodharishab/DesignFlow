@@ -64,7 +64,7 @@ const usersData: (typeof schema.users.$inferInsert)[] = [
   { id: 'des006', name: 'Arjun Mehta', email: 'arjun.mehta@example.in', roles: ['Designer'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man', joinDate: d(2021,11,30), lastLogin: d(2024,5,1), status: 'Active' },
   // Admin/staff user for audit logs
   { id: 'admin001', name: 'Admin User', email: 'admin@designflow.com', roles: ['Admin'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'admin', joinDate: d(2022,0,1), lastLogin: d(2024,5,4), status: 'Active', staffRole: 'Admin' },
-  { id: 'admin002', name: 'Super Admin', email: 'super.admin@designflow.com', roles: ['Admin'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'admin', joinDate: d(2022,0,1), lastLogin: d(2024,5,4), status: 'Active', staffRole: 'Admin' },
+  { id: 'admin002', name: 'Super Admin', email: 'super.admin@designflow.com', roles: ['Super Admin'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'admin', joinDate: d(2022,0,1), lastLogin: d(2024,5,4), status: 'Active', staffRole: 'Super Admin' },
 ];
 
 // ---------------------------------------------------------------------------

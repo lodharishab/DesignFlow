@@ -54,7 +54,7 @@ const initialUsersData: User[] = [ // Using a different name to avoid conflict i
   { id: 'usr005', name: 'Edward Scissorhands', email: 'edward@example.com', mobileNumber: '9988776655', roles: ['Guest'], avatarUrl: 'https://picsum.photos/seed/avatar5/40/40', avatarHint: 'man silhouette', joinDate: new Date(2024, 0, 1), lastLogin: null, status: 'Active' },
 ];
 
-const availableRoles = ['Client', 'Designer', 'Admin', 'Guest'];
+const availableRoles = ['Client', 'Designer', 'Admin', 'Super Admin', 'Guest'];
 const availableStatuses: UserStatus[] = ['Active', 'Suspended'];
 
 

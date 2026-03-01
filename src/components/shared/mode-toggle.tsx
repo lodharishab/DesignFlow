@@ -1,60 +1,55 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Moon, Sun } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@heroui/react";
 
 export function ModeToggle() {
-  const [mounted, setMounted] = React.useState(false)
-  const [theme, setThemeState] = React.useState<"theme-light" | "dark" | "system">("system")
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
 
-  React.useEffect(() => {
-    setMounted(true)
-    const localTheme = localStorage.getItem("theme") as "theme-light" | "dark" | "system" | null
-    if (localTheme) {
-      setThemeState(localTheme)
-      if (localTheme === "dark") {
-        document.documentElement.classList.add("dark")
-      } else {
-        document.documentElement.classList.remove("dark")
-      }
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      document.documentElement.classList.add("dark")
-      setThemeState("dark")
-    } else {
-      setThemeState("theme-light")
-    }
-  }, [])
-
-  const setTheme = (newTheme: "theme-light" | "dark") => {
-    setThemeState(newTheme)
-    localStorage.setItem("theme", newTheme)
-    if (newTheme === "dark") {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
-  }
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!mounted) {
-    return <Button variant="ghost" size="icon" disabled><Sun className="h-[1.2rem] w-[1.2rem]" /></Button>;
+    return (
+      <Button isIconOnly variant="light" radius="full" size="sm" isDisabled>
+        <Sun className="h-[1.2rem] w-[1.2rem]" />
+      </Button>
+    );
   }
-  
-  const currentThemeIsDark = document.documentElement.classList.contains("dark");
+
+  const isDark = theme === "dark";
 
   return (
-    <Button 
-      variant="ghost" 
-      size="icon" 
-      onClick={() => setTheme(currentThemeIsDark ? "theme-light" : "dark")}
-      aria-label={currentThemeIsDark ? "Switch to light mode" : "Switch to dark mode"}
+    <Button
+      isIconOnly
+      variant="light"
+      radius="full"
+      size="sm"
+      onPress={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      className="text-default-600 hover:text-primary"
     >
-      {currentThemeIsDark ? (
-        <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
-      ) : (
-        <Moon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={isDark ? "sun" : "moon"}
+          initial={{ y: -12, opacity: 0, rotate: -90 }}
+          animate={{ y: 0, opacity: 1, rotate: 0 }}
+          exit={{ y: 12, opacity: 0, rotate: 90 }}
+          transition={{ duration: 0.2 }}
+          className="flex items-center justify-center"
+        >
+          {isDark ? (
+            <Sun className="h-[1.2rem] w-[1.2rem]" />
+          ) : (
+            <Moon className="h-[1.2rem] w-[1.2rem]" />
+          )}
+        </motion.span>
+      </AnimatePresence>
     </Button>
-  )
+  );
 }

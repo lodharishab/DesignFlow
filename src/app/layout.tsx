@@ -1,25 +1,25 @@
 
 import type { Metadata } from 'next';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster";
 import { Oswald, Onest } from 'next/font/google';
 import { cn } from '@/lib/utils';
-import { UIProvider } from '@/contexts/ui-context';
-import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
 import Script from 'next/script';
+import { Providers } from '@/components/providers';
 import { ClientOnly } from '@/components/shared/client-only';
 import { FloatingKiraButton } from '@/components/shared/floating-kira-button';
 import { AiChatSidebar } from '@/components/ai/ai-chat-sidebar';
+import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
+import { Toaster } from 'sonner';
 
 const oswald = Oswald({
   subsets: ['latin'],
-  weight: ['600'], // Oswald 600 weight for headings
+  weight: ['600'],
   variable: '--font-oswald',
 });
 
 const onest = Onest({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '700'], // Common weights for body font
+  weight: ['300', '400', '500', '700'],
   variable: '--font-onest',
 });
 
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     siteName: 'DesignFlow India',
     images: [
       {
-        url: `${SITE_URL}/og-image.png`, // Replace with your actual OG image URL
+        url: `${SITE_URL}/og-image.png`,
         width: 1200,
         height: 630,
         alt: 'DesignFlow India - Creative Services Marketplace',
@@ -52,10 +52,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'DesignFlow - Creative Services Marketplace for India',
     description: 'Expert Indian designers for logos, UI/UX, branding, and more.',
-    // images: [`${SITE_URL}/twitter-image.png`], // Replace with your actual Twitter image URL
-    // creator: '@yourTwitterHandle', // Optional: Add your Twitter handle
   },
-  robots: { // Basic robots meta tag
+  robots: {
     index: true,
     follow: true,
     googleBot: {
@@ -66,13 +64,6 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  // Optional: Add icons, manifest, etc.
-  // icons: {
-  //   icon: '/favicon.ico',
-  //   shortcut: '/favicon-16x16.png',
-  //   apple: '/apple-touch-icon.png',
-  // },
-  // manifest: `${SITE_URL}/site.webmanifest`,
 };
 
 export default function RootLayout({
@@ -81,18 +72,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn(oswald.variable, onest.variable)}>
+    <html lang="en" suppressHydrationWarning className={cn(oswald.variable, onest.variable, 'dark')}>
       <head>
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </head>
-      <body className="antialiased min-h-screen flex flex-col pb-16 md:pb-0" suppressHydrationWarning>
-        <UIProvider>
+      <body className="font-body antialiased min-h-screen flex flex-col bg-background text-foreground pb-16 md:pb-0" suppressHydrationWarning>
+        <Providers>
           {children}
           <ClientOnly><MobileBottomNav /></ClientOnly>
           <ClientOnly><FloatingKiraButton /></ClientOnly>
           <ClientOnly><AiChatSidebar /></ClientOnly>
-          <ClientOnly><Toaster /></ClientOnly>
-        </UIProvider>
+          <Toaster richColors position="top-right" />
+        </Providers>
       </body>
     </html>
   );
