@@ -82,7 +82,58 @@ export function Navbar() {
       </NavbarContent>
 
       {/* Center: Desktop Nav */}
-      <NavbarContent className="hidden md:flex gap-6" justify="center">
+      <NavbarContent className="hidden md:flex gap-1" justify="center">
+        <NavbarItem>
+          <Button
+            as={Link}
+            href="/design-services"
+            variant="light"
+            size="sm"
+            radius="full"
+            className="text-default-600 font-medium hover:text-primary"
+          >
+            Services
+          </Button>
+        </NavbarItem>
+        <NavbarItem>
+          <Button
+            as={Link}
+            href="/portfolio"
+            variant="light"
+            size="sm"
+            radius="full"
+            className="text-default-600 font-medium hover:text-primary"
+          >
+            Portfolio
+          </Button>
+        </NavbarItem>
+        <NavbarItem>
+          <Button
+            as={Link}
+            href="/designers"
+            variant="light"
+            size="sm"
+            radius="full"
+            className="text-default-600 font-medium hover:text-primary"
+          >
+            Designers
+          </Button>
+        </NavbarItem>
+        <NavbarItem>
+          <Button
+            as={Link}
+            href="/blog"
+            variant="light"
+            size="sm"
+            radius="full"
+            className="text-default-600 font-medium hover:text-primary"
+          >
+            Blog
+          </Button>
+        </NavbarItem>
+        <NavbarItem>
+          <Divider orientation="vertical" className="h-5 mx-1" />
+        </NavbarItem>
         <NavbarItem>
           <Button
             variant="light"
