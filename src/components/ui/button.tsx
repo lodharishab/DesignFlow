@@ -1,6 +1,6 @@
 'use client';
 
-import { Button as HeroButton, type ButtonProps as HeroButtonProps } from '@heroui/react';
+import { Button as HeroButton } from '@heroui/react';
 import { cn } from '@/lib/utils';
 import React from 'react';
 
@@ -13,8 +13,34 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   endContent?: React.ReactNode;
 }
 
+function getButtonClasses(variant: string, size: string) {
+  return cn(
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-all duration-200',
+    variant === 'default' && 'bg-primary text-primary-foreground hover:opacity-90',
+    variant === 'destructive' && 'bg-danger text-white hover:opacity-90',
+    variant === 'outline' && 'border border-default-300 bg-transparent hover:bg-default-100 text-foreground',
+    variant === 'secondary' && 'bg-default-100 text-foreground hover:bg-default-200',
+    variant === 'ghost' && 'hover:bg-default-100 text-foreground',
+    variant === 'link' && 'text-primary underline-offset-4 hover:underline',
+    size === 'default' && 'h-10 px-4 py-2 text-sm',
+    size === 'sm' && 'h-8 px-3 text-xs rounded-md',
+    size === 'lg' && 'h-12 px-6 text-base',
+    size === 'icon' && 'h-9 w-9 min-w-0 p-0 flex items-center justify-center',
+  );
+}
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'default', size = 'default', className, children, asChild, isLoading, startContent, endContent, ...props }, ref) => {
+    // Handle asChild - render child element directly with button styling (like Radix Slot)
+    if (asChild && React.isValidElement(children)) {
+      const childProps = (children as React.ReactElement<any>).props;
+      return React.cloneElement(children as React.ReactElement<any>, {
+        ref,
+        className: cn(getButtonClasses(variant, size), className, childProps?.className),
+        ...props,
+      });
+    }
+
     const heroVariant = {
       default: 'solid' as const,
       destructive: 'solid' as const,
@@ -66,19 +92,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button';
 
 function buttonVariants({ variant = 'default', size = 'default' }: { variant?: string; size?: string } = {}) {
-  return cn(
-    'inline-flex items-center justify-center rounded-lg font-medium transition-colors',
-    variant === 'default' && 'bg-primary text-white',
-    variant === 'destructive' && 'bg-danger text-white',
-    variant === 'outline' && 'border border-default-300',
-    variant === 'secondary' && 'bg-secondary/20 text-secondary',
-    variant === 'ghost' && 'hover:bg-default-100',
-    variant === 'link' && 'text-primary underline-offset-4 hover:underline',
-    size === 'sm' && 'h-8 px-3 text-xs',
-    size === 'default' && 'h-10 px-4 text-sm',
-    size === 'lg' && 'h-12 px-6 text-base',
-    size === 'icon' && 'h-9 w-9',
-  );
+  return getButtonClasses(variant, size);
 }
 
 export { Button, buttonVariants };
