@@ -1,12 +1,11 @@
 import * as React from 'react';
-import { Skeleton as HeroSkeleton } from '@heroui/react';
 import { cn } from '@/lib/utils';
 
 function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <HeroSkeleton
-      className={cn('rounded-lg', className)}
-      {...(props as any)}
+    <div
+      className={cn('animate-pulse rounded-lg bg-default-200/60', className)}
+      {...props}
     />
   );
 }

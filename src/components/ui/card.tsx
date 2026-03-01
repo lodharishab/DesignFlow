@@ -1,20 +1,20 @@
 import * as React from 'react';
-import { Card as HeroCard } from '@heroui/react';
 import { cn } from '@/lib/utils';
 
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement> & { isPressable?: boolean; isHoverable?: boolean }>(
   ({ className, children, isPressable, isHoverable, ...props }, ref) => (
-    <HeroCard
+    <div
       ref={ref}
-      isPressable={isPressable}
-      isHoverable={isHoverable}
-      shadow="sm"
-      radius="lg"
-      className={cn('border border-default-200/50 bg-content1', className)}
-      {...(props as any)}
+      className={cn(
+        'rounded-xl border border-default-200/50 bg-content1 shadow-sm',
+        isHoverable && 'transition-shadow hover:shadow-md',
+        isPressable && 'cursor-pointer active:scale-[0.98] transition-transform',
+        className
+      )}
+      {...props}
     >
       {children}
-    </HeroCard>
+    </div>
   )
 );
 Card.displayName = 'Card';

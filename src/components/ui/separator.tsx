@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Divider } from '@heroui/react';
 import { cn } from '@/lib/utils';
 
 interface SeparatorProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -9,15 +8,16 @@ interface SeparatorProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Separator = React.forwardRef<HTMLDivElement, SeparatorProps>(
   ({ className, orientation = 'horizontal', decorative = true, ...props }, ref) => (
-    <Divider
+    <div
       ref={ref}
-      orientation={orientation}
+      role={decorative ? 'none' : 'separator'}
+      aria-orientation={orientation}
       className={cn(
         'shrink-0 bg-default-200',
         orientation === 'horizontal' ? 'h-[1px] w-full' : 'h-full w-[1px]',
         className
       )}
-      {...(props as any)}
+      {...props}
     />
   )
 );
