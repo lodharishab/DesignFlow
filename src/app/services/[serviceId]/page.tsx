@@ -13,6 +13,7 @@ import { Suspense } from 'react';
 
 // Keep interfaces and data needed for server-side fetching and metadata
 export interface ServiceTierData {
+  id: string;
   name: 'Basic' | 'Standard' | 'Premium';
   price: number;
   deliveryTimeMin: number;
@@ -81,6 +82,7 @@ async function getServiceData(id: string): Promise<ServiceDetailData | null> {
     imageUrl: service.imageUrl || 'https://placehold.co/800x500.png',
     imageHint: service.imageHint || service.name.toLowerCase(),
     tiers: service.tiers.map(t => ({
+      id: t.id,
       name: t.name as 'Basic' | 'Standard' | 'Premium',
       price: t.price,
       deliveryTimeMin: t.deliveryTimeMin || 3,

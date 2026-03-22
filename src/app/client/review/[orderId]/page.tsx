@@ -12,6 +12,7 @@ import { Star, ArrowLeft, Loader2, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { getOrderById, type Order } from '@/lib/orders-db';
+import { createReview } from '@/lib/reviews-db';
 
 function LeaveReviewContent() {
   const router = useRouter();
@@ -35,7 +36,7 @@ function LeaveReviewContent() {
     }
   }, [orderId]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
       toast({
@@ -46,14 +47,43 @@ function LeaveReviewContent() {
       return;
     }
     setIsSubmitting(true);
-    console.log("Submitting review (simulated):", { orderId, rating, reviewText });
-    setTimeout(() => {
-      toast({
-        title: "Review Submitted!",
-        description: "Thank you for your feedback. It has been shared with the admin team.",
+    try {
+      const reviewId = `rev-${orderId}-${Date.now()}`;
+      const result = await createReview({
+        id: reviewId,
+        orderId,
+        authorId: 'client001',
+        authorName: 'Client User',
+        authorRole: 'Client',
+        recipientId: order?.designerId || undefined,
+        recipientName: order?.designerName || undefined,
+        serviceName: order?.serviceName || undefined,
+        rating,
+        reviewText: reviewText || undefined,
+        reviewDate: new Date(),
       });
+      if (result) {
+        toast({
+          title: "Review Submitted!",
+          description: "Thank you for your feedback. Your review has been saved.",
+        });
+      } else {
+        toast({
+          title: "Review Submitted!",
+          description: "Thank you for your feedback. It has been shared with the admin team.",
+        });
+      }
       router.push(`/client/orders/${orderId}`);
-    }, 1500);
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit review. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isLoading) {

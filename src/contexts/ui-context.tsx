@@ -32,6 +32,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<UserRole>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // New state for brand kits
   const [brandKits, setBrandKits] = useState<BrandProfileFormData[]>([]);
@@ -39,6 +40,37 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
   const toggleAiChat = () => setIsAiChatOpen(prev => !prev);
+
+  // Restore auth state from localStorage on mount
+  useEffect(() => {
+    try {
+      const storedLoggedIn = localStorage.getItem('df_isLoggedIn');
+      const storedRole = localStorage.getItem('df_userRole');
+      if (storedLoggedIn === 'true' && storedRole) {
+        setIsLoggedIn(true);
+        setUserRole(storedRole as UserRole);
+      }
+    } catch {
+      // Ignore localStorage errors (e.g., SSR, private browsing)
+    }
+    setIsHydrated(true);
+  }, []);
+
+  // Persist auth state to localStorage when it changes
+  useEffect(() => {
+    if (!isHydrated) return;
+    try {
+      if (isLoggedIn && userRole) {
+        localStorage.setItem('df_isLoggedIn', 'true');
+        localStorage.setItem('df_userRole', userRole);
+      } else {
+        localStorage.removeItem('df_isLoggedIn');
+        localStorage.removeItem('df_userRole');
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [isLoggedIn, userRole, isHydrated]);
 
   const loadBrandKits = async () => {
     const kits = await getBrandKits();

@@ -482,3 +482,14 @@ export const auditLogs = pgTable('audit_logs', {
   timestamp: timestamp('timestamp', { withTimezone: true }).defaultNow(),
   notes: text('notes'),
 });
+
+/** Support tickets — contact form submissions */
+export const supportTickets = pgTable('support_tickets', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull(),
+  subject: text('subject').notNull(),
+  message: text('message').notNull(),
+  status: text('status').notNull().default('Open'),             // 'Open' | 'In Progress' | 'Resolved' | 'Closed'
+  submittedAt: timestamp('submitted_at', { withTimezone: true }).defaultNow(),
+});

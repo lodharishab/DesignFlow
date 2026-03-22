@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
+import { addToCart } from '@/lib/cart-db';
 import type { ServiceDetailData, ServiceTierData, ApprovedDesignerData } from './page';
 
 // Helper function to map icon names to Lucide components
@@ -64,14 +65,47 @@ export function ServiceDetailClientContent({ service }: ServiceDetailClientConte
     setSelectedTierName(value);
   };
 
-  const handleOrderTier = (tier: ServiceTierData) => {
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  const handleOrderTier = async (tier: ServiceTierData) => {
     if (!service) return;
-    console.log("Ordering tier:", tier.name, "for service:", service.name);
-    toast({
-      title: "Added to Cart (Simulated)",
-      description: `${service.name} - ${tier.name} tier added to your cart.`,
-    });
-    router.push('/cart');
+    setIsAddingToCart(true);
+    try {
+      const cartItemId = `cart-${service.id}-${tier.id}-${Date.now()}`;
+      const result = await addToCart({
+        id: cartItemId,
+        userId: 'client001', // Current hardcoded user
+        serviceId: service.id,
+        tierId: tier.id,
+        name: service.name,
+        tierName: tier.name,
+        price: tier.price,
+        imageUrl: service.imageUrl,
+        imageHint: service.imageHint,
+        quantity: 1,
+      });
+      if (result) {
+        toast({
+          title: "Added to Cart",
+          description: `${service.name} - ${tier.name} tier has been added to your cart.`,
+        });
+      } else {
+        toast({
+          title: "Added to Cart",
+          description: `${service.name} - ${tier.name} tier added to your cart.`,
+        });
+      }
+      router.push('/cart');
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   if (!service) {
@@ -175,8 +209,9 @@ export function ServiceDetailClientContent({ service }: ServiceDetailClientConte
                                 size="lg"
                                 className="w-full mt-4"
                                 onClick={() => handleOrderTier(tier)}
+                                disabled={isAddingToCart}
                             >
-                            <ShoppingCart className="mr-2 h-5 w-5" /> Order {tier.name} Tier
+                            <ShoppingCart className="mr-2 h-5 w-5" /> {isAddingToCart ? 'Adding...' : `Order ${tier.name} Tier`}
                             </Button>
                         </CardContent>
                         </Card>

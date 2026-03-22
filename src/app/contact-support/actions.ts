@@ -1,5 +1,8 @@
 'use server';
 
+import { db, isDbEnabled } from '@/lib/db';
+import { supportTickets } from '@/lib/schema';
+
 export interface ContactFormResult {
   success: boolean;
   message: string;
@@ -26,7 +29,7 @@ export async function submitContactFormAction(formData: {
   }
 
   try {
-    // Log the support request (in production, this would save to DB or send email)
+    // Log the support request
     console.log('[Support Request]', {
       name: formData.name,
       email: formData.email,
@@ -35,8 +38,18 @@ export async function submitContactFormAction(formData: {
       timestamp: new Date().toISOString(),
     });
 
-    // TODO: Persist to a support_tickets table when schema is extended
-    // TODO: Send email notification to support team
+    // Persist to support_tickets table
+    if (isDbEnabled()) {
+      const ticketId = `ticket-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      await db.insert(supportTickets).values({
+        id: ticketId,
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+        status: 'Open',
+      });
+    }
     
     return {
       success: true,

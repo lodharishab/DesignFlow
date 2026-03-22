@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Palette, ArrowLeft, PackageSearch } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getPortfolioItemById, type PortfolioItem } from '@/lib/portfolio-db';
+import { PortfolioForm } from '../../components/portfolio-form';
 
 
 export default function EditPortfolioItemPage() {
@@ -61,19 +62,11 @@ export default function EditPortfolioItemPage() {
             Edit Portfolio Project
           </CardTitle>
           <CardDescription>
-            Modify the details for your project: "{item.title}". This page is a placeholder.
+            Modify the details for your project: &quot;{item.title}&quot;.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* <PortfolioForm existingItem={item} /> */}
-          <p className="text-muted-foreground italic py-8 text-center">
-            The form to edit portfolio items (pre-filled with details for "{item.title}") will be displayed here.
-            <br />
-            (Feature under development)
-          </p>
-           <div className="flex justify-end">
-                <Button disabled>Save Changes (Coming Soon)</Button>
-           </div>
+          <PortfolioForm existingItem={item} />
         </CardContent>
       </Card>
     </div>
