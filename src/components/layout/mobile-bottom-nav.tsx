@@ -7,6 +7,7 @@ import { Home, LayoutGrid, Menu as MenuIcon, Briefcase, ShoppingCart } from 'luc
 import { cn } from '@/lib/utils';
 import { useUI } from '@/contexts/ui-context';
 import { motion } from 'framer-motion';
+import * as React from 'react';
 
 const navItems = [
   { href: '/client/dashboard', label: 'Home', icon: Home },
@@ -17,8 +18,20 @@ const navItems = [
 
 export function MobileBottomNav() {
   const pathname = usePathname();
-  const { toggleMobileMenu } = useUI();
-  const mockCartItemCount = 3;
+  const { toggleMobileMenu, isLoggedIn } = useUI();
+  const [cartItemCount, setCartItemCount] = React.useState(0);
+
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      import('@/lib/cart-db').then(mod => {
+        mod.getCartByUser('client001').then(items => {
+          setCartItemCount(items?.length ?? 0);
+        }).catch(() => setCartItemCount(0));
+      });
+    } else {
+      setCartItemCount(0);
+    }
+  }, [isLoggedIn]);
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
@@ -54,9 +67,9 @@ export function MobileBottomNav() {
                   />
                 )}
                 <item.icon className={cn('h-5 w-5 mb-0.5', active ? 'text-primary' : '')} />
-                {item.href === '/cart' && mockCartItemCount > 0 && (
+                {item.href === '/cart' && cartItemCount > 0 && (
                   <span className="absolute -top-1 -right-3 bg-danger text-white text-[9px] font-bold rounded-full h-3.5 w-3.5 flex items-center justify-center">
-                    {mockCartItemCount}
+                    {cartItemCount}
                   </span>
                 )}
                 <span className={cn('text-[10px] mt-0.5', active && 'font-semibold')}>{item.label}</span>

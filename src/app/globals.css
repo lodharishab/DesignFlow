@@ -169,4 +169,48 @@
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(79, 70, 229, 0.3), rgba(124, 58, 237, 0.3), transparent);
   }
+
+  /* Skip-to-main link for accessibility */
+  .skip-to-main {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    z-index: 9999;
+  }
+  .skip-to-main:focus {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    width: auto;
+    height: auto;
+    padding: 0.75rem 1.5rem;
+    background: hsl(var(--primary));
+    color: white;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    text-decoration: none;
+  }
+}
+
+/* ========== Reduced Motion Support ========== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .blob,
+  .shimmer,
+  .gradient-border::before {
+    animation: none !important;
+  }
 }

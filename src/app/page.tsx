@@ -80,6 +80,7 @@ export default function HomePage() {
       <Navbar />
       <CategoriesNavbar />
       <main className="flex-grow">
+        <div id="main-content" />
 
         {/* ===== HERO SECTION — Split layout with asymmetric grid ===== */}
         <section className="relative overflow-hidden min-h-[90vh] flex items-center">
@@ -88,12 +89,12 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-grid opacity-20" />
           <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/[0.03] to-transparent" />
           <motion.div
-            className="absolute top-20 right-[10%] w-[500px] h-[500px] bg-primary/8 rounded-full blur-[100px]"
+            className="absolute top-20 right-[10%] w-[500px] h-[500px] bg-primary/8 rounded-full blur-[100px] will-change-transform"
             animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
-            className="absolute bottom-0 left-[5%] w-[300px] h-[300px] bg-secondary/8 rounded-full blur-[80px]"
+            className="absolute bottom-0 left-[5%] w-[300px] h-[300px] bg-secondary/8 rounded-full blur-[80px] will-change-transform"
             animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.6, 0.3] }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -206,8 +207,10 @@ export default function HomePage() {
                     >
                       <Image
                         src="https://placehold.co/800x600.png"
-                        alt="Featured design work"
+                        alt="Featured design work showing premium logo mockup"
                         fill
+                        priority
+                        sizes="(max-width: 1024px) 58vw, 35vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
                         data-ai-hint="logo design mockup premium"
                       />
@@ -224,8 +227,10 @@ export default function HomePage() {
                     >
                       <Image
                         src="https://placehold.co/500x600.png"
-                        alt="Brand identity work"
+                        alt="Brand identity design with vibrant color palette"
                         fill
+                        priority
+                        sizes="(max-width: 1024px) 42vw, 25vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
                         data-ai-hint="brand identity colorful"
                       />
@@ -242,8 +247,9 @@ export default function HomePage() {
                     >
                       <Image
                         src="https://placehold.co/600x300.png"
-                        alt="UI/UX design"
+                        alt="Modern UI/UX dashboard design"
                         fill
+                        sizes="(max-width: 1024px) 42vw, 25vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
                         data-ai-hint="ui design dashboard"
                       />
@@ -260,8 +266,9 @@ export default function HomePage() {
                     >
                       <Image
                         src="https://placehold.co/400x500.png"
-                        alt="Packaging design"
+                        alt="Creative packaging and product design"
                         fill
+                        sizes="(max-width: 1024px) 33vw, 20vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
                         data-ai-hint="packaging product design"
                       />

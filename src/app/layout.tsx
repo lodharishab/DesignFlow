@@ -1,5 +1,5 @@
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Oswald, Onest } from 'next/font/google';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,17 @@ const onest = Onest({
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || `https://${process.env.REPLIT_DEV_DOMAIN || 'localhost:5000'}`;
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A0A0F' },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -77,6 +88,9 @@ export default function RootLayout({
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col bg-background text-foreground pb-16 md:pb-0" suppressHydrationWarning>
+        <a href="#main-content" className="skip-to-main">
+          Skip to main content
+        </a>
         <Providers>
           {children}
           <ClientOnly><MobileBottomNav /></ClientOnly>

@@ -10,6 +10,7 @@ import { CalendarDays, UserCircle, Tag, ChevronLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import DOMPurify from 'isomorphic-dompurify';
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -117,7 +118,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
             <div
               className="prose dark:prose-invert max-w-none text-foreground prose-headings:font-headline prose-headings:text-primary prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-foreground"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
             />
 
             {post.tags && post.tags.length > 0 && (
