@@ -69,8 +69,9 @@ function LeaveReviewContent() {
         });
       } else {
         toast({
-          title: "Review Submitted!",
-          description: "Thank you for your feedback. It has been shared with the admin team.",
+          title: "Review Submitted",
+          description: "Thank you for your feedback, but it could not be saved to the database.",
+          variant: "destructive",
         });
       }
       router.push(`/client/orders/${orderId}`);

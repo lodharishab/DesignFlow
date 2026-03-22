@@ -89,13 +89,14 @@ export function ServiceDetailClientContent({ service }: ServiceDetailClientConte
           title: "Added to Cart",
           description: `${service.name} - ${tier.name} tier has been added to your cart.`,
         });
+        router.push('/cart');
       } else {
         toast({
-          title: "Added to Cart",
-          description: `${service.name} - ${tier.name} tier added to your cart.`,
+          title: "Could Not Add to Cart",
+          description: "The item could not be saved. The database may be unavailable.",
+          variant: "destructive",
         });
       }
-      router.push('/cart');
     } catch (error) {
       console.error("Error adding to cart:", error);
       toast({
