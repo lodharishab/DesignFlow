@@ -41,12 +41,14 @@ export function UIProvider({ children }: { children: ReactNode }) {
   const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
   const toggleAiChat = () => setIsAiChatOpen(prev => !prev);
 
+  const validRoles: UserRole[] = ['client', 'designer', 'admin', 'super_admin'];
+
   // Restore auth state from localStorage on mount
   useEffect(() => {
     try {
       const storedLoggedIn = localStorage.getItem('df_isLoggedIn');
       const storedRole = localStorage.getItem('df_userRole');
-      if (storedLoggedIn === 'true' && storedRole) {
+      if (storedLoggedIn === 'true' && storedRole && validRoles.includes(storedRole as UserRole)) {
         setIsLoggedIn(true);
         setUserRole(storedRole as UserRole);
       }
