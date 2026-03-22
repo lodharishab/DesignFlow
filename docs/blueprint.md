@@ -1,4 +1,4 @@
-# **App Name**: DesignFlow
+# **App Name**: HYPE
 
 ## Core Features:
 

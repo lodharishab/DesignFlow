@@ -1,5 +1,5 @@
 
-# DesignFlow Project - Future Enhancements & Important TODOs
+# HYPE Project - Future Enhancements & Important TODOs
 
 **Last Updated:** February 27, 2026
 

@@ -1,4 +1,4 @@
-# DesignFlow
+# HYPE
 
 A Next.js marketplace application for expert design services. Connects clients with designers for logo design, UI/UX, print design, illustration, and more.
 

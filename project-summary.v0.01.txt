@@ -1,7 +1,7 @@
 
-# DesignFlow - Project Overview, Pages, and Features (v0.01)
+# HYPE - Project Overview, Pages, and Features (v0.01)
 
-This document provides a summary of the initial setup for the DesignFlow project.
+This document provides a summary of the initial setup for the HYPE project.
 
 ## I. Core Structure
 

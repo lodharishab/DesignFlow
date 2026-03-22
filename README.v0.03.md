@@ -1,7 +1,7 @@
 
-# DesignFlow - Creative Services Marketplace (v0.03)
+# HYPE - Creative Services Marketplace (v0.03)
 
-This is a Next.js project for DesignFlow, a marketplace connecting clients with expert designers, primarily focused on the Indian market.
+This is a Next.js project for HYPE, a marketplace connecting clients with expert designers, primarily focused on the Indian market.
 
 ## Project Progress & Features Checklist (as of v0.03)
 

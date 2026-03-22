@@ -1,13 +1,13 @@
 
-# DesignFlow - Project Overview, Pages, and Features (v0.05)
+# HYPE - Project Overview, Pages, and Features (v0.05)
 
 **Last Updated:** February 27, 2026
 
-This document provides a comprehensive summary of the DesignFlow Creative Services Marketplace project, detailing its structure, pages, and key features as currently implemented in the prototype.
+This document provides a comprehensive summary of the HYPE Creative Services Marketplace project, detailing its structure, pages, and key features as currently implemented in the prototype.
 
 ## Platform
 
-DesignFlow is hosted on Replit. It uses Replit's built-in PostgreSQL database and Replit AI Integrations for OpenAI access.
+HYPE is hosted on Replit. It uses Replit's built-in PostgreSQL database and Replit AI Integrations for OpenAI access.
 
 ## I. Core Structure & Public Pages
 

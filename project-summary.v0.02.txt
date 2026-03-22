@@ -1,5 +1,5 @@
 
-# DesignFlow - Project Overview, Pages, and Features (v0.02)
+# HYPE - Project Overview, Pages, and Features (v0.02)
 
 This document summarizes the features and pages implemented up to version 0.02.
 

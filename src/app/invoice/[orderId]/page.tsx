@@ -70,7 +70,6 @@ function InvoiceContent() {
           <div className="text-left md:text-right">
             <h2 className="font-semibold text-lg">Billed To:</h2>
             <p className="text-muted-foreground">{order.clientName}</p>
-            <p className="text-muted-foreground">client.email@example.com</p>
              <div className="mt-2 flex items-center gap-1 text-green-600">
                 <CheckCircle className="h-5 w-5" />
                 <span className="font-semibold">Paid</span>

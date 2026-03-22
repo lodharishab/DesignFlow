@@ -1,5 +1,5 @@
 
-# DesignFlow - Project Overview, Pages, and Features (v0.03)
+# HYPE - Project Overview, Pages, and Features (v0.03)
 
 This document summarizes the features implemented up to version 0.03, focusing on authentication and the initial dashboard structures.
 
