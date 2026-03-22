@@ -63,8 +63,8 @@ const usersData: (typeof schema.users.$inferInsert)[] = [
   { id: 'des005', name: 'Sunita Reddy', email: 'sunita.reddy@example.in', roles: ['Designer'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian woman', joinDate: d(2022,2,18), lastLogin: d(2024,4,28), status: 'Active' },
   { id: 'des006', name: 'Arjun Mehta', email: 'arjun.mehta@example.in', roles: ['Designer'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'indian man', joinDate: d(2021,11,30), lastLogin: d(2024,5,1), status: 'Active' },
   // Admin/staff user for audit logs
-  { id: 'admin001', name: 'Admin User', email: 'admin@designflow.com', roles: ['Admin'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'admin', joinDate: d(2022,0,1), lastLogin: d(2024,5,4), status: 'Active', staffRole: 'Admin' },
-  { id: 'admin002', name: 'Super Admin', email: 'super.admin@designflow.com', roles: ['Super Admin'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'admin', joinDate: d(2022,0,1), lastLogin: d(2024,5,4), status: 'Active', staffRole: 'Super Admin' },
+  { id: 'admin001', name: 'Admin User', email: 'admin@designhype.in', roles: ['Admin'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'admin', joinDate: d(2022,0,1), lastLogin: d(2024,5,4), status: 'Active', staffRole: 'Admin' },
+  { id: 'admin002', name: 'Super Admin', email: 'super.admin@designhype.in', roles: ['Super Admin'], avatarUrl: 'https://placehold.co/40x40.png', avatarHint: 'admin', joinDate: d(2022,0,1), lastLogin: d(2024,5,4), status: 'Active', staffRole: 'Super Admin' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -315,8 +315,8 @@ const notificationsData: (typeof schema.notifications.$inferInsert)[] = [
 const siteSettingsData: (typeof schema.siteSettings.$inferInsert)[] = [
   {
     id: 'default',
-    platformName: 'DesignFlow',
-    contactEmail: 'admin@designflow.com',
+    platformName: 'HYPE',
+    contactEmail: 'admin@designhype.in',
     defaultCurrency: 'INR',
     allowClientRegistrations: true,
     allowDesignerRegistrations: true,
@@ -333,7 +333,7 @@ const siteSettingsData: (typeof schema.siteSettings.$inferInsert)[] = [
     designerProPlanPrice: '3999',
     enableFreeTrial: true,
     trialDurationDays: 14,
-    adminNotificationEmail: 'notifications@designflow.com',
+    adminNotificationEmail: 'notifications@designhype.in',
   },
 ];
 
@@ -528,9 +528,9 @@ async function seed() {
     }],
     ['Blog Posts (re-seed)', async () => {
       await db.insert(schema.blogPosts).values([
-        { id: 'blog_seed_1', title: '5 Design Trends to Watch in 2025', excerpt: 'Explore emerging design trends.', content: 'From AI-assisted design to bold typography...', authorName: 'DesignFlow Team', publishDate: daysAgo(10), status: 'Published', category: 'Design Trends', categorySlug: 'design-trends', tags: ['design trends', '2025', 'UI/UX'], views: 1250, likes: 89, comments: 12 },
+        { id: 'blog_seed_1', title: '5 Design Trends to Watch in 2025', excerpt: 'Explore emerging design trends.', content: 'From AI-assisted design to bold typography...', authorName: 'HYPE Team', publishDate: daysAgo(10), status: 'Published', category: 'Design Trends', categorySlug: 'design-trends', tags: ['design trends', '2025', 'UI/UX'], views: 1250, likes: 89, comments: 12 },
         { id: 'blog_seed_2', title: 'How to Write a Perfect Design Brief', excerpt: 'A comprehensive guide to writing effective design briefs.', content: 'A great design project starts with a great brief...', authorName: 'Aditi Singh', publishDate: daysAgo(20), status: 'Published', category: 'Guides', categorySlug: 'guides', tags: ['design brief', 'tips', 'client guide'], views: 980, likes: 67, comments: 8 },
-        { id: 'blog_seed_3', title: 'The Rise of Indian Design Studios', excerpt: 'Indian design studios are gaining global recognition.', content: 'From Bangalore to Mumbai, Indian design studios...', authorName: 'DesignFlow Team', publishDate: daysAgo(30), status: 'Published', category: 'Industry News', categorySlug: 'industry-news', tags: ['Indian design', 'industry', 'studios'], views: 750, likes: 45, comments: 5 },
+        { id: 'blog_seed_3', title: 'The Rise of Indian Design Studios', excerpt: 'Indian design studios are gaining global recognition.', content: 'From Bangalore to Mumbai, Indian design studios...', authorName: 'HYPE Team', publishDate: daysAgo(30), status: 'Published', category: 'Industry News', categorySlug: 'industry-news', tags: ['Indian design', 'industry', 'studios'], views: 750, likes: 45, comments: 5 },
       ]).onConflictDoNothing();
     }],
   ];

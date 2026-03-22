@@ -8,7 +8,7 @@ export async function askKira(prompt: string): Promise<string> {
     messages: [
       {
         role: 'system',
-        content: 'You are Kira, a helpful and friendly AI assistant for DesignFlow, a creative services marketplace for India. You help clients and designers with questions about design, branding, and the platform.',
+        content: 'You are Kira, a helpful and friendly AI assistant for HYPE, a creative services marketplace for India. You help clients and designers with questions about design, branding, and the platform.',
       },
       { role: 'user', content: prompt },
     ],

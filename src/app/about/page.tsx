@@ -10,11 +10,11 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'About DesignFlow - Our Story, Mission, and Team',
-  description: 'Learn more about DesignFlow, the creative services marketplace connecting clients with expert designers in India. Discover our mission, vision, and the team behind our platform.',
+  title: 'About HYPE - Our Story, Mission, and Team',
+  description: 'Learn more about HYPE, the creative services marketplace connecting clients with expert designers in India. Discover our mission, vision, and the team behind our platform.',
   openGraph: {
-    title: 'About DesignFlow | Our Mission & Vision',
-    description: 'Discover DesignFlow, the platform revolutionizing creative collaboration in India.',
+    title: 'About HYPE | Our Mission & Vision',
+    description: 'Discover HYPE, the platform revolutionizing creative collaboration in India.',
   },
 };
 
@@ -29,7 +29,7 @@ export default function AboutUsPage() {
           <div className="container mx-auto px-5 text-center">
             <Brush className="mx-auto h-16 w-16 mb-6 opacity-80" />
             <h1 className="text-4xl md:text-6xl font-bold font-headline">
-              About DesignFlow
+              About HYPE
             </h1>
             <p className="text-lg md:text-xl mt-4 max-w-3xl mx-auto opacity-90">
               Connecting creativity with opportunity. We're passionate about making great design accessible and empowering designers across India.
@@ -47,10 +47,10 @@ export default function AboutUsPage() {
                   Our Story
                 </h2>
                 <p className="text-lg text-muted-foreground mb-4">
-                  DesignFlow was born from a simple idea: to bridge the gap between talented Indian designers and clients seeking high-quality, reliable creative services. We saw the immense potential within the Indian design community and wanted to create a platform that nurtures this talent and makes it easily accessible.
+                  HYPE was born from a simple idea: to bridge the gap between talented Indian designers and clients seeking high-quality, reliable creative services. We saw the immense potential within the Indian design community and wanted to create a platform that nurtures this talent and makes it easily accessible.
                 </p>
                 <p className="text-muted-foreground">
-                  Our journey began with a commitment to transparency, efficiency, and quality. We envisioned a marketplace where finding the right designer is straightforward, project collaboration is seamless, and pricing is clear from the outset. Today, DesignFlow stands as a testament to that vision, empowering businesses and designers alike.
+                  Our journey began with a commitment to transparency, efficiency, and quality. We envisioned a marketplace where finding the right designer is straightforward, project collaboration is seamless, and pricing is clear from the outset. Today, HYPE stands as a testament to that vision, empowering businesses and designers alike.
                 </p>
               </div>
               <div className="relative aspect-square rounded-lg overflow-hidden shadow-xl">
@@ -133,10 +133,10 @@ export default function AboutUsPage() {
           <div className="container mx-auto px-5 text-center">
             <Lightbulb className="mx-auto h-12 w-12 mb-4 opacity-80" />
             <h2 className="text-3xl md:text-4xl font-bold font-headline mb-6">
-              Ready to Join DesignFlow?
+              Ready to Join HYPE?
             </h2>
             <p className="text-lg opacity-90 mb-8 max-w-xl mx-auto">
-              Whether you're a client looking for exceptional design or a talented designer seeking opportunities, DesignFlow is the place for you.
+              Whether you're a client looking for exceptional design or a talented designer seeking opportunities, HYPE is the place for you.
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Button size="lg" variant="secondary" asChild className="bg-primary-foreground text-primary hover:bg-primary-foreground/90">

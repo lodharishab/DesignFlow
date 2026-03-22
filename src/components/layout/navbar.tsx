@@ -76,7 +76,7 @@ export function Navbar() {
             <Brush className="h-6 w-6 text-primary" />
           </motion.div>
           <span className="font-bold font-headline text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            DesignFlow
+            HYPE
           </span>
         </NavbarBrand>
       </NavbarContent>
@@ -198,7 +198,7 @@ export function Navbar() {
                 <DropdownSection showDivider>
                   <DropdownItem key="profile" className="h-14 gap-2" textValue="Client User">
                     <p className="font-semibold">Client User</p>
-                    <p className="text-xs text-default-400">client@designflow.com</p>
+                    <p className="text-xs text-default-400">client@designhype.in</p>
                   </DropdownItem>
                 </DropdownSection>
                 <DropdownSection showDivider>

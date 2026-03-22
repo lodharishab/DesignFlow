@@ -36,10 +36,10 @@ export async function generateMetadata(
   const previousImages = (await parent).openGraph?.images || [];
 
   return {
-    title: `${item.title} - ${item.category} | DesignFlow Portfolio`,
+    title: `${item.title} - ${item.category} | HYPE Portfolio`,
     description: item.projectDescription.substring(0, 160),
     openGraph: {
-      title: `${item.title} | DesignFlow Portfolio`,
+      title: `${item.title} | HYPE Portfolio`,
       description: item.projectDescription.substring(0, 160),
       images: [
         {
@@ -57,7 +57,7 @@ export async function generateMetadata(
     },
     twitter: { // Add Twitter card data for better sharing
       card: 'summary_large_image',
-      title: `${item.title} | DesignFlow Portfolio`,
+      title: `${item.title} | HYPE Portfolio`,
       description: item.projectDescription.substring(0, 160),
       // images: [item.coverImageUrl], // Twitter often prefers its own image tag
     },

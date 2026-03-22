@@ -10,22 +10,22 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
-  title: 'FAQ - Frequently Asked Questions | DesignFlow',
-  description: 'Find answers to common questions about DesignFlow services, how it works for clients and designers, payments, and more.',
+  title: 'FAQ - Frequently Asked Questions | HYPE',
+  description: 'Find answers to common questions about HYPE services, how it works for clients and designers, payments, and more.',
   openGraph: {
-    title: 'FAQ | DesignFlow',
-    description: 'Get answers to your questions about DesignFlow.',
+    title: 'FAQ | HYPE',
+    description: 'Get answers to your questions about HYPE.',
   },
 };
 
 const generalFaqs = [
   {
-    question: 'What is DesignFlow?',
-    answer: 'DesignFlow is a creative services marketplace connecting clients with expert designers, primarily focused on the Indian market. We offer a streamlined process for various design needs with transparent pricing.',
+    question: 'What is HYPE?',
+    answer: 'HYPE is a creative services marketplace connecting clients with expert designers, primarily focused on the Indian market. We offer a streamlined process for various design needs with transparent pricing.',
   },
   {
-    question: 'How is DesignFlow different from other platforms?',
-    answer: 'DesignFlow emphasizes fixed-scope services, transparent pricing, and a curated community of designers to ensure quality and a smooth experience for both clients and designers.',
+    question: 'How is HYPE different from other platforms?',
+    answer: 'HYPE emphasizes fixed-scope services, transparent pricing, and a curated community of designers to ensure quality and a smooth experience for both clients and designers.',
   },
 ];
 
@@ -46,7 +46,7 @@ const clientFaqs = [
 
 const designerFaqs = [
   {
-    question: 'How can I join DesignFlow as a designer?',
+    question: 'How can I join HYPE as a designer?',
     answer: 'You can apply by signing up as a designer on our platform. We review applications to ensure a high standard of quality and professionalism.',
   },
   {
@@ -67,7 +67,7 @@ export default function FaqPage() {
             <HelpCircle className="mx-auto h-16 w-16 text-primary mb-4" />
             <CardTitle className="text-4xl font-bold font-headline">Frequently Asked Questions</CardTitle>
             <CardDescription className="text-lg text-muted-foreground mt-2">
-              Find answers to common questions about DesignFlow.
+              Find answers to common questions about HYPE.
             </CardDescription>
           </CardHeader>
           <CardContent className="max-w-3xl mx-auto">

@@ -9,7 +9,7 @@ export async function generateAnnouncement(request: AnnouncementRequest): Promis
     messages: [
       {
         role: 'system',
-        content: `You are a marketing and communications expert for a creative services marketplace called DesignFlow. Your task is to generate a user-facing announcement based on a given topic.
+        content: `You are a marketing and communications expert for a creative services marketplace called HYPE. Your task is to generate a user-facing announcement based on a given topic.
 
 The tone should be professional, clear, and slightly enthusiastic.
 

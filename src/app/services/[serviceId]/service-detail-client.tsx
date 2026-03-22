@@ -308,7 +308,7 @@ export function ServiceDetailClientContent({ service }: ServiceDetailClientConte
 
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle className="font-headline text-xl">Why Choose DesignFlow?</CardTitle>
+                <CardTitle className="font-headline text-xl">Why Choose HYPE?</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-muted-foreground">
                 <p className="flex items-start"><Check className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" /> Expert Designers</p>

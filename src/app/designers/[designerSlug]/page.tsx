@@ -36,10 +36,10 @@ export async function generateMetadata(
 
 
   return {
-    title: `${designer.name} - Creative Designer on DesignFlow`,
+    title: `${designer.name} - Creative Designer on HYPE`,
     description: description,
     openGraph: {
-      title: `${designer.name} | DesignFlow India`,
+      title: `${designer.name} | HYPE India`,
       description: description,
       images: [
         {
@@ -57,7 +57,7 @@ export async function generateMetadata(
     },
      twitter: {
       card: 'summary', 
-      title: `${designer.name} | DesignFlow India`,
+      title: `${designer.name} | HYPE India`,
       description: description,
     },
   };

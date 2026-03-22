@@ -7,8 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { FileText } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | DesignFlow',
-  description: 'DesignFlow terms of service — rules and conditions for using our platform.',
+  title: 'Terms of Service | HYPE',
+  description: 'HYPE terms of service — rules and conditions for using our platform.',
 };
 
 export default function TermsOfServicePage() {
@@ -27,11 +27,11 @@ export default function TermsOfServicePage() {
           </CardHeader>
           <CardContent className="prose dark:prose-invert max-w-none">
             <h2 className="font-headline text-xl">1. Introduction</h2>
-            <p>Welcome to DesignFlow! These terms and conditions outline the rules and regulations for the use of DesignFlow's Website, located at [Your Website URL].</p>
-            <p>By accessing this website we assume you accept these terms and conditions. Do not continue to use DesignFlow if you do not agree to take all of the terms and conditions stated on this page.</p>
+            <p>Welcome to HYPE! These terms and conditions outline the rules and regulations for the use of HYPE's Website, located at designhype.in.</p>
+            <p>By accessing this website we assume you accept these terms and conditions. Do not continue to use HYPE if you do not agree to take all of the terms and conditions stated on this page.</p>
 
             <h2 className="font-headline text-xl mt-6">2. Intellectual Property Rights</h2>
-            <p>Other than the content you own, under these Terms, DesignFlow and/or its licensors own all the intellectual property rights and materials contained in this Website. You are granted limited license only for purposes of viewing the material contained on this Website.</p>
+            <p>Other than the content you own, under these Terms, HYPE and/or its licensors own all the intellectual property rights and materials contained in this Website. You are granted limited license only for purposes of viewing the material contained on this Website.</p>
             
             <h2 className="font-headline text-xl mt-6">3. User Accounts</h2>
             <p>When you create an account with us, you must provide us information that is accurate, complete, and current at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our Service.</p>
@@ -42,7 +42,7 @@ export default function TermsOfServicePage() {
 
 
             <h2 className="font-headline text-xl mt-6">5. Limitations of Liability</h2>
-            <p>In no event shall DesignFlow, nor any of its officers, directors and employees, be held liable for anything arising out of or in any way connected with your use of this Website whether such liability is under contract. DesignFlow, including its officers, directors and employees shall not be held liable for any indirect, consequential or special liability arising out of or in any way related to your use of this Website.</p>
+            <p>In no event shall HYPE, nor any of its officers, directors and employees, be held liable for anything arising out of or in any way connected with your use of this Website whether such liability is under contract. HYPE, including its officers, directors and employees shall not be held liable for any indirect, consequential or special liability arising out of or in any way related to your use of this Website.</p>
 
             <h2 className="font-headline text-xl mt-6">6. Governing Law</h2>
             <p>These Terms will be governed by and interpreted in accordance with the laws of India, and you submit to the non-exclusive jurisdiction of the state and federal courts located in India for the resolution of any disputes.</p>

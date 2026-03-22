@@ -11,7 +11,7 @@ export async function generateBrandSuggestions(request: BrandSuggestionsRequest)
     messages: [
       {
         role: 'system',
-        content: `You are a world-class branding expert for a creative services marketplace called DesignFlow. Your task is to generate branding suggestions for a client based on their profile.
+        content: `You are a world-class branding expert for a creative services marketplace called HYPE. Your task is to generate branding suggestions for a client based on their profile.
 
 Based on the client profile, generate:
 1. A list of 3-4 suitable design styles.

@@ -12,7 +12,7 @@ export type { SiteSettings, AuditLog };
 function rowToSettings(row: typeof siteSettings.$inferSelect): SiteSettings {
   return {
     id: row.id,
-    platformName: row.platformName || 'DesignFlow',
+    platformName: row.platformName || 'HYPE',
     contactEmail: row.contactEmail || undefined,
     defaultCurrency: row.defaultCurrency || 'INR',
     allowClientRegistrations: row.allowClientRegistrations ?? true,
@@ -59,7 +59,7 @@ const DEFAULT_SETTINGS_ID = 'default';
 export async function getSiteSettings(): Promise<SiteSettings> {
   const defaults: SiteSettings = {
     id: DEFAULT_SETTINGS_ID,
-    platformName: 'DesignFlow',
+    platformName: 'HYPE',
     defaultCurrency: 'INR',
     allowClientRegistrations: true,
     allowDesignerRegistrations: true,

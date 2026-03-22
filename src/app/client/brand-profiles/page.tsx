@@ -91,7 +91,7 @@ function ShareBrandKitDialog({ kit }: { kit: BrandProfileFormData }) {
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Share with a Designer on DesignFlow</Label>
+          <Label>Share with a Designer on HYPE</Label>
           <div className="flex gap-2">
             <Input placeholder="Enter designer's username or email..." disabled />
             <Button disabled><Send className="h-4 w-4" /></Button>

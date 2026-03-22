@@ -9,8 +9,8 @@ import { Newspaper } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'DesignFlow Blog - Insights, Trends & Tips',
-  description: 'Stay updated with the latest design trends, tips for clients and designers, and news from DesignFlow India.',
+  title: 'HYPE Blog - Insights, Trends & Tips',
+  description: 'Stay updated with the latest design trends, tips for clients and designers, and news from HYPE India.',
 };
 
 // This page will be server-rendered or statically generated
@@ -24,7 +24,7 @@ export default async function BlogListingPage() {
       <main className="flex-grow container mx-auto py-12 px-5">
         <div className="text-center mb-12">
           <Newspaper className="mx-auto h-16 w-16 text-primary mb-4" />
-          <h1 className="text-4xl md:text-5xl font-bold font-headline">DesignFlow Blog</h1>
+          <h1 className="text-4xl md:text-5xl font-bold font-headline">HYPE Blog</h1>
           <p className="text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
             Insights, trends, and stories from the world of design, tailored for the Indian creative community.
           </p>

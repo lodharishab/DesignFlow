@@ -122,7 +122,7 @@ export async function generateMetadata(
     title: `${service.name} - ${service.category}`,
     description: service.generalDescription,
     openGraph: {
-      title: `${service.name} | DesignFlow`,
+      title: `${service.name} | HYPE`,
       description: service.generalDescription,
       images: [
         {
@@ -137,7 +137,7 @@ export async function generateMetadata(
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${service.name} | DesignFlow`,
+      title: `${service.name} | HYPE`,
       description: service.generalDescription,
     },
   };

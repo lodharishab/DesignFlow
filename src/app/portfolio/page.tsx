@@ -8,10 +8,10 @@ import { PortfolioPageContent } from './portfolio-page-client'; // Import the ne
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Design Portfolio | DesignFlow',
-  description: 'Explore a curated collection of stunning design projects by talented designers on DesignFlow. Get inspired for your next creative endeavor.',
+  title: 'Design Portfolio | HYPE',
+  description: 'Explore a curated collection of stunning design projects by talented designers on HYPE. Get inspired for your next creative endeavor.',
   openGraph: {
-    title: 'Design Portfolio Showcase | DesignFlow',
+    title: 'Design Portfolio Showcase | HYPE',
     description: 'Discover exceptional design work across various categories, from branding to UI/UX, crafted by our expert designers.',
   },
 };

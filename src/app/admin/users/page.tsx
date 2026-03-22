@@ -210,7 +210,7 @@ export default function UserManagementPage(): ReactElement {
     const newUser: User = {
       id: `usr${Date.now().toString().slice(-3)}`,
       name: newUserData.name,
-      email: newUserData.email || `${newUserData.mobileNumber}@designflow.local`, // Fallback email
+      email: newUserData.email || `${newUserData.mobileNumber}@designhype.local`, // Fallback email
       mobileNumber: newUserData.mobileNumber,
       roles: newUserData.roles,
       avatarUrl: 'https://placehold.co/40x40.png',

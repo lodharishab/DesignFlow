@@ -9,7 +9,7 @@ export async function generateBlogPostIdeas(request: BlogPostRequest): Promise<B
     messages: [
       {
         role: 'system',
-        content: `You are a content marketing expert for a creative services marketplace called DesignFlow. Your task is to generate a blog post title and a short excerpt/summary based on a given topic.
+        content: `You are a content marketing expert for a creative services marketplace called HYPE. Your task is to generate a blog post title and a short excerpt/summary based on a given topic.
 
 The tone should be professional, insightful, and engaging for an audience of clients and designers.
 

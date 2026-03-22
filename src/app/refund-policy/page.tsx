@@ -8,10 +8,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Refund Policy | DesignFlow',
-  description: 'Understand DesignFlow\'s refund policy for creative services. Learn about eligibility, processes, and our commitment to satisfaction.',
+  title: 'Refund Policy | HYPE',
+  description: 'Understand HYPE\'s refund policy for creative services. Learn about eligibility, processes, and our commitment to satisfaction.',
   openGraph: {
-    title: 'Refund Policy | DesignFlow',
+    title: 'Refund Policy | HYPE',
     description: 'Details on our refund and service guarantee.',
   },
 };
@@ -32,7 +32,7 @@ export default function RefundPolicyPage() {
           </CardHeader>
           <CardContent className="prose dark:prose-invert max-w-none">
             <h2 className="font-headline text-xl">1. Our Commitment</h2>
-            <p>At DesignFlow, we strive for client satisfaction and high-quality work from our designers. This policy outlines the conditions under which refunds may be considered.</p>
+            <p>At HYPE, we strive for client satisfaction and high-quality work from our designers. This policy outlines the conditions under which refunds may be considered.</p>
             
             <h2 className="font-headline text-xl mt-6">2. Eligibility for a Refund</h2>
             <p>Refunds are handled on a case-by-case basis and are generally considered under the following circumstances (this is a placeholder, replace with your actual policy):</p>

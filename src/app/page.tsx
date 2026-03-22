@@ -457,9 +457,9 @@ export default function HomePage() {
           <div className="container mx-auto px-5 relative z-10">
             <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-6">
               <MotionWrapper>
-                <Chip size="sm" variant="flat" color="secondary" className="mb-4">Why DesignFlow</Chip>
+                <Chip size="sm" variant="flat" color="secondary" className="mb-4">Why HYPE</Chip>
                 <h2 className="text-3xl md:text-4xl font-bold font-headline mb-3">
-                  The DesignFlow{' '}
+                  The HYPE{' '}
                   <span className="text-secondary">Advantage</span>
                 </h2>
                 <p className="text-default-500 max-w-md">
@@ -650,7 +650,7 @@ export default function HomePage() {
                     Across India
                   </h2>
                   <p className="text-default-500 leading-relaxed mb-8">
-                    See what our clients have to say about their experience with DesignFlow.
+                    See what our clients have to say about their experience with HYPE.
                   </p>
                 </MotionWrapper>
 
@@ -821,7 +821,7 @@ export default function HomePage() {
                         className="bg-white text-secondary font-bold px-8 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all w-fit"
                         startContent={<UserPlus className="h-5 w-5" />}
                       >
-                        Join DesignFlow
+                        Join HYPE
                       </Button>
                     </div>
                   </CardBody>

@@ -225,7 +225,7 @@ function LoginPageContent() {
       
       <CardFooter className="flex flex-col space-y-2 pt-0 -mt-2">
          <p className="text-sm text-muted-foreground">
-          New to DesignFlow?{" "}
+          New to HYPE?{" "}
           <Link href={signupHref} className="font-medium text-primary hover:underline">
             Create an account
           </Link>

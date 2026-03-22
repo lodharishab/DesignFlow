@@ -33,10 +33,10 @@ const ITEMS_PER_PAGE = 6;
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Discover Design Services | DesignFlow',
-  description: 'Explore a wide range of creative design services. Find expert designers for logos, UI/UX, branding, and more on DesignFlow.',
+  title: 'Discover Design Services | HYPE',
+  description: 'Explore a wide range of creative design services. Find expert designers for logos, UI/UX, branding, and more on HYPE.',
   openGraph: {
-    title: 'Discover Design Services | DesignFlow',
+    title: 'Discover Design Services | HYPE',
     description: 'Browse our comprehensive catalog of design services, from logo creation to web UI/UX, perfect for businesses and startups.',
   },
 };

@@ -120,8 +120,8 @@ function AuditLogsSection() {
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>({
     id: 'default',
-    platformName: "DesignFlow",
-    contactEmail: "admin@designflow.com",
+    platformName: "HYPE",
+    contactEmail: "admin@designhype.in",
     defaultCurrency: "INR",
     allowClientRegistrations: true,
     allowDesignerRegistrations: true,
@@ -138,7 +138,7 @@ export default function AdminSettingsPage() {
     designerProPlanPrice: "3999",
     enableFreeTrial: true,
     trialDurationDays: 14,
-    adminNotificationEmail: "notifications@designflow.com",
+    adminNotificationEmail: "notifications@designhype.in",
     stripeApiKey: "",
     paypalClientId: "",
   });

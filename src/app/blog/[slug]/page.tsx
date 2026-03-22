@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
     };
   }
   return {
-    title: `${post.title} | DesignFlow Blog`,
+    title: `${post.title} | HYPE Blog`,
     description: post.excerpt,
     openGraph: {
         title: post.title,

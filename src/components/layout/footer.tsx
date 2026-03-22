@@ -108,7 +108,7 @@ export function Footer() {
                   <Brush className="h-7 w-7 text-primary" />
                 </motion.div>
                 <span className="font-bold font-headline text-xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  DesignFlow
+                  HYPE
                 </span>
               </Link>
               <p className="text-sm text-default-500 leading-relaxed max-w-[280px]">
@@ -116,7 +116,7 @@ export function Footer() {
               </p>
               <div className="flex items-center gap-2 text-sm text-default-400">
                 <Mail className="h-4 w-4" />
-                <span>hello@designflow.in</span>
+                <span>hello@designhype.in</span>
               </div>
             </motion.div>
 
@@ -139,7 +139,7 @@ export function Footer() {
       <div className="border-t border-divider/30 bg-content1/50">
         <div className="container mx-auto px-5 py-5">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-default-400">
-            <p>&copy; {new Date().getFullYear()} DesignFlow. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} HYPE. All rights reserved.</p>
             <p>
               Built with <span role="img" aria-label="love">❤️</span> by RISHAB LODHA
             </p>

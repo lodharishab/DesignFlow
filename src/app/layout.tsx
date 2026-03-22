@@ -23,7 +23,7 @@ const onest = Onest({
   variable: '--font-onest',
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || `https://${process.env.REPLIT_DEV_DOMAIN || 'localhost:5000'}`;
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || `https://${process.env.REPLIT_DEV_DOMAIN || 'designhype.in'}`;
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -39,21 +39,21 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'DesignFlow - Creative Services Marketplace for India',
-    template: '%s | DesignFlow India',
+    default: 'HYPE - Creative Services Marketplace for India',
+    template: '%s | HYPE India',
   },
-  description: 'Connect with expert Indian designers for logos, UI/UX, branding, and more. Transparent pricing and streamlined process on DesignFlow India.',
+  description: 'Connect with expert Indian designers for logos, UI/UX, branding, and more. Transparent pricing and streamlined process on HYPE India.',
   openGraph: {
-    title: 'DesignFlow - Creative Services Marketplace for India',
+    title: 'HYPE - Creative Services Marketplace for India',
     description: 'Your Vision, Our Expertise. Simplified for the Indian market.',
     url: SITE_URL,
-    siteName: 'DesignFlow India',
+    siteName: 'HYPE India',
     images: [
       {
         url: `${SITE_URL}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: 'DesignFlow India - Creative Services Marketplace',
+        alt: 'HYPE India - Creative Services Marketplace',
       },
     ],
     locale: 'en_IN',
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DesignFlow - Creative Services Marketplace for India',
+    title: 'HYPE - Creative Services Marketplace for India',
     description: 'Expert Indian designers for logos, UI/UX, branding, and more.',
   },
   robots: {

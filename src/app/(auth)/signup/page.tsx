@@ -110,7 +110,7 @@ function ClientSignupPageContent() {
         </CardTitle>
         <CardDescription>
            {step === 'details' 
-            ? 'Join DesignFlow to connect with expert designers.'
+            ? 'Join HYPE to connect with expert designers.'
             : 'Enter the 6-digit OTP sent to your phone to complete signup.'}
         </CardDescription>
       </CardHeader>

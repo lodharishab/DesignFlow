@@ -11,14 +11,14 @@ export default function DesignerPendingApprovalPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-secondary to-background p-4">
       <Link href="/" className="mb-8 flex items-center space-x-2">
         <Brush className="h-8 w-8 text-primary" />
-        <span className="font-bold font-headline text-3xl">DesignFlow</span>
+        <span className="font-bold font-headline text-3xl">HYPE</span>
       </Link>
       <Card className="w-full max-w-lg shadow-xl">
         <CardHeader className="items-center text-center">
           <Hourglass className="h-16 w-16 text-primary mb-4" />
           <CardTitle className="font-headline text-2xl">Application Pending Review</CardTitle>
           <CardDescription className="mt-2">
-            Thank you for your interest in joining DesignFlow as a designer!
+            Thank you for your interest in joining HYPE as a designer!
             <br />
             Your application is currently under review by our admin team.
           </CardDescription>

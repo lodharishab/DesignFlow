@@ -7,8 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Shield } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | DesignFlow',
-  description: 'DesignFlow privacy policy — how we collect, use, and protect your data.',
+  title: 'Privacy Policy | HYPE',
+  description: 'HYPE privacy policy — how we collect, use, and protect your data.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -27,14 +27,14 @@ export default function PrivacyPolicyPage() {
           </CardHeader>
           <CardContent className="prose dark:prose-invert max-w-none">
             <h2 className="font-headline text-xl">1. Introduction</h2>
-            <p>DesignFlow ("us", "we", or "our") operates the [Your Website URL] website (the "Service").</p>
+            <p>HYPE ("us", "we", or "our") operates the designhype.in website (the "Service").</p>
             <p>This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data. We use your data to provide and improve the Service. By using the Service, you agree to the collection and use of information in accordance with this policy.</p>
 
             <h2 className="font-headline text-xl mt-6">2. Information Collection and Use</h2>
             <p>We collect several different types of information for various purposes to provide and improve our Service to you. This may include, but is not limited to, your name, email address, phone number, company information, payment details (processed via third-party gateways), and usage data.</p>
 
             <h2 className="font-headline text-xl mt-6">3. Use of Data</h2>
-            <p>DesignFlow uses the collected data for various purposes such as:</p>
+            <p>HYPE uses the collected data for various purposes such as:</p>
             <ul>
               <li>To provide and maintain our Service</li>
               <li>To notify you about changes to our Service</li>

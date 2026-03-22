@@ -126,7 +126,7 @@ export default function DesignerLayout({
         <SidebarHeader className="p-4">
            <Link href="/" className="flex items-center gap-2">
             <Brush className="w-7 h-7 text-primary" />
-            <span className="font-semibold font-headline text-xl">DesignFlow</span>
+            <span className="font-semibold font-headline text-xl">HYPE</span>
           </Link>
         </SidebarHeader>
         <SidebarContent>
@@ -252,7 +252,7 @@ export default function DesignerLayout({
                        {/* Replace with actual designer data if available */}
                       <p className="text-sm font-medium leading-none">Designer User</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        designer@designflow.com
+                        designer@designhype.in
                       </p>
                     </div>
                   </DropdownMenuLabel>

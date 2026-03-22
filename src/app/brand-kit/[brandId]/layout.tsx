@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Brand Kit | DesignFlow',
+  title: 'Brand Kit | HYPE',
   description: 'View and manage your brand kit — logos, colors, fonts, and brand guidelines.',
 };
 

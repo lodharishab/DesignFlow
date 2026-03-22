@@ -9,10 +9,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'How DesignFlow Works - Simple Steps for Clients & Designers',
-  description: 'Learn how DesignFlow makes it easy to get great design work done. Step-by-step guides for clients and designers in India.',
+  title: 'How HYPE Works - Simple Steps for Clients & Designers',
+  description: 'Learn how HYPE makes it easy to get great design work done. Step-by-step guides for clients and designers in India.',
   openGraph: {
-    title: 'How DesignFlow Works',
+    title: 'How HYPE Works',
     description: 'Your streamlined process for creative design services.',
   },
 };
@@ -54,7 +54,7 @@ const designerSteps = [
   {
     icon: UserPlus, 
     title: "1. Apply & Get Approved",
-    description: "Showcase your skills by applying to join DesignFlow. Our team reviews your portfolio and experience to ensure quality for our clients.",
+    description: "Showcase your skills by applying to join HYPE. Our team reviews your portfolio and experience to ensure quality for our clients.",
   },
   {
     icon: Bell, 
@@ -90,7 +90,7 @@ export default function HowItWorksPage() {
           <div className="container mx-auto px-5 text-center">
             <Lightbulb className="mx-auto h-16 w-16 mb-6 opacity-80" />
             <h1 className="text-4xl md:text-6xl font-bold font-headline">
-              How DesignFlow Works
+              How HYPE Works
             </h1>
             <p className="text-lg md:text-xl mt-4 max-w-3xl mx-auto opacity-90">
               A simple, transparent, and efficient process for getting high-quality design work done.

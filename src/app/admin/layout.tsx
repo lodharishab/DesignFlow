@@ -192,7 +192,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
         <SidebarHeader className="p-4">
           <Link href="/" className="flex items-center gap-2">
             <Brush className="w-7 h-7 text-primary" />
-            <span className="font-semibold font-headline text-xl">DesignFlow</span>
+            <span className="font-semibold font-headline text-xl">HYPE</span>
           </Link>
           {isSuperAdmin && (
             <Badge variant="destructive" className="mt-2 w-fit text-xs">Super Admin</Badge>
@@ -307,7 +307,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode; }) {
                         {isSuperAdmin && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Super</Badge>}
                       </div>
                       <p className="text-xs leading-none text-muted-foreground">
-                        {isSuperAdmin ? 'super.admin@designflow.com' : 'admin@designflow.com'}
+                        {isSuperAdmin ? 'super.admin@designhype.in' : 'admin@designhype.in'}
                       </p>
                     </div>
                   </DropdownMenuLabel>

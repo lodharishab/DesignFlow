@@ -59,7 +59,7 @@ export const designerProfiles = pgTable('designer_profiles', {
 /** Site settings — single-row configuration */
 export const siteSettings = pgTable('site_settings', {
   id: text('id').primaryKey().default('default'),
-  platformName: text('platform_name').default('DesignFlow'),
+  platformName: text('platform_name').default('HYPE'),
   contactEmail: text('contact_email'),
   defaultCurrency: text('default_currency').default('INR'),
   allowClientRegistrations: boolean('allow_client_registrations').default(true),

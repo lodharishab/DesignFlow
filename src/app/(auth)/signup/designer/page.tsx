@@ -244,7 +244,7 @@ export default function DesignerSignupPage() {
             {step === 'otp' && `Verify ${formData.phoneNumber}`}
         </CardTitle>
         <CardDescription>
-            {step === 'details' && "Offer your design services and skills on the DesignFlow platform."}
+            {step === 'details' && "Offer your design services and skills on the HYPE platform."}
             {step === 'services' && 'Choose the categories you specialize in.'}
             {step === 'portfolio' && 'Add links to your portfolio or upload your best work.'}
             {step === 'otp' && "Enter the 6-digit OTP sent to your phone to complete signup."}

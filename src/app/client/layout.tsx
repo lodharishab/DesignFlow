@@ -113,7 +113,7 @@ export default function ClientLayout({
         <SidebarHeader className="p-4">
            <Link href="/" className="flex items-center gap-2">
             <Brush className="w-7 h-7 text-primary" />
-            <span className="font-semibold font-headline text-xl">DesignFlow</span>
+            <span className="font-semibold font-headline text-xl">HYPE</span>
           </Link>
         </SidebarHeader>
         <SidebarContent>
@@ -213,7 +213,7 @@ export default function ClientLayout({
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">Client User</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        client@designflow.com
+                        client@designhype.in
                       </p>
                     </div>
                   </DropdownMenuLabel>

@@ -62,7 +62,7 @@ function InvoiceContent() {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Brush className="h-8 w-8 text-primary" />
-              <span className="font-bold font-headline text-3xl">DesignFlow</span>
+              <span className="font-bold font-headline text-3xl">HYPE</span>
             </div>
             <p className="text-muted-foreground">Invoice #{order.id}</p>
             <p className="text-muted-foreground">Date: {format(order.orderDate, 'PPP')}</p>
@@ -116,7 +116,7 @@ function InvoiceContent() {
           </div>
            <div className="mt-8 text-center text-xs text-muted-foreground">
                 <p>Thank you for your business!</p>
-                <p>DesignFlow | contact@designflow.com | Bangalore, India</p>
+                <p>HYPE | contact@designhype.in | Bangalore, India</p>
             </div>
         </CardContent>
       </Card>

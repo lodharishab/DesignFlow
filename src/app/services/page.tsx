@@ -7,10 +7,10 @@ import { Suspense } from 'react';
 import { ServicesPageClientContent } from './services-page-client';
 
 export const metadata: Metadata = {
-  title: 'All Design Services | DesignFlow',
-  description: 'Browse all design services offered on DesignFlow. Find solutions for logo design, UI/UX, print, social media, and more.',
+  title: 'All Design Services | HYPE',
+  description: 'Browse all design services offered on HYPE. Find solutions for logo design, UI/UX, print, social media, and more.',
   openGraph: {
-    title: 'All Design Services | DesignFlow',
+    title: 'All Design Services | HYPE',
     description: 'Explore our full catalog of creative design services. Connect with expert designers today.',
   },
 };

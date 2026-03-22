@@ -9,7 +9,7 @@ export async function generateDesignerBio(request: DesignerBioRequest): Promise<
     messages: [
       {
         role: 'system',
-        content: `You are a professional copywriter for a creative marketplace called DesignFlow. Your task is to generate a short, engaging bio for a designer's profile page. The bio should be around 2-4 sentences (max 300 characters).
+        content: `You are a professional copywriter for a creative marketplace called HYPE. Your task is to generate a short, engaging bio for a designer's profile page. The bio should be around 2-4 sentences (max 300 characters).
 
 Respond with valid JSON in this exact format:
 {
