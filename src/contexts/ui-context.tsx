@@ -46,8 +46,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
   // Restore auth state from localStorage on mount
   useEffect(() => {
     try {
-      const storedLoggedIn = localStorage.getItem('df_isLoggedIn');
-      const storedRole = localStorage.getItem('df_userRole');
+      const storedLoggedIn = localStorage.getItem('hype_isLoggedIn');
+      const storedRole = localStorage.getItem('hype_userRole');
       if (storedLoggedIn === 'true' && storedRole && validRoles.includes(storedRole as UserRole)) {
         setIsLoggedIn(true);
         setUserRole(storedRole as UserRole);
@@ -63,11 +63,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
     if (!isHydrated) return;
     try {
       if (isLoggedIn && userRole) {
-        localStorage.setItem('df_isLoggedIn', 'true');
-        localStorage.setItem('df_userRole', userRole);
+        localStorage.setItem('hype_isLoggedIn', 'true');
+        localStorage.setItem('hype_userRole', userRole);
       } else {
-        localStorage.removeItem('df_isLoggedIn');
-        localStorage.removeItem('df_userRole');
+        localStorage.removeItem('hype_isLoggedIn');
+        localStorage.removeItem('hype_userRole');
       }
     } catch {
       // Ignore localStorage errors
