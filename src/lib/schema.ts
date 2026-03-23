@@ -483,6 +483,15 @@ export const auditLogs = pgTable('audit_logs', {
   notes: text('notes'),
 });
 
+/** Newsletter subscribers */
+export const newsletterSubscribers = pgTable('newsletter_subscribers', {
+  id: text('id').primaryKey(),
+  email: text('email').notNull().unique(),
+  subscribedAt: timestamp('subscribed_at', { withTimezone: true }).defaultNow(),
+  status: text('status').notNull().default('Active'),             // 'Active' | 'Unsubscribed'
+  source: text('source').default('website'),                      // where they signed up
+});
+
 /** Support tickets — contact form submissions */
 export const supportTickets = pgTable('support_tickets', {
   id: text('id').primaryKey(),

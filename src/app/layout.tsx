@@ -77,6 +77,30 @@ export const metadata: Metadata = {
   },
 };
 
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'HYPE',
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo.png`,
+  description: 'Creative Services Marketplace for India. Connect with expert Indian designers for logos, UI/UX, branding, and more.',
+  email: 'hello@designhype.in',
+  areaServed: 'IN',
+};
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'HYPE',
+  url: SITE_URL,
+  description: 'Creative Services Marketplace for India',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${SITE_URL}/design-services?q={search_term_string}`,
+    'query-input': 'required name=search_term_string',
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -85,6 +109,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={cn(oswald.variable, onest.variable, 'dark')}>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col bg-background text-foreground pb-16 md:pb-0" suppressHydrationWarning>

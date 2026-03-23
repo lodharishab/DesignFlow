@@ -6,6 +6,7 @@ import { Brush, LogIn, UserPlus, UserCog, Home, Info, Compass, FileText, Shield,
 import { Divider, Button } from '@heroui/react';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/animations';
+import { NewsletterSignup } from '@/components/shared/newsletter-signup';
 
 const platformLinks = [
   { href: '/', label: 'Home' },
@@ -129,8 +130,8 @@ export function Footer() {
             {/* Get Started */}
             <FooterLinkGroup title="Get Started" links={getStartedLinks} />
 
-            {/* Empty col for spacing on desktop */}
-            <div className="hidden md:block" />
+            {/* Newsletter signup — replaces empty spacing column */}
+            <NewsletterSignup />
           </motion.div>
         </div>
       </div>
