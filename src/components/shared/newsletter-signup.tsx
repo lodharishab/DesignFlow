@@ -40,7 +40,7 @@ export function NewsletterSignup() {
       </p>
 
       {subscribed ? (
-        <div className="flex items-center gap-2 text-sm text-success">
+        <div role="status" aria-live="polite" className="flex items-center gap-2 text-sm text-success">
           <CheckCircle className="h-4 w-4" />
           <span>You&apos;re subscribed!</span>
         </div>
